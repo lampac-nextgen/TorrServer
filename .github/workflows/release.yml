@@ -65,4 +65,8 @@ jobs:
           version: "~> v2"
           args: release --clean --skip=validate
         env:
+          GO_BINARY: go${{ env.GO_VERSION }}
+          GO_ANDROID_BINARY: go${{ env.GO_ANDROID_VERSION }}
+          DOCKER_IMAGE_ID: ghcr.io/${{ env.GITHUB_REPOSITORY }}
+          UPX_ENABLED: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
