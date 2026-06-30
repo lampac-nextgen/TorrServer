@@ -61,9 +61,11 @@ jobs:
         with:
           distribution: goreleaser
           version: "~> v2"
-          args: build --snapshot --clean --single-target --id torrserver
+          args: build --snapshot --clean --single-target --id binary
         env:
+          GO_BINARY: go${{ env.GO_VERSION }}
+          UPX_ENABLED: true 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify binary artifact
-        run: test -x dist/torrserver_linux_amd64_v1/torrserver
+        run: test -x dist/Torrserver-linux-amd64

@@ -28,6 +28,7 @@ src/gopkg.in/
 src/go.opencensus.io/
 pkg/
 bin/
+.cache/
 dist/
 data/
 toolchains/
