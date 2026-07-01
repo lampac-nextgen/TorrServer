@@ -67,3 +67,13 @@ jobs:
 
       - name: Verify binary artifact
         run: test -x dist/torrserver_linux_amd64_v1/torrserver
+
+      - name: Verify static Linux binary (no shared libs)
+        run: |
+          bin=dist/torrserver_linux_amd64_v1/torrserver
+          if readelf -d "$bin" 2>/dev/null | grep -q NEEDED; then
+            echo "Expected a statically linked binary without DT_NEEDED entries:" >&2
+            readelf -d "$bin" | grep NEEDED >&2 || true
+            exit 1
+          fi
+          echo "OK: no dynamic library dependencies"
