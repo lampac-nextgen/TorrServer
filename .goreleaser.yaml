@@ -96,13 +96,43 @@ builds:
           - CGO_ENABLED=1
           - CC={{ envOrDefault "NDK_TOOLCHAIN" "$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64" }}/bin/x86_64-linux-android21-clang
 
+  - id: torrserver-gst
+    dir: server
+    main: ./cmd
+    binary: torrserver
+    builder: go
+    tool: 'go{{ envOrDefault "GO_VERSION" "1.26.4" }}'
+    flags:
+      - -trimpath
+    tags:
+      - nosqlite
+      - gst
+    ldflags:
+      - -s -w -checklinkname=0 -X server/version.Version={{.Version}}
+    env:
+      - CGO_ENABLED=0
+    targets:
+      - windows_amd64
+      - linux_amd64
+      - linux_arm64
+      - darwin_amd64
+      - darwin_arm64
+
 archives:
-  - ids:
+  - id: torrserver
+    ids:
       - torrserver
       - torrserver-android
     formats:
       - binary
     name_template: "TorrServer-{{ .Os }}-{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}"
+
+  - id: torrserver-gst
+    ids:
+      - torrserver-gst
+    formats:
+      - binary
+    name_template: "TorrServer-gst-{{ .Os }}-{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}"
 
 source:
   enabled: false

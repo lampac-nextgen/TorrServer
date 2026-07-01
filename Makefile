@@ -15,6 +15,7 @@ GORELEASER        ?= goreleaser
 GORELEASER_CONFIG ?= .goreleaser.local.yaml
 GORELEASER_ARGS   ?=
 BUILD_ID          ?= torrserver
+BUILD_ID_GST      ?= torrserver-gst
 TARGET            ?=
 OUTPUT            ?=
 SKIP              ?=
@@ -97,6 +98,9 @@ help:
 	@printf "  \033[36m%-22s\033[0m %s\n" build-host "Host only ($(HOST_TARGET))"
 	@printf "  \033[36m%-22s\033[0m %s\n" build-one "One platform (TARGET=linux_amd64)"
 	@printf "  \033[36m%-22s\033[0m %s\n" build-no-hooks "Skip pre-build hooks (SKIP=before)"
+	@printf "  \033[36m%-22s\033[0m %s\n" build-gst "GST builds (linux + macOS) + flatten"
+	@printf "  \033[36m%-22s\033[0m %s\n" build-gst-host "GST host only ($(HOST_TARGET))"
+	@printf "  \033[36m%-22s\033[0m %s\n" build-gst-one "One GST platform (TARGET=linux_amd64)"
 	@printf "  \033[36m%-22s\033[0m %s\n" flatten "Flat release names in dist/"
 	@printf "  \033[36m%-22s\033[0m %s\n" dist "ls dist/"
 	@echo ""
@@ -166,7 +170,8 @@ deps: ## go mod download
 # Build → dist/
 # ===========================================================================
 
-.PHONY: build build-host build-one build-no-hooks flatten
+.PHONY: build build-host build-one build-no-hooks
+.PHONY: build-gst build-gst-host build-gst-one flatten
 
 build: ## All platforms + flatten
 	$(GORELEASER) build --snapshot --clean $(GR_COMMON) $(GR_SKIP)
@@ -185,6 +190,21 @@ endif
 
 build-no-hooks: ## build with SKIP=before (skip pre-build hooks)
 	$(MAKE) build SKIP=before
+
+build-gst: ## GST builds (linux + macOS) + flatten
+	$(GORELEASER) build --snapshot --clean --id $(BUILD_ID_GST) $(GR_COMMON) $(GR_SKIP)
+	$(MAKE) flatten
+
+build-gst-host: ## GST host platform only ($(HOST_TARGET))
+	$(MAKE) build-gst-one TARGET=$(HOST_TARGET)
+
+build-gst-one: ## Single GST platform (TARGET=linux_amd64)
+ifndef TARGET
+	$(error TARGET required, e.g. make build-gst-one TARGET=linux_amd64)
+endif
+	TARGET="$(TARGET)" $(GORELEASER) build --snapshot --clean --single-target --id $(BUILD_ID_GST) \
+		$(GR_COMMON) $(GR_SKIP) $(if $(OUTPUT),-o $(OUTPUT),)
+	@if [ -z "$(OUTPUT)" ]; then $(MAKE) flatten; fi
 
 flatten: ## dist/torrserver_* → TorrServer-os-arch flat names
 	@test -d $(DIST_DIR) || { echo "$(DIST_DIR)/ missing — run make build first" >&2; exit 1; }
@@ -205,16 +225,21 @@ flatten: ## dist/torrserver_* → TorrServer-os-arch flat names
 	    torrserver_android_arm64_v8.0) echo TorrServer-android-arm64 ;; \
 	    torrserver_android_386_sse2) echo TorrServer-android-386 ;; \
 	    torrserver_android_amd64_v1) echo TorrServer-android-amd64 ;; \
+	    torrserver-gst_linux_amd64_v1) echo TorrServer-gst-linux-amd64 ;; \
+	    torrserver-gst_linux_arm64_v8.0) echo TorrServer-gst-linux-arm64 ;; \
+	    torrserver-gst_darwin_amd64_v1) echo TorrServer-gst-darwin-amd64 ;; \
+	    torrserver-gst_darwin_arm64_v8.0) echo TorrServer-gst-darwin-arm64 ;; \
+	    torrserver-gst_windows_amd64_v1) echo TorrServer-gst-windows-amd64.exe ;; \
 	    *) return 1 ;; \
 	  esac; \
 	}; \
 	n=0; \
-	for dir in $(DIST_DIR)/torrserver_*/; do \
+	for dir in $(DIST_DIR)/torrserver*/; do \
 	  bin="$$dir/torrserver"; [ -f "$$bin" ] || continue; \
 	  name=$$(_name_from_dir "$$(basename "$${dir%/}")") || continue; \
 	  cp -f "$$bin" "$(DIST_DIR)/$$name"; echo "  $(DIST_DIR)/$$name"; n=$$((n+1)); \
 	done; \
-	test "$$n" -gt 0 || { echo "No torrserver_* in $(DIST_DIR)/" >&2; exit 1; }
+	test "$$n" -gt 0 || { echo "No torrserver* artifacts in $(DIST_DIR)/" >&2; exit 1; }
 
 dist: ## ls dist/
 	@ls -la $(DIST_DIR)/ 2>/dev/null || echo "$(DIST_DIR)/ empty"
