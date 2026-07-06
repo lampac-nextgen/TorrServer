@@ -26,6 +26,9 @@ import GlobalStyle from 'style/GlobalStyle'
 import { /* lightTheme, */ THEME_MODES, useMaterialUITheme } from 'style/materialUISetup'
 import getStyledComponentsTheme from 'style/getStyledComponentsTheme'
 import SearchDialog from 'components/Search/SearchDialog'
+import AddDialog from 'components/Add/AddDialog'
+import MultiAddDialog from 'components/Add/MultiAddDialog'
+import useLaunchHandler from 'utils/useLaunchHandler'
 
 import { AppWrapper, AppHeader, HeaderToggle, StyledIconButton, SidebarOverlay } from './style'
 import Sidebar from './Sidebar'
@@ -55,6 +58,8 @@ export default function App() {
   const [sortABC, setSortABC] = useState(false)
   const handleClickSortABC = () => setSortABC(true)
   const handleClickSortDate = () => setSortABC(false)
+
+  const { launchSource, setLaunchSource, launchFiles, setLaunchFiles } = useLaunchHandler()
 
   useEffect(() => {
     axios.get(echoHost()).then(({ data }) => setTorrServerVersion(data))
@@ -168,6 +173,10 @@ export default function App() {
                 {/* </MuiThemeProvider> */}
 
                 {isSearchDialogOpen && <SearchDialog handleClose={() => setIsSearchDialogOpen(false)} />}
+
+                {launchSource && <AddDialog hash={launchSource} handleClose={() => setLaunchSource(null)} />}
+
+                {launchFiles && <MultiAddDialog files={launchFiles} handleClose={() => setLaunchFiles(null)} />}
 
                 {snackbarIsClosed ? (
                   detectApplePlatform().isIOS && !isStandaloneApp && <PWAInstallationGuide />

@@ -47,5 +47,33 @@
   ],
   "screenshots": [],
   "shortcuts": [],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "handle_links": "preferred",
+  "protocol_handlers": [
+    {
+      "protocol": "magnet",
+      "url": "/?magnet=%s"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/",
+      "accept": {
+        "application/x-bittorrent": [".torrent"]
+      },
+      "launch_type": "single-client"
+    }
+  ],
+  "share_target": {
+    "action": "/",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }
