@@ -1,6 +1,8 @@
 package pages
 
 import (
+	"strings"
+
 	"github.com/anacrolix/torrent/metainfo"
 	"github.com/gin-gonic/gin"
 
@@ -8,8 +10,6 @@ import (
 	"server/torr"
 	"server/web/auth"
 	"server/web/pages/template"
-
-	"golang.org/x/exp/slices"
 )
 
 func SetupRoute(route gin.IRouter) {
@@ -17,7 +17,7 @@ func SetupRoute(route gin.IRouter) {
 
 	webPagesAuth := route.Group("/", func() gin.HandlerFunc {
 		return func(c *gin.Context) {
-			if slices.Contains([]string{"/site.webmanifest"}, c.FullPath()) {
+			if strings.HasSuffix(c.FullPath(), "/site.webmanifest") {
 				return
 			}
 			auth.CheckAuth()(c)
