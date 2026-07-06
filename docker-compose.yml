@@ -40,6 +40,7 @@ services:
 
       # Feature flags — set to "1" to enable (see docker-entrypoint.sh)
       TS_HTTPAUTH: ${TS_HTTPAUTH:-0}   # basic auth; place auth file in TS_CONF_PATH
+      TS_STREAMWA: ${TS_STREAMWA:-0}   # allow /stream play and /play without auth
       TS_RDB: ${TS_RDB:-0}             # remote debug (`--rdb`)
       TS_DONTKILL: ${TS_DONTKILL:-0}    # keep torrents after last client disconnects
 
