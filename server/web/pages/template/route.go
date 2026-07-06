@@ -3,6 +3,7 @@ package template
 import (
 	"crypto/md5"
 	"fmt"
+	"io/fs"
 	"mime"
 	"path/filepath"
 	"strings"
@@ -16,20 +17,27 @@ func init() {
 }
 
 func RouteWebPages(route gin.IRouter) {
+	// Serve / as index.html
 	route.GET("/", func(c *gin.Context) {
 		serveEmbedded(c, "pages/index.html", "text/html; charset=utf-8")
 	})
 
-	route.GET("/*filepath", func(c *gin.Context) {
-		fp := strings.TrimPrefix(c.Param("filepath"), "/")
-		path := "pages/" + fp
-		data, err := pages.ReadFile(path)
-		if err != nil {
-			c.Status(404)
-			return
+	// Walk embed.FS and register an explicit route for every file.
+	// Explicit routes avoid catch-all wildcard conflicts with other gin routes.
+	fs.WalkDir(pages, "pages", func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return nil
 		}
-		mimeType := mimeFor(fp)
-		writeWithCache(c, data, mimeType)
+		urlPath := "/" + strings.TrimPrefix(path, "pages/")
+		if urlPath == "/index.html" {
+			return nil // already registered above
+		}
+		filePath := path // capture for closure
+		mimeType := mimeFor(urlPath)
+		route.GET(urlPath, func(c *gin.Context) {
+			serveEmbedded(c, filePath, mimeType)
+		})
+		return nil
 	})
 }
 
