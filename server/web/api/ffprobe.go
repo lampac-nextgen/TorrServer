@@ -22,6 +22,7 @@ import (
 //	@Param			id		path	string	true	"File index in torrent"
 //
 //	@Produce		json
+//	@Security		BasicAuth
 //	@Success		200	"Data returned from ffprobe"
 //	@Router			/ffp/{hash}/{id} [get]
 func ffp(c *gin.Context) {
@@ -34,9 +35,6 @@ func ffp(c *gin.Context) {
 	}
 
 	link := "http://127.0.0.1:" + sets.Port + "/play/" + hash + "/" + indexStr
-	if sets.Ssl {
-		link = "https://127.0.0.1:" + sets.SslPort + "/play/" + hash + "/" + indexStr
-	}
 
 	data, err := ffprobe.ProbeUrl(link)
 	if err != nil {
