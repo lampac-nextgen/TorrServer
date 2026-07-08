@@ -143,8 +143,19 @@ upx:
 
 archives:
   - id: releases
+    ids:
+      - binary
+      - android
     formats:
       - binary
+    name_template: "TorrServer-{{ .Os }}-{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}"
+
+  - id: releases-gst
+    ids:
+      - binary-gst
+    formats:
+      - binary
+    name_template: "TorrServer-gst-{{ .Os }}-{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}"
 
 source:
   enabled: false
