@@ -335,15 +335,20 @@ More info at <https://github.com/YouROK/TorrServer/tree/master/web#readme>
 
 ### Build
 
-Use the **Makefile** (wraps [GoReleaser](https://goreleaser.com/) and `.goreleaser.local.yaml`):
+Use the **Makefile** (wraps [GoReleaser](https://goreleaser.com/)):
+
+- **Local dev:** `.goreleaser.local.yaml` — linux/darwin amd64+arm64 (`make binary`, `make build`, `make dist`)
+- **CI / release:** `.goreleaser.yaml` — full matrix (`make dist-full`, `make release`)
 
 ```bash
 make help              # command overview
 make install-tools     # goreleaser v2 + swag
-make start-build       # build host binary, sync to data/, run
-make build             # all local platforms + flatten → dist/
+make start-build       # build host binary, install to data/, run
+make binary            # build host platform → dist/TorrServer-<os>-<arch>
+make binary-gst         # GStreamer build for host platform
+make dist              # local snapshot (4 platforms, no publish)
+make dist-full         # full snapshot (all platforms)
 make update            # web embed + swagger
-make release-snapshot  # local snapshot (binaries + docker, no publish)
 ```
 
 Install Go toolchain wrappers used by GoReleaser:
@@ -358,21 +363,21 @@ go install golang.org/dl/go1.25.7@latest && go1.25.7 download   # Android (relea
 Direct GoReleaser (without Make):
 
 ```bash
-goreleaser build --snapshot --clean --config .goreleaser.local.yaml
-make flatten
-TARGET=linux_amd64 goreleaser build --snapshot --clean --single-target --id torrserver \
-  --config .goreleaser.local.yaml
+goreleaser build --snapshot --clean --single-target --id binary
+GOOS=linux GOARCH=amd64 goreleaser build --snapshot --clean --single-target --id binary
 ```
 
 Web UI build inside `gen_web.go` needs Node 16–18, or Node 17+ with OpenSSL legacy (`NODE_OPTIONS=--openssl-legacy-provider`, set in Makefile / GoReleaser).
 
-`torrserver` builds use **Go 1.26.4**; `torrserver-android` uses **Go 1.25.7**.
+`binary` builds use **Go 1.26.4**; `android` uses **Go 1.25.7**.
+
+See [docs/BUILD.md](docs/BUILD.md) for cross-compilation, Docker builder mode (`USE_DOCKER_BUILDER=1`), and Android NDK setup.
 
 #### Server
 
 - Install [Golang](https://golang.org/doc/install) 1.26+ (1.25.7 additionally for Android via GoReleaser)
 - Go to the TorrServer source directory
-- Run `make build-host` or GoReleaser as above
+- Run `make binary` or GoReleaser as above
 
 #### Web
 

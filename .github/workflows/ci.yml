@@ -28,7 +28,14 @@ jobs:
         with:
           distribution: goreleaser
           version: "~> v2"
-          args: check
+          args: check --config .goreleaser.yaml
+
+      - name: Validate .goreleaser.local.yaml
+        uses: goreleaser/goreleaser-action@v7
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: check --config .goreleaser.local.yaml
 
   build:
     name: Build (linux amd64)
@@ -61,16 +68,18 @@ jobs:
         with:
           distribution: goreleaser
           version: "~> v2"
-          args: build --snapshot --clean --single-target --id torrserver
+          args: build --snapshot --clean --single-target --id binary
         env:
+          GO_BINARY: go${{ env.GO_VERSION }}
+          UPX_ENABLED: false
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify binary artifact
-        run: test -x dist/torrserver_linux_amd64_v1/torrserver
+        run: test -x dist/TorrServer-linux-amd64
 
       - name: Verify static Linux binary (no shared libs)
         run: |
-          bin=dist/torrserver_linux_amd64_v1/torrserver
+          bin=dist/TorrServer-linux-amd64
           if readelf -d "$bin" 2>/dev/null | grep -q NEEDED; then
             echo "Expected a statically linked binary without DT_NEEDED entries:" >&2
             readelf -d "$bin" | grep NEEDED >&2 || true

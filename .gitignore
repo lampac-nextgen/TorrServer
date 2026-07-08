@@ -31,6 +31,7 @@ bin/
 dist/
 data/
 toolchains/
+.cache/
 /src/crawshaw.io/
 /src/go.etcd.io/
 /src/google.golang.org/
