@@ -10,5 +10,5 @@ services:
   torrserver:
     image: ${TORRSERVER_IMAGE:-torrserver:local}
     build:
-      context: ${TORRSERVER_BUILD_CONTEXT:-./dist/docker}
+      context: ${TORRSERVER_BUILD_CONTEXT:-./dist/docker-context}
       dockerfile: ${TORRSERVER_DOCKERFILE:-Dockerfile}

@@ -7,6 +7,9 @@ report_sizes: false
 
 env:
   - NODE_OPTIONS=--openssl-legacy-provider
+  - CLEAN_ENV=env GOOS= GOARCH= GOARM=
+  - Metadata_Description=Torrent stream server
+  - Metadata_License=GPL-3.0
 
 # MatriX.* tags: sort versions correctly for changelog "previous tag".
 git:
@@ -17,24 +20,22 @@ snapshot:
 
 before:
   hooks:
-    - go run gen_web.go
-    - go install github.com/swaggo/swag/cmd/swag@latest
-    - bash -c 'cd server && swag init -g web/server.go'
+    - '{{ .Env.CLEAN_ENV }} {{ envOrDefault "GO_BINARY" "go" }} run gen_web.go'
+    - '{{ .Env.CLEAN_ENV }} {{ envOrDefault "GO_BINARY" "go" }} install github.com/swaggo/swag/cmd/swag@latest'
+    - bash -c 'cd server && {{ .Env.CLEAN_ENV }} swag init -g web/server.go'
 
 builds:
-  - id: torrserver
+  - id: binary
+    tool: '{{ envOrDefault "GO_BINARY" "go" }}'
     dir: server
     main: ./cmd
-    # Internal build name only; public names come from archives.name_template below.
-    binary: torrserver
-    builder: go
-    tool: 'go{{ envOrDefault "GO_VERSION" "1.26.4" }}'
+    binary: '{{ .ProjectName }}-{{ .Os }}-{{ if eq .Arch "arm" }}arm{{ .Arm }}{{ else }}{{ .Arch }}{{ end }}'
+    no_unique_dist_dir: true
     flags:
       - -trimpath
     tags:
       - nosqlite
     ldflags:
-      # .Version equals .Tag on release; snapshots get -<commit> (see snapshot.version_template)
       - -s -w -checklinkname=0 -X server/version.Version={{.Version}}
     env:
       - CGO_ENABLED=0
@@ -56,12 +57,36 @@ builds:
       - linux_mips64le_softfloat
       - linux_riscv64
 
-  - id: torrserver-android
+  - id: binary-gst
+    tool: '{{ envOrDefault "GO_BINARY" "go" }}'
     dir: server
     main: ./cmd
-    binary: torrserver
+    binary: '{{ .ProjectName }}-gst-{{ .Os }}-{{ if eq .Arch "arm" }}arm{{ .Arm }}{{ else }}{{ .Arch }}{{ end }}'
+    no_unique_dist_dir: true
+    # CGO_ENABLED=0: static Go ELF; loads libgstreamer at runtime via purego/dlopen (not for Docker)
+    flags:
+      - -trimpath
+    tags:
+      - nosqlite
+      - gst
+    ldflags:
+      - -s -w -checklinkname=0 -X server/version.Version={{.Version}}
+    env:
+      - CGO_ENABLED=0
+    targets:
+      - linux_amd64
+      - linux_arm64
+      - darwin_amd64
+      - darwin_arm64
+      - windows_amd64
+
+  - id: android
+    dir: server
+    main: ./cmd
+    binary: '{{ .ProjectName }}-{{ .Os }}-{{ if eq .Arch "arm" }}arm{{ .Arm }}{{ else }}{{ .Arch }}{{ end }}'
+    no_unique_dist_dir: true
     builder: go
-    tool: 'go{{ envOrDefault "GO_ANDROID_VERSION" "1.25.7" }}'
+    tool: '{{ envOrDefault "GO_ANDROID_BINARY" (envOrDefault "GO_BINARY" "go") }}'
     flags:
       - -trimpath
     tags:
@@ -96,43 +121,30 @@ builds:
           - CGO_ENABLED=1
           - CC={{ envOrDefault "NDK_TOOLCHAIN" "$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64" }}/bin/x86_64-linux-android21-clang
 
-  - id: torrserver-gst
-    dir: server
-    main: ./cmd
-    binary: torrserver
-    builder: go
-    tool: 'go{{ envOrDefault "GO_VERSION" "1.26.4" }}'
-    flags:
-      - -trimpath
-    tags:
-      - nosqlite
-      - gst
-    ldflags:
-      - -s -w -checklinkname=0 -X server/version.Version={{.Version}}
-    env:
-      - CGO_ENABLED=0
-    targets:
-      - windows_amd64
-      - linux_amd64
-      - linux_arm64
-      - darwin_amd64
-      - darwin_arm64
+upx:
+  - enabled: '{{ envOrDefault "UPX_ENABLED" "false" }}'
+    ids:
+      - binary
+      - binary-gst
+      - android
+    goos:
+      - linux
+      - windows
+      - android
+    goarch:
+      - arm
+      - arm64
+      - amd64
+      - '386'
+      - mips
+      - mipsle
+    compress: best
+    lzma: true
 
 archives:
-  - id: torrserver
-    ids:
-      - torrserver
-      - torrserver-android
+  - id: releases
     formats:
       - binary
-    name_template: "TorrServer-{{ .Os }}-{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}"
-
-  - id: torrserver-gst
-    ids:
-      - torrserver-gst
-    formats:
-      - binary
-    name_template: "TorrServer-gst-{{ .Os }}-{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}"
 
 source:
   enabled: false
@@ -150,14 +162,14 @@ changelog:
   sort: asc
 
 dockers_v2:
-  - id: torrserver
+  - id: docker
     ids:
-      - torrserver
+      - binary
     dockerfile: Dockerfile
     images:
-      - 'ghcr.io/{{ envOrDefault "REGISTRY_IMAGE" "yourok/torrserver" }}'
+      - '{{ envOrDefault "DOCKER_IMAGE_ID" (printf "ghcr.io/%s" (envOrDefault "REGISTRY_IMAGE" "yourok/torrserver")) }}'
     tags:
-      - "{{ .Tag }}"
+      - '{{ .Tag }}'
       - latest
     platforms:
       - linux/amd64
@@ -167,20 +179,20 @@ dockers_v2:
       - docker-entrypoint.sh
     labels:
       "org.opencontainers.image.title": "{{.ProjectName}}"
-      "org.opencontainers.image.description": "Torrent stream server"
+      "org.opencontainers.image.description": "{{.Env.Metadata_Description}}"
       "org.opencontainers.image.url": "{{.GitURL}}"
       "org.opencontainers.image.source": "{{.GitURL}}"
       "org.opencontainers.image.version": "{{.Tag}}"
       "org.opencontainers.image.revision": "{{.FullCommit}}"
       "org.opencontainers.image.created": "{{.Date}}"
-      "org.opencontainers.image.licenses": "GPL-3.0"
+      "org.opencontainers.image.licenses": "{{.Env.Metadata_License}}"
     annotations:
       "org.opencontainers.image.title": "{{.ProjectName}}"
-      "org.opencontainers.image.description": "Torrent stream server"
+      "org.opencontainers.image.description": "{{.Env.Metadata_Description}}"
       "org.opencontainers.image.url": "{{.GitURL}}"
       "org.opencontainers.image.source": "{{.GitURL}}"
       "org.opencontainers.image.version": "{{.Tag}}"
       "org.opencontainers.image.revision": "{{.FullCommit}}"
       "org.opencontainers.image.created": "{{.Date}}"
-      "org.opencontainers.image.licenses": "GPL-3.0"
+      "org.opencontainers.image.licenses": "{{.Env.Metadata_License}}"
     sbom: "{{ not .IsSnapshot }}"
