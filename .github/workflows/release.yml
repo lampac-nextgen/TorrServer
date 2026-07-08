@@ -67,6 +67,8 @@ jobs:
         env:
           GO_BINARY: go${{ env.GO_VERSION }}
           GO_ANDROID_BINARY: go${{ env.GO_ANDROID_VERSION }}
-          DOCKER_IMAGE_ID: ghcr.io/${{ github.repository }}
+          # GHCR repository names must be lowercase; `github.repository` may contain
+          # uppercase letters (e.g. `lampac-nextgen/TorrServer`).
+          DOCKER_IMAGE_ID: ghcr.io/${{ env.REGISTRY_IMAGE }}
           UPX_ENABLED: false
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
