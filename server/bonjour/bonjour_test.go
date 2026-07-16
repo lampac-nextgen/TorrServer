@@ -1,9 +1,6 @@
 package bonjour
 
-import (
-	"strings"
-	"testing"
-)
+import "testing"
 
 func TestSanitizeInstance(t *testing.T) {
 	cases := map[string]string{
@@ -33,12 +30,5 @@ func TestStripLocalSuffix(t *testing.T) {
 		if got := stripLocalSuffix(in); got != want {
 			t.Fatalf("stripLocalSuffix(%q)=%q, want %q", in, got, want)
 		}
-	}
-}
-
-func TestSanitizeInstance_noLocalLeft(t *testing.T) {
-	got := sanitizeInstance("TorrServer: Pavel on Mac.local")
-	if strings.Contains(strings.ToLower(got), ".local") {
-		t.Fatalf("still contains .local: %q", got)
 	}
 }

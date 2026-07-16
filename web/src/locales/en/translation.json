@@ -144,7 +144,7 @@
     "Disk": "Disk",
     "DLNA": "DLNA Media Server",
     "Bonjour": "Bonjour (mDNS)",
-    "BonjourHint": "Advertise TorrServer on the local network for automatic discovery",
+    "BonjourHint": "Advertise on the LAN for local discovery (mDNS)",
     "DontAddRetrackers": "Don`t add retrackers",
     "DownloadRateLimit": "Download Rate Limit",
     "EnableDebug": "Enable Debug Server Log",

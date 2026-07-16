@@ -144,7 +144,7 @@
     "Disk": "磁盘",
     "DLNA": "DLNA媒体服务器",
     "Bonjour": "Bonjour (mDNS)",
-    "BonjourHint": "在局域网上广播 TorrServer，以便自动发现",
+    "BonjourHint": "在局域网上广播以便发现 (mDNS)",
     "DontAddRetrackers": "不加retrackers",
     "DownloadRateLimit": "下载速度限制",
     "EnableDebug": "启用调试服务器日志",

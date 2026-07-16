@@ -144,7 +144,7 @@
     "Disk": "ПЗУ / Накопитель",
     "DLNA": "DLNA-медиасервер",
     "Bonjour": "Bonjour (mDNS)",
-    "BonjourHint": "Объявлять TorrServer в локальной сети для автоматического обнаружения",
+    "BonjourHint": "Объявлять в локальной сети для обнаружения (mDNS)",
     "DontAddRetrackers": "Ничего не делать",
     "DownloadRateLimit": "Ограничение скорости загрузки",
     "EnableDebug": "Подробный журнал сервера",

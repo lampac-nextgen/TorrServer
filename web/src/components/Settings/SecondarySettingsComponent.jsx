@@ -339,7 +339,6 @@ export default function SecondarySettingsComponent({ settings, inputForm }) {
         </Select>
         <FormHelperText style={{ marginTop: '8px' }}>{t('SettingsDialog.RetrackersModeHint')}</FormHelperText>
       </FormGroup>
-      {/* DLNA / Bonjour Section */}
       <SettingSectionLabel style={{ marginTop: '20px' }}>{t('DLNA')}</SettingSectionLabel>
       <FormControlLabel
         control={<Switch checked={EnableDLNA} onChange={inputForm} id='EnableDLNA' color='secondary' />}

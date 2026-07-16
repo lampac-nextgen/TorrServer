@@ -1,7 +1,6 @@
 package bonjour
 
 import (
-	"fmt"
 	"net"
 	"os"
 	"runtime"
@@ -18,33 +17,27 @@ import (
 	"server/version"
 )
 
-const serviceType = "_torrserver._tcp"
-
-var (
-	mu     sync.Mutex
-	server *zeroconf.Server
+const (
+	serviceTorrServer = "_torrserver._tcp"
+	serviceHTTP       = "_http._tcp"
+	serviceHTTPS      = "_https._tcp"
 )
 
-// Start advertises TorrServer on the LAN via Bonjour/mDNS.
-// Failures are logged and do not abort the process.
+var (
+	mu      sync.Mutex
+	servers []*zeroconf.Server
+)
+
+// Start advertises TorrServer over mDNS (_torrserver, _http, and _https when TLS is on).
 func Start() {
 	mu.Lock()
 	defer mu.Unlock()
-
-	if server != nil {
-		server.Shutdown()
-		server = nil
-	}
+	stopLocked()
 
 	port, err := strconv.Atoi(settings.Port)
 	if err != nil || port <= 0 {
 		log.TLogln("Bonjour: invalid web port", settings.Port)
 		return
-	}
-
-	txt := []string{"version=" + version.Version}
-	if settings.Ssl && settings.SslPort != "" {
-		txt = append(txt, "https="+settings.SslPort)
 	}
 
 	ifaces, ips := advertiseAddrs()
@@ -55,26 +48,57 @@ func Start() {
 
 	host := mdnsHostname()
 	name := instanceName()
-	// RegisterProxy avoids grandcat/zeroconf doubling ".local" when os.Hostname()
-	// already returns a Bonjour name (common on macOS).
-	srv, err := zeroconf.RegisterProxy(name, serviceType, "local.", port, host, ips, txt, ifaces)
-	if err != nil {
-		log.TLogln("Bonjour: register failed:", err)
-		return
+	txt := baseTXT()
+
+	register(name, serviceTorrServer, port, host, ips, txt, ifaces)
+	register(name, serviceHTTP, port, host, ips, txt, ifaces)
+
+	if settings.Ssl {
+		if sslPort, err := strconv.Atoi(settings.SslPort); err == nil && sslPort > 0 {
+			register(name, serviceHTTPS, sslPort, host, ips, []string{
+				"version=" + version.Version,
+				"path=/",
+			}, ifaces)
+		}
 	}
-	server = srv
-	log.TLogln(fmt.Sprintf("Bonjour: advertising %q as %s on %s:%d (%s)", name, serviceType, host, port, strings.Join(ips, ",")))
 }
 
-// Stop withdraws the Bonjour/mDNS advertisement.
+// Stop withdraws mDNS advertisements.
 func Stop() {
 	mu.Lock()
 	defer mu.Unlock()
-	if server != nil {
-		server.Shutdown()
-		server = nil
+	stopLocked()
+}
+
+func stopLocked() {
+	for _, s := range servers {
+		s.Shutdown()
+	}
+	if len(servers) > 0 {
 		log.TLogln("Bonjour: stopped")
 	}
+	servers = nil
+}
+
+func baseTXT() []string {
+	txt := []string{
+		"version=" + version.Version,
+		"path=/",
+	}
+	if settings.Ssl && settings.SslPort != "" {
+		txt = append(txt, "https="+settings.SslPort)
+	}
+	return txt
+}
+
+func register(name, service string, port int, host string, ips []string, txt []string, ifaces []net.Interface) {
+	srv, err := zeroconf.RegisterProxy(name, service, "local.", port, host, ips, txt, ifaces)
+	if err != nil {
+		log.TLogln("Bonjour: register", service, "failed:", err)
+		return
+	}
+	servers = append(servers, srv)
+	log.TLogln("Bonjour: advertising", name, "as", service, "on", host+":"+strconv.Itoa(port), "("+strings.Join(ips, ",")+")")
 }
 
 func instanceName() string {
@@ -84,8 +108,6 @@ func instanceName() string {
 	return "TorrServer"
 }
 
-// sanitizeInstance keeps DNS-SD instance names browsable on macOS.
-// A trailing ".local" is registered but never appears in dns-sd browse results.
 func sanitizeInstance(name string) string {
 	name = stripLocalSuffix(strings.TrimSpace(name))
 	name = strings.ReplaceAll(name, ".", "-")
@@ -118,6 +140,7 @@ func mdnsHostname() string {
 	return host
 }
 
+// stripLocalSuffix removes a trailing ".local" so macOS dns-sd can browse the name.
 func stripLocalSuffix(s string) string {
 	s = strings.TrimSuffix(s, ".")
 	if len(s) >= 6 && strings.EqualFold(s[len(s)-6:], ".local") {
@@ -133,9 +156,9 @@ func advertiseAddrs() ([]net.Interface, []string) {
 		return nil, nil
 	}
 
-	var outIfaces []net.Interface
+	var out []net.Interface
 	var ips []string
-	seen := map[string]bool{}
+	seen := make(map[string]bool)
 
 	for _, i := range ifaces {
 		if !usableIface(i) {
@@ -145,23 +168,23 @@ func advertiseAddrs() ([]net.Interface, []string) {
 		if len(v4) == 0 && len(v6) == 0 {
 			continue
 		}
-		outIfaces = append(outIfaces, i)
+		out = append(out, i)
 		for _, ip := range append(v4, v6...) {
 			s := ip.String()
-			if !seen[s] {
-				seen[s] = true
-				ips = append(ips, s)
+			if seen[s] {
+				continue
 			}
+			seen[s] = true
+			ips = append(ips, s)
 		}
 	}
-	return outIfaces, ips
+	return out, ips
 }
 
 func usableIface(i net.Interface) bool {
 	if runtime.GOOS != "windows" && (i.Flags&net.FlagLoopback != 0 || i.Flags&net.FlagUp == 0 || i.Flags&net.FlagMulticast == 0) {
 		return false
 	}
-	// Skip tunnel / peer-to-peer interfaces that break multicast joins on macOS.
 	name := strings.ToLower(i.Name)
 	for _, p := range []string{"utun", "awdl", "llw", "ap", "bridge", "anpi", "gif", "stf", "vmnet", "veth", "docker", "br-", "cni", "flannel"} {
 		if strings.HasPrefix(name, p) {

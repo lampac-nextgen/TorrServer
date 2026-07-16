@@ -41,10 +41,12 @@ type BTSets struct {
 	TorrentDisconnectTimeout int  // in seconds
 	EnableDebug              bool // debug logs
 
-	// DLNA / Bonjour
-	EnableDLNA    bool
+	// DLNA
+	EnableDLNA bool
+	// Bonjour/mDNS LAN discovery (_torrserver, _http, _https)
 	EnableBonjour bool
-	FriendlyName  string
+	// Shared name for DLNA and Bonjour
+	FriendlyName string
 
 	// Rutor
 	EnableRutorSearch bool
@@ -68,10 +70,10 @@ type BTSets struct {
 	UploadRateLimit   int // in kb, 0 - inf
 	ConnectionsLimit  int
 	PeersListenPort   int
-	
+
 	// LPD
 	EnableLPD bool
-    LPDIPv6   bool
+	LPDIPv6   bool
 
 	// HTTPS
 	SslPort int
@@ -207,7 +209,7 @@ func loadBTSets() {
 					ImageURLRu: "https://imagetmdb.com",
 				}
 			}
-			// Enable Bonjour by default for configs saved before the setting existed.
+			// Default Bonjour on for configs that predate the setting.
 			var raw map[string]json.RawMessage
 			if json.Unmarshal(buf, &raw) == nil {
 				if _, ok := raw["EnableBonjour"]; !ok {
