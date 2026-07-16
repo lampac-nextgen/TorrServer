@@ -369,6 +369,29 @@ check: ## Validate local goreleaser config
 check-release: ## Validate release goreleaser config
 	goreleaser check $(GR_RELEASE_CONFIG)
 
+# Lint / format (run from repo root; operates on server/)
+fmt:
+	cd server && gofmt -w .
+	cd server && golangci-lint fmt ./...
+
+fmt-check:
+	@cd server && \
+	unformatted=$$(gofmt -l .) && \
+	if [ -n "$$unformatted" ]; then \
+		echo "Files need gofmt:" >&2; echo "$$unformatted" >&2; exit 1; \
+	fi
+	@cd server && \
+	diff=$$(golangci-lint fmt -d ./...) && \
+	if [ -n "$$diff" ]; then \
+		echo "Files need golangci-lint fmt:" >&2; echo "$$diff" >&2; exit 1; \
+	fi
+	@echo "OK: formatting clean"
+
+lint:
+	cd server && golangci-lint run ./...
+
+lint-all: fmt-check lint
+
 healthcheck:
 	goreleaser healthcheck $(GR_CONFIG)
 
@@ -458,7 +481,9 @@ install-goreleaser:
 	go install github.com/goreleaser/goreleaser/v2@latest
 install-swag:
 	go install github.com/swaggo/swag/cmd/swag@latest
-install-tools: install-goreleaser install-swag
+install-golangci-lint:
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b $$(go env GOPATH)/bin latest
+install-tools: install-goreleaser install-swag install-golangci-lint
 
 help:
 	@$(SHELL) -c '\
@@ -516,6 +541,10 @@ help:
 		tgt "version" "Toolchain and platform info"; \
 		tgt "healthcheck" "GoReleaser dependency check"; \
 		tgt "deps" "go mod download"; \
+		tgt "fmt" "gofmt + golangci-lint fmt (write)"; \
+		tgt "fmt-check" "Check gofmt + golangci-lint fmt (CI)"; \
+		tgt "lint" "golangci-lint run ./server/..."; \
+		tgt "lint-all" "fmt-check + lint"; \
 		tgt "check" "Validate $(GORELEASER_CONFIG)"; \
 		tgt "check-release" "Validate $(GORELEASER_RELEASE_CONFIG)"; \
 		tgt "verify-linux-static" "Check static Linux ELF (id=binary)"; \
@@ -552,5 +581,6 @@ help:
         setup-builder setup-cache \
         guard-docker-amd64 guard-goreleaser guard-upx guard-ndk guard-yarn guard-swag \
         build-host build-gst-host build-no-hooks release-snapshot release-no-docker release-no-docker-full \
-        data-sync build-sync web-deps web-build web-embed install-tools install-goreleaser install-swag \
+        data-sync build-sync web-deps web-build web-embed install-tools install-goreleaser install-swag install-golangci-lint \
+        fmt fmt-check lint lint-all \
         docker-image docker-image-amd64 docker-image-arm64 show-config show-config-release
