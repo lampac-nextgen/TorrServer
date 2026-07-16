@@ -23,6 +23,8 @@ before:
     - '{{ .Env.CLEAN_ENV }} {{ envOrDefault "GO_BINARY" "go" }} run gen_web.go'
     - '{{ .Env.CLEAN_ENV }} {{ envOrDefault "GO_BINARY" "go" }} install github.com/swaggo/swag/cmd/swag@latest'
     - bash -c 'cd server && {{ .Env.CLEAN_ENV }} swag init -g web/server.go'
+    # Windows gst embed: zip gst-libs for //go:embed (binary-gst + embed_gstlib)
+    - bash -c 'cd server/gstreamer && rm -f embedded_gstlib_windows_amd64.zip && python3 -c "import shutil; shutil.make_archive(\"embedded_gstlib_windows_amd64\", \"zip\", \"gst-libs/win-x86_64\")"'
 
 builds:
   - id: binary
@@ -79,6 +81,14 @@ builds:
       - darwin_amd64
       - darwin_arm64
       - windows_amd64
+    overrides:
+      # Single-file Windows build with embedded GStreamer runtime
+      - goos: windows
+        goarch: amd64
+        tags:
+          - nosqlite
+          - gst
+          - embed_gstlib
 
   - id: android
     dir: server
