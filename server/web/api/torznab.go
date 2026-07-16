@@ -27,7 +27,7 @@ import (
 //	@Router			/torznab/search [get]
 func torznabSearch(c *gin.Context) {
 	if !sets.BTsets.EnableTorznabSearch {
-		c.JSON(http.StatusBadRequest, []string{})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "torznab disabled"})
 		return
 	}
 	query := c.Query("query")
@@ -38,7 +38,7 @@ func torznabSearch(c *gin.Context) {
 	}
 
 	query, _ = url.QueryUnescape(query)
-	list := torznab.Search(query, index)
+	list := torznab.Search(c.Request.Context(), query, index)
 	if list == nil {
 		list = []*models.TorrentDetails{}
 	}
@@ -57,7 +57,7 @@ func torznabTest(c *gin.Context) {
 		return
 	}
 
-	if err := torznab.Test(req.Host, req.Key); err != nil {
+	if err := torznab.Test(c.Request.Context(), req.Host, req.Key); err != nil {
 		c.JSON(200, gin.H{"success": false, "error": err.Error()})
 		return
 	}

@@ -15,6 +15,8 @@ const defaultSettings: BTSets = {
   EnableBonjour: true,
   FriendlyName: '',
   EnableRutorSearch: false,
+  EnableTorznabSearch: false,
+  TorznabUrls: [],
   EnableIPv6: false,
   DisableTCP: false,
   DisableUTP: false,

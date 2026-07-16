@@ -107,7 +107,7 @@ export const CacheSection = styled.section`
     padding: 40px;
     display: grid;
     align-content: start;
-    grid-template-rows: min-content 1fr min-content;
+    grid-template-rows: min-content min-content min-content;
     background: ${chacheSectionBGColor};
     min-width: 0;
 

@@ -198,6 +198,15 @@ export const SidebarOverlay = styled.div<{ $isDrawerOpen?: boolean }>`
 
 export const StyledIconButton = styled(IconButton)`
   margin-right: 6px;
+  width: 44px;
+  height: 44px;
+  padding: 8px;
+
+  @media (max-width: 700px) {
+    width: 40px;
+    height: 40px;
+    padding: 6px;
+  }
 
   ${standaloneMedia(css`
     display: none;

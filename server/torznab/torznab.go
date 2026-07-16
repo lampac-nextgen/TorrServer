@@ -1,8 +1,10 @@
 package torznab
 
 import (
+	"context"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -13,6 +15,10 @@ import (
 	"server/rutor/models"
 	"server/settings"
 )
+
+const httpTimeout = 30 * time.Second
+
+var httpClient = &http.Client{Timeout: httpTimeout}
 
 type TorznabAttribute struct {
 	Name  string `xml:"name,attr"`
@@ -43,7 +49,52 @@ type TorznabResponse struct {
 	Channel TorznabChannel `xml:"channel"`
 }
 
-func Search(query string, index int) []*models.TorrentDetails {
+type torznabError struct {
+	XMLName     xml.Name
+	Code        string `xml:"code,attr"`
+	Description string `xml:"description,attr"`
+}
+
+// normalizeHost turns a configured Torznab base into an API URL ending in /api.
+// Paths that already end with /api or /api/ are left as-is (minus trailing slash handling).
+func normalizeHost(host string) (*url.URL, error) {
+	host = strings.TrimSpace(host)
+	if host == "" {
+		return nil, fmt.Errorf("empty host")
+	}
+	if !strings.HasPrefix(host, "http://") && !strings.HasPrefix(host, "https://") {
+		host = "http://" + host
+	}
+
+	u, err := url.Parse(host)
+	if err != nil {
+		return nil, err
+	}
+	if u.Host == "" {
+		return nil, fmt.Errorf("invalid host: %s", host)
+	}
+
+	path := strings.TrimSuffix(u.Path, "/")
+	if strings.HasSuffix(strings.ToLower(path), "/api") || strings.EqualFold(path, "/api") || strings.EqualFold(path, "api") {
+		u.Path = path
+		u.RawQuery = ""
+		u.Fragment = ""
+		return u, nil
+	}
+
+	if !strings.HasSuffix(u.Path, "/") {
+		u.Path += "/"
+	}
+	u.Path += "api"
+	u.RawQuery = ""
+	u.Fragment = ""
+	return u, nil
+}
+
+func Search(ctx context.Context, query string, index int) []*models.TorrentDetails {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	if !settings.BTsets.EnableTorznabSearch || len(settings.BTsets.TorznabUrls) == 0 {
 		return nil
 	}
@@ -52,7 +103,7 @@ func Search(query string, index int) []*models.TorrentDetails {
 	if index >= 0 && index < len(settings.BTsets.TorznabUrls) {
 		config := settings.BTsets.TorznabUrls[index]
 		if config.Host != "" && config.Key != "" {
-			return searchOne(config.Host, config.Key, query)
+			return searchOne(ctx, config.Host, config.Key, query)
 		}
 		return nil
 	}
@@ -61,7 +112,7 @@ func Search(query string, index int) []*models.TorrentDetails {
 		if config.Host == "" || config.Key == "" {
 			continue
 		}
-		results := searchOne(config.Host, config.Key, query)
+		results := searchOne(ctx, config.Host, config.Key, query)
 		if results != nil {
 			allResults = append(allResults, results...)
 		}
@@ -69,12 +120,8 @@ func Search(query string, index int) []*models.TorrentDetails {
 	return allResults
 }
 
-func searchOne(host, key, query string) []*models.TorrentDetails {
-	if !strings.HasSuffix(host, "/") {
-		host += "/"
-	}
-
-	u, err := url.Parse(host + "api")
+func searchOne(ctx context.Context, host, key, query string) []*models.TorrentDetails {
+	u, err := normalizeHost(host)
 	if err != nil {
 		log.TLogln("Error parsing Torznab host:", err)
 		return nil
@@ -84,23 +131,39 @@ func searchOne(host, key, query string) []*models.TorrentDetails {
 	q.Set("apikey", key)
 	q.Set("t", "search")
 	q.Set("q", query)
-	q.Set("cat", "5000,2000") // Movies and TV
 	u.RawQuery = q.Encode()
 
-	resp, err := http.Get(u.String())
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
+	if err != nil {
+		log.TLogln("Error creating Torznab request:", err)
+		return nil
+	}
+
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		log.TLogln("Error connecting to Torznab:", err)
 		return nil
 	}
 	defer func() { _ = resp.Body.Close() }()
 
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
+	if err != nil {
+		log.TLogln("Error reading Torznab response:", err)
+		return nil
+	}
+
 	if resp.StatusCode != http.StatusOK {
 		log.TLogln("Torznab returned status:", resp.Status)
 		return nil
 	}
 
+	if errMsg := parseTorznabError(body); errMsg != "" {
+		log.TLogln("Torznab API error:", errMsg)
+		return nil
+	}
+
 	var torznabResp TorznabResponse
-	if err := xml.NewDecoder(resp.Body).Decode(&torznabResp); err != nil {
+	if err := xml.Unmarshal(body, &torznabResp); err != nil {
 		log.TLogln("Error decoding Torznab response:", err)
 		return nil
 	}
@@ -109,7 +172,7 @@ func searchOne(host, key, query string) []*models.TorrentDetails {
 	for _, item := range torznabResp.Channel.Items {
 		detail := &models.TorrentDetails{
 			Title:      item.Title,
-			Name:       item.Title, // Use Title as Name for now
+			Name:       item.Title,
 			Link:       item.Link,
 			CreateDate: parseDate(item.PubDate),
 		}
@@ -121,23 +184,38 @@ func searchOne(host, key, query string) []*models.TorrentDetails {
 			detail.Size = formatSize(item.Size)
 		}
 
+		var leechers, peers int
+		var hasLeechers, hasPeers bool
 		for _, attr := range item.Attributes {
-			if attr.Name == "magneturl" {
+			switch strings.ToLower(attr.Name) {
+			case "magneturl":
 				detail.Magnet = attr.Value
-				detail.Hash = extractHash(detail.Magnet)
-			}
-			if attr.Name == "seeders" {
+				if detail.Hash == "" {
+					detail.Hash = extractHash(detail.Magnet)
+				}
+			case "seeders":
 				detail.Seed, _ = strconv.Atoi(attr.Value)
-			}
-			if attr.Name == "peers" {
-				detail.Peer, _ = strconv.Atoi(attr.Value)
+			case "leechers":
+				leechers, _ = strconv.Atoi(attr.Value)
+				hasLeechers = true
+			case "peers":
+				peers, _ = strconv.Atoi(attr.Value)
+				hasPeers = true
+			case "infohash":
+				detail.Hash = attr.Value
 			}
 		}
+		if hasLeechers {
+			detail.Peer = leechers
+		} else if hasPeers {
+			detail.Peer = peers
+		}
 
-		// Fallback if magnet not in attributes but link is a magnet
 		if detail.Magnet == "" && strings.HasPrefix(detail.Link, "magnet:") {
 			detail.Magnet = detail.Link
-			detail.Hash = extractHash(detail.Magnet)
+			if detail.Hash == "" {
+				detail.Hash = extractHash(detail.Magnet)
+			}
 		}
 
 		results = append(results, detail)
@@ -146,15 +224,12 @@ func searchOne(host, key, query string) []*models.TorrentDetails {
 	return results
 }
 
-func Test(host, key string) error {
-	if !strings.HasPrefix(host, "http://") && !strings.HasPrefix(host, "https://") {
-		host = "http://" + host
-	}
-	if !strings.HasSuffix(host, "/") {
-		host += "/"
+func Test(ctx context.Context, host, key string) error {
+	if ctx == nil {
+		ctx = context.Background()
 	}
 
-	u, err := url.Parse(host + "api")
+	u, err := normalizeHost(host)
 	if err != nil {
 		return err
 	}
@@ -164,32 +239,33 @@ func Test(host, key string) error {
 	q.Set("t", "caps")
 	u.RawQuery = q.Encode()
 
-	resp, err := http.Get(u.String())
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = resp.Body.Close() }()
 
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	if err != nil {
+		return err
+	}
+
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("status: %s", resp.Status)
 	}
 
-	var probe struct {
-		XMLName     xml.Name
-		Code        string `xml:"code,attr"`
-		Description string `xml:"description,attr"`
+	if errMsg := parseTorznabError(body); errMsg != "" {
+		return fmt.Errorf("api error: %s", errMsg)
 	}
 
-	if err := xml.NewDecoder(resp.Body).Decode(&probe); err != nil {
+	var probe torznabError
+	if err := xml.Unmarshal(body, &probe); err != nil {
 		return fmt.Errorf("invalid xml response: %v", err)
-	}
-
-	if probe.XMLName.Local == "error" {
-		msg := probe.Description
-		if msg == "" {
-			msg = probe.Code
-		}
-		return fmt.Errorf("api error: %s", msg)
 	}
 
 	if probe.XMLName.Local != "caps" {
@@ -199,11 +275,27 @@ func Test(host, key string) error {
 	return nil
 }
 
+func parseTorznabError(body []byte) string {
+	var probe torznabError
+	if err := xml.Unmarshal(body, &probe); err != nil {
+		return ""
+	}
+	if probe.XMLName.Local != "error" {
+		return ""
+	}
+	msg := probe.Description
+	if msg == "" {
+		msg = probe.Code
+	}
+	if msg == "" {
+		msg = "unknown error"
+	}
+	return msg
+}
+
 func parseDate(dateStr string) time.Time {
-	// RFC1123 is common in RSS
 	t, err := time.Parse(time.RFC1123, dateStr)
 	if err != nil {
-		// Try RFC1123Z
 		t, err = time.Parse(time.RFC1123Z, dateStr)
 		if err != nil {
 			return time.Now()

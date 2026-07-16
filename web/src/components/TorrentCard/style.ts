@@ -9,7 +9,7 @@ export const TorrentCard = styled.div`
     border-radius: 5px;
     display: grid;
     grid-template-columns: 120px minmax(0, 260px) minmax(0, 1fr);
-    grid-template-rows: 180px;
+    grid-template-rows: 210px;
     grid-template-areas: 'poster description buttons';
     gap: 10px;
     padding: 10px;
@@ -104,7 +104,7 @@ export const TorrentCardButtons = styled.div`
 export const TorrentCardDescription = styled.div`
   ${({
     theme: {
-      torrentCard: { cardSecondaryColor, accentCardColor },
+      torrentCard: { cardSecondaryColor, sectionLabelColor },
     },
   }) => css`
     grid-area: description;
@@ -139,14 +139,14 @@ export const TorrentCardDescription = styled.div`
 
     .description-section-name {
       text-transform: uppercase;
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.4px;
-      color: ${accentCardColor};
+      color: ${sectionLabelColor};
 
       @media (max-width: 770px) {
-        font-size: 0.5rem;
-        line-height: 10px;
+        font-size: 0.75rem;
+        line-height: 14px;
       }
     }
 

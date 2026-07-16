@@ -164,11 +164,17 @@ export default function TorznabSettings({ settings, inputForm, updateSettings }:
             label={t('Torznab.TorznabHostURL')}
             value={newHost}
             onChange={e => setNewHost(e.target.value)}
-            placeholder='http://localhost:9117'
+            placeholder='http://host:9117/api/v2.0/indexers/all/results/torznab/'
+            helperText={t('Torznab.HostHint')}
             variant='outlined'
             size='small'
             fullWidth
           />
+          {EnableTorznabSearch && (TorznabUrls || []).length === 0 && (
+            <Typography variant='body2' color='text.secondary'>
+              {t('Torznab.NoIndexersConfigured')}
+            </Typography>
+          )}
           <TextField
             label={t('Torznab.APIKey')}
             value={newKey}

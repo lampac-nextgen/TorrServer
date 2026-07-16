@@ -11,6 +11,7 @@ export const themeColors = {
     },
     torrentCard: {
       accentCardColor: '#337a57',
+      sectionLabelColor: 'rgba(0, 0, 0, 0.72)',
       buttonBGColor: rgba('#337a57', 0.5),
       cardPrimaryColor: '#00a572',
       cardSecondaryColor: '#74c39c',
@@ -24,8 +25,8 @@ export const themeColors = {
       titleFontColor: '#000',
       subNameFontColor: '#7c7b7c',
       torrentFilesSectionBGColor: '#f1eff3',
-      bufferTrailStartColor: '#eee',
-      bufferTrailEndColor: '#fff',
+      bufferTrailStartColor: '#6bb892',
+      bufferTrailEndColor: '#4db380',
     },
     detailedView: {
       gradientStartColor: '#e4f6ed',
@@ -80,6 +81,7 @@ export const themeColors = {
     },
     torrentCard: {
       accentCardColor: '#323637',
+      sectionLabelColor: 'rgba(255, 255, 255, 0.75)',
       buttonBGColor: rgba('#323637', 0.5),
       cardPrimaryColor: '#545a5e',
       cardSecondaryColor: rgba('#dee3e5', 0.4),

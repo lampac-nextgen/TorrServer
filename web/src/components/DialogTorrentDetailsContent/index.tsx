@@ -161,7 +161,6 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
 
       <div
         style={{
-          minHeight: '80vh',
           overflow: 'auto',
           ...(isDetailedCacheView && { display: 'flex', flexDirection: 'column' }),
         }}
