@@ -150,7 +150,7 @@ export const CacheLegendDot = styled.span`
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: ${({ color }) => color};
+  background: ${({ $color }) => $color};
   margin-top: 2px;
 
   @media (max-width: 600px) {

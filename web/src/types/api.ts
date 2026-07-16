@@ -1,15 +1,33 @@
 export type TorrentCategory = string
 
 export interface TorrentFileStat {
-  Id: number
-  Path: string
-  Length: number
+  Id?: number
+  id?: number
+  Path?: string
+  path?: string
+  Length?: number
+  length?: number
 }
 
-/** List/status payload from POST /torrents action=list|get */
+/** List/status payload from POST /torrents (API uses snake_case in the web UI) */
 export interface TorrentStat {
-  Hash: string
-  Name: string
+  hash: string
+  title?: string
+  name?: string
+  category?: TorrentCategory
+  poster?: string
+  torrent_size?: number
+  download_speed?: number
+  upload_speed?: number
+  active_peers?: number
+  total_peers?: number
+  connected_seeders?: number
+  timestamp?: number
+  stat?: number
+  data?: string
+  file_stats?: TorrentFileStat[]
+  Hash?: string
+  Name?: string
   Title?: string
   Category?: TorrentCategory
   Poster?: string
@@ -20,19 +38,8 @@ export interface TorrentStat {
   UploadSpeed?: number
   TotalPeers?: number
   ActivePeers?: number
-  PendingPeers?: number
-  HalfOpenPeers?: number
-  BytesRead?: number
-  BytesWritten?: number
-  BytesReadData?: number
-  BytesWrittenData?: number
   Status?: number
-  TorrentStatus?: number
   FileStats?: TorrentFileStat[]
-  /** Legacy snake_case fields still present in some UI helpers */
-  active_peers?: number
-  total_peers?: number
-  connected_seeders?: number
   [key: string]: unknown
 }
 
@@ -85,4 +92,9 @@ export interface CacheMapItem {
   priority: number
   isReader?: boolean
   isReaderRange?: boolean
+}
+
+export interface OfflineAwareProps {
+  isOffline?: boolean
+  isLoading?: boolean
 }

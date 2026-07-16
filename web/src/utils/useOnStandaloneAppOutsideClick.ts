@@ -1,7 +1,7 @@
 import { useEffect, useRef, type RefObject } from 'react'
 import { isStandaloneApp } from 'utils/Utils'
 
-export default function useOnStandaloneAppOutsideClick<T extends HTMLElement = HTMLElement>(
+export default function useOnStandaloneAppOutsideClick<T extends HTMLElement = HTMLDivElement>(
   onClickOutside?: () => void,
 ): RefObject<T | null> {
   const ref = useRef<T | null>(null)

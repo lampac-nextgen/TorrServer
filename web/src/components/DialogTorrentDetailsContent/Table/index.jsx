@@ -189,7 +189,7 @@ const Table = memo(
 
             return (
               (season === selectedSeason || !seasonAmount?.length) && (
-                <ShortTable key={id} isViewed={isViewed}>
+                <ShortTable key={id} $isViewed={isViewed}>
                   <div className='short-table-name'>{shouldDisplayFullFileName ? path : title}</div>
                   <div className='short-table-data'>
                     {isViewed && (

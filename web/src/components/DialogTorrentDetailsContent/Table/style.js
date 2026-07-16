@@ -104,7 +104,7 @@ export const ShortTableWrapper = styled.div`
 
 export const ShortTable = styled.div`
   ${({
-    isViewed,
+    $isViewed,
     theme: {
       table: { defaultPrimaryColor, defaultSecondaryColor, defaultTertiaryColor },
     },
@@ -117,7 +117,7 @@ export const ShortTable = styled.div`
 
     .short-table {
       &-name {
-        background: ${isViewed ? viewedPrimaryColor : defaultPrimaryColor};
+        background: ${$isViewed ? viewedPrimaryColor : defaultPrimaryColor};
         display: grid;
         place-items: center;
         padding: 15px;
@@ -134,7 +134,7 @@ export const ShortTable = styled.div`
       &-data {
         display: grid;
         grid-auto-flow: column;
-        grid-template-columns: ${isViewed ? 'max-content' : '1fr'};
+        grid-template-columns: ${$isViewed ? 'max-content' : '1fr'};
         grid-auto-columns: 1fr;
       }
       &-field {
@@ -142,11 +142,11 @@ export const ShortTable = styled.div`
         grid-template-rows: 30px 1fr;
         background: black;
         :not(:last-child) {
-          border-right: 1px solid ${isViewed ? viewedPrimaryColor : defaultPrimaryColor};
+          border-right: 1px solid ${$isViewed ? viewedPrimaryColor : defaultPrimaryColor};
         }
 
         &-name {
-          background: ${isViewed ? viewedSecondaryColor : defaultSecondaryColor};
+          background: ${$isViewed ? viewedSecondaryColor : defaultSecondaryColor};
           color: #fff;
           text-transform: uppercase;
           font-size: 12px;
@@ -161,7 +161,7 @@ export const ShortTable = styled.div`
         }
 
         &-value {
-          background: ${isViewed ? viewedTertiaryColor : defaultTertiaryColor};
+          background: ${$isViewed ? viewedTertiaryColor : defaultTertiaryColor};
           display: grid;
           place-items: center;
           color: #fff;
@@ -177,12 +177,12 @@ export const ShortTable = styled.div`
       }
 
       &-viewed-indicator {
-        ${isViewed && viewedIndicator}
+        ${$isViewed && viewedIndicator}
       }
 
       &-buttons {
         padding: 20px;
-        border-bottom: 2px solid ${isViewed ? viewedPrimaryColor : defaultPrimaryColor};
+        border-bottom: 2px solid ${$isViewed ? viewedPrimaryColor : defaultPrimaryColor};
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         align-items: center;

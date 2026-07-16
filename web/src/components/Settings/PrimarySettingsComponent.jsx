@@ -56,13 +56,13 @@ export default function PrimarySettingsComponent({
         />
 
         <CacheLegendGrid>
-          <CacheLegendDot color={cacheBeforeReaderColor} aria-hidden />
+          <CacheLegendDot $color={cacheBeforeReaderColor} aria-hidden />
           <div className='cache-legend-value'>
             {100 - cachePercentage}% ({Math.round((cacheSize / 100) * (100 - cachePercentage))} {t('MB')})
           </div>
           <div className='cache-legend-desc'>{t('SettingsDialog.CacheBeforeReaderDesc')}</div>
 
-          <CacheLegendDot color={cacheAfterReaderColor} aria-hidden />
+          <CacheLegendDot $color={cacheAfterReaderColor} aria-hidden />
           <div className='cache-legend-value'>
             {cachePercentage}% ({Math.round((cacheSize / 100) * cachePercentage)} {t('MB')})
           </div>

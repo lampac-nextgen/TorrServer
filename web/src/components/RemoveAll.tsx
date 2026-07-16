@@ -1,0 +1,64 @@
+import { Button, Dialog, DialogActions, DialogTitle } from '@mui/material'
+import ListItemButton from '@mui/material/ListItemButton'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import ListItemText from '@mui/material/ListItemText'
+import DeleteIcon from '@mui/icons-material/Delete'
+import { useState } from 'react'
+import { torrentsHost } from 'utils/Hosts'
+import { useTranslation } from 'react-i18next'
+import type { OfflineAwareProps } from 'types/api'
+
+import UnsafeButton from './UnsafeButton'
+
+const fnRemoveAll = () => {
+  fetch(torrentsHost(), {
+    method: 'post',
+    body: JSON.stringify({ action: 'wipe' }),
+    headers: {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json',
+    },
+  })
+}
+
+export default function RemoveAll({ isOffline, isLoading }: OfflineAwareProps) {
+  const { t } = useTranslation()
+  const [open, setOpen] = useState(false)
+  const closeDialog = () => setOpen(false)
+  const openDialog = () => setOpen(true)
+
+  return (
+    <>
+      <ListItemButton disabled={isOffline || isLoading} key={t('RemoveAll')} onClick={openDialog}>
+        <ListItemIcon>
+          <DeleteIcon />
+        </ListItemIcon>
+
+        <ListItemText primary={t('RemoveAll')} />
+      </ListItemButton>
+
+      <Dialog open={open} onClose={closeDialog}>
+        <DialogTitle>{t('DeleteTorrents?')}</DialogTitle>
+        <DialogActions>
+          <Button variant='outlined' onClick={closeDialog} color='secondary'>
+            {t('Cancel')}
+          </Button>
+
+          <UnsafeButton
+            timeout={5}
+            startIcon={<DeleteIcon />}
+            variant='contained'
+            onClick={() => {
+              fnRemoveAll()
+              closeDialog()
+            }}
+            color='secondary'
+            autoFocus
+          >
+            {t('OK')}
+          </UnsafeButton>
+        </DialogActions>
+      </Dialog>
+    </>
+  )
+}

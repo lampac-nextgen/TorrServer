@@ -115,7 +115,7 @@ export const LeftSideBottomSectionNoFile = styled.div`
   text-align: center;
   outline: none;
 
-  ${({ isDragActive }) => isDragActive && `border: 4px dashed green`};
+  ${({ $isDragActive }) => $isDragActive && `border: 4px dashed green`};
 
   justify-items: center;
   grid-template-rows: 130px 1fr;

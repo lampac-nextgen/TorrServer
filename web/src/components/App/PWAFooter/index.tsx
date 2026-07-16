@@ -1,0 +1,36 @@
+import { CreditCard as CreditCardIcon } from '@mui/icons-material'
+import { useTranslation } from 'react-i18next'
+import CloseServer from 'components/CloseServer'
+import { StyledMenuButtonWrapper } from 'style/CustomMaterialUiStyles'
+import AddDialogButton from 'components/Add'
+import AboutDialog from 'components/About'
+import SettingsDialogButton from 'components/Settings'
+import type { OfflineAwareProps } from 'types/api'
+
+import StyledPWAFooter from './style'
+
+interface PWAFooterProps extends OfflineAwareProps {
+  setIsDonationDialogOpen: (open: boolean) => void
+}
+
+export default function PWAFooter({ setIsDonationDialogOpen, isOffline, isLoading }: PWAFooterProps) {
+  const { t } = useTranslation()
+
+  return (
+    <StyledPWAFooter>
+      <CloseServer isOffline={isOffline} isLoading={isLoading} />
+
+      <StyledMenuButtonWrapper onClick={() => setIsDonationDialogOpen(true)}>
+        <CreditCardIcon />
+
+        <div>{t('Donate')}</div>
+      </StyledMenuButtonWrapper>
+
+      <AddDialogButton isOffline={isOffline} isLoading={isLoading} />
+
+      <AboutDialog />
+
+      <SettingsDialogButton isOffline={isOffline} isLoading={isLoading} />
+    </StyledPWAFooter>
+  )
+}

@@ -28,7 +28,8 @@
       "icons/*": ["src/icons/*"],
       "locales/*": ["src/locales/*"],
       "i18n": ["src/i18n"],
-      "torrentStates": ["src/torrentStates"]
+      "torrentStates": ["src/torrentStates"],
+      "types/*": ["src/types/*"]
     }
   },
   "include": ["src", "vite.config.ts"]
