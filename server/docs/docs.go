@@ -1553,10 +1553,11 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "enableBonjour": {
+                    "description": "Bonjour/mDNS LAN discovery (_torrserver, _http, _https)",
                     "type": "boolean"
                 },
                 "enableDLNA": {
-                    "description": "DLNA / Bonjour",
+                    "description": "DLNA",
                     "type": "boolean"
                 },
                 "enableDebug": {
@@ -1584,6 +1585,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "friendlyName": {
+                    "description": "Shared name for DLNA and Bonjour",
                     "type": "string"
                 },
                 "lpdipv6": {
