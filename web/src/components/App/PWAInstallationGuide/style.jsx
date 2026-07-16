@@ -12,16 +12,18 @@ export const StyledWrapper = styled.div`
     transition: all 0.3s;
     color: #000;
 
-    ${isOpen
-      ? css`
-          opacity: 1;
-          transform: translate(-50%, 0);
-        `
-      : css`
-          transform: translate(-50%, 150%);
-          opacity: 0;
-          pointer-events: none;
-        `}
+    ${
+      isOpen
+        ? css`
+            opacity: 1;
+            transform: translate(-50%, 0);
+          `
+        : css`
+            transform: translate(-50%, 150%);
+            opacity: 0;
+            pointer-events: none;
+          `
+    }
 
     > :not(:last-child) {
       border-bottom: 1px solid #dadadc;

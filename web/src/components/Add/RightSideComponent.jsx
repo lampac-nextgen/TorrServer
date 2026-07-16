@@ -10,8 +10,8 @@ import {
   Select,
   TextField,
   useTheme,
-} from '@material-ui/core'
-import { HighlightOff as HighlightOffIcon } from '@material-ui/icons'
+} from '@mui/material'
+import { HighlightOff as HighlightOffIcon } from '@mui/icons-material'
 import { TORRENT_CATEGORIES } from 'components/categories'
 
 import {
@@ -253,8 +253,8 @@ export default function RightSideComponent({
           !torrentSource
             ? t('AddDialog.AddTorrentSourceNotification')
             : !isTorrentSourceCorrect
-            ? t('AddDialog.WrongTorrentSource')
-            : isHashAlreadyExists && t('AddDialog.HashExists')
+              ? t('AddDialog.WrongTorrentSource')
+              : isHashAlreadyExists && t('AddDialog.HashExists')
         }
         isHidden={isEditMode || (isTorrentSourceCorrect && !isHashAlreadyExists)}
       />

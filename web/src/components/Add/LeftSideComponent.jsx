@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useDropzone } from 'react-dropzone'
 import { AddItemIcon } from 'icons'
-import TextField from '@material-ui/core/TextField'
+import TextField from '@mui/material/TextField'
 import { useState } from 'react'
 
 import { IconWrapper, LeftSide, LeftSideBottomSectionNoFile, LeftSideTopSection } from './style'

@@ -12,7 +12,7 @@ export const clearTMDBCache = () => {
 }
 
 const defaultTMDBSettings = () => ({
-  APIKey: process.env.REACT_APP_TMDB_API_KEY || '',
+  APIKey: import.meta.env.VITE_TMDB_API_KEY || '',
   APIURL: 'https://api.themoviedb.org/3',
   ImageURL: 'https://image.tmdb.org',
   ImageURLRu: 'https://imagetmdb.com',
@@ -22,7 +22,7 @@ const mergeTMDBSettings = data => ({
   ...defaultTMDBSettings(),
   ...data,
   // Build-time key is a fallback when server settings have no APIKey configured
-  APIKey: data?.APIKey || process.env.REACT_APP_TMDB_API_KEY || '',
+  APIKey: data?.APIKey || import.meta.env.VITE_TMDB_API_KEY || '',
 })
 
 const normalizeUrl = (url, fallback) => {

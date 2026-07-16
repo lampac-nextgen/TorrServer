@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import Button from '@material-ui/core/Button'
+import Button from '@mui/material/Button'
 import { torrentsHost } from 'utils/Hosts'
 import axios from 'axios'
 import { useTranslation } from 'react-i18next'
 import debounce from 'lodash/debounce'
 import useChangeLanguage from 'utils/useChangeLanguage'
-import { useMediaQuery } from '@material-ui/core'
-import CircularProgress from '@material-ui/core/CircularProgress'
+import { useMediaQuery } from '@mui/material'
+import CircularProgress from '@mui/material/CircularProgress'
 import usePreviousState from 'utils/usePreviousState'
-import { useQuery } from 'react-query'
+import { useQuery } from '@tanstack/react-query'
 import { getTorrents } from 'utils/Utils'
 import parseTorrent from 'parse-torrent'
 import ptt from 'parse-torrent-title'
@@ -62,7 +62,12 @@ export default function AddDialog({
 
   const ref = useOnStandaloneAppOutsideClick(handleClose)
 
-  const { data: torrents } = useQuery('torrents', getTorrents, { retry: 1, refetchInterval: 1000 })
+  const { data: torrents } = useQuery({
+    queryKey: ['torrents'],
+    queryFn: getTorrents,
+    retry: 1,
+    refetchInterval: 1000,
+  })
 
   useEffect(() => {
     parseTorrent.remote(torrentSource, (_, { infoHash } = {}) => setCurrentSourceHash(infoHash))

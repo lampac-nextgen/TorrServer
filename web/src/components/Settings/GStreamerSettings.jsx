@@ -10,10 +10,10 @@ import {
   MenuItem,
   Switch,
   TextField,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+} from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
 import { useEffect, useMemo, useState } from 'react'
-import { useQueryClient } from 'react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { gstSettingsHost } from 'utils/Hosts'
 import { GST_RUNTIME_QUERY_KEY } from 'utils/GStreamer'
 
@@ -218,8 +218,8 @@ export default function GStreamerSettings() {
       kind === 'ok'
         ? t('GStreamer.StatusWorks')
         : kind === 'warn'
-        ? t('GStreamer.StatusAvailable')
-        : t('GStreamer.StatusMissing')
+          ? t('GStreamer.StatusAvailable')
+          : t('GStreamer.StatusMissing')
 
     return (
       <GstRuntimeStatusItem key={label} ok={kind === 'ok'} warn={kind === 'warn'}>

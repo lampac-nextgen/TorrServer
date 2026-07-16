@@ -1,14 +1,13 @@
 import axios from 'axios'
-import Button from '@material-ui/core/Button'
-import Switch from '@material-ui/core/Switch'
-import { FormControlLabel, useMediaQuery, useTheme } from '@material-ui/core'
+import Button from '@mui/material/Button'
+import Switch from '@mui/material/Switch'
+import { FormControlLabel, useMediaQuery, useTheme } from '@mui/material'
 import { settingsHost, gstSettingsHost } from 'utils/Hosts'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { clearTMDBCache } from 'components/Add/helpers'
-import AppBar from '@material-ui/core/AppBar'
-import SwipeableViews from 'react-swipeable-views'
-import CircularProgress from '@material-ui/core/CircularProgress'
+import AppBar from '@mui/material/AppBar'
+import CircularProgress from '@mui/material/CircularProgress'
 import { StyledDialog } from 'style/CustomMaterialUiStyles'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 
@@ -119,7 +118,6 @@ export default function SettingsDialog({ handleClose }) {
 
   const updateSettings = newProps => setSettings({ ...settings, ...newProps })
   const handleChange = (_, newValue) => setSelectedTab(newValue)
-  const handleChangeIndex = index => setSelectedTab(index)
 
   return (
     <StyledDialog open onClose={handleClose} fullScreen={fullScreen} fullWidth maxWidth='md' ref={ref}>
@@ -186,54 +184,48 @@ export default function SettingsDialog({ handleClose }) {
       <Content isLoading={!settings}>
         {settings ? (
           <>
-            <SwipeableViews
-              axis={direction === 'rtl' ? 'x-reverse' : 'x'}
-              index={selectedTab}
-              onChangeIndex={handleChangeIndex}
-            >
-              <TabPanel value={selectedTab} index={tabMain} dir={direction}>
-                <PrimarySettingsComponent
-                  settings={settings}
-                  inputForm={inputForm}
-                  cachePercentage={cachePercentage}
-                  preloadCachePercentage={preloadCachePercentage}
-                  cacheSize={cacheSize}
-                  isProMode={isProMode}
-                  setCacheSize={setCacheSize}
-                  setCachePercentage={setCachePercentage}
-                  setPreloadCachePercentage={setPreloadCachePercentage}
-                  updateSettings={updateSettings}
-                />
-              </TabPanel>
+            <TabPanel value={selectedTab} index={tabMain} dir={direction}>
+              <PrimarySettingsComponent
+                settings={settings}
+                inputForm={inputForm}
+                cachePercentage={cachePercentage}
+                preloadCachePercentage={preloadCachePercentage}
+                cacheSize={cacheSize}
+                isProMode={isProMode}
+                setCacheSize={setCacheSize}
+                setCachePercentage={setCachePercentage}
+                setPreloadCachePercentage={setPreloadCachePercentage}
+                updateSettings={updateSettings}
+              />
+            </TabPanel>
 
-              <TabPanel value={selectedTab} index={tabAdditional} dir={direction}>
-                <SecondarySettingsComponent settings={settings} inputForm={inputForm} updateSettings={updateSettings} />
-              </TabPanel>
+            <TabPanel value={selectedTab} index={tabAdditional} dir={direction}>
+              <SecondarySettingsComponent settings={settings} inputForm={inputForm} updateSettings={updateSettings} />
+            </TabPanel>
 
-              <TabPanel value={selectedTab} index={tabSearch} dir={direction}>
-                <TorznabSettings settings={settings} inputForm={inputForm} updateSettings={updateSettings} />
-              </TabPanel>
+            <TabPanel value={selectedTab} index={tabSearch} dir={direction}>
+              <TorznabSettings settings={settings} inputForm={inputForm} updateSettings={updateSettings} />
+            </TabPanel>
 
-              <TabPanel value={selectedTab} index={tabApp} dir={direction}>
-                <TMDBSettings settings={settings} updateSettings={updateSettings} />
-                <MobileAppSettings
-                  isVlcUsed={isVlcUsed}
-                  setIsVlcUsed={setIsVlcUsed}
-                  isInfuseUsed={isInfuseUsed}
-                  setIsInfuseUsed={setIsInfuseUsed}
-                  isSenPlayerUsed={isSenPlayerUsed}
-                  setIsSenPlayerUsed={setIsSenPlayerUsed}
-                  isIinaUsed={isIinaUsed}
-                  setIsIinaUsed={setIsIinaUsed}
-                />
-              </TabPanel>
+            <TabPanel value={selectedTab} index={tabApp} dir={direction}>
+              <TMDBSettings settings={settings} updateSettings={updateSettings} />
+              <MobileAppSettings
+                isVlcUsed={isVlcUsed}
+                setIsVlcUsed={setIsVlcUsed}
+                isInfuseUsed={isInfuseUsed}
+                setIsInfuseUsed={setIsInfuseUsed}
+                isSenPlayerUsed={isSenPlayerUsed}
+                setIsSenPlayerUsed={setIsSenPlayerUsed}
+                isIinaUsed={isIinaUsed}
+                setIsIinaUsed={setIsIinaUsed}
+              />
+            </TabPanel>
 
-              {gstAvailable && (
-                <TabPanel value={selectedTab} index={tabGStreamer} dir={direction}>
-                  <GStreamerSettings />
-                </TabPanel>
-              )}
-            </SwipeableViews>
+            {gstAvailable && (
+              <TabPanel value={selectedTab} index={tabGStreamer} dir={direction}>
+                <GStreamerSettings />
+              </TabPanel>
+            )}
           </>
         ) : (
           <CircularProgress color='secondary' />

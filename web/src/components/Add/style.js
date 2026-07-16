@@ -1,4 +1,4 @@
-import { Button } from '@material-ui/core'
+import { Button } from '@mui/material'
 import styled, { css } from 'styled-components'
 
 export const Content = styled.div`
@@ -47,31 +47,35 @@ export const RightSideContainer = styled.div`
   }) => css`
     height: 530px;
 
-    ${notificationMessage &&
-    css`
-      position: relative;
-      white-space: nowrap;
+    ${
+      notificationMessage &&
+      css`
+        position: relative;
+        white-space: nowrap;
 
-      :before {
-        font-size: 20px;
-        font-weight: 300;
-        content: '${notificationMessage}';
-        display: grid;
-        place-items: center;
-        background: ${isError ? notificationErrorBGColor : notificationSuccessBGColor};
-        padding: 10px 15px;
-        position: absolute;
-        top: 52%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        border-radius: 5px;
-      }
-    `};
+        :before {
+          font-size: 20px;
+          font-weight: 300;
+          content: '${notificationMessage}';
+          display: grid;
+          place-items: center;
+          background: ${isError ? notificationErrorBGColor : notificationSuccessBGColor};
+          padding: 10px 15px;
+          position: absolute;
+          top: 52%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          border-radius: 5px;
+        }
+      `
+    };
 
-    ${isHidden &&
-    css`
-      display: none;
-    `};
+    ${
+      isHidden &&
+      css`
+        display: none;
+      `
+    };
 
     @media (max-width: 500px) {
       height: 170px;
@@ -240,24 +244,26 @@ export const Poster = styled.div`
     width: 200px;
     grid-area: poster;
 
-    ${poster
-      ? css`
-          img {
-            width: 200px;
-            object-fit: cover;
-            border-radius: 5px;
-            height: 100%;
-          }
-        `
-      : css`
-          display: grid;
-          place-items: center;
-          background: ${posterBGColor};
+    ${
+      poster
+        ? css`
+            img {
+              width: 200px;
+              object-fit: cover;
+              border-radius: 5px;
+              height: 100%;
+            }
+          `
+        : css`
+            display: grid;
+            place-items: center;
+            background: ${posterBGColor};
 
-          svg {
-            transform: scale(1.5) translateY(-3px);
-          }
-        `}
+            svg {
+              transform: scale(1.5) translateY(-3px);
+            }
+          `
+    }
   `}
 `
 
@@ -320,7 +326,9 @@ export const MultiFileRow = styled.div`
   padding: 12px 16px;
   margin: 8px 12px;
   border-radius: 5px;
-  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.12), 0px 1px 2px rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0px 1px 3px rgba(0, 0, 0, 0.12),
+    0px 1px 2px rgba(0, 0, 0, 0.08);
   display: grid;
   grid-template-columns: 80px 1fr auto;
   gap: 12px;
@@ -328,7 +336,9 @@ export const MultiFileRow = styled.div`
   transition: box-shadow 0.2s;
 
   :hover {
-    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.16), 0px 1px 4px rgba(0, 0, 0, 0.12);
+    box-shadow:
+      0px 2px 6px rgba(0, 0, 0, 0.16),
+      0px 1px 4px rgba(0, 0, 0, 0.12);
   }
 `
 

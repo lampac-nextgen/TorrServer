@@ -6,7 +6,6 @@ project_name: TorrServer
 report_sizes: false
 
 env:
-  - NODE_OPTIONS=--openssl-legacy-provider
   - CLEAN_ENV=env GOOS= GOARCH= GOARM=
   - Metadata_Description=Torrent stream server
   - Metadata_License=GPL-3.0

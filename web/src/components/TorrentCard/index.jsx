@@ -5,13 +5,13 @@ import {
   PlayArrow as PlayArrowIcon,
   Close as CloseIcon,
   Delete as DeleteIcon,
-} from '@material-ui/icons'
+} from '@mui/icons-material'
 import { getPeerString, humanizeSize, humanizeSpeed, removeRedundantCharacters } from 'utils/Utils'
 import { playlistTorrHost, streamHost, torrentsHost } from 'utils/Hosts'
 import { NoImageIcon } from 'icons'
 import DialogTorrentDetailsContent from 'components/DialogTorrentDetailsContent'
-import Dialog from '@material-ui/core/Dialog'
-import Slide from '@material-ui/core/Slide'
+import Dialog from '@mui/material/Dialog'
+import Slide from '@mui/material/Slide'
 import {
   Button,
   CircularProgress,
@@ -23,7 +23,7 @@ import {
   MenuItem,
   useMediaQuery,
   useTheme,
-} from '@material-ui/core'
+} from '@mui/material'
 import axios from 'axios'
 import ptt from 'parse-torrent-title'
 import { useTranslation } from 'react-i18next'
@@ -226,8 +226,8 @@ const Torrent = ({ torrent }) => {
   const fileList = torrentFileList?.length
     ? torrentFileList
     : resolvedFileList.length
-    ? resolvedFileList
-    : filesFromMetadata(data)
+      ? resolvedFileList
+      : filesFromMetadata(data)
   const playableVideoList = fileList.filter(({ path }) => isFilePlayable(path))
   const getVideoCaption = path => {
     // Get base name without extension

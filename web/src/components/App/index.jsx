@@ -1,6 +1,6 @@
-import CssBaseline from '@material-ui/core/CssBaseline'
+import CssBaseline from '@mui/material/CssBaseline'
 import { createContext, useEffect, useState } from 'react'
-import Typography from '@material-ui/core/Typography'
+import Typography from '@mui/material/Typography'
 import {
   Menu as MenuIcon,
   Close as CloseIcon,
@@ -10,7 +10,7 @@ import {
   Sort as SortIcon,
   SortByAlpha as SortByAlphaIcon,
   Search as SearchIcon,
-} from '@material-ui/icons'
+} from '@mui/icons-material'
 import { echoHost } from 'utils/Hosts'
 import Div100vh from 'react-div-100vh'
 import axios from 'axios'
@@ -18,9 +18,9 @@ import TorrentList from 'components/TorrentList'
 import DonateSnackbar from 'components/Donate'
 import DonateDialog from 'components/Donate/DonateDialog'
 import useChangeLanguage from 'utils/useChangeLanguage'
-import { ThemeProvider as MuiThemeProvider } from '@material-ui/core/styles'
+import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles'
 import { ThemeProvider as StyledComponentsThemeProvider } from 'styled-components'
-import { useQuery } from 'react-query'
+import { useQuery } from '@tanstack/react-query'
 import { detectApplePlatform, getTorrents, isStandaloneApp } from 'utils/Utils'
 import GlobalStyle from 'style/GlobalStyle'
 import { /* lightTheme, */ THEME_MODES, useMaterialUITheme } from 'style/materialUISetup'
@@ -49,12 +49,22 @@ export default function App() {
   const [currentLang, changeLang] = useChangeLanguage()
   const [isOffline, setIsOffline] = useState(false)
   const [globalCategoryFilter, setGlobalFilterCategory] = useState('all')
-  const { data: torrents, isLoading } = useQuery('torrents', getTorrents, {
+  const {
+    data: torrents,
+    isLoading,
+    isError,
+    isSuccess,
+  } = useQuery({
+    queryKey: ['torrents'],
+    queryFn: getTorrents,
     retry: 1,
     refetchInterval: 1000,
-    onError: () => setIsOffline(true),
-    onSuccess: () => setIsOffline(false),
   })
+
+  useEffect(() => {
+    if (isError) setIsOffline(true)
+    if (isSuccess) setIsOffline(false)
+  }, [isError, isSuccess])
   const [sortABC, setSortABC] = useState(false)
   const handleClickSortABC = () => setSortABC(true)
   const handleClickSortDate = () => setSortABC(false)
@@ -127,16 +137,16 @@ export default function App() {
                         currentLang === 'en'
                           ? changeLang('ru')
                           : currentLang === 'ru'
-                          ? changeLang('ua')
-                          : currentLang === 'ua'
-                          ? changeLang('zh')
-                          : currentLang === 'zh'
-                          ? changeLang('bg')
-                          : currentLang === 'bg'
-                          ? changeLang('fr')
-                          : currentLang === 'fr'
-                          ? changeLang('ro')
-                          : changeLang('en')
+                            ? changeLang('ua')
+                            : currentLang === 'ua'
+                              ? changeLang('zh')
+                              : currentLang === 'zh'
+                                ? changeLang('bg')
+                                : currentLang === 'bg'
+                                  ? changeLang('fr')
+                                  : currentLang === 'fr'
+                                    ? changeLang('ro')
+                                    : changeLang('en')
                       }
                     >
                       {currentLang.toUpperCase()}

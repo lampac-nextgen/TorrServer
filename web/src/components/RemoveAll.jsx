@@ -1,8 +1,8 @@
-import { Button, Dialog, DialogActions, DialogTitle } from '@material-ui/core'
-import ListItem from '@material-ui/core/ListItem'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import ListItemText from '@material-ui/core/ListItemText'
-import DeleteIcon from '@material-ui/icons/Delete'
+import { Button, Dialog, DialogActions, DialogTitle } from '@mui/material'
+import ListItemButton from '@mui/material/ListItemButton'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import ListItemText from '@mui/material/ListItemText'
+import DeleteIcon from '@mui/icons-material/Delete'
 import { useState } from 'react'
 import { torrentsHost } from 'utils/Hosts'
 import { useTranslation } from 'react-i18next'
@@ -28,13 +28,13 @@ export default function RemoveAll({ isOffline, isLoading }) {
 
   return (
     <>
-      <ListItem disabled={isOffline || isLoading} button key={t('RemoveAll')} onClick={openDialog}>
+      <ListItemButton disabled={isOffline || isLoading} key={t('RemoveAll')} onClick={openDialog}>
         <ListItemIcon>
           <DeleteIcon />
         </ListItemIcon>
 
         <ListItemText primary={t('RemoveAll')} />
-      </ListItem>
+      </ListItemButton>
 
       <Dialog open={open} onClose={closeDialog}>
         <DialogTitle>{t('DeleteTorrents?')}</DialogTitle>

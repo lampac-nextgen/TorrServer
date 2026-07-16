@@ -92,8 +92,7 @@ jobs:
     name: Build (linux amd64)
     runs-on: ubuntu-22.04
     env:
-      NODE_OPTIONS: --openssl-legacy-provider
-      REACT_APP_TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      VITE_TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -102,6 +101,13 @@ jobs:
 
       - name: Load toolchain versions
         run: grep -v '^#' .github/versions.env >> "$GITHUB_ENV"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: yarn
+          cache-dependency-path: web/yarn.lock
 
       - name: Set up Go
         uses: actions/setup-go@v6

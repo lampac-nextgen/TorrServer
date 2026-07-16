@@ -30,36 +30,40 @@ export const Poster = styled.div`
     overflow: hidden;
     align-self: center;
 
-    ${poster
-      ? css`
-          img {
-            border-radius: 5px;
-            height: 100%;
-          }
-        `
-      : css`
-          width: 300px;
-          display: grid;
-          place-items: center;
-          background: ${posterBGColor};
+    ${
+      poster
+        ? css`
+            img {
+              border-radius: 5px;
+              height: 100%;
+            }
+          `
+        : css`
+            width: 300px;
+            display: grid;
+            place-items: center;
+            background: ${posterBGColor};
 
-          svg {
-            transform: scale(2.5) translateY(-3px);
-          }
-        `}
+            svg {
+              transform: scale(2.5) translateY(-3px);
+            }
+          `
+    }
 
     @media (max-width: 1280px) {
       align-self: start;
     }
 
     @media (max-width: 840px) {
-      ${poster
-        ? css`
-            height: 200px;
-          `
-        : css`
-            display: none;
-          `}
+      ${
+        poster
+          ? css`
+              height: 200px;
+            `
+          : css`
+              display: none;
+            `
+      }
     }
   `}
 `

@@ -9,6 +9,7 @@ By default, builds run **goreleaser on the host**. Install:
 | [goreleaser](https://goreleaser.com/getting-started/install/oss/) | Build & release automation | `go install github.com/goreleaser/goreleaser/v2@latest` |
 | [Go](https://go.dev/dl/) | Server build (`go$(GO_VERSION)` from `.github/versions.env`) | See link |
 | [yarn](https://yarnpkg.com/getting-started/install) | Web asset bundling (`make webgen`) | See link |
+| [Node.js 22+](https://nodejs.org/) | Vite web build (see `web/.nvmrc`) | See link |
 | [swag](https://github.com/swaggo/swag) | Swagger docs (before hooks) | `go install github.com/swaggo/swag/cmd/swag@latest` |
 
 | [upx](https://upx.github.io) | Optional binary compression | `brew install upx` / `apt install upx` |

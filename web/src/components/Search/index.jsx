@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import SearchIcon from '@material-ui/icons/Search'
-import ListItemText from '@material-ui/core/ListItemText'
-import ListItem from '@material-ui/core/ListItem'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import SearchIcon from '@mui/icons-material/Search'
+import ListItemText from '@mui/material/ListItemText'
+import ListItemButton from '@mui/material/ListItemButton'
 
 import SearchDialog from './SearchDialog'
 
@@ -15,12 +15,12 @@ export default function SearchDialogButton({ isOffline, isLoading }) {
 
   return (
     <>
-      <ListItem button onClick={handleClickOpen} disabled={isOffline || isLoading}>
+      <ListItemButton onClick={handleClickOpen} disabled={isOffline || isLoading}>
         <ListItemIcon>
           <SearchIcon />
         </ListItemIcon>
         <ListItemText primary={t('Search')} />
-      </ListItem>
+      </ListItemButton>
 
       {isDialogOpen && <SearchDialog handleClose={handleClose} />}
     </>

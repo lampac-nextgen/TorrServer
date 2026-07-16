@@ -1,4 +1,4 @@
-import { useQuery } from 'react-query'
+import { useQuery } from '@tanstack/react-query'
 
 import { getTorrServerHost, gstSettingsHost } from './Hosts'
 
@@ -13,9 +13,11 @@ const loadGStreamerRuntime = async () => {
 }
 
 export const useGStreamerRuntime = () => {
-  const { data } = useQuery(GST_RUNTIME_QUERY_KEY, loadGStreamerRuntime, {
+  const { data } = useQuery({
+    queryKey: [GST_RUNTIME_QUERY_KEY],
+    queryFn: loadGStreamerRuntime,
     staleTime: 60 * 1000,
-    cacheTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
     retry: 1,
     refetchOnWindowFocus: false,
   })

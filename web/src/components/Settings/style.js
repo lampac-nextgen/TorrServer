@@ -1,6 +1,6 @@
 import styled, { css } from 'styled-components'
-import Tabs from '@material-ui/core/Tabs'
-import Tab from '@material-ui/core/Tab'
+import Tabs from '@mui/material/Tabs'
+import Tab from '@mui/material/Tab'
 import { mainColors } from 'style/colors'
 import { StyledHeader } from 'style/CustomMaterialUiStyles'
 
@@ -105,12 +105,14 @@ export const Content = styled.div`
     overflow: auto;
     flex: 1;
 
-    ${isLoading &&
-    css`
-      min-height: 500px;
-      display: grid;
-      place-items: center;
-    `}
+    ${
+      isLoading &&
+      css`
+        min-height: 500px;
+        display: grid;
+        place-items: center;
+      `
+    }
   `}
 `
 
@@ -271,29 +273,33 @@ export const StorageButton = styled.div`
     cursor: default;
     text-align: center;
 
-    ${!selected &&
-    css`
-      cursor: pointer;
+    ${
+      !selected &&
+      css`
+        cursor: pointer;
 
-      :hover {
-        filter: brightness(0.8);
-      }
-    `}
+        :hover {
+          filter: brightness(0.8);
+        }
+      `
+    }
 
-    ${small
-      ? css`
-          display: grid;
-          grid-template-columns: max-content 1fr;
-          gap: 20px;
-          align-items: center;
-          justify-items: start;
-          margin-bottom: 20px;
-        `
-      : css`
-          display: grid;
-          place-items: center;
-          gap: 10px;
-        `}
+    ${
+      small
+        ? css`
+            display: grid;
+            grid-template-columns: max-content 1fr;
+            gap: 20px;
+            align-items: center;
+            justify-items: start;
+            margin-bottom: 20px;
+          `
+        : css`
+            display: grid;
+            place-items: center;
+            gap: 10px;
+          `
+    }
   `}
 `
 
@@ -360,13 +366,15 @@ export const SettingsStatusMessage = styled.div`
     justify-content: space-between;
     align-items: center;
     color: #fff;
-    background-color: ${severity === 'error'
-      ? '#c82e3f'
-      : severity === 'success'
-      ? '#00a572'
-      : severity === 'info'
-      ? '#545a5e'
-      : '#cda184'};
+    background-color: ${
+      severity === 'error'
+        ? '#c82e3f'
+        : severity === 'success'
+          ? '#00a572'
+          : severity === 'info'
+            ? '#545a5e'
+            : '#cda184'
+    };
 
     button {
       color: #fff;

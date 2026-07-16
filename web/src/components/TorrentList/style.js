@@ -12,16 +12,18 @@ export default styled.div`
     padding: 20px 40px;
     border-radius: 5px;
 
-    ${isButton &&
-    css`
-      background: ${notificationSuccessBGColor};
-      transition: 0.2s;
-      cursor: pointer;
+    ${
+      isButton &&
+      css`
+        background: ${notificationSuccessBGColor};
+        transition: 0.2s;
+        cursor: pointer;
 
-      :hover {
-        background: ${languageSwitchBGColor};
-      }
-    `}
+        :hover {
+          background: ${languageSwitchBGColor};
+        }
+      `
+    }
 
     lord-icon {
       width: 200px;

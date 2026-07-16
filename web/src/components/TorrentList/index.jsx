@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import TorrentCard from 'components/TorrentCard'
-import CircularProgress from '@material-ui/core/CircularProgress'
+import CircularProgress from '@mui/material/CircularProgress'
 import { TorrentListWrapper, CenteredGrid } from 'components/App/style'
 
 import NoServerConnection from './NoServerConnection'

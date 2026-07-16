@@ -11,11 +11,13 @@ export const Content = styled.div`
     overflow: auto;
     flex: 1;
 
-    ${isLoading &&
-    css`
-      min-height: 500px;
-      display: grid;
-      place-items: center;
-    `}
+    ${
+      isLoading &&
+      css`
+        min-height: 500px;
+        display: grid;
+        place-items: center;
+      `
+    }
   `}
 `

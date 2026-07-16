@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import LibraryAddIcon from '@material-ui/icons/LibraryAdd'
-import ListItemText from '@material-ui/core/ListItemText'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import LibraryAddIcon from '@mui/icons-material/LibraryAdd'
+import ListItemText from '@mui/material/ListItemText'
 import { useTranslation } from 'react-i18next'
 import { StyledMenuButtonWrapper } from 'style/CustomMaterialUiStyles'
 import { isStandaloneApp } from 'utils/Utils'
@@ -17,7 +17,7 @@ export default function AddDialogButton({ isOffline, isLoading }) {
 
   return (
     <div>
-      <StyledMenuButtonWrapper disabled={isOffline || isLoading} button onClick={handleClickOpen}>
+      <StyledMenuButtonWrapper disabled={isOffline || isLoading} onClick={handleClickOpen}>
         {isStandaloneApp ? (
           <StyledPWAAddButton />
         ) : (

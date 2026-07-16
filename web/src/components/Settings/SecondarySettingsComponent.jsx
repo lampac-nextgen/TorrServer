@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import TextField from '@material-ui/core/TextField'
+import TextField from '@mui/material/TextField'
 import {
   Box,
   Button,
@@ -12,8 +12,8 @@ import {
   MenuItem,
   Select,
   Switch,
-} from '@material-ui/core'
-import { styled } from '@material-ui/core/styles'
+} from '@mui/material'
+import { styled } from '@mui/material/styles'
 import { useEffect, useMemo, useState } from 'react'
 
 import { SecondarySettingsContent, SettingSectionLabel } from './style'
@@ -98,8 +98,8 @@ export default function SecondarySettingsComponent({ settings, inputForm }) {
           const prefs = await response.json()
           setStorageSettings(prefs)
         }
-      } catch (error) {
-        // eslint-disable-line no-console
+      } catch {
+        // ignore storage settings load failures
       }
     }
     loadStorageSettings()

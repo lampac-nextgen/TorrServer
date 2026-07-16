@@ -367,7 +367,7 @@ goreleaser build --snapshot --clean --single-target --id binary
 GOOS=linux GOARCH=amd64 goreleaser build --snapshot --clean --single-target --id binary
 ```
 
-Web UI build inside `gen_web.go` needs Node 16–18, or Node 17+ with OpenSSL legacy (`NODE_OPTIONS=--openssl-legacy-provider`, set in Makefile / GoReleaser).
+Web UI build inside `gen_web.go` needs **Node.js 22+** (see `web/.nvmrc`).
 
 `binary` builds use **Go 1.26.4**; `android` uses **Go 1.25.7**.
 
@@ -381,9 +381,9 @@ See [docs/BUILD.md](docs/BUILD.md) for cross-compilation, Docker builder mode (`
 
 #### Web
 
-- Install **npm** and **yarn**
+- Install **Node.js 22+** and **yarn**
 - Go to the web directory
-- Run `make web-build` or `NODE_OPTIONS=--openssl-legacy-provider yarn build`
+- Run `make web-build` or `yarn build`
 
 #### Android
 

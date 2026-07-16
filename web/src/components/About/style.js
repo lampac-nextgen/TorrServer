@@ -104,19 +104,21 @@ export const LinkWrapper = styled.a`
       transition: 0.2s;
     }
 
-    ${isLink
-      ? css`
-          :hover {
-            filter: brightness(1.1);
+    ${
+      isLink
+        ? css`
+            :hover {
+              filter: brightness(1.1);
 
-            > * {
-              transform: translateY(0px);
+              > * {
+                transform: translateY(0px);
+              }
             }
-          }
-        `
-      : css`
-          cursor: default;
-        `}
+          `
+        : css`
+            cursor: default;
+          `
+    }
   `}
 `
 
