@@ -32,18 +32,11 @@ export const lightTheme = createTheme({
   },
 })
 
-export const useMaterialUITheme = (): [
-  boolean,
-  ThemePreference,
-  (mode: ThemePreference) => void,
-  Theme,
-] => {
+export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePreference) => void, Theme] => {
   const savedThemeMode = localStorage.getItem('themeMode') as ThemePreference | null
   const isSystemModeDark = useMediaQuery('(prefers-color-scheme: dark)')
   const [isDarkMode, setIsDarkMode] = useState(savedThemeMode === 'dark' || isSystemModeDark)
-  const [currentThemeMode, setCurrentThemeMode] = useState<ThemePreference>(
-    savedThemeMode || THEME_MODES.AUTO,
-  )
+  const [currentThemeMode, setCurrentThemeMode] = useState<ThemePreference>(savedThemeMode || THEME_MODES.AUTO)
 
   const updateThemeMode = (mode: ThemePreference) => {
     setCurrentThemeMode(mode)

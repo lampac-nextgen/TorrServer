@@ -94,12 +94,10 @@ export const detectApplePlatform = (): { isMac: boolean; isIOS: boolean } => {
   }
 
   const userAgent = navigator.userAgent || ''
-  const platform =
-    (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform || ''
+  const platform = (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform || ''
 
   const isMac = userAgent.includes('Macintosh') || (platform && platform.toLowerCase().includes('mac'))
-  const isIOS =
-    /iPad|iPhone|iPod/.test(userAgent) || (userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1)
+  const isIOS = /iPad|iPhone|iPod/.test(userAgent) || (userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1)
 
   return { isMac: Boolean(isMac), isIOS }
 }
