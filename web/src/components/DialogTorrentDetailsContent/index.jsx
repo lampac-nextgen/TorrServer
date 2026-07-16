@@ -167,16 +167,16 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }) {
                   getParsedTitle().length > 90 ? (
                     <>
                       <SectionTitle>{ptt.parse(name).title}</SectionTitle>
-                      <SectionSubName mb={20}>{getParsedTitle()}</SectionSubName>
+                      <SectionSubName $mb={20}>{getParsedTitle()}</SectionSubName>
                     </>
                   ) : (
                     <>
                       <SectionTitle>{getParsedTitle()}</SectionTitle>
-                      <SectionSubName mb={20}>{ptt.parse(name || '')?.title}</SectionSubName>
+                      <SectionSubName $mb={20}>{ptt.parse(name || '')?.title}</SectionSubName>
                     </>
                   )
                 ) : (
-                  <SectionTitle mb={20}>{getParsedTitle()}</SectionTitle>
+                  <SectionTitle $mb={20}>{getParsedTitle()}</SectionTitle>
                 )}
 
                 <WidgetWrapper>
@@ -203,7 +203,7 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }) {
 
             <CacheSection>
               <SectionHeader>
-                <SectionTitle mb={20}>{t('Buffer')}</SectionTitle>
+                <SectionTitle $mb={20}>{t('Buffer')}</SectionTitle>
                 {bufferSize <= 33554432 && <SectionSubName>{t('BufferNote')}</SectionSubName>}
                 <LoadingProgress
                   value={Filled}
@@ -226,11 +226,11 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }) {
             </CacheSection>
 
             <TorrentFilesSection>
-              <SectionTitle mb={20}>{t('TorrentContent')}</SectionTitle>
+              <SectionTitle $mb={20}>{t('TorrentContent')}</SectionTitle>
 
               {seasonAmount?.length > 1 && (
                 <>
-                  <SectionSubName mb={7}>{t('SelectSeason')}</SectionSubName>
+                  <SectionSubName $mb={7}>{t('SelectSeason')}</SectionSubName>
                   <ButtonGroup style={{ marginBottom: '30px' }} color='secondary'>
                     {seasonAmount.map(season => (
                       <Button
@@ -243,7 +243,7 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }) {
                     ))}
                   </ButtonGroup>
 
-                  <SectionTitle mb={20}>
+                  <SectionTitle $mb={20}>
                     {t('Season')} {selectedSeason}
                   </SectionTitle>
                 </>

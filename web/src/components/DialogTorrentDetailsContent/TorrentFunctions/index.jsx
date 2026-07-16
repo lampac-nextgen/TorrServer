@@ -28,7 +28,7 @@ const TorrentFunctions = memo(
         {!isOnlyOnePlayableFile && !!viewedFileList?.length && (
           <>
             <SmallLabel>{t('DownloadPlaylist')}</SmallLabel>
-            <SectionSubName mb={10}>
+            <SectionSubName $mb={10}>
               {t('LatestFilePlayed')}{' '}
               <strong>
                 {latestViewedFileData?.title}.

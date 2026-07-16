@@ -43,12 +43,63 @@ export interface TorrentStat {
   [key: string]: unknown
 }
 
+export interface TorznabUrl {
+  Host: string
+  Key: string
+  Name?: string
+}
+
+export interface TMDBSettingsConfig {
+  APIKey?: string
+  APIURL?: string
+  ImageURL?: string
+  ImageURLRu?: string
+  [key: string]: unknown
+}
+
 export interface BTSets {
   CacheSize?: number
   ReaderReadAHead?: number
   PreloadCache?: number
+  UseDisk?: boolean
+  TorrentsSavePath?: string
+  RemoveCacheOnDrop?: boolean
+  EnableRutorSearch?: boolean
+  EnableTorznabSearch?: boolean
+  TorznabUrls?: TorznabUrl[]
+  TMDBSettings?: TMDBSettingsConfig
+  RetrackersMode?: number | string
+  TorrentDisconnectTimeout?: number
+  EnableDebug?: boolean
+  EnableDLNA?: boolean
+  EnableBonjour?: boolean
+  EnableIPv6?: boolean
+  FriendlyName?: string
+  ForceEncrypt?: boolean
+  DisableTCP?: boolean
+  DisableUTP?: boolean
+  DisableUPNP?: boolean
+  DisableDHT?: boolean
+  DisablePEX?: boolean
+  DisableUpload?: boolean
+  EnableLPD?: boolean
+  LPDIPv6?: boolean
+  DownloadRateLimit?: number
+  UploadRateLimit?: number
+  ConnectionsLimit?: number
+  PeersListenPort?: number
+  ResponsiveMode?: boolean
+  SslPort?: number
+  SslCert?: string
+  SslKey?: string
+  ShowFSActiveTorr?: boolean
   [key: string]: unknown
 }
+
+export type SettingsUpdater = (partial: Partial<BTSets>) => void
+export type SettingsInputHandler = (event: {
+  target: { type?: string; value?: unknown; checked?: boolean; id?: string; name?: string }
+}) => void
 
 export interface GStreamerRuntime {
   built_in: boolean
