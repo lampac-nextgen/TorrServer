@@ -69,12 +69,17 @@ export const TableStyle = styled.table`
 
     .button-cell {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 8px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
 
-      .MuiButton-root,
-      a {
+      button,
+      a,
+      .MuiButton-root {
         width: 100%;
+      }
+
+      .MuiButton-outlined {
+        border-color: rgba(0, 152, 121, 0.45);
       }
     }
 

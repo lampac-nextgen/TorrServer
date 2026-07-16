@@ -2,22 +2,30 @@ import { rgba } from 'polished'
 import styled, { css } from 'styled-components'
 
 export const DialogContentGrid = styled.div`
-  display: grid;
-  grid-template-columns: minmax(0, 70%) minmax(0, 1fr);
-  grid-template-rows: repeat(2, min-content);
-  grid-template-areas:
-    'main cache'
-    'file-list file-list';
-  min-width: 0;
-
-  @media (max-width: 1200px) {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: repeat(3, min-content);
+  ${({
+    theme: {
+      dialogTorrentDetailsContent: { torrentFilesSectionBGColor },
+    },
+  }) => css`
+    display: grid;
+    grid-template-columns: minmax(0, 70%) minmax(0, 1fr);
+    grid-template-rows: repeat(2, min-content);
     grid-template-areas:
-      'main'
-      'cache'
-      'file-list';
-  }
+      'main cache'
+      'file-list file-list';
+    min-width: 0;
+    min-height: 100%;
+    background: ${torrentFilesSectionBGColor};
+
+    @media (max-width: 1200px) {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: repeat(3, min-content);
+      grid-template-areas:
+        'main'
+        'cache'
+        'file-list';
+    }
+  `}
 `
 export const Poster = styled.div<{ $poster?: boolean }>`
   ${({
@@ -104,6 +112,7 @@ export const CacheSection = styled.section`
     },
   }) => css`
     grid-area: cache;
+    align-self: start;
     padding: 40px;
     display: grid;
     align-content: start;
@@ -131,6 +140,7 @@ export const TorrentFilesSection = styled.section`
     padding: 40px;
     box-shadow: inset 3px 25px 8px -25px rgba(0, 0, 0, 0.5);
     background: ${torrentFilesSectionBGColor};
+    min-height: 100%;
 
     @media (max-width: 800px) {
       padding: 20px;
@@ -254,10 +264,10 @@ export const WidgetFieldTitle = styled.div`
   `}
 `
 
-export const WidgetFieldIcon = styled.div<{ $bgColor?: string }>`
-  ${({ $bgColor }) => css`
+export const WidgetFieldIcon = styled.div<{ $bgColor?: string; $fontColor?: string }>`
+  ${({ $bgColor, $fontColor }) => css`
     grid-area: icon;
-    color: ${rgba('#fff', 0.8)};
+    color: ${$fontColor || rgba('#fff', 0.8)};
     background: ${$bgColor};
     border-radius: 5px 0 0 5px;
 
@@ -268,9 +278,10 @@ export const WidgetFieldIcon = styled.div<{ $bgColor?: string }>`
     }
   `}
 `
-export const WidgetFieldValue = styled.div<{ $bgColor?: string }>`
+export const WidgetFieldValue = styled.div<{ $bgColor?: string; $fontColor?: string }>`
   ${({
     $bgColor,
+    $fontColor,
     theme: {
       dialogTorrentDetailsContent: { widgetFontColor },
     },
@@ -278,7 +289,7 @@ export const WidgetFieldValue = styled.div<{ $bgColor?: string }>`
     grid-area: value;
     font-size: 24px;
     padding: 0 20px 0 0;
-    color: ${widgetFontColor};
+    color: ${$fontColor || widgetFontColor};
     background: ${$bgColor};
     border-radius: 0 5px 5px 0;
     white-space: nowrap;
@@ -299,15 +310,27 @@ export const LoadingProgress = styled.div.attrs<{
     $value = 0,
     $fullAmount = 1,
     theme: {
-      dialogTorrentDetailsContent: { gradientStartColor, gradientEndColor, bufferTrailStartColor, bufferTrailEndColor },
+      dialogTorrentDetailsContent: {
+        gradientStartColor,
+        gradientEndColor,
+        bufferTrailStartColor,
+        bufferTrailEndColor,
+        bufferEmptyTrackColor,
+        bufferTrackBorderColor,
+      },
     },
   }) => {
-    const percentage = Math.min(100, (($value as number) * 100) / ($fullAmount as number))
+    const amount = ($fullAmount as number) || 1
+    const percentage = Math.min(100, Math.max(0, (($value as number) * 100) / amount))
+    const isEmpty = percentage < 0.5
 
     return {
       // this block is here according to styled-components recomendation about fast changable components
       style: {
-        background: `linear-gradient(to right, ${gradientStartColor} 0%, ${gradientEndColor} ${percentage}%, ${bufferTrailStartColor} ${percentage}%, ${bufferTrailEndColor} 100%)`,
+        background: isEmpty
+          ? bufferEmptyTrackColor
+          : `linear-gradient(to right, ${gradientStartColor} 0%, ${gradientEndColor} ${percentage}%, ${bufferTrailStartColor} ${percentage}%, ${bufferTrailEndColor} 100%)`,
+        borderColor: bufferTrackBorderColor,
       },
     }
   },
@@ -336,4 +359,16 @@ export const Divider = styled.div`
   height: 1px;
   background-color: rgba(0, 0, 0, 0.12);
   margin: 30px 0;
+`
+
+export const DetailsScrollBody = styled.div`
+  ${({
+    theme: {
+      dialogTorrentDetailsContent: { torrentFilesSectionBGColor },
+    },
+  }) => css`
+    overflow: auto;
+    min-height: 100%;
+    background: ${torrentFilesSectionBGColor};
+  `}
 `

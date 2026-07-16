@@ -8,17 +8,27 @@ interface StatisticsFieldProps {
   value: ReactNode
   iconBg: string
   valueBg: string
+  fontColor?: string
 }
 
-export default function StatisticsField({ icon: Icon, title, value, iconBg, valueBg }: StatisticsFieldProps) {
+export default function StatisticsField({
+  icon: Icon,
+  title,
+  value,
+  iconBg,
+  valueBg,
+  fontColor,
+}: StatisticsFieldProps) {
   return (
     <WidgetFieldWrapper>
       <WidgetFieldTitle>{title}</WidgetFieldTitle>
-      <WidgetFieldIcon $bgColor={iconBg}>
+      <WidgetFieldIcon $bgColor={iconBg} $fontColor={fontColor}>
         <Icon />
       </WidgetFieldIcon>
 
-      <WidgetFieldValue $bgColor={valueBg}>{value}</WidgetFieldValue>
+      <WidgetFieldValue $bgColor={valueBg} $fontColor={fontColor}>
+        {value}
+      </WidgetFieldValue>
     </WidgetFieldWrapper>
   )
 }

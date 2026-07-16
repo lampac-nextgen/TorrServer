@@ -8,7 +8,7 @@ const colors = {
   light: {
     downloadSpeed: { iconBGColor: '#118f00', valueBGColor: '#13a300' },
     uploadSpeed: { iconBGColor: '#0146ad', valueBGColor: '#0058db' },
-    peers: { iconBGColor: '#cdc118', valueBGColor: '#d8cb18' },
+    peers: { iconBGColor: '#cdc118', valueBGColor: '#d8cb18', fontColor: '#1a1a1a' },
     piecesCount: { iconBGColor: '#b6c95e', valueBGColor: '#c0d076' },
     piecesLength: { iconBGColor: '#0982c8', valueBGColor: '#098cd7' },
     status: { iconBGColor: '#aea25b', valueBGColor: '#b4aa6e' },
@@ -18,7 +18,7 @@ const colors = {
   dark: {
     downloadSpeed: { iconBGColor: '#0c6600', valueBGColor: '#0d7000' },
     uploadSpeed: { iconBGColor: '#003f9e', valueBGColor: '#0047b3' },
-    peers: { iconBGColor: '#a69c11', valueBGColor: '#b4a913' },
+    peers: { iconBGColor: '#a69c11', valueBGColor: '#b4a913', fontColor: '#1a1a1a' },
     piecesCount: { iconBGColor: '#8da136', valueBGColor: '#99ae3d' },
     piecesLength: { iconBGColor: '#07659c', valueBGColor: '#0872af' },
     status: { iconBGColor: '#938948', valueBGColor: '#9f9450' },
@@ -29,7 +29,13 @@ const colors = {
 
 export type WidgetColorName = keyof typeof colors.light
 
-export default function useGetWidgetColors(widgetName: WidgetColorName) {
+export type WidgetColors = {
+  iconBGColor: string
+  valueBGColor: string
+  fontColor?: string
+}
+
+export default function useGetWidgetColors(widgetName: WidgetColorName): WidgetColors {
   const { isDarkMode } = useContext(DarkModeContext)
   return colors[isDarkMode ? DARK : LIGHT][widgetName]
 }

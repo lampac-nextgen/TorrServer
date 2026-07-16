@@ -57,7 +57,7 @@ interface PeersWidgetProps {
 
 export const PeersWidget = ({ data }: PeersWidgetProps) => {
   const { t } = useTranslation()
-  const { iconBGColor, valueBGColor } = useGetWidgetColors('peers')
+  const { iconBGColor, valueBGColor, fontColor } = useGetWidgetColors('peers')
 
   return (
     <StatisticsField
@@ -65,6 +65,7 @@ export const PeersWidget = ({ data }: PeersWidgetProps) => {
       value={getPeerString(data) || '0 / 0 · 0'}
       iconBg={iconBGColor}
       valueBg={valueBGColor}
+      fontColor={fontColor}
       icon={SwapVerticalCircleIcon}
     />
   )

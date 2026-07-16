@@ -25,8 +25,10 @@ export const themeColors = {
       titleFontColor: '#000',
       subNameFontColor: '#7c7b7c',
       torrentFilesSectionBGColor: '#f1eff3',
-      bufferTrailStartColor: '#6bb892',
-      bufferTrailEndColor: '#4db380',
+      bufferTrailStartColor: '#c5e6d4',
+      bufferTrailEndColor: '#b5dec9',
+      bufferEmptyTrackColor: '#dff0e8',
+      bufferTrackBorderColor: '#4db380',
     },
     detailedView: {
       gradientStartColor: '#e4f6ed',
@@ -97,6 +99,8 @@ export const themeColors = {
       torrentFilesSectionBGColor: rgba('#545a5e', 0.9),
       bufferTrailStartColor: '#545a5e',
       bufferTrailEndColor: '#3c4244',
+      bufferEmptyTrackColor: '#4a5054',
+      bufferTrackBorderColor: '#949ca0',
     },
     detailedView: {
       gradientStartColor: '#656f76',
