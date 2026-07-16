@@ -4,18 +4,25 @@ import { useTranslation } from 'react-i18next'
 import isEqual from 'lodash/isEqual'
 import { DarkModeContext } from 'components/App'
 import { THEME_MODES } from 'style/materialUISetup'
+import type { TorrentCache as TorrentCacheData } from 'types/api'
 
 import { useCreateCacheMap } from '../customHooks'
 import getShortCacheMap from './getShortCacheMap'
 import { SnakeWrapper, ScrollNotification } from './style'
 import { createGradient, snakeSettings, resolvePieceMetrics } from './snakeSettings'
 
-const TorrentCache = ({ cache, isMini, isSnakeDebugMode }) => {
+export interface TorrentCacheProps {
+  cache: TorrentCacheData
+  isMini?: boolean
+  isSnakeDebugMode?: boolean
+}
+
+const TorrentCache = ({ cache, isMini, isSnakeDebugMode }: TorrentCacheProps) => {
   const { t } = useTranslation()
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
   const { width } = dimensions
-  const canvasRef = useRef(null)
-  const ctxRef = useRef(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null)
   const cacheMap = useCreateCacheMap(cache)
   const settingsTarget = isMini ? 'mini' : 'default'
   const { isDarkMode } = useContext(DarkModeContext)
@@ -26,7 +33,7 @@ const TorrentCache = ({ cache, isMini, isSnakeDebugMode }) => {
     baseSettings
 
   const { pieceSize, gap } = useMemo(
-    () => resolvePieceMetrics(baseSettings, width, isMini),
+    () => resolvePieceMetrics(baseSettings, width, !!isMini),
     [baseSettings, width, isMini],
   )
 
@@ -135,7 +142,7 @@ const TorrentCache = ({ cache, isMini, isSnakeDebugMode }) => {
             {piecesInOneRow > 0 && height > 0 ? <canvas ref={canvasRef} /> : null}
           </SnakeWrapper>
 
-          {isMini && height >= cacheMaxHeight && (
+          {isMini && cacheMaxHeight != null && height >= cacheMaxHeight && (
             <ScrollNotification $themeType={theme}>{t('ScrollDown')}</ScrollNotification>
           )}
         </div>

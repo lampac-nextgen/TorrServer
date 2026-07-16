@@ -292,24 +292,17 @@ export const WidgetFieldValue = styled.div<{ $bgColor?: string }>`
 
 export const LoadingProgress = styled.div.attrs<{
   $value?: number
-  value?: number
   $fullAmount?: number
-  fullAmount?: number
   $label?: string
-  label?: string
 }>(
   ({
-    $value,
-    value,
-    $fullAmount,
-    fullAmount,
+    $value = 0,
+    $fullAmount = 1,
     theme: {
       dialogTorrentDetailsContent: { gradientStartColor, gradientEndColor },
     },
   }) => {
-    const amount = ($value ?? value ?? 0) as number
-    const total = ($fullAmount ?? fullAmount ?? 1) as number
-    const percentage = Math.min(100, (amount * 100) / total)
+    const percentage = Math.min(100, (($value as number) * 100) / ($fullAmount as number))
 
     return {
       // this block is here according to styled-components recomendation about fast changable components
@@ -319,14 +312,14 @@ export const LoadingProgress = styled.div.attrs<{
     }
   },
 )`
-  ${({ $label, label }) => css`
+  ${({ $label }) => css`
     border: 1px solid;
     padding: 10px 20px;
     border-radius: 5px;
     color: #000;
 
     :before {
-      content: '${$label || label || ''}';
+      content: '${$label || ''}';
       display: grid;
       place-items: center;
       font-size: 20px;

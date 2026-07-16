@@ -149,3 +149,41 @@ export interface OfflineAwareProps {
   isOffline?: boolean
   isLoading?: boolean
 }
+
+/** Torznab / Rutor search result row */
+export interface SearchResultItem {
+  Title?: string
+  Size?: string
+  Seed?: number
+  Peer?: number
+  Hash?: string
+  Link?: string
+  Magnet?: string
+  Poster?: string
+  [key: string]: unknown
+}
+
+/** Normalized playable file from torrent.file_stats */
+export interface PlayableFile {
+  id: number
+  path: string
+  length: number
+  [key: string]: unknown
+}
+
+export interface ViewedFileEntry {
+  file_index: number
+  [key: string]: unknown
+}
+
+export interface MultiAddFileState {
+  file: File
+  title: string
+  category: string
+  poster: string
+  isPosterOk: boolean
+  originalName: string
+  parsedTitle: string
+  infoHash: string
+  alreadyExists: boolean
+}

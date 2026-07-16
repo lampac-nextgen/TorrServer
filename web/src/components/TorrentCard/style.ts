@@ -42,7 +42,7 @@ export const TorrentCard = styled.div`
   `}
 `
 
-export const TorrentCardPoster = styled.div`
+export const TorrentCardPoster = styled.div<{ $isPoster?: boolean }>`
   grid-area: poster;
   border-radius: 5px;
   overflow: hidden;
@@ -285,7 +285,7 @@ export const StyledButton = styled.button`
   `}
 `
 
-export const StatusIndicators = styled.div`
+export const StatusIndicators = styled.div<{ $color?: string }>`
   ${({ $color }) => css`
     height: 8px;
     width: 8px;

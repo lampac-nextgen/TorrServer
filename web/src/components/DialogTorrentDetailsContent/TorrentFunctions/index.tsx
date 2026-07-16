@@ -5,23 +5,33 @@ import { CopyToClipboard } from 'react-copy-to-clipboard'
 import { Button } from '@mui/material'
 import ptt from 'parse-torrent-title'
 import { useTranslation } from 'react-i18next'
+import type { PlayableFile } from 'types/api'
 
 import { SmallLabel, MainSectionButtonGroup } from './style'
 import { SectionSubName } from '../style'
 
+interface TorrentFunctionsProps {
+  hash: string
+  viewedFileList?: number[]
+  playableFileList?: PlayableFile[]
+  name?: string
+  title?: string
+  setViewedFileList: (list?: number[]) => void
+}
+
 const TorrentFunctions = memo(
-  ({ hash, viewedFileList, playableFileList, name, title, setViewedFileList }) => {
+  ({ hash, viewedFileList, playableFileList, name, title, setViewedFileList }: TorrentFunctionsProps) => {
     const { t } = useTranslation()
     const latestViewedFileId = viewedFileList?.[viewedFileList?.length - 1]
     const latestViewedFile = playableFileList?.find(({ id }) => id === latestViewedFileId)?.path
     const isOnlyOnePlayableFile = playableFileList?.length === 1
-    const latestViewedFileData = latestViewedFile && ptt.parse(latestViewedFile)
+    const latestViewedFileData = latestViewedFile ? ptt.parse(latestViewedFile) : null
     const dropTorrent = () => axios.post(torrentsHost(), { action: 'drop', hash })
     const removeTorrentViews = () =>
       axios.post(viewedHost(), { action: 'rem', hash, file_index: -1 }).then(() => setViewedFileList())
     const fullPlaylistLink = `${playlistTorrHost()}/${encodeURIComponent(name || title || 'file')}.m3u?link=${hash}&m3u`
     const partialPlaylistLink = `${fullPlaylistLink}&fromlast`
-    const magnet = `magnet:?xt=urn:btih:${hash}&dn=${encodeURIComponent(name || title)}`
+    const magnet = `magnet:?xt=urn:btih:${hash}&dn=${encodeURIComponent(name || title || '')}`
 
     return (
       <>
@@ -56,7 +66,7 @@ const TorrentFunctions = memo(
             </MainSectionButtonGroup>
           </>
         )}
-        <SmallLabel mb={10}>{t('TorrentState')}</SmallLabel>
+        <SmallLabel $mb={10}>{t('TorrentState')}</SmallLabel>
         <MainSectionButtonGroup>
           <Button onClick={() => removeTorrentViews()} variant='contained' color='primary' size='large'>
             {t('RemoveViews')}
@@ -65,7 +75,7 @@ const TorrentFunctions = memo(
             {t('DropTorrent')}
           </Button>
         </MainSectionButtonGroup>
-        <SmallLabel mb={10}>{t('Info')}</SmallLabel>
+        <SmallLabel $mb={10}>{t('Info')}</SmallLabel>
         <MainSectionButtonGroup>
           {(isOnlyOnePlayableFile || !viewedFileList?.length) && (
             <a style={{ textDecoration: 'none' }} href={fullPlaylistLink}>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, type KeyboardEvent, type SyntheticEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import axios from 'axios'
 import {
@@ -18,6 +18,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  type SelectChangeEvent,
 } from '@mui/material'
 import { CloudDownload as DownloadIcon, ArrowUpward, ArrowDownward } from '@mui/icons-material'
 import { torznabSearchHost, torrentsHost, settingsHost, searchHost } from 'utils/Hosts'
@@ -25,23 +26,32 @@ import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick
 import { StyledDialog, StyledHeader } from 'style/CustomMaterialUiStyles'
 import { parseSizeToBytes, formatSizeToClassicUnits } from 'utils/Utils'
 import { getMoviePosters, shortenTitleForPosterSearch } from 'components/Add/helpers'
+import type { BTSets, SearchResultItem, TorznabUrl } from 'types/api'
 
 import { Content } from './style'
 
-export default function SearchDialog({ handleClose }) {
+export interface SearchDialogProps {
+  handleClose: () => void
+}
+
+type SortField = '' | 'size' | 'seeds' | 'peers'
+type SortDirection = 'asc' | 'desc'
+type TrackerSelection = number | 'rutor'
+
+export default function SearchDialog({ handleClose }: SearchDialogProps) {
   const { t } = useTranslation()
   const [query, setQuery] = useState('')
-  const [results, setResults] = useState([])
+  const [results, setResults] = useState<SearchResultItem[]>([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
   const [adding, setAdding] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
-  const [trackers, setTrackers] = useState([])
+  const [trackers, setTrackers] = useState<TorznabUrl[]>([])
   const [enableRutor, setEnableRutor] = useState(false)
-  const [selectedTracker, setSelectedTracker] = useState(-1)
-  const [sortField, setSortField] = useState('') // '', 'size', 'seeds', 'peers'
-  const [sortDirection, setSortDirection] = useState('desc') // 'asc' or 'desc'
+  const [selectedTracker, setSelectedTracker] = useState<TrackerSelection>(-1)
+  const [sortField, setSortField] = useState<SortField>('')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const fullScreen = useMediaQuery('@media (max-width:930px)')
   const isMobile = useMediaQuery('(max-width:600px)')
   const ref = useOnStandaloneAppOutsideClick(handleClose)
@@ -49,7 +59,7 @@ export default function SearchDialog({ handleClose }) {
   useEffect(() => {
     axios
       .post(settingsHost(), { action: 'get' })
-      .then(({ data }) => {
+      .then(({ data }: { data?: BTSets }) => {
         if (data) {
           if (data.TorznabUrls) {
             setTrackers(data.TorznabUrls)
@@ -67,7 +77,7 @@ export default function SearchDialog({ handleClose }) {
     setResults([])
     try {
       let url = torznabSearchHost()
-      const params = { query }
+      const params: { query: string; index?: number } = { query }
 
       if (selectedTracker === 'rutor') {
         url = searchHost()
@@ -75,22 +85,22 @@ export default function SearchDialog({ handleClose }) {
         params.index = selectedTracker
       }
 
-      const { data } = await axios.get(url, { params })
+      const { data } = await axios.get<SearchResultItem[]>(url, { params })
       setResults(data || [])
-    } catch (error) {
+    } catch {
       setErrorMsg(t('Torznab.SearchFailed'))
     } finally {
       setLoading(false)
     }
   }
 
-  const handleKeyDown = e => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSearch()
     }
   }
 
-  const handleAdd = async item => {
+  const handleAdd = async (item: SearchResultItem) => {
     setAdding(true)
     try {
       const link = item.Magnet || item.Link
@@ -100,9 +110,9 @@ export default function SearchDialog({ handleClose }) {
       }
       let poster = item.Poster
       if (!poster && item.Title) {
-        const query = shortenTitleForPosterSearch(item.Title)
-        if (query) {
-          const urlList = await getMoviePosters(query, 'en')
+        const posterQuery = shortenTitleForPosterSearch(item.Title)
+        if (posterQuery) {
+          const urlList = await getMoviePosters(posterQuery, 'en')
           const [firstPosterUrl] = urlList || []
           if (firstPosterUrl) poster = firstPosterUrl
         }
@@ -115,14 +125,14 @@ export default function SearchDialog({ handleClose }) {
         poster: poster || '',
       })
       setSuccessMsg(t('Torznab.TorrentAddedSuccessfully'))
-    } catch (error) {
+    } catch {
       setErrorMsg(t('Torznab.FailedToAddTorrent'))
     } finally {
       setAdding(false)
     }
   }
 
-  const handleAlertClose = (event, reason) => {
+  const handleAlertClose = (_event: SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return
     }
@@ -138,8 +148,8 @@ export default function SearchDialog({ handleClose }) {
     if (!sortField || results.length === 0) return results
 
     const sorted = [...results].sort((a, b) => {
-      let aVal
-      let bVal
+      let aVal: number
+      let bVal: number
 
       switch (sortField) {
         case 'size':
@@ -168,7 +178,7 @@ export default function SearchDialog({ handleClose }) {
   return (
     <StyledDialog open onClose={handleClose} fullScreen={fullScreen} fullWidth maxWidth='md' ref={ref}>
       <StyledHeader>{t('Torznab.SearchTorrents')}</StyledHeader>
-      <Content>
+      <Content $isLoading={loading}>
         <div style={{ padding: '20px' }}>
           <div
             style={{
@@ -188,7 +198,13 @@ export default function SearchDialog({ handleClose }) {
               }}
             >
               <InputLabel>{t('Tracker')}</InputLabel>
-              <Select value={selectedTracker} onChange={e => setSelectedTracker(e.target.value)} label={t('Tracker')}>
+              <Select
+                value={selectedTracker}
+                onChange={(e: SelectChangeEvent<TrackerSelection>) =>
+                  setSelectedTracker(e.target.value as TrackerSelection)
+                }
+                label={t('Tracker')}
+              >
                 <MenuItem value={-1}>{t('AllTrackers')}</MenuItem>
                 {enableRutor && <MenuItem value='rutor'>{t('Rutor')}</MenuItem>}
                 {trackers.map((tracker, index) => (
@@ -247,7 +263,11 @@ export default function SearchDialog({ handleClose }) {
                 }}
               >
                 <InputLabel>{t('Torznab.SortBy')}</InputLabel>
-                <Select value={sortField} onChange={e => setSortField(e.target.value)} label={t('Torznab.SortBy')}>
+                <Select
+                  value={sortField}
+                  onChange={(e: SelectChangeEvent<SortField>) => setSortField(e.target.value as SortField)}
+                  label={t('Torznab.SortBy')}
+                >
                   <MenuItem value=''>{t('Torznab.SortByNone')}</MenuItem>
                   <MenuItem value='size'>{t('Torznab.SortBySize')}</MenuItem>
                   <MenuItem value='seeds'>{t('Torznab.SortBySeeds')}</MenuItem>

@@ -1,9 +1,18 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, type ChangeEvent } from 'react'
 import Button from '@mui/material/Button'
 import { torrentUploadHost } from 'utils/Hosts'
 import axios from 'axios'
 import { useTranslation } from 'react-i18next'
-import { useMediaQuery, TextField, FormControl, FormHelperText, Select, MenuItem, IconButton } from '@mui/material'
+import {
+  useMediaQuery,
+  TextField,
+  FormControl,
+  FormHelperText,
+  Select,
+  MenuItem,
+  IconButton,
+  type SelectChangeEvent,
+} from '@mui/material'
 import CircularProgress from '@mui/material/CircularProgress'
 import { Delete as DeleteIcon } from '@mui/icons-material'
 import { ButtonWrapper } from 'style/DialogStyles'
@@ -15,29 +24,38 @@ import { useQuery } from '@tanstack/react-query'
 import { getTorrents } from 'utils/Utils'
 import useChangeLanguage from 'utils/useChangeLanguage'
 import parseTorrent from 'parse-torrent'
+import type { MultiAddFileState, TorrentStat } from 'types/api'
 
 import { parseTorrentTitle, checkImageURL, getMoviePosters } from './helpers'
 import { MultiFileRow, MultiFilePoster, MultiFileInfo, MultiFileList } from './style'
 
-function FileRow({ file, fileState, index, onUpdate, onRemove, existingTorrents }) {
+interface FileRowProps {
+  file: File
+  fileState: MultiAddFileState
+  index: number
+  onUpdate: (updates: Partial<MultiAddFileState>) => void
+  onRemove: () => void
+  existingTorrents: TorrentStat[]
+}
+
+function FileRow({ file, fileState, index, onUpdate, onRemove, existingTorrents }: FileRowProps) {
   const { t } = useTranslation()
   const [currentLang] = useChangeLanguage()
-  const handleTitleChange = ({ target: { value } }) => onUpdate({ title: value })
-  const handleCategoryChange = ({ target: { value } }) => onUpdate({ category: value })
-  const handlePosterChange = ({ target: { value } }) => {
+  const handleTitleChange = ({ target: { value } }: ChangeEvent<HTMLInputElement>) => onUpdate({ title: value })
+  const handleCategoryChange = ({ target: { value } }: SelectChangeEvent<string>) => onUpdate({ category: value })
+  const handlePosterChange = ({ target: { value } }: ChangeEvent<HTMLInputElement>) => {
     onUpdate({ poster: value })
     checkImageURL(value).then(ok => onUpdate({ isPosterOk: ok }))
   }
 
   useEffect(() => {
-    // Extract infohash and check for duplicates
     parseTorrent.remote(file, (err, parsed) => {
       if (!err && parsed?.infoHash) {
         const existing = existingTorrents.find(tor => tor.hash === parsed.infoHash)
         if (existing) {
-          const updates = { infoHash: parsed.infoHash, alreadyExists: true }
+          const updates: Partial<MultiAddFileState> = { infoHash: parsed.infoHash, alreadyExists: true }
           if (existing.title) updates.title = existing.title
-          if (existing.category) updates.category = existing.category
+          if (existing.category) updates.category = String(existing.category)
           if (existing.poster) {
             updates.poster = existing.poster
             updates.isPosterOk = true
@@ -49,7 +67,6 @@ function FileRow({ file, fileState, index, onUpdate, onRemove, existingTorrents 
       }
     })
 
-    // Parse title and search poster
     const posterLang = currentLang === 'ru' ? 'ru' : 'en'
     parseTorrentTitle(file, ({ parsedTitle, originalName }) => {
       if (!originalName) return
@@ -76,7 +93,9 @@ function FileRow({ file, fileState, index, onUpdate, onRemove, existingTorrents 
         {fileState.isPosterOk ? (
           <img src={fileState.poster} alt='poster' />
         ) : (
-          <NoImageIcon style={{ opacity: 0.3, width: 40, height: 40 }} />
+          <div style={{ opacity: 0.3, width: 40, height: 40 }}>
+            <NoImageIcon />
+          </div>
         )}
       </MultiFilePoster>
 
@@ -132,7 +151,12 @@ function FileRow({ file, fileState, index, onUpdate, onRemove, existingTorrents 
   )
 }
 
-export default function MultiAddDialog({ files, handleClose }) {
+export interface MultiAddDialogProps {
+  files: File[]
+  handleClose: () => void
+}
+
+export default function MultiAddDialog({ files, handleClose }: MultiAddDialogProps) {
   const { t } = useTranslation()
   const fullScreen = useMediaQuery('@media (max-width:930px)')
   const ref = useOnStandaloneAppOutsideClick(handleClose)
@@ -145,7 +169,7 @@ export default function MultiAddDialog({ files, handleClose }) {
   })
   const existingTorrents = torrents || []
 
-  const [fileList, setFileList] = useState(() =>
+  const [fileList, setFileList] = useState<MultiAddFileState[]>(() =>
     files.map(f => ({
       file: f,
       title: f.name.replace(/\.torrent$/i, ''),
@@ -162,12 +186,12 @@ export default function MultiAddDialog({ files, handleClose }) {
   const newFiles = useMemo(() => fileList.filter(item => !item.alreadyExists), [fileList])
   const newCount = newFiles.length
 
-  const handleUpdate = useCallback((index, updates) => {
+  const handleUpdate = useCallback((index: number, updates: Partial<MultiAddFileState>) => {
     setFileList(prev => prev.map((item, i) => (i === index ? { ...item, ...updates } : item)))
   }, [])
 
   const handleRemove = useCallback(
-    index => {
+    (index: number) => {
       setFileList(prev => {
         const next = prev.filter((_, i) => i !== index)
         if (next.length === 0) handleClose()

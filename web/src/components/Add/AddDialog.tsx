@@ -28,6 +28,15 @@ import RightSideComponent from './RightSideComponent'
 import LeftSideComponent from './LeftSideComponent'
 import MultiAddDialog from './MultiAddDialog'
 
+export interface AddDialogProps {
+  handleClose: () => void
+  hash?: string | null
+  title?: string
+  name?: string
+  poster?: string
+  category?: string
+}
+
 export default function AddDialog({
   handleClose,
   hash: originalHash,
@@ -35,7 +44,7 @@ export default function AddDialog({
   name: originalName,
   poster: originalPoster,
   category: originalCategory,
-}) {
+}: AddDialogProps) {
   const { t } = useTranslation()
   const isEditMode = !!originalHash
   const [torrentSource, setTorrentSource] = useState(originalHash || '')
@@ -47,18 +56,18 @@ export default function AddDialog({
   const [isPosterUrlCorrect, setIsPosterUrlCorrect] = useState(false)
   const [isTorrentSourceCorrect, setIsTorrentSourceCorrect] = useState(false)
   const [isHashAlreadyExists, setIsHashAlreadyExists] = useState(false)
-  const [posterList, setPosterList] = useState()
+  const [posterList, setPosterList] = useState<string[] | undefined>()
   const [isUserInteractedWithPoster, setIsUserInteractedWithPoster] = useState(isEditMode)
   const [currentLang] = useChangeLanguage()
   const [posterSearchLanguage, setPosterSearchLanguage] = useState(currentLang === 'ru' ? 'ru' : 'en')
   const [isSaving, setIsSaving] = useState(false)
   const [skipDebounce, setSkipDebounce] = useState(false)
   const [isCustomTitleEnabled, setIsCustomTitleEnabled] = useState(false)
-  const [currentSourceHash, setCurrentSourceHash] = useState()
+  const [currentSourceHash, setCurrentSourceHash] = useState<string | undefined>()
   const editModePosterSearchedRef = useRef(false)
 
   // When files are dropped/selected, switch to MultiAddDialog
-  const [multiFiles, setMultiFiles] = useState(null)
+  const [multiFiles, setMultiFiles] = useState<File[] | null>(null)
 
   const ref = useOnStandaloneAppOutsideClick(handleClose)
 
@@ -70,7 +79,7 @@ export default function AddDialog({
   })
 
   useEffect(() => {
-    parseTorrent.remote(torrentSource, (_, { infoHash } = {}) => setCurrentSourceHash(infoHash))
+    parseTorrent.remote(torrentSource, (_, parsed) => setCurrentSourceHash(parsed?.infoHash))
   }, [torrentSource])
 
   useEffect(() => {
@@ -84,7 +93,7 @@ export default function AddDialog({
     if (!isSaving || !torrents) return
 
     const allHashes = torrents.map(({ hash }) => hash)
-    allHashes.includes(currentSourceHash) && handleClose()
+    allHashes.includes(currentSourceHash || '') && handleClose()
     const linkRegex = /^(http(s?)):\/\/.*/i
     torrentSource.match(linkRegex) !== null && handleClose()
   }, [isSaving, torrents, torrentSource, currentSourceHash, handleClose])
@@ -92,16 +101,21 @@ export default function AddDialog({
   const fullScreen = useMediaQuery('@media (max-width:930px)')
 
   const updateTitleFromSource = useCallback(() => {
-    parseTorrentTitle(torrentSource, ({ parsedTitle, originalName }) => {
-      if (!originalName) return
+    parseTorrentTitle(torrentSource, ({ parsedTitle: nextParsedTitle, originalName: nextOriginalName }) => {
+      if (!nextOriginalName) return
 
       setSkipDebounce(true)
       setTitle('')
       setIsCustomTitleEnabled(false)
-      setOriginalTorrentTitle(originalName)
-      setParsedTitle(parsedTitle)
+      setOriginalTorrentTitle(nextOriginalName)
+      setParsedTitle(nextParsedTitle || '')
     })
   }, [torrentSource])
+
+  const removePoster = useCallback(() => {
+    setIsPosterUrlCorrect(false)
+    setPosterUrl('')
+  }, [])
 
   useEffect(() => {
     if (!torrentSource) {
@@ -109,26 +123,21 @@ export default function AddDialog({
       setOriginalTorrentTitle('')
       setParsedTitle('')
       setIsCustomTitleEnabled(false)
-      setPosterList()
+      setPosterList(undefined)
       removePoster()
       setIsUserInteractedWithPoster(false)
     }
-  }, [torrentSource])
-
-  const removePoster = () => {
-    setIsPosterUrlCorrect(false)
-    setPosterUrl('')
-  }
+  }, [torrentSource, removePoster])
 
   // Edit mode: init original/parsed title from name so poster can be searched
   useEffect(() => {
     if (!originalHash || (!originalName && !originalTitle)) return
-    const source = originalName || originalTitle
+    const source = originalName || originalTitle || ''
     setOriginalTorrentTitle(source)
     try {
       const parsed = ptt.parse(source)
       setParsedTitle(parsed?.title || '')
-    } catch (_) {
+    } catch {
       setParsedTitle('')
     }
     editModePosterSearchedRef.current = false
@@ -145,9 +154,9 @@ export default function AddDialog({
 
   const posterSearch = useMemo(
     () =>
-      (movieName, language, { shouldRefreshMainPoster = false } = {}) => {
+      (movieName: string, language: string, { shouldRefreshMainPoster = false } = {}) => {
         if (!movieName) {
-          setPosterList()
+          setPosterList(undefined)
           removePoster()
           return
         }
@@ -166,14 +175,14 @@ export default function AddDialog({
               } else removePoster()
             })
           } else {
-            setPosterList()
+            setPosterList(undefined)
             if (isUserInteractedWithPoster) return
 
             removePoster()
           }
         })
       },
-    [isUserInteractedWithPoster],
+    [isUserInteractedWithPoster, removePoster],
   )
 
   const delayedPosterSearch = useMemo(() => debounce(posterSearch, 700), [posterSearch])
@@ -182,7 +191,10 @@ export default function AddDialog({
 
   useEffect(() => {
     const isCorrectSource = checkTorrentSource(torrentSource)
-    if (!isCorrectSource) return setIsTorrentSourceCorrect(false)
+    if (!isCorrectSource) {
+      setIsTorrentSourceCorrect(false)
+      return
+    }
 
     setIsTorrentSourceCorrect(true)
 
@@ -202,7 +214,7 @@ export default function AddDialog({
     ) {
       return
     }
-    const searchTitle = parsedTitle || title || originalTitle
+    const searchTitle = parsedTitle || title || originalTitle || ''
     if (!shortenTitleForPosterSearch(searchTitle)) return
     editModePosterSearchedRef.current = true
     posterSearch(searchTitle, posterSearchLanguage, { shouldRefreshMainPoster: true })
@@ -237,11 +249,13 @@ export default function AddDialog({
     posterSearchLanguage,
     skipDebounce,
     isUserInteractedWithPoster,
+    removePoster,
   ])
 
-  const handleSetSelectedFile = useCallback(fileOrFiles => {
-    const files = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles]
-    setMultiFiles(files)
+  const handleSetSelectedFile = useCallback((fileOrFiles: File | File[] | null) => {
+    if (!fileOrFiles) return
+    const nextFiles = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles]
+    setMultiFiles(nextFiles)
   }, [])
 
   const handleSave = () => {

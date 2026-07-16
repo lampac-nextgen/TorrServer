@@ -102,7 +102,7 @@ export const ShortTableWrapper = styled.div`
   }
 `
 
-export const ShortTable = styled.div`
+export const ShortTable = styled.div<{ $isViewed?: boolean }>`
   ${({
     $isViewed,
     theme: {

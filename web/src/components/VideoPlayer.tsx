@@ -26,14 +26,35 @@ import SubtitlesIcon from '@mui/icons-material/Subtitles'
 import VolumeOffIcon from '@mui/icons-material/VolumeOff'
 import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import Hls from 'hls.js'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
 import { StyledDialog } from 'style/CustomMaterialUiStyles'
 import { useTranslation } from 'react-i18next'
 
 import { StyledButton } from './TorrentCard/style'
 
-function getMimeType(url) {
-  const ext = url.split('?')[0].split('.').pop().toLowerCase()
+export interface VideoPlayerProps {
+  videoSrc: string
+  downloadSrc?: string
+  captionSrc?: string
+  title?: string
+  onNotSupported?: () => void
+  hls?: boolean
+  heartbeatSrc?: string
+  showTrigger?: boolean
+  initiallyOpen?: boolean
+  onClose?: () => void
+}
+
+interface SubtitleTrackInfo {
+  id?: number
+  name?: string
+  lang?: string
+  groupId?: string
+  [key: string]: unknown
+}
+
+function getMimeType(url: string): string {
+  const ext = url.split('?')[0].split('.').pop()?.toLowerCase()
   switch (ext) {
     case 'mp4':
       return 'video/mp4'
@@ -47,7 +68,7 @@ function getMimeType(url) {
   }
 }
 
-const canPlayNativeHls = video =>
+const canPlayNativeHls = (video: HTMLVideoElement) =>
   Boolean(video.canPlayType('application/vnd.apple.mpegurl') || video.canPlayType('application/x-mpegURL'))
 
 const PrettoSlider = styled(Slider)({
@@ -253,7 +274,7 @@ const SubtitleMenu = styled(Menu)({
 })
 
 // Helper function to format seconds to HH:MM:SS
-const formatTime = seconds => {
+const formatTime = (seconds: number) => {
   if (!isFinite(seconds)) return '00:00:00'
   const h = Math.floor(seconds / 3600)
   const m = Math.floor((seconds % 3600) / 60)
@@ -264,7 +285,7 @@ const formatTime = seconds => {
   return `${hh}:${mm}:${ss}`
 }
 
-const subtitleLabel = track => {
+const subtitleLabel = (track: SubtitleTrackInfo) => {
   const name = track.name || track.lang || 'Subtitle'
   return track.lang && track.lang.toLowerCase() !== name.toLowerCase() ? `${name} (${track.lang})` : name
 }
@@ -280,14 +301,14 @@ const VideoPlayer = ({
   showTrigger = true,
   initiallyOpen = false,
   onClose,
-}) => {
+}: VideoPlayerProps) => {
   const isMobile = useMediaQuery('(max-width:930px)')
-  const videoRef = useRef(null)
-  const hlsRef = useRef(null)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const hlsRef = useRef<Hls | null>(null)
   const onNotSupportedRef = useRef(onNotSupported)
   const { t } = useTranslation()
   const [open, setOpen] = useState(initiallyOpen)
-  const [videoElement, setVideoElement] = useState(null)
+  const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null)
   const [loading, setLoading] = useState(true)
   const [playing, setPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -295,13 +316,13 @@ const VideoPlayer = ({
   const [muted, setMuted] = useState(false)
   const [volume, setVolume] = useState(1)
   const [fullscreen, setFullscreen] = useState(false)
-  const [anchorEl, setAnchorEl] = useState(null)
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [speed, setSpeed] = useState(1)
-  const [subtitleAnchorEl, setSubtitleAnchorEl] = useState(null)
-  const [subtitleTracks, setSubtitleTracks] = useState([])
+  const [subtitleAnchorEl, setSubtitleAnchorEl] = useState<HTMLElement | null>(null)
+  const [subtitleTracks, setSubtitleTracks] = useState<SubtitleTrackInfo[]>([])
   const [subtitleTrack, setSubtitleTrack] = useState(-1)
 
-  const setVideoNode = useCallback(node => {
+  const setVideoNode = useCallback((node: HTMLVideoElement | null) => {
     videoRef.current = node
     setVideoElement(node)
   }, [])
@@ -321,7 +342,7 @@ const VideoPlayer = ({
 
     const video = videoElement
 
-    let hlsPlayer
+    let hlsPlayer: Hls | null = null
     let nativeHls = false
     setLoading(true)
     setSubtitleTracks([])
@@ -331,25 +352,25 @@ const VideoPlayer = ({
       hlsPlayer = new Hls()
       hlsRef.current = hlsPlayer
       hlsPlayer.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
-        setSubtitleTracks(data.subtitleTracks || [])
-        setSubtitleTrack(hlsPlayer.subtitleTrack)
+        setSubtitleTracks((data.subtitleTracks as SubtitleTrackInfo[]) || [])
+        setSubtitleTrack(hlsPlayer!.subtitleTrack)
         video.play().catch(() => {})
       })
       hlsPlayer.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, (_, data) => {
-        setSubtitleTracks(data.subtitleTracks || [])
+        setSubtitleTracks((data.subtitleTracks as SubtitleTrackInfo[]) || [])
       })
       hlsPlayer.on(Hls.Events.SUBTITLE_TRACK_SWITCH, (_, data) => {
-        setSubtitleTrack(data.id)
+        setSubtitleTrack(Number(data.id ?? -1))
       })
       hlsPlayer.on(Hls.Events.ERROR, (_, data) => {
         if (!data.fatal) return
 
         if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-          hlsPlayer.startLoad()
+          hlsPlayer!.startLoad()
         } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-          hlsPlayer.recoverMediaError()
+          hlsPlayer!.recoverMediaError()
         } else {
-          hlsPlayer.stopLoad()
+          hlsPlayer!.stopLoad()
           setLoading(false)
         }
       })
@@ -395,28 +416,36 @@ const VideoPlayer = ({
   }, [])
 
   const togglePlay = () => setPlaying(p => !p)
-  const handleTimeUpdate = () => setCurrentTime(videoRef.current.currentTime)
+  const handleTimeUpdate = () => {
+    if (videoRef.current) setCurrentTime(videoRef.current.currentTime)
+  }
   const handleLoaded = () => {
+    if (!videoRef.current) return
     setDuration(videoRef.current.duration)
     setLoading(false)
   }
-  const handleSeek = (_, val) => {
-    videoRef.current.currentTime = val
+  const handleSeek = (_: Event | React.SyntheticEvent, val: number | number[]) => {
+    if (!videoRef.current) return
+    const next = Array.isArray(val) ? val[0] : val
+    videoRef.current.currentTime = next
     handleTimeUpdate()
   }
-  const handleVolume = (_, val) => {
-    const v = val / 100
+  const handleVolume = (_: Event | React.SyntheticEvent, val: number | number[]) => {
+    if (!videoRef.current) return
+    const next = Array.isArray(val) ? val[0] : val
+    const v = next / 100
     videoRef.current.volume = v
     setVolume(v)
     setMuted(v === 0)
   }
   const toggleMute = () => {
+    if (!videoRef.current) return
     videoRef.current.muted = !muted
     setMuted(m => !m)
   }
 
   const skip = useCallback(
-    secs => {
+    (secs: number) => {
       const video = videoRef.current
       if (!video) return
       const target = Math.min(Math.max(video.currentTime + secs, 0), duration)
@@ -426,7 +455,7 @@ const VideoPlayer = ({
     [duration],
   )
 
-  const enterFull = () => videoRef.current.requestFullscreen()
+  const enterFull = () => videoRef.current?.requestFullscreen()
   const exitFull = () => document.exitFullscreen()
 
   useEffect(() => {
@@ -435,16 +464,16 @@ const VideoPlayer = ({
     return () => document.removeEventListener('fullscreenchange', onFull)
   }, [])
 
-  const openSpeedMenu = e => setAnchorEl(e.currentTarget)
+  const openSpeedMenu = (e: ReactMouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget)
   const closeSpeedMenu = () => setAnchorEl(null)
-  const changeSpeed = val => {
-    videoRef.current.playbackRate = val
+  const changeSpeed = (val: number) => {
+    if (videoRef.current) videoRef.current.playbackRate = val
     setSpeed(val)
     closeSpeedMenu()
   }
-  const openSubtitleMenu = e => setSubtitleAnchorEl(e.currentTarget)
+  const openSubtitleMenu = (e: ReactMouseEvent<HTMLElement>) => setSubtitleAnchorEl(e.currentTarget)
   const closeSubtitleMenu = () => setSubtitleAnchorEl(null)
-  const changeSubtitleTrack = index => {
+  const changeSubtitleTrack = (index: number) => {
     const hlsPlayer = hlsRef.current
     if (hlsPlayer) {
       hlsPlayer.subtitleDisplay = index >= 0
@@ -468,7 +497,7 @@ const VideoPlayer = ({
   }
 
   const handleKey = useCallback(
-    e => {
+    (e: globalThis.KeyboardEvent) => {
       if (!open) return
       switch (e.key) {
         case ' ':
@@ -531,7 +560,7 @@ const VideoPlayer = ({
             </VideoEl>
             {loading && (
               <LoadingOverlay>
-                <CircularProgress fontSize='medium' />
+                <CircularProgress size={40} />
               </LoadingOverlay>
             )}
             <CentralControl
@@ -640,7 +669,7 @@ const VideoPlayer = ({
                   ))}
                 </SpeedMenu>
                 <Tooltip title={t('PIP')}>
-                  <PlayerIconButton size='medium' onClick={() => videoRef.current.requestPictureInPicture()}>
+                  <PlayerIconButton size='medium' onClick={() => videoRef.current?.requestPictureInPicture()}>
                     <PictureInPictureIcon fontSize='medium' />
                   </PlayerIconButton>
                 </Tooltip>

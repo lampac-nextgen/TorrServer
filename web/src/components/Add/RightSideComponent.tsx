@@ -10,9 +10,11 @@ import {
   Select,
   TextField,
   useTheme,
+  type SelectChangeEvent,
 } from '@mui/material'
 import { HighlightOff as HighlightOffIcon } from '@mui/icons-material'
 import { TORRENT_CATEGORIES } from 'components/categories'
+import type { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import {
   ClearPosterButton,
@@ -26,6 +28,38 @@ import {
   RightSideContainer,
 } from './style'
 import { checkImageURL } from './helpers'
+
+export interface RightSideComponentProps {
+  setTitle: Dispatch<SetStateAction<string>>
+  setCategory: Dispatch<SetStateAction<string>>
+  setPosterUrl: Dispatch<SetStateAction<string>>
+  setIsPosterUrlCorrect: Dispatch<SetStateAction<boolean>>
+  setIsUserInteractedWithPoster: Dispatch<SetStateAction<boolean>>
+  setPosterList: Dispatch<SetStateAction<string[] | undefined>>
+  isTorrentSourceCorrect: boolean
+  isHashAlreadyExists: boolean
+  title: string
+  category: string
+  parsedTitle: string
+  posterUrl: string
+  isPosterUrlCorrect: boolean
+  posterList?: string[]
+  currentLang: string
+  posterSearchLanguage: string
+  setPosterSearchLanguage: Dispatch<SetStateAction<string>>
+  posterSearch: (
+    searchTitle: string,
+    language: string,
+    opts?: { shouldRefreshMainPoster?: boolean },
+  ) => void | Promise<void>
+  removePoster: () => void
+  torrentSource: string
+  originalTorrentTitle: string
+  updateTitleFromSource: () => void
+  isCustomTitleEnabled: boolean
+  setIsCustomTitleEnabled: Dispatch<SetStateAction<boolean>>
+  isEditMode: boolean
+}
 
 export default function RightSideComponent({
   setTitle,
@@ -53,19 +87,19 @@ export default function RightSideComponent({
   isCustomTitleEnabled,
   setIsCustomTitleEnabled,
   isEditMode,
-}) {
+}: RightSideComponentProps) {
   const { t } = useTranslation()
   const primary = useTheme().palette.primary.main
 
-  const handleTitleChange = ({ target: { value } }) => setTitle(value)
-  const handleCategoryChange = ({ target: { value } }) => setCategory(value)
-  const handlePosterUrlChange = ({ target: { value } }) => {
+  const handleTitleChange = ({ target: { value } }: ChangeEvent<HTMLInputElement>) => setTitle(value)
+  const handleCategoryChange = ({ target: { value } }: SelectChangeEvent) => setCategory(value)
+  const handlePosterUrlChange = ({ target: { value } }: ChangeEvent<HTMLInputElement>) => {
     setPosterUrl(value)
     checkImageURL(value).then(setIsPosterUrlCorrect)
     setIsUserInteractedWithPoster(!!value)
-    setPosterList()
+    setPosterList(undefined)
   }
-  const userChangesPosterUrl = url => {
+  const userChangesPosterUrl = (url: string) => {
     setPosterUrl(url)
     checkImageURL(url).then(setIsPosterUrlCorrect)
     setIsUserInteractedWithPoster(true)
@@ -178,16 +212,16 @@ export default function RightSideComponent({
               ''
             )}
 
-            {TORRENT_CATEGORIES.map(category => (
-              <MenuItem key={category.key} value={category.key}>
-                {t(category.name)}
+            {TORRENT_CATEGORIES.map(cat => (
+              <MenuItem key={cat.key} value={cat.key}>
+                {t(cat.name)}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
 
         <PosterWrapper>
-          <Poster $poster={+isPosterUrlCorrect}>
+          <Poster $poster={isPosterUrlCorrect ? '1' : undefined}>
             {isPosterUrlCorrect ? <img src={posterUrl} alt='poster' /> : <NoImageIcon />}
           </Poster>
 
@@ -211,17 +245,14 @@ export default function RightSideComponent({
                   shouldRefreshMainPoster: true,
                 })
               }}
-              $showbutton={+isPosterUrlCorrect}
-              color='primary'
-              variant='contained'
-              size='small'
+              $showbutton={isPosterUrlCorrect}
             >
               {posterSearchLanguage === 'en' ? 'EN' : 'RU'}
             </PosterLanguageSwitch>
           )}
 
           <ClearPosterButton
-            $showbutton={+isPosterUrlCorrect}
+            $showbutton={isPosterUrlCorrect}
             onClick={() => {
               removePoster()
               setIsUserInteractedWithPoster(true)
@@ -248,13 +279,15 @@ export default function RightSideComponent({
       </RightSideContainer>
 
       <RightSideContainer
-        $isError={torrentSource && (!isTorrentSourceCorrect || isHashAlreadyExists)}
+        $isError={!!torrentSource && (!isTorrentSourceCorrect || isHashAlreadyExists)}
         $notificationMessage={
           !torrentSource
             ? t('AddDialog.AddTorrentSourceNotification')
             : !isTorrentSourceCorrect
               ? t('AddDialog.WrongTorrentSource')
-              : isHashAlreadyExists && t('AddDialog.HashExists')
+              : isHashAlreadyExists
+                ? t('AddDialog.HashExists')
+                : undefined
         }
         $isHidden={isEditMode || (isTorrentSourceCorrect && !isHashAlreadyExists)}
       />

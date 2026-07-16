@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, type KeyboardEvent } from 'react'
 import {
   TextField,
   Button,
@@ -21,15 +21,23 @@ import axios from 'axios'
 import { torznabSearchHost } from 'utils/Hosts'
 import { AddCircleOutline as AddIcon, ArrowUpward, ArrowDownward } from '@mui/icons-material'
 import { parseSizeToBytes, formatSizeToClassicUnits } from 'utils/Utils'
+import type { SearchResultItem } from 'types/api'
 
-export default function TorznabSearch({ onSelect }) {
+interface TorznabSearchProps {
+  onSelect: (link: string) => void
+}
+
+type SortField = '' | 'size' | 'seeds' | 'peers'
+type SortDirection = 'asc' | 'desc'
+
+export default function TorznabSearch({ onSelect }: TorznabSearchProps) {
   const { t } = useTranslation()
   const [query, setQuery] = useState('')
-  const [results, setResults] = useState([])
+  const [results, setResults] = useState<SearchResultItem[]>([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
-  const [sortField, setSortField] = useState('') // '', 'size', 'seeds', 'peers'
-  const [sortDirection, setSortDirection] = useState('desc') // 'asc' or 'desc'
+  const [sortField, setSortField] = useState<SortField>('')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const isMobile = useMediaQuery('(max-width:600px)')
 
   const handleSearch = async () => {
@@ -39,14 +47,14 @@ export default function TorznabSearch({ onSelect }) {
     try {
       const { data } = await axios.get(torznabSearchHost(), { params: { query } })
       setResults(data || [])
-    } catch (error) {
+    } catch {
       setResults([])
     } finally {
       setLoading(false)
     }
   }
 
-  const handleKeyDown = e => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch()
     }
@@ -60,8 +68,8 @@ export default function TorznabSearch({ onSelect }) {
     if (!sortField || results.length === 0) return results
 
     const sorted = [...results].sort((a, b) => {
-      let aVal
-      let bVal
+      let aVal: number
+      let bVal: number
 
       switch (sortField) {
         case 'size':
@@ -140,7 +148,11 @@ export default function TorznabSearch({ onSelect }) {
                 }}
               >
                 <InputLabel>{t('Torznab.SortBy')}</InputLabel>
-                <Select value={sortField} onChange={e => setSortField(e.target.value)} label={t('Torznab.SortBy')}>
+                <Select
+                  value={sortField}
+                  onChange={e => setSortField(e.target.value as SortField)}
+                  label={t('Torznab.SortBy')}
+                >
                   <MenuItem value=''>{t('Torznab.SortByNone')}</MenuItem>
                   <MenuItem value='size'>{t('Torznab.SortBySize')}</MenuItem>
                   <MenuItem value='seeds'>{t('Torznab.SortBySeeds')}</MenuItem>
@@ -183,7 +195,7 @@ export default function TorznabSearch({ onSelect }) {
                   const formattedSize = formatSizeToClassicUnits(sizeBytes)
                   return (
                     <React.Fragment key={item.Hash || item.Link || index}>
-                      <ListItemButton onClick={() => onSelect(item.Magnet || item.Link)}>
+                      <ListItemButton onClick={() => onSelect(item.Magnet || item.Link || '')}>
                         <ListItemText
                           primary={item.Title}
                           secondary={`${formattedSize} • S:${item.Seed || 0} P:${item.Peer || 0}`}
@@ -204,7 +216,7 @@ export default function TorznabSearch({ onSelect }) {
                           <IconButton
                             edge='end'
                             aria-label='add'
-                            onClick={() => onSelect(item.Magnet || item.Link)}
+                            onClick={() => onSelect(item.Magnet || item.Link || '')}
                             size={isMobile ? 'small' : 'medium'}
                           >
                             <AddIcon />

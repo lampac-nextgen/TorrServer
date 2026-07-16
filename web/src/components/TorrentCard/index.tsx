@@ -1,4 +1,14 @@
-import { forwardRef, memo, useEffect, useRef, useState } from 'react'
+import {
+  forwardRef,
+  memo,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentPropsWithoutRef,
+  type ForwardedRef,
+  type ReactElement,
+} from 'react'
+import type { PlayableFile, TorrentFileStat, TorrentStat } from 'types/api'
 import {
   Audiotrack as AudiotrackIcon,
   UnfoldMore as UnfoldMoreIcon,
@@ -50,13 +60,26 @@ import {
   TorrentCardPoster,
 } from './style'
 
-const Transition = forwardRef((props, ref) => <Slide direction='up' ref={ref} {...props} />)
+const Transition = forwardRef(function Transition(
+  props: ComponentPropsWithoutRef<typeof Slide>,
+  ref: ForwardedRef<unknown>,
+): ReactElement {
+  return <Slide direction='up' ref={ref} {...props} />
+})
 
-const wait = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds))
+const wait = (milliseconds: number) => new Promise<void>(resolve => setTimeout(resolve, milliseconds))
 
-const requestTorrentFiles = async (hash, isActive, attemptsLeft = 60) => {
+const requestTorrentFiles = async (
+  hash: string,
+  isActive: () => boolean,
+  attemptsLeft = 60,
+): Promise<PlayableFile[]> => {
   const { data: status } = await axios.post(torrentsHost(), { action: 'get', hash })
-  const files = status?.file_stats || []
+  const files = ((status?.file_stats || []) as TorrentFileStat[]).map(file => ({
+    id: file.id ?? file.Id ?? 0,
+    path: file.path ?? file.Path ?? '',
+    length: file.length ?? file.Length ?? 0,
+  }))
   if (!isActive() || files.length || attemptsLeft <= 1) return files
 
   await wait(1000)
@@ -64,18 +87,23 @@ const requestTorrentFiles = async (hash, isActive, attemptsLeft = 60) => {
   return requestTorrentFiles(hash, isActive, attemptsLeft - 1)
 }
 
-const fileName = path => path.split('\\').pop().split('/').pop()
+const fileName = (path: string) => path.split('\\').pop()!.split('/').pop()!
 
-const filesFromMetadata = data => {
+const filesFromMetadata = (data?: string): PlayableFile[] => {
   if (!data) return []
   try {
-    return JSON.parse(data).TorrServer?.Files || []
-  } catch (_) {
+    const files = JSON.parse(data).TorrServer?.Files || []
+    return (files as Array<{ id?: number; path?: string; length?: number }>).map(file => ({
+      id: file.id ?? 0,
+      path: file.path ?? '',
+      length: file.length ?? 0,
+    }))
+  } catch {
     return []
   }
 }
 
-const episodeLabel = (path, index) => {
+const episodeLabel = (path: string, index: number) => {
   const name = fileName(path)
   const parsed = ptt.parse(name)
   const season = Number(parsed.season)
@@ -87,14 +115,17 @@ const episodeLabel = (path, index) => {
   return code ? `${code} - ${title}` : `${index + 1}. ${title}`
 }
 
-const probeTrackValue = (track, name) => track?.[name] ?? track?.[`${name[0].toLowerCase()}${name.slice(1)}`]
+type ProbeTrack = Record<string, unknown>
 
-const probeAudioTracks = probe =>
+const probeTrackValue = (track: ProbeTrack | undefined, name: string) =>
+  track?.[name] ?? track?.[`${name[0].toLowerCase()}${name.slice(1)}`]
+
+const probeAudioTracks = (probe: { Tracks?: ProbeTrack[]; tracks?: ProbeTrack[] } | null | undefined) =>
   (probe?.Tracks || probe?.tracks || []).filter(
     track => String(probeTrackValue(track, 'Type')).toLowerCase() === 'audio',
   )
 
-const audioCodecName = track => {
+const audioCodecName = (track: ProbeTrack) => {
   const codec = String(probeTrackValue(track, 'Codec') || '')
   const caps = String(probeTrackValue(track, 'CapsName') || '')
   const value = `${caps} ${codec}`.toLowerCase()
@@ -130,36 +161,54 @@ const audioCodecName = track => {
   }
 }
 
-const sameFileList = (left, right) => {
+const sameFileList = (left?: TorrentFileStat[] | null, right?: TorrentFileStat[] | null) => {
   const leftFiles = left || []
   const rightFiles = right || []
   return (
     leftFiles.length === rightFiles.length &&
     leftFiles.every((file, index) => {
       const other = rightFiles[index]
-      return file.id === other?.id && file.path === other.path && file.length === other.length
+      return (
+        (file.id ?? file.Id) === (other?.id ?? other?.Id) &&
+        (file.path ?? file.Path) === (other?.path ?? other?.Path) &&
+        (file.length ?? file.Length) === (other?.length ?? other?.Length)
+      )
     })
   )
 }
 
-const Torrent = ({ torrent }) => {
+interface TorrentPlayer extends PlayableFile {
+  key: string
+  label: string
+  videoSrc: string
+  downloadSrc: string
+  hls: boolean
+  heartbeatSrc: string
+  playerTitle?: string
+}
+
+export interface TorrentCardProps {
+  torrent: TorrentStat
+}
+
+const Torrent = ({ torrent }: TorrentCardProps) => {
   const { t } = useTranslation()
   const [isDetailedInfoOpened, setIsDetailedInfoOpened] = useState(false)
   const [isDeleteTorrentOpened, setIsDeleteTorrentOpened] = useState(false)
-  const [unsupportedPlayers, setUnsupportedPlayers] = useState({})
-  const [episodeMenuAnchor, setEpisodeMenuAnchor] = useState(null)
-  const [selectedPlayer, setSelectedPlayer] = useState(null)
-  const [resolvedFileList, setResolvedFileList] = useState([])
+  const [unsupportedPlayers, setUnsupportedPlayers] = useState<Record<string, boolean>>({})
+  const [episodeMenuAnchor, setEpisodeMenuAnchor] = useState<HTMLElement | null>(null)
+  const [selectedPlayer, setSelectedPlayer] = useState<TorrentPlayer | null>(null)
+  const [resolvedFileList, setResolvedFileList] = useState<PlayableFile[]>([])
   const [isResolvingPlayers, setIsResolvingPlayers] = useState(false)
   const [playerResolveFailed, setPlayerResolveFailed] = useState(false)
   const [openEpisodeMenuAfterResolve, setOpenEpisodeMenuAfterResolve] = useState(false)
-  const [audioTracksByFile, setAudioTracksByFile] = useState({})
-  const [audioMenuAnchor, setAudioMenuAnchor] = useState(null)
-  const [audioMenuPlayer, setAudioMenuPlayer] = useState(null)
+  const [audioTracksByFile, setAudioTracksByFile] = useState<Record<number, ProbeTrack[]>>({})
+  const [audioMenuAnchor, setAudioMenuAnchor] = useState<HTMLElement | null>(null)
+  const [audioMenuPlayer, setAudioMenuPlayer] = useState<TorrentPlayer | null>(null)
   const [isResolvingAudio, setIsResolvingAudio] = useState(false)
   const isMounted = useRef(true)
-  const episodeButtonRef = useRef(null)
-  const audioButtonRef = useRef(null)
+  const episodeButtonRef = useRef<HTMLButtonElement | null>(null)
+  const audioButtonRef = useRef<HTMLButtonElement | null>(null)
   const gstRuntime = useGStreamerRuntime()
 
   useEffect(
@@ -193,11 +242,12 @@ const Torrent = ({ torrent }) => {
   const deleteTorrent = () => axios.post(torrentsHost(), { action: 'rem', hash })
 
   const getParsedTitle = () => {
-    const parse = key => ptt.parse(title || '')?.[key] || ptt.parse(name || '')?.[key]
+    const parse = (key: 'title' | 'year' | 'resolution') =>
+      ptt.parse(title || '')?.[key] || ptt.parse(name || '')?.[key]
 
-    const titleStrings = []
+    const titleStrings: Array<string | number> = []
 
-    let parsedTitle = removeRedundantCharacters(parse('title'))
+    let parsedTitle = removeRedundantCharacters(String(parse('title') || ''))
     const parsedYear = parse('year')
     const parsedResolution = parse('resolution')
     if (parsedTitle) titleStrings.push(parsedTitle)
@@ -218,23 +268,28 @@ const Torrent = ({ torrent }) => {
   // main categories
   const catIndex = TORRENT_CATEGORIES.findIndex(e => e.key === category)
   const catArray = TORRENT_CATEGORIES.find(e => e.key === category)
-  const getFileLink = (path, id) =>
+  const getFileLink = (path: string, id: number) =>
     `${streamHost()}/${encodeURIComponent(fileName(path))}?link=${hash}&index=${id}&play`
 
-  const fileList = torrentFileList?.length
-    ? torrentFileList
+  const normalizeFiles = (files: Array<TorrentFileStat | PlayableFile>): PlayableFile[] =>
+    files.map(file => ({
+      id: Number((file as PlayableFile).id ?? (file as TorrentFileStat).Id ?? 0),
+      path: String((file as PlayableFile).path ?? (file as TorrentFileStat).Path ?? ''),
+      length: Number((file as PlayableFile).length ?? (file as TorrentFileStat).Length ?? 0),
+    }))
+
+  const fileList: PlayableFile[] = torrentFileList?.length
+    ? normalizeFiles(torrentFileList)
     : resolvedFileList.length
       ? resolvedFileList
-      : filesFromMetadata(data)
+      : filesFromMetadata(typeof data === 'string' ? data : undefined)
   const playableVideoList = fileList.filter(({ path }) => isFilePlayable(path))
-  const getVideoCaption = path => {
-    // Get base name without extension
+  const getVideoCaption = (path: string) => {
     const baseName = path.replace(/\.[^/.]+$/, '')
-    // Find a file with the same base name and a subtitle extension
     const captionFile = fileList.find(file => file.path.startsWith(baseName) && /\.(srt|vtt)$/i.test(file.path))
     return captionFile ? getFileLink(captionFile.path, captionFile.id) : ''
   }
-  const createPlayer = (file, index) => {
+  const createPlayer = (file: PlayableFile, index: number): TorrentPlayer => {
     const hls = shouldUseGStreamerPlayer(file.path, gstRuntime)
     const downloadSrc = getFileLink(file.path, file.id)
     return {
@@ -252,14 +307,14 @@ const Torrent = ({ torrent }) => {
   const singlePlayer = players.length === 1 ? players[0] : null
   const audioMenuTracks = audioMenuPlayer ? audioTracksByFile[audioMenuPlayer.id] || [] : []
 
-  const playerWithAudio = (player, audio) => ({
+  const playerWithAudio = (player: TorrentPlayer, audio: number): TorrentPlayer => ({
     ...player,
     key: `${player.key}:audio:${audio}`,
     videoSrc: gstreamerMasterUrl(hash, player.id, audio),
     playerTitle: title || player.label,
   })
 
-  const showAudioTracks = (player, tracks, anchor) => {
+  const showAudioTracks = (player: TorrentPlayer, tracks: ProbeTrack[], anchor?: HTMLElement | null) => {
     if (!tracks.length) {
       setSelectedPlayer(playerWithAudio(player, 0))
       return
@@ -275,7 +330,7 @@ const Torrent = ({ torrent }) => {
     }
   }
 
-  const resolveAudioTracks = async (player, anchor) => {
+  const resolveAudioTracks = async (player: TorrentPlayer, anchor?: HTMLElement | null) => {
     const cached = audioTracksByFile[player.id]
     if (cached !== undefined) {
       showAudioTracks(player, cached, anchor)
@@ -290,14 +345,14 @@ const Torrent = ({ torrent }) => {
       const tracks = probeAudioTracks(probe)
       setAudioTracksByFile(current => ({ ...current, [player.id]: tracks }))
       showAudioTracks(player, tracks, anchor)
-    } catch (_) {
+    } catch {
       if (isMounted.current) setSelectedPlayer(playerWithAudio(player, 0))
     } finally {
       if (isMounted.current) setIsResolvingAudio(false)
     }
   }
 
-  const audioTrackLabel = (track, ordinal) => {
+  const audioTrackLabel = (track: ProbeTrack, ordinal: number) => {
     const trackTitle = String(probeTrackValue(track, 'Title') || '').trim()
     const language = String(probeTrackValue(track, 'Language') || '').trim()
     const codec = audioCodecName(track)
@@ -315,7 +370,7 @@ const Torrent = ({ torrent }) => {
     }
   }
 
-  const selectAudioTrack = (track, ordinal) => {
+  const selectAudioTrack = (track: ProbeTrack, ordinal: number) => {
     if (!audioMenuPlayer) return
     const value = Number(probeTrackValue(track, 'Index'))
     const audio = Number.isInteger(value) && value >= 0 ? value : ordinal
@@ -329,7 +384,7 @@ const Torrent = ({ torrent }) => {
     setOpenEpisodeMenuAfterResolve(false)
   }, [openEpisodeMenuAfterResolve, players.length])
 
-  const markPlayerUnsupported = key => {
+  const markPlayerUnsupported = (key: string) => {
     setUnsupportedPlayers(current => ({ ...current, [key]: true }))
     setSelectedPlayer(current => (current?.key === key ? null : current))
   }
@@ -395,7 +450,6 @@ const Torrent = ({ torrent }) => {
                   anchorEl={audioMenuAnchor}
                   open={Boolean(audioMenuAnchor)}
                   onClose={() => setAudioMenuAnchor(null)}
-                  getContentAnchorEl={null}
                   anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
                   transformOrigin={{ vertical: 'top', horizontal: 'left' }}
                   PaperProps={{ style: { maxHeight: '65vh', width: 420, maxWidth: 'calc(100vw - 32px)' } }}
@@ -404,7 +458,7 @@ const Torrent = ({ torrent }) => {
                     const label = audioTrackLabel(track, ordinal)
                     const index = probeTrackValue(track, 'Index') ?? ordinal
                     return (
-                      <MenuItem key={index} onClick={() => selectAudioTrack(track, ordinal)}>
+                      <MenuItem key={String(index)} onClick={() => selectAudioTrack(track, ordinal)}>
                         <ListItemIcon style={{ minWidth: 34 }}>
                           <AudiotrackIcon fontSize='small' />
                         </ListItemIcon>
@@ -439,7 +493,6 @@ const Torrent = ({ torrent }) => {
                 anchorEl={episodeMenuAnchor}
                 open={Boolean(episodeMenuAnchor)}
                 onClose={() => setEpisodeMenuAnchor(null)}
-                getContentAnchorEl={null}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
                 transformOrigin={{ vertical: 'top', horizontal: 'left' }}
                 PaperProps={{ style: { maxHeight: '65vh', width: 420, maxWidth: 'calc(100vw - 32px)' } }}
@@ -492,7 +545,7 @@ const Torrent = ({ torrent }) => {
             />
           )}
 
-          <StyledButton onClick={() => dropTorrent(torrent)}>
+          <StyledButton onClick={() => dropTorrent()}>
             <CloseIcon />
             <span>{t('Drop')}</span>
           </StyledButton>
@@ -506,7 +559,7 @@ const Torrent = ({ torrent }) => {
         <TorrentCardDescription>
           <div className='description-title-wrapper'>
             <div className='description-section-name'>
-              {category ? (catIndex >= 0 ? t(catArray.name) : category) : t('Name')}
+              {category ? (catIndex >= 0 && catArray ? t(catArray.name) : category) : t('Name')}
             </div>
             <div className='description-torrent-title'>{parsedTitle}</div>
           </div>
@@ -517,13 +570,15 @@ const Torrent = ({ torrent }) => {
                 <StatusIndicator stat={stat} />
                 {t('Size')}
               </div>
-              <div className='description-statistics-element-value'>{torrentSize > 0 && humanizeSize(torrentSize)}</div>
+              <div className='description-statistics-element-value'>
+                {torrentSize != null && torrentSize > 0 && humanizeSize(torrentSize)}
+              </div>
             </div>
 
             <div className='description-statistics-element-wrapper'>
               <div className='description-section-name'>{t('Speed')}</div>
               <div className='description-statistics-element-value'>
-                {downloadSpeed > 0 ? humanizeSpeed(downloadSpeed) : '---'}
+                {downloadSpeed != null && downloadSpeed > 0 ? humanizeSpeed(downloadSpeed) : '---'}
               </div>
             </div>
 
@@ -557,7 +612,7 @@ const Torrent = ({ torrent }) => {
           <Button
             variant='contained'
             onClick={() => {
-              deleteTorrent(torrent)
+              deleteTorrent()
               closeDeleteTorrentAlert()
             }}
             color='secondary'
@@ -582,10 +637,10 @@ const Torrent = ({ torrent }) => {
   )
 }
 
-export const StatusIndicator = ({ stat }) => {
+export const StatusIndicator = ({ stat }: { stat?: number }) => {
   const { t } = useTranslation()
 
-  const values = {
+  const values: Record<number, string> = {
     [GETTING_INFO]: t('TorrentGettingInfo'),
     [PRELOAD]: t('TorrentPreload'),
     [WORKING]: t('TorrentWorking'),
@@ -593,7 +648,7 @@ export const StatusIndicator = ({ stat }) => {
     [IN_DB]: t('TorrentInDb'),
   }
 
-  const colors = {
+  const colors: Record<number, string> = {
     [GETTING_INFO]: '#2196F3',
     [PRELOAD]: '#FFC107',
     [WORKING]: '#CDDC39',
@@ -603,7 +658,10 @@ export const StatusIndicator = ({ stat }) => {
 
   return (
     <span className='description-status-wrapper'>
-      <StatusIndicators $color={colors[stat]} title={values[stat]} />
+      <StatusIndicators
+        $color={stat != null ? colors[stat] : undefined}
+        title={stat != null ? values[stat] : undefined}
+      />
     </span>
   )
 }

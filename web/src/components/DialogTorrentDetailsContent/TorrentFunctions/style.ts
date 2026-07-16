@@ -18,14 +18,14 @@ export const MainSectionButtonGroup = styled.div`
   }
 `
 
-export const SmallLabel = styled.div`
+export const SmallLabel = styled.div<{ $mb?: number }>`
   ${({
-    mb,
+    $mb,
     theme: {
       torrentFunctions: { fontColor },
     },
   }) => css`
-    ${mb && `margin-bottom: ${mb}px`};
+    ${$mb && `margin-bottom: ${$mb}px`};
     font-size: 20px;
     font-weight: 300;
     line-height: 1;
@@ -33,7 +33,7 @@ export const SmallLabel = styled.div`
 
     @media (max-width: 800px) {
       font-size: 18px;
-      ${mb && `margin-bottom: ${mb / 1.5}px`};
+      ${$mb && `margin-bottom: ${$mb / 1.5}px`};
     }
   `}
 `

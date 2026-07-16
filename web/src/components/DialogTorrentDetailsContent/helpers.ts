@@ -1,8 +1,9 @@
-const getExt = filename => {
+const getExt = (filename: string): string => {
   const ext = filename.split('.').pop()
   if (ext === filename) return ''
-  return ext.toLowerCase()
+  return (ext || '').toLowerCase()
 }
+
 const playableExtList = [
   // video
   '3g2',
@@ -77,4 +78,4 @@ const playableExtList = [
   'xm',
 ]
 
-export const isFilePlayable = fileName => playableExtList.includes(getExt(fileName))
+export const isFilePlayable = (fileName: string): boolean => playableExtList.includes(getExt(fileName))

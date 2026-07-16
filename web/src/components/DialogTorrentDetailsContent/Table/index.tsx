@@ -12,6 +12,7 @@ import {
   shouldUseGStreamerPlayer,
   useGStreamerRuntime,
 } from 'utils/GStreamer'
+import type { PlayableFile } from 'types/api'
 
 import VideoPlayer from '../../VideoPlayer'
 import { TableStyle, ShortTableWrapper, ShortTable } from './style'
@@ -27,15 +28,23 @@ ptt.addHandler('season', /сезон[- |. ](\d{1,3})|(\d{1,3})[- |. ]сезон/
   type: 'integer',
 })
 
+export interface TableProps {
+  playableFileList?: PlayableFile[]
+  viewedFileList?: number[]
+  selectedSeason?: number
+  seasonAmount?: number[] | null
+  hash: string
+}
+
 const Table = memo(
-  ({ playableFileList, viewedFileList, selectedSeason, seasonAmount, hash }) => {
+  ({ playableFileList, viewedFileList, selectedSeason, seasonAmount, hash }: TableProps) => {
     const { t } = useTranslation()
-    const [unsupportedPlayers, setUnsupportedPlayers] = useState({})
+    const [unsupportedPlayers, setUnsupportedPlayers] = useState<Record<string, boolean>>({})
     const gstRuntime = useGStreamerRuntime()
-    const preloadBuffer = fileId => fetch(`${streamHost()}?link=${hash}&index=${fileId}&preload`)
-    const getFileLink = (path, id) =>
-      `${streamHost()}/${encodeURIComponent(path.split('\\').pop().split('/').pop())}?link=${hash}&index=${id}&play`
-    const getPlayer = (path, id) => {
+    const preloadBuffer = (fileId: number) => fetch(`${streamHost()}?link=${hash}&index=${fileId}&preload`)
+    const getFileLink = (path: string, id: number) =>
+      `${streamHost()}/${encodeURIComponent(path.split('\\').pop()!.split('/').pop()!)}?link=${hash}&index=${id}&play`
+    const getPlayer = (path: string, id: number) => {
       const hls = shouldUseGStreamerPlayer(path, gstRuntime)
       return {
         key: `${id}:${hls ? 'gst' : 'stream'}`,
@@ -44,7 +53,7 @@ const Table = memo(
         heartbeatSrc: hls ? gstreamerHeartbeatUrl(hash) : '',
       }
     }
-    const markPlayerUnsupported = key => {
+    const markPlayerUnsupported = (key: string) => {
       setUnsupportedPlayers(current => ({ ...current, [key]: true }))
     }
     const fileHasEpisodeText = !!playableFileList?.find(({ path }) => ptt.parse(path).episode)
@@ -52,12 +61,12 @@ const Table = memo(
     const fileHasResolutionText = !!playableFileList?.find(({ path }) => ptt.parse(path).resolution)
 
     // if files in list is more then 1 and no season text detected by ptt.parse, show full name
-    const shouldDisplayFullFileName = playableFileList?.length > 1 && !fileHasEpisodeText
+    const shouldDisplayFullFileName = (playableFileList?.length ?? 0) > 1 && !fileHasEpisodeText
 
-    const isVlcUsed = JSON.parse(localStorage.getItem('isVlcUsed')) ?? false
-    const isInfuseUsed = JSON.parse(localStorage.getItem('isInfuseUsed')) ?? false
-    const isSenPlayerUsed = JSON.parse(localStorage.getItem('isSenPlayerUsed')) ?? false
-    const isIinaUsed = JSON.parse(localStorage.getItem('isIinaUsed')) ?? false
+    const isVlcUsed = JSON.parse(localStorage.getItem('isVlcUsed') || 'null') ?? false
+    const isInfuseUsed = JSON.parse(localStorage.getItem('isInfuseUsed') || 'null') ?? false
+    const isSenPlayerUsed = JSON.parse(localStorage.getItem('isSenPlayerUsed') || 'null') ?? false
+    const isIinaUsed = JSON.parse(localStorage.getItem('isIinaUsed') || 'null') ?? false
     const isStandalone = detectStandaloneApp()
     const isMac = isMacOS()
     const isApple = isAppleDevice()
@@ -90,14 +99,18 @@ const Table = memo(
               const player = getPlayer(path, id)
               const playerSupported = !unsupportedPlayers[player.key]
               const fullLink = new URL(link, window.location.href)
-              const infuseLink = `infuse://x-callback-url/play?url=${encodeURIComponent(fullLink)}`
-              const senPlayerLink = `senplayer://x-callback-url/play?url=${encodeURIComponent(fullLink)}`
-              const iinaLink = `iina://weblink?url=${encodeURIComponent(fullLink)}`
+              const infuseLink = `infuse://x-callback-url/play?url=${encodeURIComponent(fullLink.toString())}`
+              const senPlayerLink = `senplayer://x-callback-url/play?url=${encodeURIComponent(fullLink.toString())}`
+              const iinaLink = `iina://weblink?url=${encodeURIComponent(fullLink.toString())}`
 
               return (
                 (season === selectedSeason || !seasonAmount?.length) && (
-                  <tr key={id} className={isViewed ? 'viewed-file-row' : null}>
-                    <td data-label='viewed' aria-label='viewed' className={isViewed ? 'viewed-file-indicator' : null} />
+                  <tr key={id} className={isViewed ? 'viewed-file-row' : undefined}>
+                    <td
+                      data-label='viewed'
+                      aria-label='viewed'
+                      className={isViewed ? 'viewed-file-indicator' : undefined}
+                    />
                     <td data-label='name'>{shouldDisplayFullFileName ? path : title}</td>
                     {fileHasSeasonText && seasonAmount?.length === 1 && <td data-label='season'>{season}</td>}
                     {fileHasEpisodeText && <td data-label='episode'>{episode}</td>}
@@ -154,7 +167,7 @@ const Table = memo(
                             </a>
                           )
                         )}
-                        <CopyToClipboard text={fullLink}>
+                        <CopyToClipboard text={fullLink.toString()}>
                           <Button variant='outlined' color='primary' size='small'>
                             {t('CopyLink')}
                           </Button>
@@ -183,9 +196,9 @@ const Table = memo(
             const player = getPlayer(path, id)
             const playerSupported = !unsupportedPlayers[player.key]
             const fullLink = new URL(link, window.location.href)
-            const infuseLink = `infuse://x-callback-url/play?url=${encodeURIComponent(fullLink)}`
-            const senPlayerLink = `senplayer://x-callback-url/play?url=${encodeURIComponent(fullLink)}`
-            const iinaLink = `iina://weblink?url=${encodeURIComponent(fullLink)}`
+            const infuseLink = `infuse://x-callback-url/play?url=${encodeURIComponent(fullLink.toString())}`
+            const senPlayerLink = `senplayer://x-callback-url/play?url=${encodeURIComponent(fullLink.toString())}`
+            const iinaLink = `iina://weblink?url=${encodeURIComponent(fullLink.toString())}`
 
             return (
               (season === selectedSeason || !seasonAmount?.length) && (
@@ -279,7 +292,7 @@ const Table = memo(
                       </a>
                     )}
 
-                    <CopyToClipboard text={fullLink}>
+                    <CopyToClipboard text={fullLink.toString()}>
                       <Button variant='outlined' color='primary' size='small'>
                         {t('CopyLink')}
                       </Button>
