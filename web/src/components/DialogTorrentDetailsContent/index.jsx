@@ -160,7 +160,7 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }) {
         ) : (
           <DialogContentGrid>
             <MainSection>
-              <Poster poster={poster}>{poster ? <img alt='poster' src={poster} /> : <NoImageIcon />}</Poster>
+              <Poster $poster={poster}>{poster ? <img alt='poster' src={poster} /> : <NoImageIcon />}</Poster>
 
               <div>
                 {title && name !== title ? (

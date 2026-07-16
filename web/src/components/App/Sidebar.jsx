@@ -23,7 +23,7 @@ const Sidebar = ({ isDrawerOpen, setIsDonationDialogOpen, isOffline, isLoading, 
   const { t } = useTranslation()
 
   return (
-    <AppSidebarStyle isDrawerOpen={isDrawerOpen}>
+    <AppSidebarStyle $isDrawerOpen={isDrawerOpen}>
       <List>
         <AddDialogButton isOffline={isOffline} isLoading={isLoading} />
         <SearchDialogButton isOffline={isOffline} isLoading={isLoading} />

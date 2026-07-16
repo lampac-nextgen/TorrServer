@@ -7,7 +7,7 @@ import { pwaFooterHeight } from './PWAFooter/style'
 
 export const AppWrapper = styled.div`
   ${({
-    isDrawerOpen,
+    $isDrawerOpen,
     theme: {
       app: { appSecondaryColor },
     },
@@ -15,7 +15,7 @@ export const AppWrapper = styled.div`
     height: 100%;
     background: ${rgba(appSecondaryColor, 0.8)};
     display: grid;
-    grid-template-columns: ${isDrawerOpen ? '240px' : '60px'} 1fr;
+    grid-template-columns: ${$isDrawerOpen ? '240px' : '60px'} 1fr;
     grid-template-rows: 60px 1fr;
     grid-template-areas:
       'head head'
@@ -28,8 +28,9 @@ export const AppWrapper = styled.div`
 
     ${standaloneMedia(css`
       grid-template-columns: 0 1fr;
-      grid-template-rows: ${pwaFooterHeight}px 1fr ${pwaFooterHeight}px;
+      grid-template-rows: ${pwaFooterHeight}px 1fr calc(${pwaFooterHeight}px + env(safe-area-inset-bottom, 0px));
       height: 100vh;
+      height: 100dvh;
     `)}
   `}
 `
@@ -72,7 +73,7 @@ export const AppHeader = styled.div`
 `
 export const AppSidebarStyle = styled.div`
   ${({
-    isDrawerOpen,
+    $isDrawerOpen,
     theme: {
       app: { appSecondaryColor, sidebarBGColor, sidebarFillColor },
     },
@@ -104,9 +105,9 @@ export const AppSidebarStyle = styled.div`
       left: 0;
       bottom: 0;
       width: 240px;
-      transform: translateX(${isDrawerOpen ? '0' : '-100%'});
+      transform: translateX(${$isDrawerOpen ? '0' : '-100%'});
       transition: transform 195ms cubic-bezier(0.4, 0, 0.6, 1) 0ms;
-      box-shadow: ${isDrawerOpen ? '2px 0 8px rgba(0,0,0,0.3)' : 'none'};
+      box-shadow: ${$isDrawerOpen ? '2px 0 8px rgba(0,0,0,0.3)' : 'none'};
     }
 
     ${standaloneMedia(css`
@@ -121,26 +122,29 @@ export const TorrentListWrapper = styled.div`
 
   display: grid;
   place-content: start;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 570px));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 450px), 570px));
   gap: 20px;
 
   @media (max-width: 1260px), (max-height: 500px) {
     padding: 10px;
     gap: 15px;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   @media (max-width: 1100px) {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   @media (max-width: 700px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    padding: 12px;
+    gap: 12px;
   }
 
   ${standaloneMedia(css`
-    height: calc(100vh - ${pwaFooterHeight}px);
-    padding-bottom: 105px;
+    height: calc(100vh - ${pwaFooterHeight}px - env(safe-area-inset-bottom, 0px));
+    height: calc(100dvh - ${pwaFooterHeight}px - env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(105px + env(safe-area-inset-bottom, 0px));
   `)}
 `
 
@@ -181,7 +185,7 @@ export const SidebarOverlay = styled.div`
   display: none;
 
   @media (max-width: 700px) {
-    display: ${({ isDrawerOpen }) => (isDrawerOpen ? 'block' : 'none')};
+    display: ${({ $isDrawerOpen }) => ($isDrawerOpen ? 'block' : 'none')};
     position: fixed;
     top: 60px;
     left: 0;

@@ -11,7 +11,7 @@ import { standaloneMedia } from 'style/standaloneMedia'
 import DonateDialog from './DonateDialog'
 
 const StyledSnackbar = styled(Snackbar)`
-  ${standaloneMedia('margin-bottom: 90px')};
+  ${standaloneMedia('margin-bottom: calc(90px + env(safe-area-inset-bottom, 0px));')};
 `
 
 export default function DonateSnackbar() {

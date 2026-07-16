@@ -54,8 +54,29 @@ export const snakeSettings = {
   },
 }
 
-export const createGradient = (ctx, percentage, theme, snakeType) => {
-  const { pieceSize, completeColor, progressColor } = snakeSettings[theme][snakeType]
+/** Scale piece size down on narrow containers so the mini snake stays readable. */
+export const resolvePieceMetrics = (settings, containerWidth, isMini) => {
+  const basePiece = settings.pieceSize
+  const baseGap = settings.gapBetweenPieces
+
+  if (!containerWidth || containerWidth <= 0) {
+    return { pieceSize: basePiece, gap: baseGap }
+  }
+
+  if (!isMini) {
+    const scaled = Math.max(10, Math.min(basePiece, Math.floor(containerWidth / 28)))
+    return { pieceSize: scaled, gap: Math.max(2, Math.round(scaled * 0.2)) }
+  }
+
+  // Aim for ~10–14 cells per row on phones, up to default size on wider panels
+  const targetCells = containerWidth < 400 ? 10 : containerWidth < 600 ? 12 : 14
+  const pieceSize = Math.max(12, Math.min(basePiece, Math.floor((containerWidth - 8) / targetCells) - baseGap))
+  return { pieceSize, gap: Math.max(3, Math.min(baseGap, Math.round(pieceSize * 0.25))) }
+}
+
+export const createGradient = (ctx, percentage, theme, snakeType, overridePieceSize) => {
+  const { pieceSize: defaultSize, completeColor, progressColor } = snakeSettings[theme][snakeType]
+  const pieceSize = overridePieceSize || defaultSize
 
   const gradient = ctx.createLinearGradient(0, pieceSize, 0, 0)
   gradient.addColorStop(0, completeColor)

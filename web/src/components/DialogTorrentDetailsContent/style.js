@@ -3,14 +3,15 @@ import styled, { css } from 'styled-components'
 
 export const DialogContentGrid = styled.div`
   display: grid;
-  grid-template-columns: 70% 1fr;
+  grid-template-columns: minmax(0, 70%) minmax(0, 1fr);
   grid-template-rows: repeat(2, min-content);
   grid-template-areas:
     'main cache'
     'file-list file-list';
+  min-width: 0;
 
-  @media (max-width: 1450px) {
-    grid-template-columns: 1fr;
+  @media (max-width: 1200px) {
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: repeat(3, min-content);
     grid-template-areas:
       'main'
@@ -20,7 +21,7 @@ export const DialogContentGrid = styled.div`
 `
 export const Poster = styled.div`
   ${({
-    poster,
+    $poster,
     theme: {
       dialogTorrentDetailsContent: { posterBGColor },
     },
@@ -31,7 +32,7 @@ export const Poster = styled.div`
     align-self: center;
 
     ${
-      poster
+      $poster
         ? css`
             img {
               border-radius: 5px;
@@ -56,7 +57,7 @@ export const Poster = styled.div`
 
     @media (max-width: 840px) {
       ${
-        poster
+        $poster
           ? css`
               height: 200px;
             `
@@ -85,7 +86,13 @@ export const MainSection = styled.section`
     }
 
     @media (max-width: 800px) {
-      padding: 20px;
+      padding: 16px;
+      gap: 16px;
+    }
+
+    @media (max-width: 420px) {
+      padding: 12px;
+      gap: 12px;
     }
   `}
 `
@@ -102,9 +109,14 @@ export const CacheSection = styled.section`
     align-content: start;
     grid-template-rows: min-content 1fr min-content;
     background: ${chacheSectionBGColor};
+    min-width: 0;
 
     @media (max-width: 800px) {
-      padding: 20px;
+      padding: 16px;
+    }
+
+    @media (max-width: 420px) {
+      padding: 12px;
     }
   `}
 `

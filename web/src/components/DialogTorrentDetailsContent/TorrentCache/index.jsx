@@ -1,5 +1,5 @@
 import Measure from 'react-measure'
-import { useState, memo, useRef, useEffect, useContext } from 'react'
+import { useState, memo, useRef, useEffect, useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import isEqual from 'lodash/isEqual'
 import { DarkModeContext } from 'components/App'
@@ -8,7 +8,7 @@ import { THEME_MODES } from 'style/materialUISetup'
 import { useCreateCacheMap } from '../customHooks'
 import getShortCacheMap from './getShortCacheMap'
 import { SnakeWrapper, ScrollNotification } from './style'
-import { createGradient, snakeSettings } from './snakeSettings'
+import { createGradient, snakeSettings, resolvePieceMetrics } from './snakeSettings'
 
 const TorrentCache = ({ cache, isMini, isSnakeDebugMode }) => {
   const { t } = useTranslation()
@@ -21,60 +21,61 @@ const TorrentCache = ({ cache, isMini, isSnakeDebugMode }) => {
   const { isDarkMode } = useContext(DarkModeContext)
   const theme = isDarkMode ? THEME_MODES.DARK : THEME_MODES.LIGHT
 
-  const {
-    readerColor,
-    rangeColor,
-    borderWidth,
-    pieceSize,
-    gapBetweenPieces,
-    backgroundColor,
-    borderColor,
-    cacheMaxHeight,
-    completeColor,
-  } = snakeSettings[theme][settingsTarget]
+  const baseSettings = snakeSettings[theme][settingsTarget]
+  const { readerColor, rangeColor, borderWidth, backgroundColor, borderColor, cacheMaxHeight, completeColor } =
+    baseSettings
 
-  const canvasWidth = isMini ? width * 0.93 : width
+  const { pieceSize, gap } = useMemo(
+    () => resolvePieceMetrics(baseSettings, width, isMini),
+    [baseSettings, width, isMini],
+  )
 
-  const pieceSizeWithGap = pieceSize + gapBetweenPieces
-  const piecesInOneRow = Math.floor(canvasWidth / pieceSizeWithGap)
+  const canvasWidth = width > 0 ? (isMini ? Math.max(width - 8, width * 0.96) : width) : 0
+  const pieceSizeWithGap = pieceSize + gap
+  const piecesInOneRow = canvasWidth > 0 ? Math.max(1, Math.floor(canvasWidth / pieceSizeWithGap)) : 0
 
-  let shotCacheMap
-  if (isMini) {
-    const preloadPiecesAmount = Math.round(cache.Capacity / cache.PiecesLength - 1)
-    shotCacheMap = getShortCacheMap({ cacheMap, preloadPiecesAmount, piecesInOneRow })
-  }
-  const source = isMini ? shotCacheMap : cacheMap
-  const startingXPoint = Math.ceil((canvasWidth - pieceSizeWithGap * piecesInOneRow) / 2) // needed to center grid
-  const height = Math.ceil(source.length / piecesInOneRow) * pieceSizeWithGap
+  const source = useMemo(() => {
+    if (!piecesInOneRow) return []
+    if (!isMini) return cacheMap
+
+    const piecesLength = cache?.PiecesLength || 1
+    const preloadPiecesAmount = Math.max(0, Math.round((cache?.Capacity || 0) / piecesLength - 1))
+    return getShortCacheMap({ cacheMap, preloadPiecesAmount, piecesInOneRow })
+  }, [cache?.Capacity, cache?.PiecesLength, cacheMap, isMini, piecesInOneRow])
+
+  const startingXPoint = piecesInOneRow > 0 ? Math.ceil((canvasWidth - pieceSizeWithGap * piecesInOneRow) / 2) : 0
+  const height =
+    piecesInOneRow > 0 && source.length > 0 ? Math.ceil(source.length / piecesInOneRow) * pieceSizeWithGap : 0
 
   useEffect(() => {
-    if (!canvasWidth || !height) return
+    if (!canvasWidth || !height || !piecesInOneRow) return
 
     const canvas = canvasRef.current
+    if (!canvas) return
     canvas.width = canvasWidth
     canvas.height = height
     ctxRef.current = canvas.getContext('2d')
-  }, [canvasRef, height, canvasWidth])
+  }, [height, canvasWidth, piecesInOneRow])
 
   useEffect(() => {
     const ctx = ctxRef.current
-    if (!ctx) return
+    if (!ctx || !piecesInOneRow || !canvasWidth || !height) return
 
     ctx.clearRect(0, 0, canvasWidth, height)
 
-    source.forEach(({ percentage, priority, isReader, isReaderRange }, i) => {
+    source.forEach(({ percentage = 0, priority = 0, isReader, isReaderRange }, i) => {
       const inProgress = percentage > 0 && percentage < 100
       const isCompleted = percentage === 100
       const currentRow = i % piecesInOneRow
       const currentColumn = Math.floor(i / piecesInOneRow)
       const fixBlurStroke = borderWidth % 2 === 0 ? 0 : 0.5
       const requiredFix = Math.ceil(borderWidth / 2) + 1 + fixBlurStroke
-      const x = currentRow * pieceSize + currentRow * gapBetweenPieces + startingXPoint + requiredFix
-      const y = currentColumn * pieceSize + currentColumn * gapBetweenPieces + requiredFix
+      const x = currentRow * pieceSize + currentRow * gap + startingXPoint + requiredFix
+      const y = currentColumn * pieceSize + currentColumn * gap + requiredFix
 
       ctx.lineWidth = borderWidth
       ctx.fillStyle = inProgress
-        ? createGradient(ctx, percentage, theme, settingsTarget)
+        ? createGradient(ctx, percentage, theme, settingsTarget, pieceSize)
         : isCompleted
           ? completeColor
           : backgroundColor
@@ -93,26 +94,26 @@ const TorrentCache = ({ cache, isMini, isSnakeDebugMode }) => {
 
       if (isSnakeDebugMode && priority > 0) {
         let info = ''
-        if (priority === 1) info = ''
-        else if (priority === 2) info = 'H'
+        if (priority === 2) info = 'H'
         else if (priority === 3) info = 'R'
         else if (priority === 4) info = 'N'
         else if (priority === 5) info = 'A'
+        if (!info) return
+
         ctx.font = isMini ? '13px monospace' : '10px monospace'
         const xpad = isMini ? pieceSize * 0.35 : pieceSize * 0.29
         const ypad = isMini ? pieceSize * 0.69 : pieceSize * 0.78
-        ctx.fillStyle = 'black'
+        ctx.fillStyle = theme === THEME_MODES.DARK ? '#fff' : '#000'
         ctx.fillText(info, x + xpad, y + ypad)
       }
     })
   }, [
-    cacheMap,
     height,
     canvasWidth,
     piecesInOneRow,
     startingXPoint,
     pieceSize,
-    gapBetweenPieces,
+    gap,
     source,
     backgroundColor,
     borderColor,
@@ -127,14 +128,16 @@ const TorrentCache = ({ cache, isMini, isSnakeDebugMode }) => {
   ])
 
   return (
-    <Measure bounds onResize={({ bounds }) => setDimensions(bounds)}>
+    <Measure bounds onResize={({ bounds }) => bounds && setDimensions(bounds)}>
       {({ measureRef }) => (
-        <div style={{ display: 'flex', flexDirection: 'column' }} ref={measureRef}>
-          <SnakeWrapper themeType={theme} isMini={isMini}>
-            <canvas ref={canvasRef} />
+        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', minWidth: 0 }} ref={measureRef}>
+          <SnakeWrapper $themeType={theme} $isMini={isMini}>
+            {piecesInOneRow > 0 && height > 0 ? <canvas ref={canvasRef} /> : null}
           </SnakeWrapper>
 
-          {isMini && height >= cacheMaxHeight && <ScrollNotification>{t('ScrollDown')}</ScrollNotification>}
+          {isMini && height >= cacheMaxHeight && (
+            <ScrollNotification $themeType={theme}>{t('ScrollDown')}</ScrollNotification>
+          )}
         </div>
       )}
     </Measure>

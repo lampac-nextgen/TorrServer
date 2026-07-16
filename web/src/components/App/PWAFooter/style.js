@@ -10,12 +10,15 @@ export default styled.div`
   bottom: 0;
   width: 100%;
   height: ${pwaFooterHeight}px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-sizing: content-box;
 
   display: none;
 
   ${standaloneMedia(css`
     display: grid;
-    grid-template-columns: repeat(5, calc(100% / 5));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     justify-items: center;
+    align-items: center;
   `)}
 `

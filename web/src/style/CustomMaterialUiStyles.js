@@ -23,10 +23,11 @@ export const StyledDialog = styled(Dialog).attrs({
   ...(isStandaloneApp && { hideBackdrop: true, transitionDuration: 0 }),
 })`
   ${standaloneMedia(css`
-    margin-bottom: ${pwaFooterHeight}px;
+    margin-bottom: calc(${pwaFooterHeight}px + env(safe-area-inset-bottom, 0px));
 
     .MuiDialog-container .MuiPaper-root {
       box-shadow: none;
+      max-height: calc(100% - env(safe-area-inset-bottom, 0px));
     }
   `)}
 `

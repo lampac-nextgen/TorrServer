@@ -38,7 +38,9 @@ export const StyledTab = styled(Tab)`
     font-size: 11px;
   }
 
-  .MuiTab-wrapper {
+  .MuiTab-iconWrapper,
+  .MuiTab-labelIcon,
+  & > * {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -49,6 +51,7 @@ export const StyledTab = styled(Tab)`
     font-size: 9px;
     opacity: 0.7;
     display: block;
+    line-height: 1.1;
 
     @media (max-width: 600px) {
       font-size: 8px;

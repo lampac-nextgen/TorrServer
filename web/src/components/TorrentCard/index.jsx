@@ -22,7 +22,6 @@ import {
   Menu,
   MenuItem,
   useMediaQuery,
-  useTheme,
 } from '@mui/material'
 import axios from 'axios'
 import ptt from 'parse-torrent-title'
@@ -170,8 +169,7 @@ const Torrent = ({ torrent }) => {
     [],
   )
 
-  const theme = useTheme()
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'))
+  const fullScreen = useMediaQuery('(max-width:930px)')
 
   const openDetailedInfo = () => setIsDetailedInfoOpened(true)
   const closeDetailedInfo = () => setIsDetailedInfoOpened(false)

@@ -88,7 +88,7 @@ export default function App() {
 
             {/* Div100vh - iOS WebKit fix  */}
             <Div100vh>
-              <AppWrapper isDrawerOpen={isDrawerOpen}>
+              <AppWrapper $isDrawerOpen={isDrawerOpen}>
                 <AppHeader>
                   <StyledIconButton edge='start' color='inherit' onClick={() => setIsDrawerOpen(!isDrawerOpen)}>
                     {isDrawerOpen ? <CloseIcon /> : <MenuIcon />}
@@ -154,7 +154,7 @@ export default function App() {
                   </div>
                 </AppHeader>
 
-                <SidebarOverlay isDrawerOpen={isDrawerOpen} onClick={() => setIsDrawerOpen(false)} />
+                <SidebarOverlay $isDrawerOpen={isDrawerOpen} onClick={() => setIsDrawerOpen(false)} />
 
                 <Sidebar
                   isOffline={isOffline}

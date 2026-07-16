@@ -50,41 +50,40 @@ function getMimeType(url) {
 const canPlayNativeHls = video =>
   Boolean(video.canPlayType('application/vnd.apple.mpegurl') || video.canPlayType('application/x-mpegURL'))
 
-const PrettoSlider = styled(Slider)(({ theme }) => ({
+const PrettoSlider = styled(Slider)({
   color: '#00a572',
   height: 6,
-  [theme.breakpoints.down('sm')]: {
-    height: 0,
+  padding: '13px 0',
+  '@media (max-width: 930px)': {
+    height: 8,
+    padding: '16px 0',
   },
   '& .MuiSlider-thumb': {
     height: 18,
     width: 18,
     backgroundColor: '#fff',
     border: '2px solid currentColor',
-    marginTop: -6,
-    marginLeft: -12,
-    [theme.breakpoints.down('sm')]: {
-      height: 15,
-      width: 15,
-      marginTop: -5,
-      marginLeft: -7,
+    // MUI v5+ centers the thumb with transform; do not use v4 margin offsets
+    '@media (max-width: 930px)': {
+      height: 20,
+      width: 20,
     },
   },
   '& .MuiSlider-track': {
     height: 6,
     borderRadius: 4,
-    [theme.breakpoints.down('sm')]: {
-      height: 5,
+    '@media (max-width: 930px)': {
+      height: 8,
     },
   },
   '& .MuiSlider-rail': {
     height: 6,
     borderRadius: 4,
-    [theme.breakpoints.down('sm')]: {
-      height: 6,
+    '@media (max-width: 930px)': {
+      height: 8,
     },
   },
-}))
+})
 
 const pulse = keyframes`
   0% {
@@ -103,7 +102,7 @@ const pulse = keyframes`
 
 const VideoDialog = styled(StyledDialog)(({ theme }) => ({
   '& .MuiPaper-root': {
-    backgroundColor: '#fff',
+    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#fff',
     borderRadius: theme.spacing(1),
   },
 }))
@@ -117,14 +116,14 @@ const PlayerHeader = styled(DialogTitle)(({ theme }) => ({
   alignItems: 'center',
 }))
 
-const PlayerIconButton = styled(IconButton)(({ theme }) => ({
+const PlayerIconButton = styled(IconButton)({
   color: '#fff',
   padding: 12,
   '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' },
-  [theme.breakpoints.down('sm')]: {
+  '@media (max-width: 930px)': {
     padding: 10,
   },
-}))
+})
 
 const Controls = styled(Box)(({ theme }) => ({
   position: 'absolute',
@@ -140,7 +139,7 @@ const Controls = styled(Box)(({ theme }) => ({
   gap: theme.spacing(0.5),
   zIndex: 3,
   pointerEvents: 'auto',
-  [theme.breakpoints.down('sm')]: {
+  '@media (max-width: 930px)': {
     opacity: 1,
     padding: theme.spacing(0, 1, 2, 1),
     gap: theme.spacing(0),
@@ -193,16 +192,17 @@ const VideoWrapper = styled(Box)({
   },
 })
 
-const VideoEl = styled('video')(({ theme }) => ({
+const VideoEl = styled('video')({
   width: '100%',
   display: 'block',
   cursor: 'pointer',
-  [theme.breakpoints.down('sm')]: {
-    height: '94.5vh',
-    width: '100vw',
+  '@media (max-width: 930px)': {
+    height: 'min(94.5vh, 100dvh)',
+    width: '100%',
+    maxHeight: '100%',
     objectFit: 'contain',
   },
-}))
+})
 
 const LoadingOverlay = styled(Box)({
   position: 'absolute',
@@ -281,7 +281,7 @@ const VideoPlayer = ({
   initiallyOpen = false,
   onClose,
 }) => {
-  const isMobile = useMediaQuery('@media (max-width:930px)')
+  const isMobile = useMediaQuery('(max-width:930px)')
   const videoRef = useRef(null)
   const hlsRef = useRef(null)
   const onNotSupportedRef = useRef(onNotSupported)
