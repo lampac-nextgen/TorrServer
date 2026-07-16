@@ -5,7 +5,7 @@ export const Content = styled.div<{ $isEditMode?: boolean }>`
   ${({
     $isEditMode,
     theme: {
-      addDialog: { gradientStartColor, gradientEndColor, fontColor },
+      addDialog: { gradientStartColor, gradientEndColor, fontColor, separatorColor },
     },
   }) => css`
     height: 550px;
@@ -14,7 +14,7 @@ export const Content = styled.div<{ $isEditMode?: boolean }>`
     flex: 1;
     display: grid;
     grid-template-columns: repeat(${$isEditMode ? '1' : '2'}, minmax(0, 1fr));
-    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    border-bottom: 1px solid ${separatorColor};
     overflow: auto;
     color: ${fontColor};
     min-width: 0;
@@ -101,9 +101,15 @@ export const RightSideContainer = styled.div<{
   `}
 `
 export const LeftSide = styled.div`
-  display: flex;
-  flex-direction: column;
-  border-right: 1px solid rgba(0, 0, 0, 0.12);
+  ${({
+    theme: {
+      addDialog: { separatorColor },
+    },
+  }) => css`
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid ${separatorColor};
+  `}
 `
 
 export const LeftSideBottomSectionBasicStyles = css`
@@ -115,22 +121,28 @@ export const LeftSideBottomSectionBasicStyles = css`
 
 export const LeftSideBottomSectionNoFile = styled.div<{ $isDragActive?: boolean }>`
   ${LeftSideBottomSectionBasicStyles}
-  border: 4px dashed rgba(0,0,0,0.1);
-  text-align: center;
-  outline: none;
+  ${({
+    theme: {
+      addDialog: { dropzoneBorderColor, dropzoneHoverBGColor },
+    },
+  }) => css`
+    border: 4px dashed ${dropzoneBorderColor};
+    text-align: center;
+    outline: none;
+
+    justify-items: center;
+    grid-template-rows: 130px 1fr;
+    cursor: pointer;
+
+    :hover {
+      background-color: ${dropzoneHoverBGColor};
+      svg {
+        transform: translateY(-4%);
+      }
+    }
+  `}
 
   ${({ $isDragActive }) => $isDragActive && `border: 4px dashed green`};
-
-  justify-items: center;
-  grid-template-rows: 130px 1fr;
-  cursor: pointer;
-
-  :hover {
-    background-color: rgba(0, 0, 0, 0.04);
-    svg {
-      transform: translateY(-4%);
-    }
-  }
 
   @media (max-width: 930px) {
     border: 4px dashed transparent;
@@ -227,14 +239,9 @@ export const PosterSuggestionsItem = styled.div`
     height: 60px;
   }
 
-  @media (max-width: 375px) {
-    width: 71px;
-    height: 71px;
-  }
-
   @media (max-width: 355px) {
-    width: 60px;
-    height: 60px;
+    width: 52px;
+    height: 52px;
   }
 
   img {
@@ -250,7 +257,7 @@ export const PosterSuggestionsItem = styled.div`
   }
 `
 
-export const Poster = styled.div<{ $poster?: string }>`
+export const Poster = styled.div<{ $poster?: boolean }>`
   ${({
     $poster,
     theme: {
@@ -292,12 +299,12 @@ export const ClearPosterButton = styled(Button)<{ $showbutton?: boolean }>`
   justify-self: flex-start;
   transform: translateY(-50%);
   position: absolute;
-  min-height: 36px;
+  min-height: 44px;
   ${({ $showbutton }) => !$showbutton && 'display: none'};
 
   @media (max-width: 540px) {
     transform: translateY(-140%);
-    min-height: 40px;
+    min-height: 44px;
   }
 `
 
@@ -306,11 +313,11 @@ export const UpdatePosterButton = styled(Button)`
   justify-self: flex-end;
   transform: translateY(-50%);
   position: absolute;
-  min-height: 36px;
+  min-height: 44px;
 
   @media (max-width: 540px) {
     transform: translateY(-140%);
-    min-height: 40px;
+    min-height: 44px;
   }
 `
 
@@ -327,8 +334,8 @@ export const PosterLanguageSwitch = styled.div<{ $showbutton?: boolean }>`
     top: 0;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     background: ${languageSwitchBGColor};
     border-radius: 50%;
     display: grid;

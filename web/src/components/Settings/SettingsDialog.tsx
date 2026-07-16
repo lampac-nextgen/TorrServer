@@ -28,7 +28,7 @@ interface SettingsDialogProps {
 
 export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
   const { t } = useTranslation()
-  const fullScreen = useMediaQuery('@media (max-width:930px)')
+  const fullScreen = useMediaQuery('(max-width:930px)')
   const { direction } = useTheme()
 
   const [settings, setSettings] = useState<BTSets | undefined>()
@@ -250,9 +250,9 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
 
         <Button
           onClick={() => {
-            setCacheSize(defaultSettings.CacheSize)
-            setCachePercentage(defaultSettings.ReaderReadAHead)
-            setPreloadCachePercentage(defaultSettings.PreloadCache)
+            setCacheSize(defaultSettings.CacheSize ?? 64)
+            setCachePercentage(defaultSettings.ReaderReadAHead ?? 95)
+            setPreloadCachePercentage(defaultSettings.PreloadCache ?? 50)
             updateSettings(defaultSettings)
             // Clear TMDB cache when resetting to defaults
             clearTMDBCache()

@@ -18,7 +18,7 @@ export default function AboutDialog() {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [torrServerVersion, setTorrServerVersion] = useState('')
-  const fullScreen = useMediaQuery('@media (max-width:930px)')
+  const fullScreen = useMediaQuery('(max-width:930px)')
   useEffect(() => {
     axios.get(echoHost()).then(({ data }) => setTorrServerVersion(data))
   }, [])

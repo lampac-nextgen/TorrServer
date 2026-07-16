@@ -19,7 +19,7 @@ export const DialogContentGrid = styled.div`
       'file-list';
   }
 `
-export const Poster = styled.div<{ $poster?: string | boolean }>`
+export const Poster = styled.div<{ $poster?: boolean }>`
   ${({
     $poster,
     theme: {
@@ -299,7 +299,7 @@ export const LoadingProgress = styled.div.attrs<{
     $value = 0,
     $fullAmount = 1,
     theme: {
-      dialogTorrentDetailsContent: { gradientStartColor, gradientEndColor },
+      dialogTorrentDetailsContent: { gradientStartColor, gradientEndColor, bufferTrailStartColor, bufferTrailEndColor },
     },
   }) => {
     const percentage = Math.min(100, (($value as number) * 100) / ($fullAmount as number))
@@ -307,16 +307,21 @@ export const LoadingProgress = styled.div.attrs<{
     return {
       // this block is here according to styled-components recomendation about fast changable components
       style: {
-        background: `linear-gradient(to right, ${gradientStartColor} 0%, ${gradientEndColor} ${percentage}%, #eee ${percentage}%, #fff 100%)`,
+        background: `linear-gradient(to right, ${gradientStartColor} 0%, ${gradientEndColor} ${percentage}%, ${bufferTrailStartColor} ${percentage}%, ${bufferTrailEndColor} 100%)`,
       },
     }
   },
 )`
-  ${({ $label }) => css`
+  ${({
+    $label,
+    theme: {
+      dialogTorrentDetailsContent: { titleFontColor },
+    },
+  }) => css`
     border: 1px solid;
     padding: 10px 20px;
     border-radius: 5px;
-    color: #000;
+    color: ${titleFontColor};
 
     :before {
       content: '${$label || ''}';

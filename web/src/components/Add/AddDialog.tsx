@@ -98,7 +98,7 @@ export default function AddDialog({
     torrentSource.match(linkRegex) !== null && handleClose()
   }, [isSaving, torrents, torrentSource, currentSourceHash, handleClose])
 
-  const fullScreen = useMediaQuery('@media (max-width:930px)')
+  const fullScreen = useMediaQuery('(max-width:930px)')
 
   const updateTitleFromSource = useCallback(() => {
     parseTorrentTitle(torrentSource, ({ parsedTitle: nextParsedTitle, originalName: nextOriginalName }) => {

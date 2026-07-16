@@ -10,7 +10,6 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemSecondaryAction,
   IconButton,
   Typography,
 } from '@mui/material'
@@ -109,27 +108,37 @@ export default function TorznabSettings({ settings, inputForm, updateSettings }:
       >
         <List dense>
           {(TorznabUrls || []).map((url, index) => (
-            <ListItem key={`${url.Host}-${url.Key}`} style={{ paddingLeft: 0, paddingRight: 48 }}>
+            <ListItem
+              key={`${url.Host}-${url.Key}`}
+              style={{ paddingLeft: 0 }}
+              secondaryAction={
+                <IconButton
+                  edge='end'
+                  aria-label='delete'
+                  onClick={() => handleDelete(index)}
+                  sx={{ minWidth: 44, minHeight: 44 }}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              }
+            >
               <ListItemText
                 primary={url.Name || url.Host}
                 secondary={
                   <>
                     {url.Name && (
-                      <Typography component='span' variant='body2' display='block' color='textSecondary'>
+                      <Typography component='span' variant='body2' display='block' color='text.secondary'>
                         {url.Host}
                       </Typography>
                     )}
                     {`Key: ${url.Key.substring(0, 5)}...`}
                   </>
                 }
-                primaryTypographyProps={{ style: { wordBreak: 'break-all' } }}
-                secondaryTypographyProps={{ style: { wordBreak: 'break-all' } }}
+                slotProps={{
+                  primary: { sx: { wordBreak: 'break-all' } },
+                  secondary: { sx: { wordBreak: 'break-all' } },
+                }}
               />
-              <ListItemSecondaryAction>
-                <IconButton edge='end' aria-label='delete' onClick={() => handleDelete(index)}>
-                  <DeleteIcon />
-                </IconButton>
-              </ListItemSecondaryAction>
             </ListItem>
           ))}
         </List>

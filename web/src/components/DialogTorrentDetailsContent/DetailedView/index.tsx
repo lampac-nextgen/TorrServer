@@ -59,7 +59,7 @@ export default function DetailedView({
       </DetailedViewWidgetSection>
 
       <DetailedViewCacheSection>
-        <SectionTitle $color='#000' $mb={20}>
+        <SectionTitle $mb={20}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>{t('Cache')}</span>
 

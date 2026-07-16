@@ -221,7 +221,7 @@ export default function RightSideComponent({
         </FormControl>
 
         <PosterWrapper>
-          <Poster $poster={isPosterUrlCorrect ? '1' : undefined}>
+          <Poster $poster={isPosterUrlCorrect}>
             {isPosterUrlCorrect ? <img src={posterUrl} alt='poster' /> : <NoImageIcon />}
           </Poster>
 

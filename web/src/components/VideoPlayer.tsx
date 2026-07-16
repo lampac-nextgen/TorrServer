@@ -121,13 +121,6 @@ const pulse = keyframes`
   }
 `
 
-const VideoDialog = styled(StyledDialog)(({ theme }) => ({
-  '& .MuiPaper-root': {
-    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#fff',
-    borderRadius: theme.spacing(1),
-  },
-}))
-
 const PlayerHeader = styled(DialogTitle)(({ theme }) => ({
   backgroundColor: '#00a572',
   color: '#fff',
@@ -536,7 +529,21 @@ const VideoPlayer = ({
           <span>{t('Play')}</span>
         </StyledButton>
       )}
-      <VideoDialog open={open} onClose={closePlayer} maxWidth='lg' fullWidth fullScreen={isMobile}>
+      <StyledDialog
+        open={open}
+        onClose={closePlayer}
+        maxWidth='lg'
+        fullWidth
+        fullScreen={isMobile}
+        slotProps={{
+          paper: {
+            sx: theme => ({
+              backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#fff',
+              borderRadius: theme.spacing(1),
+            }),
+          },
+        }}
+      >
         <PlayerHeader>
           <Typography variant='h6' noWrap>
             {title || 'Video Player'}
@@ -689,7 +696,7 @@ const VideoPlayer = ({
             </Controls>
           </VideoWrapper>
         </DialogContent>
-      </VideoDialog>
+      </StyledDialog>
     </>
   )
 }

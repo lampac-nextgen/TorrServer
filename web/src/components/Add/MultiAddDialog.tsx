@@ -158,7 +158,7 @@ export interface MultiAddDialogProps {
 
 export default function MultiAddDialog({ files, handleClose }: MultiAddDialogProps) {
   const { t } = useTranslation()
-  const fullScreen = useMediaQuery('@media (max-width:930px)')
+  const fullScreen = useMediaQuery('(max-width:930px)')
   const ref = useOnStandaloneAppOutsideClick(handleClose)
   const [isSaving, setIsSaving] = useState(false)
 

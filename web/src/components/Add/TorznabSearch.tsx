@@ -3,12 +3,12 @@ import {
   TextField,
   Button,
   List,
+  ListItem,
   ListItemButton,
   ListItemText,
   CircularProgress,
   Typography,
   Divider,
-  ListItemSecondaryAction,
   IconButton,
   Select,
   MenuItem,
@@ -195,34 +195,41 @@ export default function TorznabSearch({ onSelect }: TorznabSearchProps) {
                   const formattedSize = formatSizeToClassicUnits(sizeBytes)
                   return (
                     <React.Fragment key={item.Hash || item.Link || index}>
-                      <ListItemButton onClick={() => onSelect(item.Magnet || item.Link || '')}>
-                        <ListItemText
-                          primary={item.Title}
-                          secondary={`${formattedSize} • S:${item.Seed || 0} P:${item.Peer || 0}`}
-                          primaryTypographyProps={{
-                            noWrap: !isMobile,
-                            style: {
-                              fontSize: isMobile ? '0.85rem' : '0.9rem',
-                              whiteSpace: isMobile ? 'normal' : 'nowrap',
-                            },
-                          }}
-                          secondaryTypographyProps={{
-                            style: {
-                              fontSize: isMobile ? '0.75rem' : '0.8rem',
-                            },
-                          }}
-                        />
-                        <ListItemSecondaryAction>
+                      <ListItem
+                        disablePadding
+                        secondaryAction={
                           <IconButton
                             edge='end'
                             aria-label='add'
                             onClick={() => onSelect(item.Magnet || item.Link || '')}
-                            size={isMobile ? 'small' : 'medium'}
+                            size='medium'
+                            sx={{ minWidth: 44, minHeight: 44 }}
                           >
                             <AddIcon />
                           </IconButton>
-                        </ListItemSecondaryAction>
-                      </ListItemButton>
+                        }
+                      >
+                        <ListItemButton onClick={() => onSelect(item.Magnet || item.Link || '')}>
+                          <ListItemText
+                            primary={item.Title}
+                            secondary={`${formattedSize} • S:${item.Seed || 0} P:${item.Peer || 0}`}
+                            slotProps={{
+                              primary: {
+                                noWrap: !isMobile,
+                                sx: {
+                                  fontSize: isMobile ? '0.85rem' : '0.9rem',
+                                  whiteSpace: isMobile ? 'normal' : 'nowrap',
+                                },
+                              },
+                              secondary: {
+                                sx: {
+                                  fontSize: isMobile ? '0.75rem' : '0.8rem',
+                                },
+                              },
+                            }}
+                          />
+                        </ListItemButton>
+                      </ListItem>
                       <Divider />
                     </React.Fragment>
                   )

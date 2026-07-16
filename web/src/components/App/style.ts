@@ -157,8 +157,8 @@ export const HeaderToggle = styled.div`
     cursor: pointer;
     border-radius: 50%;
     background: ${headerToggleColor};
-    height: 35px;
-    width: 35px;
+    height: 44px;
+    width: 44px;
     transition: all 0.2s;
     font-weight: 600;
     display: grid;
@@ -170,12 +170,12 @@ export const HeaderToggle = styled.div`
     }
 
     @media (max-width: 700px) {
-      height: 28px;
-      width: 28px;
+      height: 40px;
+      width: 40px;
       font-size: 12px;
 
       svg {
-        width: 17px;
+        width: 20px;
       }
     }
   `}

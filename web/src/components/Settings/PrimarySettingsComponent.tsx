@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { USBIcon, RAMIcon } from 'icons'
 import { FormControlLabel, Switch } from '@mui/material'
 import TextField from '@mui/material/TextField'
+import { useTheme } from 'styled-components'
 
 import {
   CacheLegendGrid,
@@ -12,8 +13,6 @@ import {
   CacheStorageSelector,
   SettingSectionLabel,
   PreloadCachePercentage,
-  cacheBeforeReaderColor,
-  cacheAfterReaderColor,
 } from './style'
 import SliderInput from './SliderInput'
 import type { BTSets, SettingsInputHandler, SettingsUpdater } from 'types/api'
@@ -56,6 +55,9 @@ export default function PrimarySettingsComponent({
   updateSettings,
 }: PrimarySettingsProps) {
   const { t } = useTranslation()
+  const theme = useTheme()
+  const cacheBeforeReaderColor = theme.settingsDialog.cacheBeforeReaderColor
+  const cacheAfterReaderColor = theme.settingsDialog.cacheAfterReaderColor
   const { UseDisk, TorrentsSavePath, RemoveCacheOnDrop } = settings || {}
   const preloadCacheSize = Math.round((cacheSize / 100) * preloadCachePercentage)
 
@@ -68,6 +70,8 @@ export default function PrimarySettingsComponent({
           $value={100 - cachePercentage}
           $label={`${t('Cache')} ${cacheSize} ${t('MB')}`}
           $preloadCachePercentage={preloadCachePercentage}
+          $beforeColor={cacheBeforeReaderColor}
+          $afterColor={cacheAfterReaderColor}
         />
 
         <CacheLegendGrid>

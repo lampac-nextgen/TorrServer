@@ -5,12 +5,12 @@ import {
   TextField,
   Button,
   List,
+  ListItem,
   ListItemButton,
   ListItemText,
   CircularProgress,
   Typography,
   Divider,
-  ListItemSecondaryAction,
   IconButton,
   Snackbar,
   useMediaQuery,
@@ -27,6 +27,7 @@ import { StyledDialog, StyledHeader } from 'style/CustomMaterialUiStyles'
 import { parseSizeToBytes, formatSizeToClassicUnits } from 'utils/Utils'
 import { getMoviePosters, shortenTitleForPosterSearch } from 'components/Add/helpers'
 import type { BTSets, SearchResultItem, TorznabUrl } from 'types/api'
+import { useTheme } from 'styled-components'
 
 import { Content } from './style'
 
@@ -40,6 +41,10 @@ type TrackerSelection = number | 'rutor'
 
 export default function SearchDialog({ handleClose }: SearchDialogProps) {
   const { t } = useTranslation()
+  const scTheme = useTheme()
+  const chromeBorder = scTheme.settingsDialog.contentBG
+  const chromeSurface = scTheme.app.paperColor
+  const separatorColor = scTheme.addDialog.separatorColor
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResultItem[]>([])
   const [loading, setLoading] = useState(false)
@@ -52,7 +57,7 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
   const [selectedTracker, setSelectedTracker] = useState<TrackerSelection>(-1)
   const [sortField, setSortField] = useState<SortField>('')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
-  const fullScreen = useMediaQuery('@media (max-width:930px)')
+  const fullScreen = useMediaQuery('(max-width:930px)')
   const isMobile = useMediaQuery('(max-width:600px)')
   const ref = useOnStandaloneAppOutsideClick(handleClose)
 
@@ -247,9 +252,9 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
                 marginBottom: '16px',
                 alignItems: 'center',
                 padding: isMobile ? '12px 8px' : '8px 12px',
-                backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                backgroundColor: chromeSurface,
                 borderRadius: '4px',
-                border: '1px solid rgba(0, 0, 0, 0.08)',
+                border: `1px solid ${separatorColor}`,
                 flexWrap: isMobile ? 'wrap' : 'nowrap',
               }}
             >
@@ -292,7 +297,7 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
 
           <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
             {searched && results.length === 0 && !loading && (
-              <Typography align='center' variant='body1' color='textSecondary'>
+              <Typography align='center' variant='body1' color='text.secondary'>
                 {t('Torznab.NoResultsFound')}
               </Typography>
             )}
@@ -303,41 +308,48 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
                 const formattedSize = formatSizeToClassicUnits(sizeBytes)
                 return (
                   <div key={item.Hash || item.Link || index}>
-                    <ListItemButton onClick={() => handleAdd(item)}>
-                      <ListItemText
-                        primary={item.Title}
-                        secondary={
-                          <>
-                            <Typography component='span' variant='body2' color='textPrimary'>
-                              {formattedSize}
-                            </Typography>
-                            {` • S: ${item.Seed || 0} P: ${item.Peer || 0}`}
-                          </>
-                        }
-                        primaryTypographyProps={{
-                          style: {
-                            whiteSpace: isMobile ? 'normal' : 'inherit',
-                            fontSize: isMobile ? '0.9rem' : 'inherit',
-                          },
-                        }}
-                        secondaryTypographyProps={{
-                          style: {
-                            fontSize: isMobile ? '0.75rem' : 'inherit',
-                          },
-                        }}
-                      />
-                      <ListItemSecondaryAction>
+                    <ListItem
+                      disablePadding
+                      secondaryAction={
                         <IconButton
                           edge='end'
                           aria-label='add'
                           onClick={() => handleAdd(item)}
                           disabled={adding}
-                          size={isMobile ? 'small' : 'medium'}
+                          size='medium'
+                          sx={{ minWidth: 44, minHeight: 44 }}
                         >
                           <DownloadIcon color='secondary' />
                         </IconButton>
-                      </ListItemSecondaryAction>
-                    </ListItemButton>
+                      }
+                    >
+                      <ListItemButton onClick={() => handleAdd(item)}>
+                        <ListItemText
+                          primary={item.Title}
+                          secondary={
+                            <>
+                              <Typography component='span' variant='body2' color='text.primary'>
+                                {formattedSize}
+                              </Typography>
+                              {` • S: ${item.Seed || 0} P: ${item.Peer || 0}`}
+                            </>
+                          }
+                          slotProps={{
+                            primary: {
+                              sx: {
+                                whiteSpace: isMobile ? 'normal' : 'inherit',
+                                fontSize: isMobile ? '0.9rem' : 'inherit',
+                              },
+                            },
+                            secondary: {
+                              sx: {
+                                fontSize: isMobile ? '0.75rem' : 'inherit',
+                              },
+                            },
+                          }}
+                        />
+                      </ListItemButton>
+                    </ListItem>
                     <Divider component='li' />
                   </div>
                 )
@@ -355,7 +367,8 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
           padding: '16px',
           display: 'flex',
           justifyContent: 'flex-end',
-          borderTop: '1px solid rgba(0,0,0,0.12)',
+          borderTop: `1px solid ${separatorColor}`,
+          backgroundColor: chromeBorder,
         }}
       >
         <Button onClick={handleClose} color='secondary' variant='outlined'>

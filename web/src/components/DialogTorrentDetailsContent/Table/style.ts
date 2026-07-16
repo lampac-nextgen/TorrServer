@@ -1,12 +1,5 @@
 import styled, { css } from 'styled-components'
 
-const viewedPrimaryColor = '#858c90'
-const viewedSecondaryColor = '#8c9498'
-const viewedTertiaryColor = '#949ca0'
-const bigTableDividerColor = '#d2d2d2'
-const bigTableDefaultRowColor = '#f3f3f3'
-const bigTableViewedRowColor = '#ddd'
-
 const viewedIndicator = css`
   ${({
     theme: {
@@ -29,7 +22,7 @@ const viewedIndicator = css`
 export const TableStyle = styled.table`
   ${({
     theme: {
-      table: { defaultPrimaryColor },
+      table: { defaultPrimaryColor, rowBGColor, viewedRowBGColor, dividerColor, rowFontColor },
     },
   }) => css`
     border-collapse: collapse;
@@ -39,7 +32,7 @@ export const TableStyle = styled.table`
     border-radius: 5px 5px 0 0;
     overflow: hidden;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-    color: #000;
+    color: ${rowFontColor};
 
     thead tr {
       background: ${defaultPrimaryColor};
@@ -54,15 +47,15 @@ export const TableStyle = styled.table`
     }
 
     tbody tr {
-      border-bottom: 1px solid ${bigTableDividerColor};
-      background: ${bigTableDefaultRowColor};
+      border-bottom: 1px solid ${dividerColor};
+      background: ${rowBGColor};
 
       :last-of-type {
         border-bottom: 2px solid ${defaultPrimaryColor};
       }
 
       &.viewed-file-row {
-        background: ${bigTableViewedRowColor};
+        background: ${viewedRowBGColor};
       }
     }
 
@@ -87,10 +80,9 @@ export const TableStyle = styled.table`
 `
 
 export const ShortTableWrapper = styled.div`
-  display: grid;
+  display: none;
   gap: 20px;
   grid-template-columns: repeat(2, 1fr);
-  display: none;
 
   @media (max-width: 970px) {
     display: grid;
@@ -106,9 +98,18 @@ export const ShortTable = styled.div<{ $isViewed?: boolean }>`
   ${({
     $isViewed,
     theme: {
-      table: { defaultPrimaryColor, defaultSecondaryColor, defaultTertiaryColor },
+      table: {
+        defaultPrimaryColor,
+        defaultSecondaryColor,
+        defaultTertiaryColor,
+        shortTableButtonsBGColor,
+        viewedPrimaryColor,
+        viewedSecondaryColor,
+        viewedTertiaryColor,
+      },
     },
   }) => css`
+    display: grid;
     width: 100%;
     grid-template-rows: repeat(3, max-content);
     border-radius: 5px;
@@ -187,7 +188,11 @@ export const ShortTable = styled.div<{ $isViewed?: boolean }>`
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         align-items: center;
         gap: 20px;
-        background: #f3f3f3;
+        background: ${shortTableButtonsBGColor};
+
+        .MuiButton-root {
+          min-height: 44px;
+        }
 
         @media (max-width: 410px) {
           gap: 10px;

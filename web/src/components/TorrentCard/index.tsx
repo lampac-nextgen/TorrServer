@@ -452,7 +452,7 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
                   onClose={() => setAudioMenuAnchor(null)}
                   anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
                   transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-                  PaperProps={{ style: { maxHeight: '65vh', width: 420, maxWidth: 'calc(100vw - 32px)' } }}
+                  slotProps={{ paper: { style: { maxHeight: '65vh', width: 420, maxWidth: 'calc(100vw - 32px)' } } }}
                 >
                   {audioMenuTracks.map((track, ordinal) => {
                     const label = audioTrackLabel(track, ordinal)
@@ -495,7 +495,7 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
                 onClose={() => setEpisodeMenuAnchor(null)}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
                 transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-                PaperProps={{ style: { maxHeight: '65vh', width: 420, maxWidth: 'calc(100vw - 32px)' } }}
+                slotProps={{ paper: { style: { maxHeight: '65vh', width: 420, maxWidth: 'calc(100vw - 32px)' } } }}
               >
                 {availablePlayers.map(player => (
                   <MenuItem
@@ -596,7 +596,7 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
         fullScreen={fullScreen}
         fullWidth
         maxWidth='xl'
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         ref={detailedInfoDialogRef}
       >
         <DialogTorrentDetailsContent closeDialog={closeDetailedInfo} torrent={torrent} />

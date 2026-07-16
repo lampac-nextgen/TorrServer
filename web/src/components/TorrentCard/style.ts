@@ -230,7 +230,7 @@ export const StyledButton = styled.button`
     font-size: 0.9rem;
     letter-spacing: 0.009em;
     padding: 0 12px;
-    min-height: 40px;
+    min-height: 44px;
     min-width: 0;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
@@ -262,7 +262,7 @@ export const StyledButton = styled.button`
       padding: 8px 10px;
       justify-content: center;
       font-size: 0.8rem;
-      min-height: 36px;
+      min-height: 44px;
 
       svg {
         display: none;

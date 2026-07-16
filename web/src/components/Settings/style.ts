@@ -1,10 +1,7 @@
 import styled, { css } from 'styled-components'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
-import { mainColors } from 'style/colors'
 import { StyledHeader } from 'style/CustomMaterialUiStyles'
-
-export const cacheBeforeReaderColor = '#b3dfc9'
 
 export const StyledTabs = styled(Tabs)`
   .MuiTabs-flexContainer {
@@ -58,8 +55,6 @@ export const StyledTab = styled(Tab)`
     }
   }
 `
-export const cacheAfterReaderColor = mainColors.light.primary
-
 export const SettingsHeader = styled(StyledHeader)`
   display: grid;
   grid-auto-flow: column;
@@ -265,10 +260,6 @@ export const GstSettingsContent = styled(SecondarySettingsContent)`
   .MuiFormControlLabel-root {
     margin-top: 8px;
   }
-
-  .MuiSelect-outlined {
-    background: #fff;
-  }
 `
 export const StorageButton = styled.div<{ $small?: boolean; $selected?: boolean }>`
   ${({ $small, $selected }) => css`
@@ -441,17 +432,25 @@ export const PreloadCachePercentage = styled.div.attrs<{
   $value?: number
   $label?: string
   $preloadCachePercentage?: number
-}>(({ $value }) => ({
+  $beforeColor?: string
+  $afterColor?: string
+}>(({ $value, $beforeColor, $afterColor }) => ({
   // this block is here according to styled-components recomendation about fast changable components
   style: {
-    background: `linear-gradient(to right, ${cacheBeforeReaderColor} 0%, ${cacheBeforeReaderColor} ${$value}%, ${cacheAfterReaderColor} ${$value}%, ${cacheAfterReaderColor} 100%)`,
+    background: `linear-gradient(to right, ${$beforeColor} 0%, ${$beforeColor} ${$value}%, ${$afterColor} ${$value}%, ${$afterColor} 100%)`,
   },
 }))`
-  ${({ $label, $preloadCachePercentage }) => css`
-    border: 1px solid #323637;
+  ${({
+    $label,
+    $preloadCachePercentage,
+    theme: {
+      settingsDialog: { preloadCacheBorderColor, preloadCacheFontColor },
+    },
+  }) => css`
+    border: 1px solid ${preloadCacheBorderColor};
     padding: 10px 20px;
     border-radius: 5px;
-    color: #000;
+    color: ${preloadCacheFontColor};
     margin-bottom: 10px;
     position: relative;
 
@@ -466,7 +465,7 @@ export const PreloadCachePercentage = styled.div.attrs<{
       content: '';
       width: ${$preloadCachePercentage}%;
       height: 100%;
-      background: #323637;
+      background: ${preloadCacheBorderColor};
       position: absolute;
       bottom: 0;
       left: 0;

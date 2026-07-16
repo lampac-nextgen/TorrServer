@@ -3,7 +3,6 @@ import styled, { css } from 'styled-components'
 export const Header = styled.div`
   ${({ theme: { primary } }) => css`
     background: ${primary};
-    color: rgba(0, 0, 0, 0.87);
     font-size: 20px;
     color: #fff;
     font-weight: 600;
