@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"os/user"
 	"runtime"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -83,57 +81,20 @@ func instanceName() string {
 	if settings.BTsets != nil && settings.BTsets.FriendlyName != "" {
 		return sanitizeInstance(settings.BTsets.FriendlyName)
 	}
-
-	ret := "TorrServer"
-	userName := ""
-	if u, err := user.Current(); err == nil {
-		userName = strings.TrimSpace(u.Name)
-	}
-	host := mdnsHostname()
-
-	if userName == "" && host == "" {
-		return ret
-	}
-	if userName != "" && host != "" {
-		if userName == host {
-			return sanitizeInstance(ret + " (" + userName + ")")
-		}
-		return sanitizeInstance(ret + " (" + userName + " on " + host + ")")
-	}
-	if host == "localhost" {
-		if ip := firstIPv4(nil); ip != "" {
-			return sanitizeInstance(ret + " " + ip)
-		}
-	}
-	if host != "" {
-		return sanitizeInstance(ret + " (" + host + ")")
-	}
-	return sanitizeInstance(ret + " (" + userName + ")")
+	return "TorrServer"
 }
 
-// sanitizeInstance makes a DNS-SD instance name that macOS dns-sd will browse.
-// Names containing ".local" are registered but never appear in browse results.
+// sanitizeInstance keeps DNS-SD instance names browsable on macOS.
+// A trailing ".local" is registered but never appears in dns-sd browse results.
 func sanitizeInstance(name string) string {
-	name = strings.TrimSpace(name)
-	name = stripLocalSuffix(name)
-	name = strings.Map(func(r rune) rune {
-		switch {
-		case r == '.' || r == '/' || r == '\\':
-			return '-'
-		case r < 32 || r == 127:
-			return -1
-		default:
-			return r
-		}
-	}, name)
+	name = stripLocalSuffix(strings.TrimSpace(name))
+	name = strings.ReplaceAll(name, ".", "-")
 	name = strings.Join(strings.Fields(name), " ")
-	name = strings.Trim(name, "- ")
 	if name == "" {
 		return "TorrServer"
 	}
-	// DNS-SD instance labels are limited to 63 octets.
 	if len(name) > 63 {
-		name = strings.TrimRight(name[:63], "- ")
+		return strings.TrimSpace(name[:63])
 	}
 	return name
 }
@@ -145,14 +106,10 @@ func mdnsHostname() string {
 	}
 	host = stripLocalSuffix(host)
 	host = strings.Map(func(r rune) rune {
-		switch {
-		case unicode.IsLetter(r) || unicode.IsDigit(r) || r == '-':
+		if unicode.IsLetter(r) || unicode.IsDigit(r) || r == '-' {
 			return r
-		case r == '_' || r == ' ':
-			return '-'
-		default:
-			return -1
 		}
+		return '-'
 	}, host)
 	host = strings.Trim(host, "-")
 	if host == "" {
@@ -162,16 +119,11 @@ func mdnsHostname() string {
 }
 
 func stripLocalSuffix(s string) string {
-	s = strings.TrimSpace(s)
-	for {
-		trimmed := strings.TrimSuffix(s, ".")
-		lower := strings.ToLower(trimmed)
-		if strings.HasSuffix(lower, ".local") {
-			s = trimmed[:len(trimmed)-len(".local")]
-			continue
-		}
-		return trimmed
+	s = strings.TrimSuffix(s, ".")
+	if len(s) >= 6 && strings.EqualFold(s[len(s)-6:], ".local") {
+		s = s[:len(s)-6]
 	}
+	return strings.TrimSuffix(s, ".")
 }
 
 func advertiseAddrs() ([]net.Interface, []string) {
@@ -244,29 +196,4 @@ func addrsForIface(i net.Interface) (v4, v6 []net.IP) {
 		}
 	}
 	return v4, v6
-}
-
-func firstIPv4(ifaces []net.Interface) string {
-	if ifaces == nil {
-		var err error
-		ifaces, err = anet.Interfaces()
-		if err != nil {
-			return ""
-		}
-	}
-	var list []string
-	for _, i := range ifaces {
-		if !usableIface(i) {
-			continue
-		}
-		v4, _ := addrsForIface(i)
-		for _, ip := range v4 {
-			list = append(list, ip.String())
-		}
-	}
-	if len(list) == 0 {
-		return ""
-	}
-	sort.Strings(list)
-	return list[0]
 }

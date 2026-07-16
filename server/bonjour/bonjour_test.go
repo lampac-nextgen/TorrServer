@@ -5,24 +5,20 @@ import (
 	"testing"
 )
 
-func TestSanitizeInstance_stripsLocalSuffix(t *testing.T) {
-	in := "TorrServer: Pavel Pikta on MacBook-Pro-16---Pavel.local"
-	got := sanitizeInstance(in)
-	if strings.Contains(strings.ToLower(got), ".local") {
-		t.Fatalf("instance still contains .local: %q", got)
+func TestSanitizeInstance(t *testing.T) {
+	cases := map[string]string{
+		"":                "TorrServer",
+		"  ":              "TorrServer",
+		"My Server":       "My Server",
+		"My.Server.local": "My-Server",
+		"My.Server.LOCAL": "My-Server",
+		"Living Room TS":  "Living Room TS",
+		"Room.local":      "Room",
 	}
-	if !strings.HasPrefix(got, "TorrServer") {
-		t.Fatalf("got %q, want TorrServer prefix", got)
-	}
-	if !strings.Contains(got, "Pavel") {
-		t.Fatalf("got %q, expected to keep user/host info", got)
-	}
-}
-
-func TestSanitizeInstance_dotsBecomeDashes(t *testing.T) {
-	got := sanitizeInstance("My.Server.local")
-	if got != "My-Server" {
-		t.Fatalf("got %q, want My-Server", got)
+	for in, want := range cases {
+		if got := sanitizeInstance(in); got != want {
+			t.Fatalf("sanitizeInstance(%q)=%q, want %q", in, got, want)
+		}
 	}
 }
 
@@ -37,5 +33,12 @@ func TestStripLocalSuffix(t *testing.T) {
 		if got := stripLocalSuffix(in); got != want {
 			t.Fatalf("stripLocalSuffix(%q)=%q, want %q", in, got, want)
 		}
+	}
+}
+
+func TestSanitizeInstance_noLocalLeft(t *testing.T) {
+	got := sanitizeInstance("TorrServer: Pavel on Mac.local")
+	if strings.Contains(strings.ToLower(got), ".local") {
+		t.Fatalf("still contains .local: %q", got)
 	}
 }
