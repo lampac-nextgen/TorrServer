@@ -40,7 +40,7 @@ func (p *DiskPiece) WriteAt(b []byte, off int64) (n int, err error) {
 		log.TLogln("Error open file:", err)
 		return 0, err
 	}
-	defer ff.Close()
+	defer func() { _ = ff.Close() }()
 	n, err = ff.WriteAt(b, off)
 
 	p.piece.Size += int64(n)
@@ -63,7 +63,7 @@ func (p *DiskPiece) ReadAt(b []byte, off int64) (n int, err error) {
 		log.TLogln("Error open file:", err)
 		return 0, err
 	}
-	defer ff.Close()
+	defer func() { _ = ff.Close() }()
 
 	n, err = ff.ReadAt(b, off)
 
@@ -81,5 +81,5 @@ func (p *DiskPiece) Release() {
 	p.piece.Size = 0
 	p.piece.Complete = false
 
-	os.Remove(p.name)
+	_ = os.Remove(p.name)
 }

@@ -101,10 +101,10 @@ func (c *Cache) Close() error {
 		if name != "" && name != "/" {
 			for _, v := range c.pieces {
 				if v.dPiece != nil {
-					os.Remove(v.dPiece.name)
+					_ = os.Remove(v.dPiece.name)
 				}
 			}
-			os.Remove(name)
+			_ = os.Remove(name)
 		}
 	}
 

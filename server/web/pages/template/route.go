@@ -12,8 +12,8 @@ import (
 )
 
 func init() {
-	mime.AddExtensionType(".map", "application/json")
-	mime.AddExtensionType(".webmanifest", "application/manifest+json")
+	_ = mime.AddExtensionType(".map", "application/json")
+	_ = mime.AddExtensionType(".webmanifest", "application/manifest+json")
 }
 
 func RouteWebPages(route gin.IRouter) {
@@ -24,7 +24,7 @@ func RouteWebPages(route gin.IRouter) {
 
 	// Walk embed.FS and register an explicit route for every file.
 	// Explicit routes avoid catch-all wildcard conflicts with other gin routes.
-	fs.WalkDir(pages, "pages", func(path string, d fs.DirEntry, err error) error {
+	_ = fs.WalkDir(pages, "pages", func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() {
 			return nil
 		}
@@ -63,10 +63,10 @@ func mimeFor(path string) string {
 	if m == "" {
 		m = "application/octet-stream"
 	}
-	switch {
-	case m == "application/javascript", m == "application/xml":
+	switch m {
+	case "application/javascript", "application/xml":
 		m += "; charset=utf-8"
-	case m == "image/x-icon":
+	case "image/x-icon":
 		m = "image/vnd.microsoft.icon"
 	}
 	return m
