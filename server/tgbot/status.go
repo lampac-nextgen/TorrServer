@@ -8,10 +8,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/dustin/go-humanize"
-	tele "gopkg.in/telebot.v4"
 	"server/log"
 	"server/torr"
+
+	"github.com/dustin/go-humanize"
+	tele "gopkg.in/telebot.v4"
 )
 
 // humanizeSpeedBits formats bytes/s as bits/s (bps, kbps, Mbps, Gbps, Tbps) — same as web mode.

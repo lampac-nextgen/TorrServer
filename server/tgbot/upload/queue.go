@@ -5,9 +5,10 @@ import (
 	"strconv"
 	"time"
 
+	"server/torr"
+
 	"github.com/dustin/go-humanize"
 	tele "gopkg.in/telebot.v4"
-	"server/torr"
 )
 
 var manager = &Manager{}

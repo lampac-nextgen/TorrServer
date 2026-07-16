@@ -1,9 +1,10 @@
 package torrstor
 
 import (
+	"server/settings"
+
 	"github.com/anacrolix/torrent"
 	"github.com/anacrolix/torrent/storage"
-	"server/settings"
 )
 
 type Piece struct {

@@ -4,10 +4,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dustin/go-humanize"
-	tele "gopkg.in/telebot.v4"
 	"server/log"
 	"server/torr"
+
+	"github.com/dustin/go-humanize"
+	tele "gopkg.in/telebot.v4"
 )
 
 const listPageSize = 5

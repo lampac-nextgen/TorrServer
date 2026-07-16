@@ -8,13 +8,14 @@ import (
 	"sync"
 	"time"
 
-	tele "gopkg.in/telebot.v4"
 	"server/bonjour"
 	"server/dlna"
 	"server/rutor"
 	"server/settings"
 	"server/torr"
 	"server/torznab"
+
+	tele "gopkg.in/telebot.v4"
 )
 
 const pendingInputTTL = 30 * time.Minute

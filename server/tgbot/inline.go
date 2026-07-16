@@ -5,12 +5,13 @@ import (
 	"strconv"
 	"strings"
 
-	tele "gopkg.in/telebot.v4"
 	"server/rutor"
 	"server/rutor/models"
 	sets "server/settings"
 	"server/torr"
 	"server/torznab"
+
+	tele "gopkg.in/telebot.v4"
 )
 
 const inlineMaxResults = 20
