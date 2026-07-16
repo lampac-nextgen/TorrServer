@@ -1,6 +1,8 @@
 import { useTheme } from '@mui/material'
 
-export const NoImageIcon = ({ color }) => {
+type IconProps = { color?: string; width?: string | number }
+
+export const NoImageIcon = ({ color }: { color?: string }) => {
   const primary = useTheme().palette.primary.main
 
   return (
@@ -52,7 +54,7 @@ export const AddItemIcon = () => {
   )
 }
 
-export const USBIcon = ({ color, width }) => {
+export const USBIcon = ({ color, width }: { color?: string; width?: string | number }) => {
   const primary = useTheme().palette.primary.main
 
   return (
@@ -87,7 +89,7 @@ export const USBIcon = ({ color, width }) => {
   )
 }
 
-export const RAMIcon = ({ color, width }) => {
+export const RAMIcon = ({ color, width }: IconProps) => {
   const primary = useTheme().palette.primary.main
 
   return (

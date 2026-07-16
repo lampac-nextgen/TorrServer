@@ -3,27 +3,31 @@ import styled, { css } from 'styled-components'
 
 export const Content = styled.div`
   ${({
-    isEditMode,
+    $isEditMode,
     theme: {
       addDialog: { gradientStartColor, gradientEndColor, fontColor },
     },
   }) => css`
     height: 550px;
+    max-height: min(550px, calc(100dvh - 160px));
     background: linear-gradient(145deg, ${gradientStartColor}, ${gradientEndColor});
     flex: 1;
     display: grid;
-    grid-template-columns: repeat(${isEditMode ? '1' : '2'}, 1fr);
+    grid-template-columns: repeat(${$isEditMode ? '1' : '2'}, minmax(0, 1fr));
     border-bottom: 1px solid rgba(0, 0, 0, 0.12);
     overflow: auto;
     color: ${fontColor};
+    min-width: 0;
 
     @media (max-width: 540px) {
-      ${'' /* Just for bug fixing on small screens */}
-      overflow: scroll;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     @media (max-width: 930px) {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
+      height: auto;
+      max-height: none;
     }
 
     @media (max-width: 500px) {
@@ -38,17 +42,19 @@ export const RightSide = styled.div`
 
 export const RightSideContainer = styled.div`
   ${({
-    isHidden,
-    notificationMessage,
-    isError,
+    $isHidden,
+    $notificationMessage,
+    $isError,
     theme: {
       addDialog: { notificationErrorBGColor, notificationSuccessBGColor },
     },
   }) => css`
     height: 530px;
+    max-height: min(530px, calc(100dvh - 180px));
+    min-width: 0;
 
     ${
-      notificationMessage &&
+      $notificationMessage &&
       css`
         position: relative;
         white-space: nowrap;
@@ -56,29 +62,37 @@ export const RightSideContainer = styled.div`
         :before {
           font-size: 20px;
           font-weight: 300;
-          content: '${notificationMessage}';
+          content: '${$notificationMessage}';
           display: grid;
           place-items: center;
-          background: ${isError ? notificationErrorBGColor : notificationSuccessBGColor};
+          background: ${$isError ? notificationErrorBGColor : notificationSuccessBGColor};
           padding: 10px 15px;
           position: absolute;
           top: 52%;
           left: 50%;
           transform: translate(-50%, -50%);
           border-radius: 5px;
+          max-width: calc(100% - 24px);
+          white-space: normal;
+          text-align: center;
         }
       `
     };
 
     ${
-      isHidden &&
+      $isHidden &&
       css`
         display: none;
       `
     };
 
+    @media (max-width: 930px) {
+      height: auto;
+      max-height: none;
+    }
+
     @media (max-width: 500px) {
-      height: 170px;
+      min-height: 170px;
     }
   `}
 `
@@ -234,7 +248,7 @@ export const PosterSuggestionsItem = styled.div`
 
 export const Poster = styled.div`
   ${({
-    poster,
+    $poster,
     theme: {
       addDialog: { posterBGColor },
     },
@@ -242,13 +256,15 @@ export const Poster = styled.div`
     border-radius: 5px;
     overflow: hidden;
     width: 200px;
+    max-width: 100%;
     grid-area: poster;
 
     ${
-      poster
+      $poster
         ? css`
             img {
               width: 200px;
+              max-width: 100%;
               object-fit: cover;
               border-radius: 5px;
               height: 100%;
@@ -272,10 +288,12 @@ export const ClearPosterButton = styled(Button)`
   justify-self: flex-start;
   transform: translateY(-50%);
   position: absolute;
-  ${({ showbutton }) => !showbutton && 'display: none'};
+  min-height: 36px;
+  ${({ $showbutton }) => !$showbutton && 'display: none'};
 
   @media (max-width: 540px) {
     transform: translateY(-140%);
+    min-height: 40px;
   }
 `
 
@@ -284,15 +302,17 @@ export const UpdatePosterButton = styled(Button)`
   justify-self: flex-end;
   transform: translateY(-50%);
   position: absolute;
+  min-height: 36px;
 
   @media (max-width: 540px) {
     transform: translateY(-140%);
+    min-height: 40px;
   }
 `
 
 export const PosterLanguageSwitch = styled.div`
   ${({
-    showbutton,
+    $showbutton,
     theme: {
       addDialog: { languageSwitchBGColor, languageSwitchFontColor },
     },
@@ -303,8 +323,8 @@ export const PosterLanguageSwitch = styled.div`
     top: 0;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 30px;
-    height: 30px;
+    width: 36px;
+    height: 36px;
     background: ${languageSwitchBGColor};
     border-radius: 50%;
     display: grid;
@@ -313,8 +333,9 @@ export const PosterLanguageSwitch = styled.div`
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
+    -webkit-tap-highlight-color: transparent;
 
-    ${!showbutton && 'display: none'};
+    ${!$showbutton && 'display: none'};
 
     :hover {
       filter: brightness(1.1);

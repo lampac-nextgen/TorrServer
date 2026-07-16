@@ -1,9 +1,16 @@
-import { createTheme, useMediaQuery } from '@mui/material'
+import { createTheme, useMediaQuery, type PaletteMode, type Theme } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
 
 import { mainColors, themeColors } from './colors'
 
-export const THEME_MODES = { LIGHT: 'light', DARK: 'dark', AUTO: 'auto' }
+export const THEME_MODES = {
+  LIGHT: 'light',
+  DARK: 'dark',
+  AUTO: 'auto',
+} as const
+
+export type ThemePreference = (typeof THEME_MODES)[keyof typeof THEME_MODES]
+export type ResolvedThemeMode = typeof THEME_MODES.LIGHT | typeof THEME_MODES.DARK
 
 const typography = { fontFamily: 'Open Sans, sans-serif' }
 
@@ -25,13 +32,20 @@ export const lightTheme = createTheme({
   },
 })
 
-export const useMaterialUITheme = () => {
-  const savedThemeMode = localStorage.getItem('themeMode')
+export const useMaterialUITheme = (): [
+  boolean,
+  ThemePreference,
+  (mode: ThemePreference) => void,
+  Theme,
+] => {
+  const savedThemeMode = localStorage.getItem('themeMode') as ThemePreference | null
   const isSystemModeDark = useMediaQuery('(prefers-color-scheme: dark)')
   const [isDarkMode, setIsDarkMode] = useState(savedThemeMode === 'dark' || isSystemModeDark)
-  const [currentThemeMode, setCurrentThemeMode] = useState(savedThemeMode || THEME_MODES.AUTO)
+  const [currentThemeMode, setCurrentThemeMode] = useState<ThemePreference>(
+    savedThemeMode || THEME_MODES.AUTO,
+  )
 
-  const updateThemeMode = mode => {
+  const updateThemeMode = (mode: ThemePreference) => {
     setCurrentThemeMode(mode)
     localStorage.setItem('themeMode', mode)
   }
@@ -42,14 +56,14 @@ export const useMaterialUITheme = () => {
     if (currentThemeMode === THEME_MODES.AUTO) setIsDarkMode(isSystemModeDark)
   }, [isSystemModeDark, currentThemeMode])
 
-  const theme = isDarkMode ? THEME_MODES.DARK : THEME_MODES.LIGHT
+  const theme: ResolvedThemeMode = isDarkMode ? THEME_MODES.DARK : THEME_MODES.LIGHT
 
   const muiTheme = useMemo(
     () =>
       createTheme({
         typography,
         palette: {
-          mode: theme,
+          mode: theme as PaletteMode,
           primary: { main: mainColors[theme].primary },
           secondary: { main: mainColors[theme].secondary },
         },

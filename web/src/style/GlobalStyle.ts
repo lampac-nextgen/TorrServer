@@ -22,11 +22,17 @@ export default createGlobalStyle`
 
     ${standaloneMedia(css`
       height: 100vh;
+      height: 100dvh;
     `)}
   }
 
   button {
     font-family: "Open Sans", sans-serif;
     letter-spacing: -0.1px;
+  }
+
+  /* Better tap targets and overflow safety on small screens */
+  img, video, canvas {
+    max-width: 100%;
   }
 `

@@ -1,18 +1,19 @@
 import { useQuery } from '@tanstack/react-query'
 
+import type { GStreamerRuntime } from '../types/api'
 import { getTorrServerHost, gstSettingsHost } from './Hosts'
 
 export const GST_RUNTIME_QUERY_KEY = 'gstreamer-runtime-settings'
 
-const unavailableRuntime = { built_in: false }
+const unavailableRuntime: GStreamerRuntime = { built_in: false }
 
-const loadGStreamerRuntime = async () => {
+const loadGStreamerRuntime = async (): Promise<GStreamerRuntime> => {
   const response = await fetch(gstSettingsHost())
   if (!response.ok) return unavailableRuntime
   return response.json()
 }
 
-export const useGStreamerRuntime = () => {
+export const useGStreamerRuntime = (): GStreamerRuntime => {
   const { data } = useQuery({
     queryKey: [GST_RUNTIME_QUERY_KEY],
     queryFn: loadGStreamerRuntime,
@@ -25,13 +26,13 @@ export const useGStreamerRuntime = () => {
   return data || unavailableRuntime
 }
 
-const fileExtension = path => {
+const fileExtension = (path: string): string => {
   const fileName = path.split('?')[0]
   const dot = fileName.lastIndexOf('.')
   return dot === -1 ? '' : fileName.slice(dot + 1).toLowerCase()
 }
 
-export const shouldUseGStreamerPlayer = (path, runtime) => {
+export const shouldUseGStreamerPlayer = (path: string, runtime?: GStreamerRuntime | null): boolean => {
   if (!runtime?.built_in) return false
 
   switch (fileExtension(path)) {
@@ -46,12 +47,13 @@ export const shouldUseGStreamerPlayer = (path, runtime) => {
   }
 }
 
-export const gstreamerMasterUrl = (hash, fileID, audio = 0) =>
+export const gstreamerMasterUrl = (hash: string, fileID: string | number, audio = 0): string =>
   `${getTorrServerHost()}/gst/${encodeURIComponent(hash)}/master.m3u8?index=${encodeURIComponent(
-    fileID,
-  )}&audio=${encodeURIComponent(audio)}`
+    String(fileID),
+  )}&audio=${encodeURIComponent(String(audio))}`
 
-export const gstreamerProbeUrl = (hash, fileID) =>
-  `${getTorrServerHost()}/gst/${encodeURIComponent(hash)}/probe?index=${encodeURIComponent(fileID)}`
+export const gstreamerProbeUrl = (hash: string, fileID: string | number): string =>
+  `${getTorrServerHost()}/gst/${encodeURIComponent(hash)}/probe?index=${encodeURIComponent(String(fileID))}`
 
-export const gstreamerHeartbeatUrl = hash => `${getTorrServerHost()}/gst/${encodeURIComponent(hash)}/heartbeat`
+export const gstreamerHeartbeatUrl = (hash: string): string =>
+  `${getTorrServerHost()}/gst/${encodeURIComponent(hash)}/heartbeat`

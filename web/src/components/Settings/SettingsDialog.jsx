@@ -181,7 +181,7 @@ export default function SettingsDialog({ handleClose }) {
         </StyledTabs>
       </AppBar>
 
-      <Content isLoading={!settings}>
+      <Content $isLoading={!settings}>
         {settings ? (
           <>
             <TabPanel value={selectedTab} index={tabMain} dir={direction}>

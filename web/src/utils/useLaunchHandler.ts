@@ -1,9 +1,27 @@
 import { useEffect, useState } from 'react'
 
-// Handles PWA launch via protocol_handlers (magnet:), share_target (?url=/text=), and file_handlers (.torrent)
+interface LaunchQueueFileHandle {
+  getFile: () => Promise<File>
+}
+
+interface LaunchParams {
+  files?: LaunchQueueFileHandle[]
+}
+
+interface LaunchQueue {
+  setConsumer: (callback: (params: LaunchParams) => void | Promise<void>) => void
+}
+
+declare global {
+  interface Window {
+    launchQueue?: LaunchQueue
+  }
+}
+
+/** Handles PWA launch via protocol_handlers (magnet:), share_target, and file_handlers (.torrent) */
 export default function useLaunchHandler() {
-  const [launchSource, setLaunchSource] = useState(null)
-  const [launchFiles, setLaunchFiles] = useState(null)
+  const [launchSource, setLaunchSource] = useState<string | null>(null)
+  const [launchFiles, setLaunchFiles] = useState<File[] | null>(null)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -14,7 +32,7 @@ export default function useLaunchHandler() {
       window.history.replaceState(null, '', window.location.pathname)
     }
 
-    if ('launchQueue' in window) {
+    if (window.launchQueue) {
       window.launchQueue.setConsumer(async launchParams => {
         if (!launchParams.files || launchParams.files.length === 0) return
         const files = await Promise.all(launchParams.files.map(fh => fh.getFile()))

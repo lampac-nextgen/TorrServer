@@ -56,12 +56,12 @@ export const TorrentCardPoster = styled.div`
   }
 
   ${({
-    isPoster,
+    $isPoster,
     theme: {
       torrentCard: { cardSecondaryColor, accentCardColor },
     },
   }) =>
-    isPoster
+    $isPoster
       ? css`
           img {
             width: 100%;
@@ -217,21 +217,36 @@ export const StyledButton = styled.button`
     border-radius: 5px;
     border: none;
     cursor: pointer;
-    transition: 0.2s;
-    display: flex;
+    transition:
+      background 0.2s ease,
+      transform 0.15s ease,
+      opacity 0.2s ease;
+    display: inline-flex;
     align-items: center;
+    justify-content: flex-start;
     text-transform: uppercase;
     background: ${buttonBGColor};
     color: #fff;
     font-size: 0.9rem;
     letter-spacing: 0.009em;
     padding: 0 12px;
+    min-height: 40px;
+    min-width: 0;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+
     svg {
       width: 20px;
+      height: 20px;
+      flex-shrink: 0;
     }
 
     :hover {
       background: ${accentCardColor};
+    }
+
+    :active {
+      transform: scale(0.98);
     }
 
     :disabled {
@@ -244,12 +259,17 @@ export const StyledButton = styled.button`
     }
 
     @media (max-width: 1260px), (max-height: 500px) {
-      padding: 7px 10px;
+      padding: 8px 10px;
       justify-content: center;
       font-size: 0.8rem;
+      min-height: 36px;
 
       svg {
         display: none;
+      }
+
+      > :first-child {
+        margin-right: 0;
       }
     }
 
@@ -258,17 +278,18 @@ export const StyledButton = styled.button`
     }
 
     @media (max-width: 420px) {
-      font-size: 0.6rem;
-      padding: 7px 5px;
+      font-size: 0.65rem;
+      padding: 8px 6px;
+      min-height: 44px;
     }
   `}
 `
 
 export const StatusIndicators = styled.div`
-  ${({ color }) => css`
+  ${({ $color }) => css`
     height: 8px;
     width: 8px;
-    background-color: ${color};
+    background-color: ${$color};
     border-radius: 50%;
     position: relative;
     top: 50%;

@@ -3,7 +3,13 @@ import CloseIcon from '@mui/icons-material/Close'
 import { ArrowBack } from '@mui/icons-material'
 import { isStandaloneApp } from 'utils/Utils'
 
-export default function DialogHeader({ title, onClose, onBack }) {
+interface DialogHeaderProps {
+  title: string
+  onClose: () => void
+  onBack?: () => void
+}
+
+export default function DialogHeader({ title, onClose, onBack }: DialogHeaderProps) {
   return (
     <AppBar sx={{ position: 'relative', ...(isStandaloneApp && { paddingTop: '30px' }) }}>
       <Toolbar>
@@ -17,7 +23,7 @@ export default function DialogHeader({ title, onClose, onBack }) {
           {title}
         </Typography>
 
-        <IconButton autoFocus color='inherit' onClick={onClose} aria-label='close' style={{ marginRight: '-10px' }}>
+        <IconButton autoFocus color='inherit' onClick={onClose} aria-label='close' sx={{ marginRight: '-10px' }}>
           <CloseIcon />
         </IconButton>
       </Toolbar>

@@ -280,7 +280,7 @@ export default function AddDialog({
     <StyledDialog open onClose={handleClose} fullScreen={fullScreen} fullWidth maxWidth='md' ref={ref}>
       <StyledHeader>{t(isEditMode ? 'EditTorrent' : 'AddNewTorrent')}</StyledHeader>
 
-      <Content isEditMode={isEditMode}>
+      <Content $isEditMode={isEditMode}>
         {!isEditMode && (
           <LeftSideComponent
             setIsUserInteractedWithPoster={setIsUserInteractedWithPoster}

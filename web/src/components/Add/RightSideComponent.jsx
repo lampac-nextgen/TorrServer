@@ -74,7 +74,7 @@ export default function RightSideComponent({
 
   return (
     <RightSide>
-      <RightSideContainer isHidden={!isTorrentSourceCorrect || (isHashAlreadyExists && !isEditMode)}>
+      <RightSideContainer $isHidden={!isTorrentSourceCorrect || (isHashAlreadyExists && !isEditMode)}>
         {originalTorrentTitle ? (
           <>
             <TextField
@@ -187,7 +187,7 @@ export default function RightSideComponent({
         </FormControl>
 
         <PosterWrapper>
-          <Poster poster={+isPosterUrlCorrect}>
+          <Poster $poster={+isPosterUrlCorrect}>
             {isPosterUrlCorrect ? <img src={posterUrl} alt='poster' /> : <NoImageIcon />}
           </Poster>
 
@@ -211,7 +211,7 @@ export default function RightSideComponent({
                   shouldRefreshMainPoster: true,
                 })
               }}
-              showbutton={+isPosterUrlCorrect}
+              $showbutton={+isPosterUrlCorrect}
               color='primary'
               variant='contained'
               size='small'
@@ -221,7 +221,7 @@ export default function RightSideComponent({
           )}
 
           <ClearPosterButton
-            showbutton={+isPosterUrlCorrect}
+            $showbutton={+isPosterUrlCorrect}
             onClick={() => {
               removePoster()
               setIsUserInteractedWithPoster(true)
@@ -248,15 +248,15 @@ export default function RightSideComponent({
       </RightSideContainer>
 
       <RightSideContainer
-        isError={torrentSource && (!isTorrentSourceCorrect || isHashAlreadyExists)}
-        notificationMessage={
+        $isError={torrentSource && (!isTorrentSourceCorrect || isHashAlreadyExists)}
+        $notificationMessage={
           !torrentSource
             ? t('AddDialog.AddTorrentSourceNotification')
             : !isTorrentSourceCorrect
               ? t('AddDialog.WrongTorrentSource')
               : isHashAlreadyExists && t('AddDialog.HashExists')
         }
-        isHidden={isEditMode || (isTorrentSourceCorrect && !isHashAlreadyExists)}
+        $isHidden={isEditMode || (isTorrentSourceCorrect && !isHashAlreadyExists)}
       />
     </RightSide>
   )

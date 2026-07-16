@@ -364,7 +364,7 @@ const Torrent = ({ torrent }) => {
   return (
     <>
       <TorrentCard>
-        <TorrentCardPoster isPoster={poster} onClick={handleClickOpenEditDialog}>
+        <TorrentCardPoster $isPoster={Boolean(poster)} onClick={handleClickOpenEditDialog}>
           {poster ? <img src={poster} alt='poster' /> : <NoImageIcon />}
         </TorrentCardPoster>
 
@@ -603,7 +603,7 @@ export const StatusIndicator = ({ stat }) => {
 
   return (
     <span className='description-status-wrapper'>
-      <StatusIndicators color={colors[stat]} title={values[stat]} />
+      <StatusIndicators $color={colors[stat]} title={values[stat]} />
     </span>
   )
 }
