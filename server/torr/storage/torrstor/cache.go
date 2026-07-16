@@ -188,13 +188,13 @@ func (c *Cache) cleanPieces() {
 	if c.isRemove || c.isClosed {
 		return
 	}
-	
+
 	// Protection against concurrent deletion
 	if !c.muRemove.TryLock() {
 		return // Cleanup is already in progress in another goroutine
 	}
 	defer c.muRemove.Unlock()
-	
+
 	c.isRemove = true
 	defer func() { c.isRemove = false }()
 
@@ -364,9 +364,9 @@ func (c *Cache) CloseReader(r *Reader) {
 }
 
 func (c *Cache) clearPriority() {
-	if c.torrent == nil { 
-        return 
-    }
+	if c.torrent == nil {
+		return
+	}
 	time.Sleep(time.Second)
 	ranges := make([]Range, 0)
 	c.muReaders.Lock()

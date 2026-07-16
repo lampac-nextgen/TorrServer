@@ -158,14 +158,13 @@ func SetTorrent(hashHex, title, poster, category string, data string) *Torrent {
 	}
 }
 
-
 func RemTorrent(hashHex string) {
 	if sets.ReadOnly {
 		log.TLogln("API RemTorrent: Read-only DB mode!", hashHex)
 		return
 	}
 	hash := metainfo.NewHashFromHex(hashHex)
-	
+
 	// Download the torrent before deleting it to get the "closed" status
 	torr := bts.GetTorrent(hash)
 	if torr == nil {
@@ -177,9 +176,9 @@ func RemTorrent(hashHex string) {
 		}
 		return
 	}
-	
+
 	closedChan := torr.closed
-	
+
 	// Clear from memory
 	if bts.RemoveTorrent(hash) {
 		// Waiting for confirmation from the library via the closed channel
@@ -190,7 +189,7 @@ func RemTorrent(hashHex string) {
 		case <-time.After(5 * time.Second):
 			log.TLogln("Warning: timeout waiting for torrent close:", hashHex)
 		}
-		
+
 		// Now we can safely delete the files from the disk
 		if sets.BTsets.UseDisk && hashHex != "" && hashHex != "/" {
 			name := filepath.Join(sets.BTsets.TorrentsSavePath, hashHex)
@@ -200,7 +199,7 @@ func RemTorrent(hashHex string) {
 			}
 		}
 	}
-	
+
 	// Delete from the database
 	RemTorrentDB(hash)
 }

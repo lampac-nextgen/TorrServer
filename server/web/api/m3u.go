@@ -43,12 +43,12 @@ func allPlayList(c *gin.Context) {
 		var filtered []*torr.Torrent
 		for _, tr := range torrs {
 			st := tr.Status()
-			
+
 			if category == "uncategorized" {
 				if st.Category != "" {
 					continue
-			    }
-            } else if category != "" && st.Category != category {
+				}
+			} else if category != "" && st.Category != category {
 				continue
 			}
 			if search != "" &&

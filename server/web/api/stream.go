@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"strings"
 
+	sets "server/settings"
 	"server/torr"
 	"server/torr/state"
-	sets "server/settings"
 	utils2 "server/utils"
 	"server/web/api/utils"
 
