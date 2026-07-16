@@ -169,8 +169,9 @@ func SetDefaultConfig() {
 	sets.ResponsiveMode = true
 	sets.ShowFSActiveTorr = true
 	sets.StoreSettingsInJson = true
-    sets.EnableLPD = true
-  	sets.LPDIPv6 = false
+	sets.EnableLPD = true
+	sets.LPDIPv6 = false
+	sets.EnableBonjour = true
 	// Set default TMDB settings
 	sets.TMDBSettings = TMDBConfig{
 		APIKey:     "",
@@ -204,6 +205,13 @@ func loadBTSets() {
 					APIURL:     "https://api.themoviedb.org",
 					ImageURL:   "https://image.tmdb.org",
 					ImageURLRu: "https://imagetmdb.com",
+				}
+			}
+			// Enable Bonjour by default for configs saved before the setting existed.
+			var raw map[string]json.RawMessage
+			if json.Unmarshal(buf, &raw) == nil {
+				if _, ok := raw["EnableBonjour"]; !ok {
+					BTsets.EnableBonjour = true
 				}
 			}
 			return
