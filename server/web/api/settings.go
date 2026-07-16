@@ -3,9 +3,9 @@ package api
 import (
 	"net/http"
 
-	"server/rutor"
-
+	"server/bonjour"
 	"server/dlna"
+	"server/rutor"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -51,6 +51,10 @@ func settings(c *gin.Context) {
 		if req.Sets.EnableDLNA {
 			dlna.Start()
 		}
+		bonjour.Stop()
+		if req.Sets.EnableBonjour {
+			bonjour.Start()
+		}
 		rutor.Stop()
 		rutor.Start()
 		c.Status(200)
@@ -58,6 +62,7 @@ func settings(c *gin.Context) {
 	} else if req.Action == "def" {
 		torr.SetDefSettings()
 		dlna.Stop()
+		bonjour.Stop()
 		rutor.Stop()
 		c.Status(200)
 		return

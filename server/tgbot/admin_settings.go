@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	tele "gopkg.in/telebot.v4"
+	"server/bonjour"
 	"server/dlna"
 	"server/rutor"
 	"server/settings"
@@ -38,7 +39,7 @@ func sendSettingsMenuText(c tele.Context, uid int64, page string) string {
 	case "1":
 		msg += "\n\n"
 		msg += fmt.Sprintf("🔍 %s: RuTor %s · Torznab %s\n", tr(uid, "settings_section_search"), boolIcon(s.EnableRutorSearch), boolIcon(s.EnableTorznabSearch))
-		msg += fmt.Sprintf("📺 %s: DLNA %s · IPv6 %s · DHT %s · PEX %s · TCP %s · UTP %s\n", tr(uid, "settings_section_network"), boolIcon(s.EnableDLNA), boolIcon(s.EnableIPv6), boolIcon(!s.DisableDHT), boolIcon(!s.DisablePEX), boolIcon(!s.DisableTCP), boolIcon(!s.DisableUTP))
+		msg += fmt.Sprintf("📺 %s: DLNA %s · Bonjour %s · IPv6 %s · DHT %s · PEX %s · TCP %s · UTP %s\n", tr(uid, "settings_section_network"), boolIcon(s.EnableDLNA), boolIcon(s.EnableBonjour), boolIcon(s.EnableIPv6), boolIcon(!s.DisableDHT), boolIcon(!s.DisablePEX), boolIcon(!s.DisableTCP), boolIcon(!s.DisableUTP))
 		msg += fmt.Sprintf("📦 %s: CacheDrop %s · UseDisk %s\n", tr(uid, "settings_section_other"), boolIcon(s.RemoveCacheOnDrop), boolIcon(s.UseDisk))
 	case "1a":
 		msg += " — " + tr(uid, "settings_section_search")
@@ -47,7 +48,7 @@ func sendSettingsMenuText(c tele.Context, uid int64, page string) string {
 	case "1b":
 		msg += " — " + tr(uid, "settings_section_network")
 		msg += "\n\n"
-		msg += fmt.Sprintf("DLNA %s · IPv6 %s · Upload %s · DHT %s · PEX %s\n", boolIcon(s.EnableDLNA), boolIcon(s.EnableIPv6), boolIcon(!s.DisableUpload), boolIcon(!s.DisableDHT), boolIcon(!s.DisablePEX))
+		msg += fmt.Sprintf("DLNA %s · Bonjour %s · IPv6 %s · Upload %s · DHT %s · PEX %s\n", boolIcon(s.EnableDLNA), boolIcon(s.EnableBonjour), boolIcon(s.EnableIPv6), boolIcon(!s.DisableUpload), boolIcon(!s.DisableDHT), boolIcon(!s.DisablePEX))
 		msg += fmt.Sprintf("TCP %s · UTP %s · UPNP %s · Encrypt %s · Debug %s", boolIcon(!s.DisableTCP), boolIcon(!s.DisableUTP), boolIcon(!s.DisableUPNP), boolIcon(s.ForceEncrypt), boolIcon(s.EnableDebug))
 	case "1c":
 		msg += " — " + tr(uid, "settings_section_other")
@@ -174,6 +175,7 @@ func sendSettingsMenuKbd(uid int64, page string) *tele.ReplyMarkup {
 			},
 			{
 				{Text: toggleBtn("DLNA", s.EnableDLNA), Unique: "fset", Data: "dlna|1b"},
+				{Text: toggleBtn("Bonjour", s.EnableBonjour), Unique: "fset", Data: "bonjour|1b"},
 				{Text: toggleBtn("IPv6", s.EnableIPv6), Unique: "fset", Data: "ipv6|1b"},
 				{Text: toggleBtn("Upload", !s.DisableUpload), Unique: "fset", Data: "upload|1b"},
 			},
@@ -512,6 +514,8 @@ func settingsCallback(c tele.Context, action string) error {
 		sets.EnableTorznabSearch = !sets.EnableTorznabSearch
 	case "dlna":
 		sets.EnableDLNA = !sets.EnableDLNA
+	case "bonjour":
+		sets.EnableBonjour = !sets.EnableBonjour
 	case "ipv6":
 		sets.EnableIPv6 = !sets.EnableIPv6
 	case "upload":
@@ -613,6 +617,10 @@ func settingsCallback(c tele.Context, action string) error {
 	dlna.Stop()
 	if sets.EnableDLNA {
 		dlna.Start()
+	}
+	bonjour.Stop()
+	if sets.EnableBonjour {
+		bonjour.Start()
 	}
 	rutor.Stop()
 	rutor.Start()

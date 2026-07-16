@@ -41,9 +41,10 @@ type BTSets struct {
 	TorrentDisconnectTimeout int  // in seconds
 	EnableDebug              bool // debug logs
 
-	// DLNA
-	EnableDLNA   bool
-	FriendlyName string
+	// DLNA / Bonjour
+	EnableDLNA    bool
+	EnableBonjour bool
+	FriendlyName  string
 
 	// Rutor
 	EnableRutorSearch bool
