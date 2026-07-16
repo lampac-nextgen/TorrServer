@@ -1552,8 +1552,11 @@ const docTemplate = `{
                     "description": "in kb, 0 - inf",
                     "type": "integer"
                 },
+                "enableBonjour": {
+                    "type": "boolean"
+                },
                 "enableDLNA": {
-                    "description": "DLNA",
+                    "description": "DLNA / Bonjour",
                     "type": "boolean"
                 },
                 "enableDebug": {
