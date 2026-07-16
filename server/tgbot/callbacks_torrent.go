@@ -3,8 +3,9 @@ package tgbot
 import (
 	"strconv"
 
-	tele "gopkg.in/telebot.v4"
 	up "server/tgbot/upload"
+
+	tele "gopkg.in/telebot.v4"
 )
 
 func handleCallbackTorrent(c tele.Context, args []string) error {

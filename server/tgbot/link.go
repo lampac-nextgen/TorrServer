@@ -5,8 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	tele "gopkg.in/telebot.v4"
 	"server/torr"
+
+	tele "gopkg.in/telebot.v4"
 )
 
 func callbackLink(c tele.Context, data string) error {

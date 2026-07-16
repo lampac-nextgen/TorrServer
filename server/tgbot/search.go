@@ -5,11 +5,12 @@ import (
 	"strconv"
 	"strings"
 
-	tele "gopkg.in/telebot.v4"
 	"server/rutor"
 	"server/rutor/models"
 	sets "server/settings"
 	"server/torznab"
+
+	tele "gopkg.in/telebot.v4"
 )
 
 func cmdSearch(c tele.Context) error {

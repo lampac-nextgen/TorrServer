@@ -30,7 +30,7 @@ func ffp(c *gin.Context) {
 	indexStr := c.Param("id")
 
 	if hash == "" || indexStr == "" {
-		c.AbortWithError(http.StatusNotFound, errors.New("link should not be empty"))
+		_ = c.AbortWithError(http.StatusNotFound, errors.New("link should not be empty"))
 		return
 	}
 
@@ -38,7 +38,7 @@ func ffp(c *gin.Context) {
 
 	data, err := ffprobe.ProbeUrl(link)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("error getting data: %v", err))
+		_ = c.AbortWithError(http.StatusBadRequest, fmt.Errorf("error getting data: %v", err))
 		return
 	}
 

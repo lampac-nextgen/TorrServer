@@ -32,13 +32,13 @@ func play(c *gin.Context) {
 	notAuth := c.GetBool("auth_required") && c.GetString(gin.AuthUserKey) == ""
 
 	if hash == "" || indexStr == "" {
-		c.AbortWithError(http.StatusNotFound, errors.New("no infohash or file index in link"))
+		_ = c.AbortWithError(http.StatusNotFound, errors.New("no infohash or file index in link"))
 		return
 	}
 
 	spec, err := utils.ParseLink(hash)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
@@ -51,26 +51,26 @@ func play(c *gin.Context) {
 		}
 		tor, err = torr.AddTorrent(spec, "", "", "", "")
 		if err != nil {
-			c.AbortWithError(http.StatusInternalServerError, err)
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
 	}
 
 	if tor == nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.New("error get torrent"))
+		_ = c.AbortWithError(http.StatusInternalServerError, errors.New("error get torrent"))
 		return
 	}
 
 	if tor.Stat == state.TorrentInDB {
 		tor, err = torr.AddTorrent(spec, tor.Title, tor.Poster, tor.Data, tor.Category)
 		if err != nil {
-			c.AbortWithError(http.StatusInternalServerError, err)
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
 	}
 
 	if !tor.GotInfo() {
-		c.AbortWithError(http.StatusInternalServerError, errors.New("torrent connection timeout"))
+		_ = c.AbortWithError(http.StatusInternalServerError, errors.New("torrent connection timeout"))
 		return
 	}
 
@@ -85,9 +85,9 @@ func play(c *gin.Context) {
 		}
 	}
 	if index == -1 { // if file index not set and play file exec
-		c.AbortWithError(http.StatusBadRequest, errors.New("file \"index\" is wrong"))
+		_ = c.AbortWithError(http.StatusBadRequest, errors.New("file \"index\" is wrong"))
 		return
 	}
 
-	tor.Stream(index, c.Request, c.Writer)
+	_ = tor.Stream(index, c.Request, c.Writer)
 }

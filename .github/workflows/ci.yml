@@ -16,6 +16,57 @@ permissions:
   contents: read
 
 jobs:
+  lint:
+    name: Lint (Go)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Load toolchain versions
+        working-directory: ${{ github.workspace }}
+        run: grep -v '^#' .github/versions.env >> "$GITHUB_ENV"
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: server/go.sum
+
+      - name: Install golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: latest
+          working-directory: server
+          install-only: true
+          verify: true
+
+      - name: go fmt
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "The following files need gofmt:" >&2
+            echo "$unformatted" >&2
+            exit 1
+          fi
+          echo "OK: gofmt clean"
+
+      - name: golangci-lint fmt
+        run: |
+          diff=$(golangci-lint fmt -d ./...)
+          if [ -n "$diff" ]; then
+            echo "The following formatting changes are required (golangci-lint fmt):" >&2
+            echo "$diff" >&2
+            exit 1
+          fi
+          echo "OK: golangci-lint fmt clean"
+
+      - name: golangci-lint run
+        run: golangci-lint run ./...
+
   goreleaser-check:
     name: GoReleaser config
     runs-on: ubuntu-latest

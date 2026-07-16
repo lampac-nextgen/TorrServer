@@ -7,11 +7,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/dustin/go-humanize"
-	tele "gopkg.in/telebot.v4"
 	"server/log"
 	"server/torr"
 	cacheSt "server/torr/storage/state"
+
+	"github.com/dustin/go-humanize"
+	tele "gopkg.in/telebot.v4"
 )
 
 var (

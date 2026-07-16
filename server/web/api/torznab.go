@@ -53,7 +53,7 @@ type torznabTestReq struct {
 func torznabTest(c *gin.Context) {
 	var req torznabTestReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		_ = c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
