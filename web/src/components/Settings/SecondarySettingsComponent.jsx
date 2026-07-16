@@ -50,6 +50,7 @@ export default function SecondarySettingsComponent({ settings, inputForm }) {
     TorrentDisconnectTimeout,
     EnableDebug,
     EnableDLNA,
+    EnableBonjour,
     EnableIPv6,
     FriendlyName,
     ForceEncrypt,
@@ -338,13 +339,20 @@ export default function SecondarySettingsComponent({ settings, inputForm }) {
         </Select>
         <FormHelperText style={{ marginTop: '8px' }}>{t('SettingsDialog.RetrackersModeHint')}</FormHelperText>
       </FormGroup>
-      {/* DLNA Section */}
       <SettingSectionLabel style={{ marginTop: '20px' }}>{t('DLNA')}</SettingSectionLabel>
       <FormControlLabel
         control={<Switch checked={EnableDLNA} onChange={inputForm} id='EnableDLNA' color='secondary' />}
         label={t('SettingsDialog.DLNA')}
         labelPlacement='start'
       />
+      <FormControlLabel
+        control={<Switch checked={EnableBonjour} onChange={inputForm} id='EnableBonjour' color='secondary' />}
+        label={t('SettingsDialog.Bonjour')}
+        labelPlacement='start'
+      />
+      <FormHelperText style={{ marginLeft: 0, marginTop: '-4px', marginBottom: '8px' }}>
+        {t('SettingsDialog.BonjourHint')}
+      </FormHelperText>
       <TextField
         onChange={inputForm}
         margin='normal'

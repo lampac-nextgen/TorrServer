@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	defTrackers   = []string{
+	defTrackers = []string{
 		"http://retracker.local/announce",
 		"http://bt4.t-ru.org/ann?magnet",
 		"http://retracker.mgts.by:80/announce",

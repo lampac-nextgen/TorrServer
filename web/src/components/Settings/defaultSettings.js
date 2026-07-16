@@ -10,6 +10,7 @@ export default {
   TorrentDisconnectTimeout: 30,
   EnableDebug: false,
   EnableDLNA: false,
+  EnableBonjour: true,
   FriendlyName: '',
   EnableRutorSearch: false,
   EnableIPv6: false,

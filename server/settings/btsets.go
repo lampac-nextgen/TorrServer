@@ -42,7 +42,10 @@ type BTSets struct {
 	EnableDebug              bool // debug logs
 
 	// DLNA
-	EnableDLNA   bool
+	EnableDLNA bool
+	// Bonjour/mDNS LAN discovery (_torrserver, _http, _https)
+	EnableBonjour bool
+	// Shared name for DLNA and Bonjour
 	FriendlyName string
 
 	// Rutor
@@ -67,10 +70,10 @@ type BTSets struct {
 	UploadRateLimit   int // in kb, 0 - inf
 	ConnectionsLimit  int
 	PeersListenPort   int
-	
+
 	// LPD
 	EnableLPD bool
-    LPDIPv6   bool
+	LPDIPv6   bool
 
 	// HTTPS
 	SslPort int
@@ -168,8 +171,9 @@ func SetDefaultConfig() {
 	sets.ResponsiveMode = true
 	sets.ShowFSActiveTorr = true
 	sets.StoreSettingsInJson = true
-    sets.EnableLPD = true
-  	sets.LPDIPv6 = false
+	sets.EnableLPD = true
+	sets.LPDIPv6 = false
+	sets.EnableBonjour = true
 	// Set default TMDB settings
 	sets.TMDBSettings = TMDBConfig{
 		APIKey:     "",
@@ -203,6 +207,13 @@ func loadBTSets() {
 					APIURL:     "https://api.themoviedb.org",
 					ImageURL:   "https://image.tmdb.org",
 					ImageURLRu: "https://imagetmdb.com",
+				}
+			}
+			// Default Bonjour on for configs that predate the setting.
+			var raw map[string]json.RawMessage
+			if json.Unmarshal(buf, &raw) == nil {
+				if _, ok := raw["EnableBonjour"]; !ok {
+					BTsets.EnableBonjour = true
 				}
 			}
 			return

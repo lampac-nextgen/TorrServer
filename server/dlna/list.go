@@ -421,7 +421,7 @@ func getObjFromTorrent(path, parent, host string, torr *torr.Torrent, file *stat
 	if settings.BTsets.EnableDebug {
 		log.TLogln("mime type", mime.String(), file.Path)
 	}
-	
+
 	// Only the subfolders will be displayed
 	fileName := strings.TrimPrefix(filepath.ToSlash(file.Path), filepath.Base(torr.Name())+"/")
 
