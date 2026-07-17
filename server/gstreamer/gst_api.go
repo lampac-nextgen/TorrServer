@@ -34,10 +34,12 @@ const (
 
 	gstMapRead int32 = 1
 
-	gstMessageError int32 = 1 << 1
+	gstMessageEOS       int32 = 1 << 0
+	gstMessageError     int32 = 1 << 1
+	gstMessageAsyncDone int32 = 1 << 21
 )
 
-const maxGStreamerSampleBytes = 128 * 1024 * 1024
+const maxGStreamerSampleBytes = 256 * 1024 * 1024
 
 type gstVersionInfo struct {
 	major uint32
@@ -85,6 +87,9 @@ type gstAPI struct {
 	gstElementGetStaticPad  func(element uintptr, name string) uintptr
 	gstElementQueryPosition func(element uintptr, format int32, cur unsafe.Pointer) int32
 	gstEventNewSeek         func(rate float64, format int32, flags int32, startType int32, start int64, stopType int32, stop int64) uintptr
+	gstEventParseSegment    func(event uintptr, segment unsafe.Pointer)
+	gstPadAddProbe          func(pad uintptr, mask uint32, callback uintptr, userData uintptr, destroyData uintptr) uintptr
+	gstPadRemoveProbe       func(pad uintptr, id uintptr)
 	gstPadSendEvent         func(pad uintptr, event uintptr) int32
 	gstPipelineGetBus       func(pipeline uintptr) uintptr
 	gstBusTimedPopFiltered  func(bus uintptr, timeout uint64, types int32) uintptr
@@ -122,6 +127,9 @@ func (g *gstAPI) bind(gstHandle uintptr, gstAppHandle uintptr, glibHandle uintpt
 	purego.RegisterLibFunc(&g.gstElementGetStaticPad, gstHandle, "gst_element_get_static_pad")
 	purego.RegisterLibFunc(&g.gstElementQueryPosition, gstHandle, "gst_element_query_position")
 	purego.RegisterLibFunc(&g.gstEventNewSeek, gstHandle, "gst_event_new_seek")
+	purego.RegisterLibFunc(&g.gstEventParseSegment, gstHandle, "gst_event_parse_segment")
+	purego.RegisterLibFunc(&g.gstPadAddProbe, gstHandle, "gst_pad_add_probe")
+	purego.RegisterLibFunc(&g.gstPadRemoveProbe, gstHandle, "gst_pad_remove_probe")
 	purego.RegisterLibFunc(&g.gstPadSendEvent, gstHandle, "gst_pad_send_event")
 	purego.RegisterLibFunc(&g.gstPipelineGetBus, gstHandle, "gst_pipeline_get_bus")
 	purego.RegisterLibFunc(&g.gstBusTimedPopFiltered, gstHandle, "gst_bus_timed_pop_filtered")
@@ -204,7 +212,7 @@ func (g *gstAPI) objectUnref(obj uintptr) {
 }
 
 func (g *gstAPI) miniObjectUnref(obj uintptr) {
-	if obj != 0 {
+	if obj != 0 && g.gstMiniObjectUnref != nil {
 		g.gstMiniObjectUnref(obj)
 	}
 }
@@ -347,7 +355,7 @@ func validateGStreamerSampleSize(bufferSize uintptr, mapSize int) error {
 }
 
 func (g *gstAPI) popBusError(bus uintptr, timeout time.Duration) error {
-	if bus == 0 {
+	if bus == 0 || g.gstBusTimedPopFiltered == nil {
 		return nil
 	}
 
@@ -362,6 +370,59 @@ func (g *gstAPI) popBusError(bus uintptr, timeout time.Duration) error {
 		message = "gstreamer bus error"
 	}
 	return errors.New(message)
+}
+
+func (g *gstAPI) drainBusMessages(bus uintptr, messageTypes int32) {
+	for g.popBusMessage(bus, 0, messageTypes) {
+	}
+}
+
+func (g *gstAPI) waitForSeekDone(bus uintptr, timeout time.Duration) (bool, error) {
+	if bus == 0 || g.gstBusTimedPopFiltered == nil {
+		return false, errors.New("gstreamer bus is not available while waiting for seek")
+	}
+	if timeout <= 0 {
+		return false, errors.New("invalid gstreamer seek timeout")
+	}
+
+	deadline := time.Now().Add(timeout)
+	for {
+		if err := g.popBusError(bus, 0); err != nil {
+			return false, err
+		}
+		if g.popBusMessage(bus, 0, gstMessageEOS) {
+			return false, errors.New("gstreamer reached EOS while completing seek")
+		}
+
+		remaining := time.Until(deadline)
+		if remaining <= 0 {
+			break
+		}
+		wait := min(remaining, 100*time.Millisecond)
+		if g.popBusMessage(bus, wait, gstMessageAsyncDone) {
+			return true, nil
+		}
+	}
+
+	if err := g.popBusError(bus, 0); err != nil {
+		return false, err
+	}
+	if g.popBusMessage(bus, 0, gstMessageEOS) {
+		return false, errors.New("gstreamer reached EOS while completing seek")
+	}
+	return false, nil
+}
+
+func (g *gstAPI) popBusMessage(bus uintptr, timeout time.Duration, messageTypes int32) bool {
+	if bus == 0 || messageTypes == 0 || g.gstBusTimedPopFiltered == nil {
+		return false
+	}
+	msg := g.gstBusTimedPopFiltered(bus, uint64(timeout), messageTypes)
+	if msg == 0 {
+		return false
+	}
+	g.miniObjectUnref(msg)
+	return true
 }
 
 func (g *gstAPI) parseMessageError(msg uintptr) string {

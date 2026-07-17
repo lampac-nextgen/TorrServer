@@ -3,14 +3,20 @@
 package gstreamer
 
 import (
+	"context"
 	"fmt"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
-const maxPendingVTTChars = 64 * 1024
+const (
+	maxPendingVTTChars  = 64 * 1024
+	subtitleWaitTimeout = 5 * time.Second
+)
 
 var vttCuePattern = regexp.MustCompile(`(?ms)(?:^|\n)(?:[^\n]*\n)?(\d{2,}:\d{2}:\d{2}[.,]\d{3})[ \t]+-->[ \t]+(\d{2,}:\d{2}:\d{2}[.,]\d{3})[^\n]*\n(.*?)(?:\n[ \t]*\n)`)
 
@@ -27,18 +33,109 @@ type subtitleCueKey struct {
 }
 
 type subtitleStore struct {
-	mu       sync.RWMutex
-	pending  string
-	parsedTo uint64
-	cues     []subtitleCue
-	seen     map[subtitleCueKey]struct{}
+	mu          sync.RWMutex
+	pending     string
+	videoReadTo uint64
+	cues        []subtitleCue
+	seen        map[subtitleCueKey]struct{}
+	updated     chan struct{}
 }
 
 func newSubtitleStore() *subtitleStore {
 	return &subtitleStore{
-		cues: make([]subtitleCue, 0, 256),
-		seen: make(map[subtitleCueKey]struct{}),
+		cues:    make([]subtitleCue, 0, 256),
+		seen:    make(map[subtitleCueKey]struct{}),
+		updated: make(chan struct{}),
 	}
+}
+
+func (t *Task) setSubtitleStores(stores map[int]*subtitleStore) {
+	if t == nil {
+		return
+	}
+
+	t.subtitleMu.Lock()
+	previous := t.subtitleStores
+	t.subtitleStores = stores
+	t.subtitleMu.Unlock()
+
+	for _, store := range previous {
+		store.notify()
+	}
+}
+
+func (t *Task) subtitleStore(index int) *subtitleStore {
+	if t == nil {
+		return nil
+	}
+	t.subtitleMu.RLock()
+	store := t.subtitleStores[index]
+	t.subtitleMu.RUnlock()
+	return store
+}
+
+func (s *subtitleStore) notify() {
+	if s == nil {
+		return
+	}
+	s.mu.Lock()
+	s.notifyLocked()
+	s.mu.Unlock()
+}
+
+func (s *subtitleStore) notifyLocked() {
+	if s.updated != nil {
+		close(s.updated)
+	}
+	s.updated = make(chan struct{})
+}
+
+func (s *subtitleStore) setVideoReadTo(value uint64) {
+	if s == nil {
+		return
+	}
+	s.mu.Lock()
+	if s.videoReadTo != value {
+		s.videoReadTo = value
+		s.notifyLocked()
+	}
+	s.mu.Unlock()
+}
+
+func (s *subtitleStore) advanceVideoReadTo(value uint64) {
+	if s == nil || value == 0 {
+		return
+	}
+	s.mu.Lock()
+	if value > s.videoReadTo {
+		s.videoReadTo = value
+		s.notifyLocked()
+	}
+	s.mu.Unlock()
+}
+
+func (r *gstRunner) resetSubtitleProgress(seconds float64) {
+	value := subtitleProgressNS(seconds)
+	for _, store := range r.subtitleStores {
+		store.setVideoReadTo(value)
+	}
+}
+
+func (r *gstRunner) advanceSubtitleProgress(value uint64) {
+	for _, store := range r.subtitleStores {
+		store.advanceVideoReadTo(value)
+	}
+}
+
+func subtitleProgressNS(seconds float64) uint64 {
+	if seconds <= 0 || math.IsNaN(seconds) {
+		return 0
+	}
+	maximum := ^uint64(0)
+	if math.IsInf(seconds, 1) || seconds >= float64(maximum)/1_000_000_000 {
+		return maximum
+	}
+	return uint64(math.Round(seconds * 1_000_000_000))
 }
 
 func supportedSubtitleTrack(track TrackInfo) bool {
@@ -120,9 +217,6 @@ func (s *subtitleStore) appendVTT(chunk string, seekSeconds float64, maxBackDiff
 			startNS = saturatingAdd(startNS, seekNS)
 			endNS = saturatingAdd(endNS, seekNS)
 		}
-		if endNS > s.parsedTo {
-			s.parsedTo = endNS
-		}
 		key := subtitleCueKey{startNS: startNS, endNS: endNS, text: text}
 		if _, exists := s.seen[key]; !exists {
 			s.seen[key] = struct{}{}
@@ -141,43 +235,84 @@ func (s *subtitleStore) appendVTT(chunk string, seekSeconds float64, maxBackDiff
 		}
 		s.pending = s.pending[cut:]
 	}
+	s.notifyLocked()
 }
 
 func (t *Task) SubtitleVTT(trackIndex int, segmentIndex int) (string, bool) {
+	value, ready, _ := t.subtitleVTTSnapshot(trackIndex, segmentIndex)
+	return value, ready
+}
+
+func (t *Task) WaitSubtitleVTT(ctx context.Context, trackIndex int, segmentIndex int, timeout time.Duration) (string, error) {
 	if t == nil {
-		return "", false
+		return "", ErrTaskNotFound
+	}
+	if timeout <= 0 {
+		value, _, _ := t.subtitleVTTSnapshot(trackIndex, segmentIndex)
+		return value, nil
 	}
 
-	t.mu.Lock()
-	if t.disposed.Load() || t.runner == nil {
-		t.mu.Unlock()
-		return "", false
-	}
-	runner, ok := t.runner.(*gstRunner)
-	if !ok {
-		t.mu.Unlock()
-		return "", false
-	}
-	store := runner.subtitleStores[trackIndex]
-	t.mu.Unlock()
+	timer := time.NewTimer(timeout)
+	defer timer.Stop()
+	for {
+		value, ready, updated := t.subtitleVTTSnapshot(trackIndex, segmentIndex)
+		if ready {
+			return value, nil
+		}
 
+		select {
+		case <-ctx.Done():
+			return "", ctx.Err()
+		case <-timer.C:
+			value, _, _ = t.subtitleVTTSnapshot(trackIndex, segmentIndex)
+			return value, nil
+		case <-updated:
+		}
+	}
+}
+
+func (t *Task) subtitleVTTSnapshot(trackIndex int, segmentIndex int) (string, bool, <-chan struct{}) {
+	if t == nil {
+		return "", false, nil
+	}
+	fromNS, toNS := t.subtitleRange(segmentIndex)
+	if t.disposed.Load() {
+		return emptyVTT(fromNS), true, nil
+	}
+
+	store := t.subtitleStore(trackIndex)
 	if store == nil {
-		return emptyVTT(t.segmentStartNS(segmentIndex)), true
+		return emptyVTT(fromNS), true, nil
 	}
-	fromNS := t.segmentStartNS(segmentIndex)
-	toNS := fromNS + uint64(max(t.Config.SegmentSeconds, 1))*1_000_000_000
+	return store.renderVTT(fromNS, toNS)
+}
+
+func (t *Task) subtitleRange(segmentIndex int) (uint64, uint64) {
 	if cue, ok := t.Cue.Segment(segmentIndex); ok {
-		fromNS, toNS = cue.StartNS, cue.EndNS
+		return cue.StartNS, cue.EndNS
 	}
 
-	store.mu.RLock()
-	defer store.mu.RUnlock()
-	if store.parsedTo > 0 && store.parsedTo < toNS {
-		return "", false
+	fromNS := t.segmentStartNS(segmentIndex)
+	durationNS := uint64(max(t.Config.SegmentSeconds, 1)) * 1_000_000_000
+	toNS := saturatingAdd(fromNS, durationNS)
+	if t.Probe.DurationNS > 0 {
+		mediaEndNS := uint64(t.Probe.DurationNS)
+		if fromNS >= mediaEndNS {
+			toNS = fromNS
+		} else if toNS > mediaEndNS {
+			toNS = mediaEndNS
+		}
 	}
+	return fromNS, toNS
+}
+
+func (s *subtitleStore) renderVTT(fromNS uint64, toNS uint64) (string, bool, <-chan struct{}) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	var result strings.Builder
 	writeVTTHeader(&result, fromNS)
-	for _, cue := range store.cues {
+	for _, cue := range s.cues {
 		if cue.EndNS <= fromNS || cue.StartNS >= toNS {
 			continue
 		}
@@ -199,7 +334,8 @@ func (t *Task) SubtitleVTT(trackIndex int, segmentIndex int) (string, bool) {
 		result.WriteString(cue.Text)
 		result.WriteString("\n\n")
 	}
-	return result.String(), true
+	ready := toNS <= fromNS || s.videoReadTo >= toNS
+	return result.String(), ready, s.updated
 }
 
 func emptyVTT(startNS uint64) string {
