@@ -38,6 +38,7 @@ import axios from 'axios'
 import ptt from 'parse-torrent-title'
 import { useTranslation } from 'react-i18next'
 import { StyledDialog } from 'style/CustomMaterialUiStyles'
+import { LAYOUT_MOBILE_MEDIA } from 'style/materialUISetup'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import { GETTING_INFO, IN_DB, CLOSED, PRELOAD, WORKING } from 'torrentStates'
 import { TORRENT_CATEGORIES } from 'components/categories'
@@ -216,7 +217,7 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
     [],
   )
 
-  const fullScreen = useMediaQuery('(max-width:930px)')
+  const fullScreen = useMediaQuery(LAYOUT_MOBILE_MEDIA)
 
   const openDetailedInfo = () => setIsDetailedInfoOpened(true)
   const closeDetailedInfo = () => setIsDetailedInfoOpened(false)
@@ -667,7 +668,17 @@ export const StatusIndicator = ({ stat }: { stat?: number }) => {
 
   return (
     <span className='description-status-wrapper'>
-      <Chip size='small' label={label} color={colors[stat]} variant='filled' sx={{ height: 22, fontSize: 11 }} />
+      <Chip
+        size='small'
+        label={label}
+        color={colors[stat]}
+        variant='filled'
+        sx={{
+          height: 22,
+          fontSize: 12,
+          ...(stat === IN_DB && { bgcolor: '#323637', color: '#dee3e5' }),
+        }}
+      />
     </span>
   )
 }

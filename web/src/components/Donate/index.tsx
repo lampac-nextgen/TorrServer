@@ -5,6 +5,7 @@ import Alert from '@mui/material/Alert'
 import CreditCardIcon from '@mui/icons-material/CreditCard'
 import CircularProgress from '@mui/material/CircularProgress'
 import { useTranslation } from 'react-i18next'
+import { pwaChromeBottom } from 'components/App/PWAFooter/style'
 import styled, { css } from 'styled-components'
 import { standaloneMedia } from 'style/standaloneMedia'
 
@@ -12,7 +13,7 @@ const DonateDialog = lazy(() => import('./DonateDialog'))
 
 const StyledSnackbar = styled(Snackbar)`
   ${standaloneMedia(css`
-    margin-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+    margin-bottom: ${pwaChromeBottom};
   `)};
 `
 

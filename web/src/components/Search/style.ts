@@ -1,4 +1,5 @@
 import styled, { css } from 'styled-components'
+import { DialogFooter } from 'style/DialogStyles'
 
 export const Content = styled.div`
   ${({
@@ -12,7 +13,7 @@ export const Content = styled.div`
     display: flex;
     flex-direction: column;
     min-height: 0;
-    max-height: calc(100vh - 160px);
+    max-height: calc(100dvh - 160px);
 
     @media (max-width: 930px) {
       max-height: none;
@@ -74,6 +75,21 @@ export const SearchToolbar = styled.div`
 
     .search-submit {
       min-width: 80px;
+    }
+  }
+
+  @media (max-width: 420px) {
+    flex-direction: column;
+
+    .search-query,
+    .search-submit {
+      flex: 1 1 100%;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .search-submit {
+      min-width: 0;
     }
   }
 `
@@ -191,4 +207,10 @@ export const ResultAction = styled.div`
   justify-content: center;
 `
 
-export { DialogFooter as Footer } from 'style/DialogStyles'
+export const Footer = styled(DialogFooter)`
+  @media (max-width: 420px) {
+    .MuiButton-root {
+      width: 100%;
+    }
+  }
+`

@@ -17,7 +17,7 @@ export const DialogContentGrid = styled.div`
     min-height: 100%;
     background: ${torrentFilesSectionBGColor};
 
-    @media (max-width: 1200px) {
+    @media (max-width: 930px) {
       grid-template-columns: minmax(0, 1fr);
       grid-template-rows: repeat(3, min-content);
       grid-template-areas:
@@ -66,7 +66,7 @@ export const Poster = styled.div<{ $poster?: boolean }>`
       align-self: start;
     }
 
-    @media (max-width: 840px) {
+    @media (max-width: 930px) {
       ${
         $poster
           ? css`
@@ -92,7 +92,7 @@ export const MainSection = styled.section`
     gap: 20px;
     background: linear-gradient(145deg, ${gradientStartColor}, ${gradientEndColor});
 
-    @media (max-width: 840px) {
+    @media (max-width: 930px) {
       grid-template-columns: 1fr;
     }
 
@@ -129,7 +129,7 @@ export const CacheSection = styled.section`
 
     @media (max-width: 420px) {
       padding: 12px 10px;
-    }
+      gap: 8px;
     }
   `}
 `
@@ -232,6 +232,10 @@ export const WidgetWrapper = styled.div<{ $detailedView?: boolean }>`
           }
           @media (max-width: 480px) {
             grid-template-columns: repeat(2, minmax(0, 1fr));
+
+            & > *:last-child:nth-child(odd) {
+              grid-column: 1 / -1;
+            }
           }
           @media (max-width: 390px) {
             grid-template-columns: minmax(0, 1fr);
@@ -266,7 +270,7 @@ export const WidgetFieldTitle = styled.div`
     grid-area: title;
     justify-self: start;
     text-transform: uppercase;
-    font-size: 11px;
+    font-size: 12px;
     margin-bottom: 2px;
     font-weight: 500;
     color: ${titleFontColor};

@@ -140,30 +140,52 @@ export default function PrimarySettingsComponent({
 
       {UseDisk ? (
         <div>
-          <CacheStorageLocationLabel />
+          <CacheStorageSelector>
+            <CacheStorageLocationLabel style={{ placeSelf: 'start', gridArea: 'label' }} />
 
-          <ToggleButtonGroup
-            exclusive
-            value='disk'
-            onChange={(_, value) => {
-              if (value === 'ram') updateSettings({ UseDisk: false })
-            }}
-            color='secondary'
-            sx={{ display: 'grid', gridAutoFlow: 'column', gap: 1, mb: 1 }}
-          >
-            <ToggleButton value='ram' sx={{ flexDirection: 'column', gap: 0.5, py: 1.5, textTransform: 'none' }}>
-              <StorageIconWrapper $small>
-                <RAMIcon color={storageUnselectedIcon} />
-              </StorageIconWrapper>
-              {t('SettingsDialog.RAM')}
-            </ToggleButton>
-            <ToggleButton value='disk' sx={{ flexDirection: 'column', gap: 0.5, py: 1.5, textTransform: 'none' }}>
-              <StorageIconWrapper $small $selected>
-                <USBIcon color={storageSelectedIcon} />
-              </StorageIconWrapper>
-              {t('SettingsDialog.Disk')}
-            </ToggleButton>
-          </ToggleButtonGroup>
+            <ToggleButtonGroup
+              exclusive
+              value='disk'
+              onChange={(_, value) => {
+                if (value === 'ram') updateSettings({ UseDisk: false })
+              }}
+              color='secondary'
+              sx={{ display: 'contents' }}
+            >
+              <ToggleButton
+                value='ram'
+                sx={{
+                  gridArea: 'ram',
+                  flexDirection: 'column',
+                  gap: 0.5,
+                  py: 1.5,
+                  textTransform: 'none',
+                  width: '100%',
+                }}
+              >
+                <StorageIconWrapper $small>
+                  <RAMIcon color={storageUnselectedIcon} />
+                </StorageIconWrapper>
+                {t('SettingsDialog.RAM')}
+              </ToggleButton>
+              <ToggleButton
+                value='disk'
+                sx={{
+                  gridArea: 'disk',
+                  flexDirection: 'column',
+                  gap: 0.5,
+                  py: 1.5,
+                  textTransform: 'none',
+                  width: '100%',
+                }}
+              >
+                <StorageIconWrapper $small $selected>
+                  <USBIcon color={storageSelectedIcon} />
+                </StorageIconWrapper>
+                {t('SettingsDialog.Disk')}
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </CacheStorageSelector>
 
           <FormControlLabel
             control={

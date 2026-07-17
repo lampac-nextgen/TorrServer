@@ -190,7 +190,7 @@ export const ShortTable = styled.div<{ $isViewed?: boolean }>`
           padding: 0 10px;
 
           @media (max-width: 880px) {
-            font-size: 11px;
+            font-size: 12px;
           }
         }
 
@@ -224,6 +224,10 @@ export const ShortTable = styled.div<{ $isViewed?: boolean }>`
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 8px;
           width: 100%;
+
+          & > *:last-child:nth-child(odd) {
+            grid-column: 1 / -1;
+          }
         }
 
         .MuiButton-root {
@@ -241,7 +245,7 @@ export const ShortTable = styled.div<{ $isViewed?: boolean }>`
 
           .MuiButton-root {
             min-height: 36px;
-            font-size: 11px;
+            font-size: 12px;
           }
         }
       }

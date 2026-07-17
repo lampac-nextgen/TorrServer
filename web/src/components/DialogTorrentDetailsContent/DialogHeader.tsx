@@ -14,7 +14,12 @@ export default function DialogHeader({ title, onClose, onBack }: DialogHeaderPro
   const { t } = useTranslation()
 
   return (
-    <AppBar sx={{ position: 'relative', ...(isStandaloneApp && { paddingTop: '30px' }) }}>
+    <AppBar
+      sx={{
+        position: 'relative',
+        ...(isStandaloneApp && { paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))' }),
+      }}
+    >
       <Toolbar>
         {onBack && (
           <IconButton edge='start' color='inherit' onClick={onBack} aria-label={t('Back', { defaultValue: 'Back' })}>

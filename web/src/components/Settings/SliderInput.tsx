@@ -49,8 +49,8 @@ const SliderRow = styled.div<{ $hasHint?: boolean }>`
   align-items: center;
 
   @media (max-width: 600px) {
-    grid-template-columns: minmax(0, 1fr) minmax(5.25rem, 6.25rem);
-    column-gap: 8px;
+    grid-template-columns: minmax(0, 1fr) minmax(4.5rem, 5.5rem);
+    column-gap: 6px;
 
     /* Hint already shown in title on mobile — drop side column */
     > :nth-child(3) {

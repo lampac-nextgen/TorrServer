@@ -103,7 +103,8 @@ export const TorrentCardButtons = styled.div`
   gap: 8px;
 
   @media (max-width: 1260px), (max-height: 500px) {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
   }
 
   @media (max-width: 340px) {
@@ -152,7 +153,7 @@ export const TorrentCardDescription = styled.div`
       min-width: 0;
 
       @media (max-width: 770px) {
-        font-size: 0.65rem;
+        font-size: 0.75rem;
         line-height: 12px;
       }
     }
@@ -200,7 +201,7 @@ export const TorrentCardDescription = styled.div`
       line-height: 1.2;
 
       @media (max-width: 1260px), (max-height: 500px) {
-        font-size: 0.7rem;
+        font-size: 0.75rem;
         margin-bottom: 0;
         margin-left: 0;
       }
@@ -209,11 +210,11 @@ export const TorrentCardDescription = styled.div`
     .description-torrent-title,
     .description-statistics-element-value {
       @media (max-width: 770px) {
-        font-size: 0.6rem;
+        font-size: 0.75rem;
       }
 
       @media (max-width: 410px) {
-        font-size: 0.7rem;
+        font-size: 0.75rem;
       }
     }
   `}

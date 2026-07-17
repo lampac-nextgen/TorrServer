@@ -406,28 +406,33 @@ export const MultiFileList = styled.div`
 `
 
 export const StyledPWAAddButton = styled.div`
-  border: 2px solid white;
+  border: 2px solid #fff;
   border-radius: 50%;
-  height: 45px;
-  width: 45px;
+  height: 36px;
+  width: 36px;
   position: relative;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  pointer-events: none;
 
-  :before,
-  :after {
-    content: '';
-    background: white;
+  &::before,
+  &::after {
+    content: '' !important;
+    display: block;
+    background: #fff;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
   }
 
-  :before {
+  &::before {
     width: 2px;
-    height: 25px;
+    height: 16px;
   }
-  :after {
-    width: 25px;
+
+  &::after {
+    width: 16px;
     height: 2px;
   }
 `

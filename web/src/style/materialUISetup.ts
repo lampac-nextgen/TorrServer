@@ -17,7 +17,22 @@ export type ResolvedThemeMode = typeof THEME_MODES.LIGHT | typeof THEME_MODES.DA
 export const LAYOUT_MOBILE_MAX = 930
 export const LAYOUT_MOBILE_MEDIA = `(max-width: ${LAYOUT_MOBILE_MAX}px)`
 
-const typography = { fontFamily: 'Open Sans, sans-serif' }
+const typography = {
+  fontFamily: 'Open Sans, sans-serif',
+  letterSpacing: 'normal',
+  h6: {
+    letterSpacing: 'normal',
+  },
+  body1: {
+    letterSpacing: 'normal',
+  },
+  body2: {
+    letterSpacing: 'normal',
+  },
+  button: {
+    letterSpacing: 'normal',
+  },
+}
 
 export const darkTheme = createTheme({
   typography,
@@ -139,17 +154,18 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
                   '@media (max-width: 1260px), (max-height: 500px)': {
                     justifyContent: 'center',
                     fontSize: '0.75rem',
+                    minHeight: 44,
                     padding: '6px 8px',
                     '& .MuiButton-startIcon': {
                       display: 'none',
                     },
                   },
                   '@media (max-width: 770px)': {
-                    fontSize: '0.7rem',
+                    fontSize: '0.75rem',
                   },
                   '@media (max-width: 420px)': {
-                    fontSize: '0.65rem',
-                    padding: '6px 4px',
+                    fontSize: '0.75rem',
+                    padding: '6px 6px',
                   },
                 },
               },
@@ -182,7 +198,7 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
               },
               sizeSmall: {
                 height: 22,
-                fontSize: 11,
+                fontSize: 12,
               },
             },
           },
@@ -196,14 +212,17 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
           MuiTypography: {
             styleOverrides: {
               h6: {
-                fontSize: '0.9375rem',
+                fontSize: '1rem',
                 fontWeight: 600,
+                letterSpacing: 'normal',
               },
               body1: {
                 fontSize: '0.875rem',
+                letterSpacing: 'normal',
               },
               body2: {
                 fontSize: '0.8125rem',
+                letterSpacing: 'normal',
               },
             },
           },

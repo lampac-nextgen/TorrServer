@@ -1,5 +1,4 @@
 import styled, { css } from 'styled-components'
-import ButtonBase from '@mui/material/ButtonBase'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import { StyledHeader } from 'style/CustomMaterialUiStyles'
@@ -33,7 +32,7 @@ export const StyledTab = styled(Tab)`
 
   @media (max-width: 400px) {
     padding: 6px 8px;
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .MuiTab-iconWrapper,
@@ -52,7 +51,7 @@ export const StyledTab = styled(Tab)`
     line-height: 1.1;
 
     @media (max-width: 600px) {
-      font-size: 8px;
+      display: none;
     }
   }
 `
@@ -218,7 +217,7 @@ export const MainSettingsContent = styled.div`
 
   .MuiFormHelperText-root {
     @media (max-width: 600px) {
-      font-size: 11px;
+      font-size: 12px;
       margin-top: 2px;
     }
   }
@@ -253,7 +252,7 @@ export const SecondarySettingsContent = styled.div`
 
   .MuiFormHelperText-root {
     @media (max-width: 600px) {
-      font-size: 11px;
+      font-size: 12px;
       margin-top: 2px;
     }
   }
@@ -286,46 +285,6 @@ export const GstSettingsContent = styled(SecondarySettingsContent)`
     margin-top: 8px;
   }
 `
-export const StorageButton = styled(ButtonBase)<{ $small?: boolean; $selected?: boolean }>`
-  ${({ $small, $selected }) => css`
-    && {
-      transition: 0.2s;
-      cursor: default;
-      text-align: center;
-      display: grid;
-      color: inherit;
-      font: inherit;
-      border-radius: 8px;
-      padding: 4px;
-
-      ${
-        !$selected &&
-        css`
-          cursor: pointer;
-
-          :hover {
-            filter: brightness(0.8);
-          }
-        `
-      }
-
-      ${
-        $small
-          ? css`
-              grid-template-columns: max-content 1fr;
-              gap: 20px;
-              align-items: center;
-              justify-items: start;
-              margin-bottom: 20px;
-            `
-          : css`
-              place-items: center;
-              gap: 10px;
-            `
-      }
-    }
-  `}
-`
 
 export const StorageIconWrapper = styled.div<{ $small?: boolean; $selected?: boolean }>`
   ${({
@@ -355,32 +314,53 @@ export const StorageIconWrapper = styled.div<{ $small?: boolean; $selected?: boo
 `
 
 export const CacheStorageSelector = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: max-content auto;
-  grid-template-areas:
-    'label label'
-    'ram disk';
-  align-content: start;
-  justify-items: center;
-  column-gap: 24px;
-  row-gap: 8px;
+  ${({
+    theme: {
+      table: { outlinedButtonBorderColor },
+      settingsDialog: { cacheAfterReaderColor },
+    },
+  }) => css`
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: max-content auto;
+    grid-template-areas:
+      'label label'
+      'ram disk';
+    align-content: start;
+    justify-items: stretch;
+    column-gap: 24px;
+    row-gap: 8px;
 
-  @media (max-width: 930px) {
-    justify-content: start;
-    column-gap: 16px;
-  }
-
-  @media (max-width: 600px) {
-    column-gap: 10px;
-    row-gap: 6px;
-
+    /* Cards sit in a CSS grid via display:contents — undo MUI group border collapse
+       so each option is a full square (not top/bottom lines only). */
+    .MuiToggleButtonGroup-grouped,
     .MuiToggleButton-root {
-      padding-top: 10px !important;
-      padding-bottom: 10px !important;
-      font-size: 12px;
+      margin: 0 !important;
+      border: 1px solid ${outlinedButtonBorderColor} !important;
+      border-radius: 8px !important;
     }
-  }
+
+    .MuiToggleButton-root.Mui-selected {
+      border-color: ${cacheAfterReaderColor} !important;
+      background-color: rgba(0, 165, 114, 0.08);
+    }
+
+    @media (max-width: 930px) {
+      justify-content: stretch;
+      column-gap: 16px;
+    }
+
+    @media (max-width: 600px) {
+      column-gap: 10px;
+      row-gap: 6px;
+
+      .MuiToggleButton-root {
+        padding-top: 10px !important;
+        padding-bottom: 10px !important;
+        font-size: 12px;
+      }
+    }
+  `}
 `
 
 export const SettingSectionLabel = styled.div`
@@ -400,11 +380,11 @@ export const SettingSectionLabel = styled.div`
 
   small {
     display: block;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 400;
 
     @media (max-width: 600px) {
-      font-size: 10px;
+      font-size: 12px;
     }
   }
 `

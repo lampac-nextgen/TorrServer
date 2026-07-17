@@ -14,6 +14,7 @@ import parseTorrent from 'parse-torrent'
 import ptt from 'parse-torrent-title'
 import { DialogFooter } from 'style/DialogStyles'
 import { StyledDialog, StyledHeader } from 'style/CustomMaterialUiStyles'
+import { LAYOUT_MOBILE_MEDIA } from 'style/materialUISetup'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import { buttonLoadingIcon } from 'utils/buttonLoading'
 
@@ -101,7 +102,7 @@ export default function AddDialog({
     torrentSource.match(linkRegex) !== null && handleClose()
   }, [isSaving, torrents, torrentSource, currentSourceHash, handleClose])
 
-  const fullScreen = useMediaQuery('(max-width:930px)')
+  const fullScreen = useMediaQuery(LAYOUT_MOBILE_MEDIA)
 
   const updateTitleFromSource = useCallback(() => {
     parseTorrentTitle(torrentSource, ({ parsedTitle: nextParsedTitle, originalName: nextOriginalName }) => {

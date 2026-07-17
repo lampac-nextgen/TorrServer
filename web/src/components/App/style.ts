@@ -3,7 +3,7 @@ import { rgba } from 'polished'
 import { standaloneMedia } from 'style/standaloneMedia'
 import styled, { css } from 'styled-components'
 
-import { pwaFooterHeight } from './PWAFooter/style'
+import { pwaChromeBottom, pwaChromeTop } from './PWAFooter/style'
 
 export const AppWrapper = styled.div<{ $isDrawerOpen?: boolean }>`
   ${({
@@ -28,7 +28,7 @@ export const AppWrapper = styled.div<{ $isDrawerOpen?: boolean }>`
 
     ${standaloneMedia(css`
       grid-template-columns: 0 1fr;
-      grid-template-rows: ${pwaFooterHeight}px 1fr calc(${pwaFooterHeight}px + env(safe-area-inset-bottom, 0px));
+      grid-template-rows: ${pwaChromeTop} minmax(0, 1fr) ${pwaChromeBottom};
       height: 100vh;
       height: 100dvh;
     `)}
@@ -70,11 +70,23 @@ export const AppHeader = styled.div`
 
     ${standaloneMedia(css`
       grid-template-columns: max-content 1fr;
-      align-items: end;
-      padding: 7px 16px;
+      align-items: center;
+      padding: 0 12px;
+      padding-top: env(safe-area-inset-top, 0px);
       position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
-      height: ${pwaFooterHeight}px;
+      height: ${pwaChromeTop};
+      box-sizing: border-box;
+      z-index: 3;
+      font-family: 'Open Sans', sans-serif;
+      letter-spacing: normal;
+
+      .MuiTypography-root {
+        font-family: 'Open Sans', sans-serif;
+        letter-spacing: normal;
+      }
     `)}
   `}
 `
@@ -149,9 +161,8 @@ export const TorrentListWrapper = styled.div`
   }
 
   ${standaloneMedia(css`
-    height: calc(100vh - ${pwaFooterHeight}px - env(safe-area-inset-bottom, 0px));
-    height: calc(100dvh - ${pwaFooterHeight}px - env(safe-area-inset-bottom, 0px));
-    padding-bottom: calc(105px + env(safe-area-inset-bottom, 0px));
+    min-height: 0;
+    overflow: auto;
   `)}
 `
 
@@ -168,9 +179,21 @@ export const HeaderToggle = styled(IconButton)`
       color: #fff;
       font-weight: 600;
       padding: 0;
+      width: 36px;
+      height: 36px;
 
       &:hover {
         background: ${rgba(headerToggleColor, 0.7)};
+      }
+
+      @media (max-width: 930px) {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+
+        svg {
+          font-size: 18px;
+        }
       }
     }
   `}
@@ -190,7 +213,7 @@ export const SidebarOverlay = styled.div<{ $isDrawerOpen?: boolean }>`
     z-index: 1;
 
     ${standaloneMedia(css`
-      top: 90px;
+      top: ${pwaChromeTop};
     `)}
   }
 `

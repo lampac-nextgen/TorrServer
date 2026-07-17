@@ -30,6 +30,7 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import Hls from 'hls.js'
 import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
 import { StyledDialog } from 'style/CustomMaterialUiStyles'
+import { LAYOUT_MOBILE_MEDIA } from 'style/materialUISetup'
 import { useTranslation } from 'react-i18next'
 
 export interface VideoPlayerProps {
@@ -222,7 +223,7 @@ const TimeRow = styled(Box)(({ theme }) => ({
   paddingLeft: theme.spacing(2),
   [theme.breakpoints.down('sm')]: {
     paddingLeft: theme.spacing(1),
-    fontSize: 9,
+    fontSize: 12,
   },
 }))
 
@@ -288,7 +289,7 @@ const VideoPlayer = ({
   initiallyOpen = false,
   onClose,
 }: VideoPlayerProps) => {
-  const isMobile = useMediaQuery('(max-width:930px)')
+  const isMobile = useMediaQuery(LAYOUT_MOBILE_MEDIA)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const hlsRef = useRef<Hls | null>(null)
   const onNotSupportedRef = useRef(onNotSupported)

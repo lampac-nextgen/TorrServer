@@ -17,7 +17,7 @@ export default function SettingsDialogButton({ isOffline, isLoading }: OfflineAw
   const handleClose = () => setIsDialogOpen(false)
 
   return (
-    <div>
+    <>
       <StyledMenuButtonWrapper disabled={isOffline || isLoading} onClick={handleClickOpen}>
         {isStandaloneApp ? (
           <>
@@ -36,6 +36,6 @@ export default function SettingsDialogButton({ isOffline, isLoading }: OfflineAw
       </StyledMenuButtonWrapper>
 
       {isDialogOpen && <SettingsDialog handleClose={handleClose} />}
-    </div>
+    </>
   )
 }

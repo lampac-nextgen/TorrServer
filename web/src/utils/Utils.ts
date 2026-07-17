@@ -85,7 +85,21 @@ export const detectStandaloneApp = (): boolean => {
   return byDisplayMode || (window.navigator as Navigator & { standalone?: boolean }).standalone === true
 }
 
+/** Sync CSS (`standaloneMedia`) with JS detection for iOS home-screen apps. */
+export const applyStandaloneDocumentFlag = (): void => {
+  if (typeof document === 'undefined') return
+  if (detectStandaloneApp()) {
+    document.documentElement.dataset.standalone = '1'
+  } else {
+    delete document.documentElement.dataset.standalone
+  }
+}
+
 export const isStandaloneApp = detectStandaloneApp()
+
+if (typeof document !== 'undefined') {
+  applyStandaloneDocumentFlag()
+}
 
 export const detectApplePlatform = (): { isMac: boolean; isIOS: boolean } => {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') {

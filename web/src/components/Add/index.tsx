@@ -19,7 +19,7 @@ export default function AddDialogButton({ isOffline, isLoading }: OfflineAwarePr
   const handleClose = () => setIsDialogOpen(false)
 
   return (
-    <div>
+    <>
       <StyledMenuButtonWrapper disabled={isOffline || isLoading} onClick={handleClickOpen}>
         {isStandaloneApp ? (
           <StyledPWAAddButton />
@@ -39,6 +39,6 @@ export default function AddDialogButton({ isOffline, isLoading }: OfflineAwarePr
           <AddDialog handleClose={handleClose} />
         </Suspense>
       )}
-    </div>
+    </>
   )
 }
