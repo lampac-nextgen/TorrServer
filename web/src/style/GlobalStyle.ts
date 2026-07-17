@@ -36,10 +36,9 @@ export default createGlobalStyle`
     overscroll-behavior-y: none;
 
     ${standaloneMedia(css`
-      /* Layout / chrome only — never PWA-specific type */
+      /* Layout only — do not override body color (master); CssBaseline + app shell paint theme */
       height: 100%;
       min-height: 100dvh;
-      background: #323637;
     `)}
   }
 

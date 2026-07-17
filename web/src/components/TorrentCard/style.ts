@@ -34,6 +34,8 @@ export const TorrentCard = styled.div`
     ${mediaMax('mobile')} {
       grid-template-columns: 60px 1fr;
       grid-template-rows: 90px max-content;
+      gap: 8px;
+      padding: 8px;
     }
   `}
 `

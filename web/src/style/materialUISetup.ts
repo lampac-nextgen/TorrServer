@@ -55,6 +55,10 @@ export const darkTheme = createTheme({
     mode: THEME_MODES.DARK,
     primary: { main: mainColors.dark.primary },
     secondary: { main: mainColors.dark.secondary },
+    background: {
+      default: themeColors.dark.app.appSecondaryColor,
+      paper: themeColors.dark.app.paperColor,
+    },
   },
 })
 
@@ -64,6 +68,10 @@ export const lightTheme = createTheme({
     mode: THEME_MODES.LIGHT,
     primary: { main: mainColors.light.primary },
     secondary: { main: mainColors.light.secondary },
+    background: {
+      default: themeColors.light.app.appSecondaryColor,
+      paper: themeColors.light.app.paperColor,
+    },
   },
 })
 
@@ -108,6 +116,11 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
           mode: theme as PaletteMode,
           primary: { main: mainColors[theme].primary },
           secondary: { main: mainColors[theme].secondary },
+          // MUI 6 dark default is #121212 — master used gray paper/secondary, not Material black.
+          background: {
+            default: themeColors[theme].app.appSecondaryColor,
+            paper: themeColors[theme].app.paperColor,
+          },
         },
         components: {
           MuiButton: {

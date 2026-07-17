@@ -169,7 +169,7 @@ export const themeColors = {
 
 export const mainColors = {
   light: {
-    primary: '#00875a',
+    primary: '#00a572',
     secondary: '#00a572',
     labels: rgba('#000', 0.9),
   },

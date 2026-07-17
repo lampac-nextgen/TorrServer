@@ -163,12 +163,15 @@ export const TorrentListWrapper = styled.div`
 
   ${mediaMax('mobile')} {
     grid-template-columns: minmax(0, 1fr);
+    padding: 8px;
+    gap: 10px;
   }
 
   ${standaloneMedia(css`
     /* Grid row is already 1fr between header/footer — do not re-subtract chrome. */
     height: auto;
-    padding-bottom: 15px;
+    padding: 8px;
+    gap: 10px;
   `)}
 `
 
