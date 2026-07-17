@@ -27,7 +27,7 @@ export const TableStyle = styled.table`
   }) => css`
     border-collapse: collapse;
     margin: 25px 0;
-    font-size: 0.9em;
+    font-size: 0.8125rem;
     width: 100%;
     border-radius: 5px 5px 0 0;
     overflow: hidden;
@@ -39,11 +39,13 @@ export const TableStyle = styled.table`
       color: #fff;
       text-align: left;
       text-transform: uppercase;
+      font-size: 0.75rem;
+      font-weight: 500;
     }
 
     th,
     td {
-      padding: 12px 15px;
+      padding: 10px 12px;
     }
 
     tbody tr {
@@ -148,11 +150,11 @@ export const ShortTable = styled.div<{ $isViewed?: boolean }>`
         padding: 15px;
         color: #fff;
         text-transform: uppercase;
-        font-size: 15px;
-        font-weight: bold;
+        font-size: 13px;
+        font-weight: 600;
 
         @media (max-width: 880px) {
-          font-size: 13px;
+          font-size: 12px;
           padding: 10px;
         }
       }
@@ -190,13 +192,13 @@ export const ShortTable = styled.div<{ $isViewed?: boolean }>`
           display: grid;
           place-items: center;
           color: #fff;
-          font-size: 15px;
-          padding: 15px 10px;
+          font-size: 13px;
+          padding: 12px 10px;
           position: relative;
 
           @media (max-width: 880px) {
-            font-size: 13px;
-            padding: 12px 8px;
+            font-size: 12px;
+            padding: 10px 8px;
           }
         }
       }

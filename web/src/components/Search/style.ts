@@ -164,8 +164,9 @@ export const ResultMain = styled.div`
 `
 
 export const ResultTitle = styled.div`
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.35;
+  font-weight: 400;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -173,7 +174,7 @@ export const ResultTitle = styled.div`
   word-break: break-word;
 
   @media (max-width: 600px) {
-    font-size: 13px;
+    font-size: 12.5px;
   }
 `
 

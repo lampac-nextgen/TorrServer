@@ -147,7 +147,7 @@ export const TorrentCardDescription = styled.div`
     .description-section-name {
       text-transform: uppercase;
       font-size: 10px;
-      font-weight: 600;
+      font-weight: 500;
       letter-spacing: 0.4px;
       color: ${sectionLabelColor};
       min-width: 0;
@@ -171,7 +171,10 @@ export const TorrentCardDescription = styled.div`
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       word-break: break-word;
-      line-height: 1.25;
+      font-size: 0.8125rem;
+      font-weight: 400;
+      line-height: 1.3;
+      letter-spacing: 0;
     }
 
     .description-statistics-wrapper {
@@ -193,7 +196,8 @@ export const TorrentCardDescription = styled.div`
       overflow: hidden;
       text-overflow: ellipsis;
       font-variant-numeric: tabular-nums;
-      font-size: 0.875rem;
+      font-size: 0.8125rem;
+      font-weight: 400;
       line-height: 1.2;
 
       @media (max-width: 1260px), (max-height: 500px) {

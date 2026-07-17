@@ -11,49 +11,50 @@ export const HeaderSection = styled.section`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 36px;
-  font-weight: 300;
-  padding: 20px;
+  font-size: 22px;
+  font-weight: 400;
+  padding: 16px 20px;
 
   img {
-    width: 64px;
+    width: 48px;
   }
 
   @media (max-width: 930px) {
-    font-size: 22px;
-    padding: 10px 20px;
+    font-size: 18px;
+    padding: 10px 16px;
 
     img {
-      width: 60px;
+      width: 40px;
     }
   }
 
   ${standaloneMedia(css`
-    padding-top: 30px;
+    padding-top: 24px;
   `)}
 `
 
 export const ThanksSection = styled.section`
-  padding: 20px;
+  padding: 16px 20px;
   text-align: center;
-  font-size: 24px;
-  font-weight: 300;
+  font-size: 15px;
+  font-weight: 400;
   background: #e8e5eb;
   color: #323637;
 
   @media (max-width: 930px) {
-    font-size: 20px;
-    padding: 30px 20px;
+    font-size: 14px;
+    padding: 20px 16px;
   }
 `
 
 export const Section = styled.section`
-  padding: 20px;
+  padding: 16px 20px;
 
   > span {
-    font-size: 22px;
+    font-size: 15px;
+    font-weight: 500;
     display: block;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
   }
 
   a {

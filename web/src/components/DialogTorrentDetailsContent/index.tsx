@@ -237,7 +237,7 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
                 <Stack spacing={1} sx={{ mt: 0.5 }}>
                   <Typography
                     component='div'
-                    variant='body1'
+                    variant='body2'
                     fontWeight={600}
                     textAlign='center'
                     aria-label={`${humanizeSize(Filled || 0)} / ${humanizeSize(cacheDisplayTarget)}`}

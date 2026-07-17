@@ -64,8 +64,8 @@ export const RightSideContainer = styled.div<{
         white-space: nowrap;
 
         :before {
-          font-size: 20px;
-          font-weight: 300;
+          font-size: 14px;
+          font-weight: 400;
           content: '${$notificationMessage}';
           display: grid;
           place-items: center;

@@ -41,7 +41,7 @@ export const StyledHeader = styled.div`
   grid-template-columns: min-content 1fr;
   gap: 20px;
   align-items: center;
-  font-weight: 700;
+  font-weight: 600;
 
   img {
     border-radius: 5px;

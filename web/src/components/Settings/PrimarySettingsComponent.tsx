@@ -131,7 +131,7 @@ export default function PrimarySettingsComponent({
           inputMin={0}
           inputMax={100}
           unit='%'
-          valueHint={`${preloadCacheSize} ${t('MB')}`}
+          valueHint={`≈ ${preloadCacheSize} ${t('MB')}`}
         />
       </div>
 

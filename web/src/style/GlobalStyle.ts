@@ -13,6 +13,8 @@ export default createGlobalStyle`
 
   body {  
     font-family: "Open Sans", sans-serif;
+    font-size: 14px;
+    font-weight: 400;
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;

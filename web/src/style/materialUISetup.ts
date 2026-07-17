@@ -111,8 +111,9 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
                   borderRadius: 5,
                   textTransform: 'uppercase',
                   justifyContent: 'flex-start',
-                  fontSize: '0.8rem',
-                  letterSpacing: '0.009em',
+                  fontSize: '0.75rem',
+                  fontWeight: 500,
+                  letterSpacing: '0.02em',
                   padding: '0 10px',
                   boxShadow: 'none',
                   WebkitTapHighlightColor: 'transparent',
@@ -174,7 +175,24 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
           MuiTypography: {
             styleOverrides: {
               h6: {
-                fontSize: '1.0rem',
+                fontSize: '0.9375rem',
+                fontWeight: 600,
+              },
+              body1: {
+                fontSize: '0.875rem',
+              },
+              body2: {
+                fontSize: '0.8125rem',
+              },
+            },
+          },
+          MuiListItemText: {
+            styleOverrides: {
+              primary: {
+                fontSize: '0.875rem',
+              },
+              secondary: {
+                fontSize: '0.75rem',
               },
             },
           },

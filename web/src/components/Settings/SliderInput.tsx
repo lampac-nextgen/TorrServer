@@ -13,7 +13,7 @@ interface SliderInputProps {
   inputMax: number
   step?: number
   unit?: string
-  /** Extra text next to the value, e.g. computed MB for preload %. */
+  /** Derived label shown next to the value, e.g. preload size in MB. */
   valueHint?: string
   onBlurCallback?: (value: string) => void
 }
@@ -27,7 +27,7 @@ const SliderBlock = styled.div`
 `
 
 const SliderTitle = styled.div`
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.35;
   margin-bottom: 4px;
   word-break: break-word;
@@ -44,6 +44,7 @@ const ValueBox = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 8px;
   min-width: 108px;
 `
 
@@ -56,13 +57,12 @@ const ValueText = styled.span`
   opacity: 0.85;
 `
 
-const ValueHint = styled.div`
-  margin-top: 4px;
-  text-align: right;
+const HintText = styled.span`
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   font-size: 12px;
   line-height: 1.2;
   opacity: 0.65;
-  font-variant-numeric: tabular-nums;
 `
 
 export default function SliderInput({
@@ -95,7 +95,7 @@ export default function SliderInput({
   const onSliderChange = (_: Event, newValue: number | number[]) => setValue(newValue as number)
 
   const displayValue = typeof value === 'number' ? value : lastNumericRef.current
-  const readOnlyLabel = [displayValue, unit, valueHint ? `(${valueHint})` : null].filter(Boolean).join(' ')
+  const readOnlyLabel = [displayValue, unit].filter(Boolean).join(' ')
 
   if (typeof value === 'number') lastNumericRef.current = value
 
@@ -112,7 +112,6 @@ export default function SliderInput({
           step={step}
           color='secondary'
           size='small'
-          disabled={!isProMode}
         />
 
         <ValueBox>
@@ -130,7 +129,6 @@ export default function SliderInput({
                   px: '8px',
                   fontVariantNumeric: 'tabular-nums',
                   textAlign: 'right',
-                  // Hide spinners so 3-digit values (e.g. 256) are not clipped
                   MozAppearance: 'textfield',
                   '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
                     WebkitAppearance: 'none',
@@ -144,10 +142,9 @@ export default function SliderInput({
           ) : (
             <ValueText>{readOnlyLabel}</ValueText>
           )}
+          {valueHint ? <HintText aria-hidden={false}>{valueHint}</HintText> : null}
         </ValueBox>
       </SliderRow>
-
-      {isProMode && valueHint ? <ValueHint>{valueHint}</ValueHint> : null}
     </SliderBlock>
   )
 }

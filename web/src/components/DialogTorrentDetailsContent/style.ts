@@ -181,15 +181,15 @@ export const SectionTitle = styled.div<{ $color?: string; $mb?: number }>`
     },
   }) => css`
     ${$mb && `margin-bottom: ${$mb}px`};
-    font-size: 28px;
-    font-weight: 300;
-    line-height: 1.15;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.2;
     word-break: break-word;
     color: ${$color || titleFontColor};
 
     @media (max-width: 800px) {
-      font-size: 22px;
-      line-height: 1.15;
+      font-size: 17px;
+      line-height: 1.2;
       ${$mb && `margin-bottom: ${$mb / 2}px`};
     }
   `}
@@ -263,7 +263,7 @@ export const WidgetFieldTitle = styled.div`
     text-transform: uppercase;
     font-size: 11px;
     margin-bottom: 2px;
-    font-weight: 600;
+    font-weight: 500;
     color: ${titleFontColor};
   `}
 `
@@ -291,7 +291,8 @@ export const WidgetFieldValue = styled.div<{ $bgColor?: string; $fontColor?: str
     },
   }) => css`
     grid-area: value;
-    font-size: 20px;
+    font-size: 15px;
+    font-weight: 500;
     padding: 0 16px 0 0;
     color: ${$fontColor || widgetFontColor};
     background: ${$bgColor};
@@ -302,7 +303,7 @@ export const WidgetFieldValue = styled.div<{ $bgColor?: string; $fontColor?: str
     min-width: 0;
 
     @media (max-width: 800px) {
-      font-size: 16px;
+      font-size: 13px;
       padding: 0 12px 0 0;
     }
   `}

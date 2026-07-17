@@ -20,15 +20,15 @@ export const StyledTabs = styled(Tabs)`
 
 export const StyledTab = styled(Tab)`
   min-width: auto;
-  padding: 6px 16px;
-  font-size: 14px;
+  padding: 6px 14px;
+  font-size: 13px;
   white-space: nowrap;
   flex-shrink: 0;
 
   @media (max-width: 600px) {
     padding: 6px 12px;
     font-size: 12px;
-    min-height: 48px;
+    min-height: 44px;
   }
 
   @media (max-width: 400px) {
@@ -103,9 +103,10 @@ export const CacheLegendGrid = styled.div`
   display: grid;
   grid-template-columns: auto max-content minmax(0, 1fr);
   column-gap: 14px;
-  row-gap: 12px;
+  row-gap: 10px;
   align-items: start;
   margin-bottom: 4px;
+  font-size: 13px;
 
   .cache-legend-value {
     white-space: nowrap;
@@ -120,8 +121,8 @@ export const CacheLegendGrid = styled.div`
 
   @media (max-width: 600px) {
     column-gap: 10px;
-    row-gap: 10px;
-    font-size: 13px;
+    row-gap: 8px;
+    font-size: 12px;
   }
 `
 
@@ -335,22 +336,24 @@ export const CacheStorageSelector = styled.div`
 `
 
 export const SettingSectionLabel = styled.div`
-  font-size: 18px;
-  padding-bottom: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  padding-bottom: 10px;
 
   @media (max-width: 600px) {
-    font-size: 16px;
-    padding-bottom: 10px;
+    font-size: 14px;
+    padding-bottom: 8px;
   }
 
   @media (max-width: 400px) {
-    font-size: 15px;
+    font-size: 13px;
     padding-bottom: 8px;
   }
 
   small {
     display: block;
     font-size: 11px;
+    font-weight: 400;
 
     @media (max-width: 600px) {
       font-size: 10px;
@@ -401,7 +404,7 @@ export const GstRuntimeStatusItem = styled.div<{ $ok?: boolean; $warn?: boolean 
     border-radius: 5px;
     border: 1px solid ${$ok ? '#88cdaa' : $warn ? '#cda184' : '#dee3e5'};
     background: ${$ok ? 'rgba(136, 205, 170, 0.2)' : $warn ? 'rgba(205, 161, 132, 0.2)' : 'rgba(222, 227, 229, 0.35)'};
-    font-size: 14px;
+    font-size: 13px;
     line-height: 1.4;
 
     .gst-status-row {
@@ -430,9 +433,9 @@ export const GstRuntimeStatusItem = styled.div<{ $ok?: boolean; $warn?: boolean 
 `
 
 export const GstSubsectionLabel = styled(SettingSectionLabel)`
-  font-size: 16px;
-  padding-bottom: 10px;
-  margin-top: 16px;
+  font-size: 14px;
+  padding-bottom: 8px;
+  margin-top: 14px;
 `
 
 export const PreloadCachePercentage = styled.div.attrs<{
@@ -460,24 +463,28 @@ export const PreloadCachePercentage = styled.div.attrs<{
     position: relative;
     display: grid;
     place-items: center;
-    font-size: 16px;
+    font-size: 13px;
+    font-weight: 500;
     font-variant-numeric: tabular-nums;
+    overflow: hidden;
+    text-shadow: none;
 
     > * {
       position: relative;
       z-index: 1;
+      background: transparent;
     }
 
+    /* Preload share as a thin bottom strip — does not darken the label */
     :after {
       content: '';
       width: ${$preloadCachePercentage}%;
-      height: 100%;
+      height: 3px;
       background: ${preloadCacheBorderColor};
       position: absolute;
       bottom: 0;
       left: 0;
-      border-radius: 4px;
-      filter: opacity(0.15);
+      opacity: 0.45;
       pointer-events: none;
     }
   `}
