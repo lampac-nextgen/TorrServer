@@ -72,9 +72,15 @@ import { DialogFooter } from 'style/DialogStyles'
 export const FooterSection = DialogFooter
 
 export const Divider = styled.div`
-  height: 1px;
-  background-color: rgba(0, 0, 0, 0.12);
-  margin: 30px 0;
+  ${({
+    theme: {
+      settingsDialog: { separatorColor },
+    },
+  }) => css`
+    height: 1px;
+    background-color: ${separatorColor};
+    margin: 30px 0;
+  `}
 `
 
 export const Content = styled.div<{ $isLoading?: boolean }>`
@@ -442,8 +448,8 @@ export const PreloadCachePercentage = styled.div.attrs<{
   $value?: number
   $beforeColor?: string
   $afterColor?: string
-}>(({ $value, $beforeColor, $afterColor }) => ({
-  // this block is here according to styled-components recomendation about fast changable components
+}>(({ $value = 0, $beforeColor, $afterColor }) => ({
+  // Fast-changing gradient values go in style (styled-components recommendation)
   style: {
     background: `linear-gradient(to right, ${$beforeColor} 0%, ${$beforeColor} ${$value}%, ${$afterColor} ${$value}%, ${$afterColor} 100%)`,
   },
@@ -465,12 +471,33 @@ export const PreloadCachePercentage = styled.div.attrs<{
     font-weight: 500;
     font-variant-numeric: tabular-nums;
     overflow: hidden;
-    text-shadow: none;
     user-select: none;
-
-    > * {
-      position: relative;
-      z-index: 1;
-    }
+    isolation: isolate;
   `}
+`
+
+/** Dim overlay for preload share — sits on the whole cache bar (master behavior). */
+export const PreloadCacheOverlay = styled.div.attrs<{ $widthPct?: number }>(({ $widthPct = 0 }) => ({
+  style: { width: `${$widthPct}%` },
+  'aria-hidden': true,
+}))`
+  ${({
+    theme: {
+      settingsDialog: { preloadCacheBorderColor },
+    },
+  }) => css`
+    position: absolute;
+    inset: 0 auto 0 0;
+    height: 100%;
+    background: ${preloadCacheBorderColor};
+    opacity: 0.18;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 0;
+  `}
+`
+
+export const PreloadCacheLabel = styled.span`
+  position: relative;
+  z-index: 1;
 `

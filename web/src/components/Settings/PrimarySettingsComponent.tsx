@@ -13,6 +13,8 @@ import {
   CacheStorageSelector,
   SettingSectionLabel,
   PreloadCachePercentage,
+  PreloadCacheOverlay,
+  PreloadCacheLabel,
 } from './style'
 import SliderInput from './SliderInput'
 import type { BTSets, SettingsInputHandler, SettingsUpdater } from 'types/api'
@@ -73,9 +75,10 @@ export default function PrimarySettingsComponent({
           $beforeColor={cacheBeforeReaderColor}
           $afterColor={cacheAfterReaderColor}
         >
-          <span>
+          <PreloadCacheOverlay $widthPct={preloadCachePercentage} />
+          <PreloadCacheLabel>
             {t('Cache')} {cacheSize} {t('MB')}
-          </span>
+          </PreloadCacheLabel>
         </PreloadCachePercentage>
 
         <CacheLegendGrid>
@@ -120,7 +123,7 @@ export default function PrimarySettingsComponent({
 
         <SliderInput
           isProMode={isProMode}
-          title={t('SettingsDialog.PreloadCache')}
+          title={`${t('SettingsDialog.PreloadCache')} - ${preloadCachePercentage}% (${preloadCacheSize} ${t('MB')})`}
           value={preloadCachePercentage}
           setValue={v => setPreloadCachePercentage(v === '' ? preloadCachePercentage : v)}
           sliderMin={0}
@@ -128,7 +131,6 @@ export default function PrimarySettingsComponent({
           inputMin={0}
           inputMax={100}
           unit='%'
-          valueHint={`≈ ${preloadCacheSize} ${t('MB')}`}
         />
       </div>
 

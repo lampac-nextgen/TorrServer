@@ -22,7 +22,14 @@ const viewedIndicator = css`
 export const TableStyle = styled.table`
   ${({
     theme: {
-      table: { defaultPrimaryColor, rowBGColor, viewedRowBGColor, dividerColor, rowFontColor },
+      table: {
+        defaultPrimaryColor,
+        rowBGColor,
+        viewedRowBGColor,
+        dividerColor,
+        rowFontColor,
+        outlinedButtonBorderColor,
+      },
     },
   }) => css`
     border-collapse: collapse;
@@ -95,7 +102,7 @@ export const TableStyle = styled.table`
       }
 
       .MuiButton-outlined {
-        border-color: rgba(0, 152, 121, 0.45);
+        border-color: ${outlinedButtonBorderColor};
       }
     }
 

@@ -8,6 +8,7 @@ import { viewedHost } from 'utils/Hosts'
 import { GETTING_INFO, IN_DB } from 'torrentStates'
 import CircularProgress from '@mui/material/CircularProgress'
 import { useTranslation } from 'react-i18next'
+import { useTheme } from 'styled-components'
 import { readLocalBool } from 'utils/localPrefs'
 import type { PlayableFile, TorrentStat, ViewedFileEntry } from 'types/api'
 
@@ -59,6 +60,14 @@ export interface DialogTorrentDetailsContentProps {
 
 export default function DialogTorrentDetailsContent({ closeDialog, torrent }: DialogTorrentDetailsContentProps) {
   const { t } = useTranslation()
+  const {
+    dialogTorrentDetailsContent: {
+      bufferTrailStartColor,
+      bufferTrailEndColor,
+      bufferEmptyTrackColor,
+      bufferTrackBorderColor,
+    },
+  } = useTheme()
   const [isLoading, setIsLoading] = useState(true)
   const [isDetailedCacheView, setIsDetailedCacheView] = useState(false)
   const [viewedFileList, setViewedFileList] = useState<number[] | undefined>()
@@ -251,7 +260,16 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
                     aria-valuemin={0}
                     aria-valuemax={100}
                     aria-valuenow={cacheFillPercent ?? 0}
-                    sx={{ height: 10, borderRadius: 1 }}
+                    sx={{
+                      height: 10,
+                      borderRadius: 1,
+                      border: `1px solid ${bufferTrackBorderColor}`,
+                      backgroundColor: bufferEmptyTrackColor,
+                      '& .MuiLinearProgress-bar': {
+                        borderRadius: 1,
+                        background: `linear-gradient(90deg, ${bufferTrailStartColor}, ${bufferTrailEndColor})`,
+                      },
+                    }}
                   />
                 </Stack>
               </SectionHeader>

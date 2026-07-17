@@ -310,9 +310,15 @@ export const WidgetFieldValue = styled.div<{ $bgColor?: string; $fontColor?: str
 `
 
 export const Divider = styled.div`
-  height: 1px;
-  background-color: rgba(0, 0, 0, 0.12);
-  margin: 20px 0;
+  ${({
+    theme: {
+      addDialog: { separatorColor },
+    },
+  }) => css`
+    height: 1px;
+    background-color: ${separatorColor};
+    margin: 20px 0;
+  `}
 `
 
 export const DetailsScrollBody = styled.div`
