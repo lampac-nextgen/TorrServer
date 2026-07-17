@@ -15,26 +15,39 @@ export const Header = styled.div`
   `}
 `
 
-export const ButtonWrapper = styled.div`
-  padding: 20px;
-  display: flex;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 10px;
-  border-top: 1px solid rgba(0, 0, 0, 0.12);
-
-  > :not(:last-child) {
-    margin-right: 0;
-  }
-
-  @media (max-width: 500px) {
-    flex-direction: column-reverse;
+/** Shared dialog footer used by Settings, Search, Add. */
+export const DialogFooter = styled.div`
+  ${({
+    theme: {
+      settingsDialog: { footerBG },
+      addDialog: { separatorColor },
+    },
+  }) => css`
+    padding: 16px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: stretch;
+    gap: 10px;
+    border-top: 1px solid ${separatorColor};
+    background: ${footerBG};
 
     .MuiButton-root {
-      width: 100%;
+      min-height: 40px;
+      min-width: 128px;
+      padding-left: 16px;
+      padding-right: 16px;
     }
-  }
-`
 
-/** Shared dialog footer: Cancel (outlined) + primary CTA row. */
-export const DialogFooter = ButtonWrapper
+    @media (max-width: 500px) {
+      padding: 12px;
+      flex-direction: column-reverse;
+      justify-content: stretch;
+
+      .MuiButton-root {
+        width: 100%;
+        min-width: 0;
+      }
+    }
+  `}
+`

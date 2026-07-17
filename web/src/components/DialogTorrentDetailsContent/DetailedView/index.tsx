@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Checkbox, FormControlLabel } from '@mui/material'
-import { useState } from 'react'
 import type { TorrentCache, TorrentStat } from 'types/api'
+import { writeLocalJson } from 'utils/localPrefs'
 
 import { SectionTitle, WidgetWrapper } from '../style'
 import { DetailedViewCacheSection, DetailedViewWidgetSection } from './style'
@@ -25,6 +25,8 @@ interface DetailedViewProps {
   PiecesLength?: number | null
   stat?: number | null
   cache: TorrentCache
+  isSnakeDebugMode: boolean
+  setIsSnakeDebugMode: (value: boolean) => void
 }
 
 export default function DetailedView({
@@ -36,11 +38,10 @@ export default function DetailedView({
   PiecesLength,
   stat,
   cache,
+  isSnakeDebugMode,
+  setIsSnakeDebugMode,
 }: DetailedViewProps) {
   const { t } = useTranslation()
-  const [isSnakeDebugMode, setIsSnakeDebugMode] = useState(
-    JSON.parse(localStorage.getItem('isSnakeDebugMode') || 'false') as boolean,
-  )
 
   return (
     <>
@@ -71,7 +72,7 @@ export default function DetailedView({
                   disableRipple
                   onChange={({ target: { checked } }) => {
                     setIsSnakeDebugMode(checked)
-                    localStorage.setItem('isSnakeDebugMode', String(checked))
+                    writeLocalJson('isSnakeDebugMode', checked)
                   }}
                 />
               }

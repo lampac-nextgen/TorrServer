@@ -12,6 +12,15 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const proxyTarget = env.VITE_SERVER_HOST || 'http://127.0.0.1:8090'
 
+  if (mode === 'production' && env.VITE_SERVER_HOST) {
+    const host = env.VITE_SERVER_HOST.toLowerCase()
+    if (host.includes('localhost') || host.includes('127.0.0.1')) {
+      throw new Error(
+        `Refuse production build with VITE_SERVER_HOST=${env.VITE_SERVER_HOST} (would bake a local API into the embed). Unset it for release.`,
+      )
+    }
+  }
+
   return {
     base: './',
     plugins: [
@@ -59,8 +68,8 @@ export default defineConfig(({ mode }) => {
       outDir: 'build',
       assetsDir: 'static',
       emptyOutDir: true,
-      sourcemap: true,
-      chunkSizeWarningLimit: 2000,
+      sourcemap: false,
+      chunkSizeWarningLimit: 900,
       rollupOptions: {
         output: {
           manualChunks: {

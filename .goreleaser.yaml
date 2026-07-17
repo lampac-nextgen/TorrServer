@@ -19,7 +19,7 @@ snapshot:
 
 before:
   hooks:
-    - '{{ .Env.CLEAN_ENV }} {{ envOrDefault "GO_BINARY" "go" }} run gen_web.go'
+    - '{{ .Env.CLEAN_ENV }} {{ envOrDefault "GO_BINARY" "go" }} run gen_web.go --clean'
     - '{{ .Env.CLEAN_ENV }} {{ envOrDefault "GO_BINARY" "go" }} install github.com/swaggo/swag/cmd/swag@latest'
     - bash -c 'cd server && {{ .Env.CLEAN_ENV }} swag init -g web/server.go'
     # Windows gst embed: zip gst-libs for //go:embed (binary-gst + embed_gstlib)

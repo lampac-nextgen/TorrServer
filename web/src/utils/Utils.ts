@@ -31,9 +31,6 @@ export function getPeerString(torrent?: TorrentStat | null): string | null {
   return `${active} / ${total ?? 0} · ${seeders}`
 }
 
-export const shortenText = (text: string | undefined | null, symbolAmount: number): string =>
-  text ? text.slice(0, symbolAmount) + (text.length > symbolAmount ? '…' : '') : ''
-
 export const removeRedundantCharacters = (string: string): string => {
   let newString = string
   const brackets: Array<[string, string]> = [

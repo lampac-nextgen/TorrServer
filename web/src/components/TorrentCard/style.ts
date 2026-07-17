@@ -42,7 +42,7 @@ export const TorrentCard = styled.div`
   `}
 `
 
-export const TorrentCardPoster = styled.div<{ $isPoster?: boolean }>`
+export const TorrentCardPoster = styled.button<{ $isPoster?: boolean }>`
   grid-area: poster;
   border-radius: 5px;
   overflow: hidden;
@@ -50,6 +50,15 @@ export const TorrentCardPoster = styled.div<{ $isPoster?: boolean }>`
   cursor: pointer;
   transition: 0.2s;
   position: relative;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  display: block;
+  color: inherit;
+  font: inherit;
 
   :hover {
     filter: brightness(0.7);

@@ -60,6 +60,8 @@ export default function PrimarySettingsComponent({
   const cacheAfterReaderColor = theme.settingsDialog.cacheAfterReaderColor
   const { UseDisk, TorrentsSavePath, RemoveCacheOnDrop } = settings || {}
   const preloadCacheSize = Math.round((cacheSize / 100) * preloadCachePercentage)
+  const storageSelectedIcon = theme.settingsDialog.storageSelectedIcon
+  const storageUnselectedIcon = theme.settingsDialog.storageUnselectedIcon
 
   return (
     <MainSettingsContent>
@@ -140,7 +142,7 @@ export default function PrimarySettingsComponent({
           <div style={{ display: 'grid', gridAutoFlow: 'column' }}>
             <StorageButton $small onClick={() => updateSettings({ UseDisk: false })}>
               <StorageIconWrapper $small>
-                <RAMIcon color='#323637' />
+                <RAMIcon color={storageUnselectedIcon} />
               </StorageIconWrapper>
 
               <div>{t('SettingsDialog.RAM')}</div>
@@ -148,7 +150,7 @@ export default function PrimarySettingsComponent({
 
             <StorageButton $small $selected>
               <StorageIconWrapper $small $selected>
-                <USBIcon color='#dee3e5' />
+                <USBIcon color={storageSelectedIcon} />
               </StorageIconWrapper>
 
               <div>{t('SettingsDialog.Disk')}</div>
@@ -183,7 +185,7 @@ export default function PrimarySettingsComponent({
 
           <StorageButton $selected>
             <StorageIconWrapper $selected>
-              <RAMIcon color='#dee3e5' />
+              <RAMIcon color={storageSelectedIcon} />
             </StorageIconWrapper>
 
             <div>{t('SettingsDialog.RAM')}</div>
@@ -191,7 +193,7 @@ export default function PrimarySettingsComponent({
 
           <StorageButton onClick={() => updateSettings({ UseDisk: true })}>
             <StorageIconWrapper>
-              <USBIcon color='#323637' />
+              <USBIcon color={storageUnselectedIcon} />
             </StorageIconWrapper>
 
             <div>{t('SettingsDialog.Disk')}</div>

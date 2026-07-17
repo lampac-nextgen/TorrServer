@@ -21,7 +21,6 @@ import {
 import { getPeerString, humanizeSize, humanizeSpeed, removeRedundantCharacters } from 'utils/Utils'
 import { playlistTorrHost, streamHost, torrentsHost } from 'utils/Hosts'
 import { NoImageIcon } from 'icons'
-import DialogTorrentDetailsContent from 'components/DialogTorrentDetailsContent'
 import Dialog from '@mui/material/Dialog'
 import Slide from '@mui/material/Slide'
 import {
@@ -53,8 +52,16 @@ import {
 } from 'utils/GStreamer'
 
 const AddDialog = lazy(() => import('components/Add/AddDialog'))
+const DialogTorrentDetailsContent = lazy(() => import('components/DialogTorrentDetailsContent'))
 
-import { StyledButton, TorrentCard, TorrentCardButtons, TorrentCardDescription, TorrentCardPoster, StatusIndicators } from './style'
+import {
+  StyledButton,
+  TorrentCard,
+  TorrentCardButtons,
+  TorrentCardDescription,
+  TorrentCardPoster,
+  StatusIndicators,
+} from './style'
 
 const Transition = forwardRef(function Transition(
   props: ComponentPropsWithoutRef<typeof Slide>,
@@ -415,7 +422,12 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
   return (
     <>
       <TorrentCard>
-        <TorrentCardPoster $isPoster={Boolean(poster)} onClick={handleClickOpenEditDialog}>
+        <TorrentCardPoster
+          type='button'
+          $isPoster={Boolean(poster)}
+          onClick={handleClickOpenEditDialog}
+          aria-label={t('EditTorrent')}
+        >
           {poster ? <img src={poster} alt='poster' /> : <NoImageIcon />}
         </TorrentCardPoster>
 
@@ -595,7 +607,9 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
         slots={{ transition: Transition }}
         ref={detailedInfoDialogRef}
       >
-        <DialogTorrentDetailsContent closeDialog={closeDetailedInfo} torrent={torrent} />
+        <Suspense fallback={null}>
+          <DialogTorrentDetailsContent closeDialog={closeDetailedInfo} torrent={torrent} />
+        </Suspense>
       </StyledDialog>
 
       <Dialog open={isDeleteTorrentOpened} onClose={closeDeleteTorrentAlert}>

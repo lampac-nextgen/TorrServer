@@ -26,7 +26,6 @@ export const SnakeTooltip = styled.div`
 
 export const SnakeWrapper = styled.div<{
   $isMini?: boolean
-  $isFocus?: boolean
   $themeType?: SnakeThemeMode
 }>`
   width: 100%;
@@ -36,20 +35,16 @@ export const SnakeWrapper = styled.div<{
   overscroll-behavior: contain;
   position: relative;
 
-  ${({ $isMini, $isFocus, $themeType }) =>
+  ${({ $isMini, $themeType }) =>
     $isMini
       ? css`
           display: grid;
           justify-content: center;
           max-height: ${snakeSettings[$themeType ?? 'light'].mini.cacheMaxHeight}px;
         `
-      : $isFocus
-        ? css`
-            max-height: min(70vh, 640px);
-          `
-        : css`
-            max-height: min(70vh, 640px);
-          `}
+      : css`
+          max-height: min(70vh, 640px);
+        `}
 
   canvas {
     display: block;

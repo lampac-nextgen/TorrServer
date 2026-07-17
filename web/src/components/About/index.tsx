@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import Button from '@mui/material/Button'
 import InfoIcon from '@mui/icons-material/Info'
 import ListItemIcon from '@mui/material/ListItemIcon'
@@ -7,6 +7,7 @@ import ListItemText from '@mui/material/ListItemText'
 import { useTranslation } from 'react-i18next'
 import { useMediaQuery } from '@mui/material'
 import { echoHost } from 'utils/Hosts'
+import { publicUrl } from 'utils/publicUrl'
 import { StyledDialog, StyledMenuButtonWrapper } from 'style/CustomMaterialUiStyles'
 import { isStandaloneApp } from 'utils/Utils'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
@@ -25,12 +26,6 @@ export default function AboutDialog() {
 
   const onClose = () => setOpen(false)
   const ref = useOnStandaloneAppOutsideClick(onClose)
-  const basePath = useMemo(() => {
-    if (typeof window !== 'undefined') {
-      return window.location.pathname.split('/')[1] || ''
-    }
-    return ''
-  }, [])
 
   return (
     <>
@@ -63,7 +58,7 @@ export default function AboutDialog() {
           <HeaderSection>
             <div>{t('About')}</div>
             {torrServerVersion}
-            <img src={`${basePath ? `/${basePath}` : ''}/icon.png`} alt='ts-icon' />
+            <img src={publicUrl('icon.png')} alt='ts-icon' />
           </HeaderSection>
 
           <div style={{ overflow: 'auto' }}>

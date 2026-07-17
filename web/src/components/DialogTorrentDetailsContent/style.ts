@@ -308,57 +308,6 @@ export const WidgetFieldValue = styled.div<{ $bgColor?: string; $fontColor?: str
   `}
 `
 
-export const LoadingProgress = styled.div.attrs<{
-  $value?: number
-  $fullAmount?: number
-}>(
-  ({
-    $value = 0,
-    $fullAmount = 1,
-    theme: {
-      dialogTorrentDetailsContent: {
-        gradientStartColor,
-        gradientEndColor,
-        bufferTrailStartColor,
-        bufferTrailEndColor,
-        bufferEmptyTrackColor,
-        bufferTrackBorderColor,
-      },
-    },
-  }) => {
-    const amount = ($fullAmount as number) || 1
-    const value = ($value as number) || 0
-    const percentage = Math.min(100, Math.max(0, (value * 100) / amount))
-    const isEmpty = value <= 0
-
-    return {
-      style: {
-        background: isEmpty
-          ? bufferEmptyTrackColor
-          : `linear-gradient(to right, ${gradientStartColor} 0%, ${gradientEndColor} ${percentage}%, ${bufferTrailStartColor} ${percentage}%, ${bufferTrailEndColor} 100%)`,
-        borderColor: bufferTrackBorderColor,
-      },
-    }
-  },
-)`
-  ${({
-    theme: {
-      dialogTorrentDetailsContent: { titleFontColor },
-    },
-  }) => css`
-    border: 2px solid;
-    padding: 10px 16px;
-    border-radius: 8px;
-    color: ${titleFontColor};
-    display: grid;
-    place-items: center;
-    min-height: 44px;
-    font-size: 18px;
-    font-weight: 600;
-    text-align: center;
-  `}
-`
-
 export const Divider = styled.div`
   height: 1px;
   background-color: rgba(0, 0, 0, 0.12);

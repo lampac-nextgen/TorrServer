@@ -71,6 +71,10 @@ export const themeColors = {
       cacheAfterReaderColor: '#00a572',
       preloadCacheBorderColor: '#323637',
       preloadCacheFontColor: '#000',
+      storageSelectedBG: '#323637',
+      storageUnselectedBG: '#dee3e5',
+      storageSelectedIcon: '#dee3e5',
+      storageUnselectedIcon: '#323637',
     },
   },
   dark: {
@@ -143,6 +147,10 @@ export const themeColors = {
       cacheAfterReaderColor: '#88cdaa',
       preloadCacheBorderColor: '#dee3e5',
       preloadCacheFontColor: '#f1eff3',
+      storageSelectedBG: '#1e2224',
+      storageUnselectedBG: '#6a7278',
+      storageSelectedIcon: '#dee3e5',
+      storageUnselectedIcon: '#f1eff3',
     },
   },
 }

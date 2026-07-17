@@ -1,6 +1,7 @@
 import { memo, useState } from 'react'
 import { streamHost } from 'utils/Hosts'
 import isEqual from 'lodash/isEqual'
+import { readLocalBool } from 'utils/localPrefs'
 import { humanizeSize, detectStandaloneApp, isMacOS, isAppleDevice } from 'utils/Utils'
 import ptt from 'parse-torrent-title'
 import { useTranslation } from 'react-i18next'
@@ -58,10 +59,10 @@ const Table = memo(
     const fileHasResolutionText = !!playableFileList?.find(({ path }) => ptt.parse(path).resolution)
     const shouldDisplayFullFileName = (playableFileList?.length ?? 0) > 1 && !fileHasEpisodeText
 
-    const isVlcUsed = JSON.parse(localStorage.getItem('isVlcUsed') || 'null') ?? false
-    const isInfuseUsed = JSON.parse(localStorage.getItem('isInfuseUsed') || 'null') ?? false
-    const isSenPlayerUsed = JSON.parse(localStorage.getItem('isSenPlayerUsed') || 'null') ?? false
-    const isIinaUsed = JSON.parse(localStorage.getItem('isIinaUsed') || 'null') ?? false
+    const isVlcUsed = readLocalBool('isVlcUsed')
+    const isInfuseUsed = readLocalBool('isInfuseUsed')
+    const isSenPlayerUsed = readLocalBool('isSenPlayerUsed')
+    const isIinaUsed = readLocalBool('isIinaUsed')
     const isStandalone = detectStandaloneApp()
     const isMac = isMacOS()
     const isApple = isAppleDevice()

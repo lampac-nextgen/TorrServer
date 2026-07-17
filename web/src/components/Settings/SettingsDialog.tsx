@@ -3,13 +3,14 @@ import Button from '@mui/material/Button'
 import Switch from '@mui/material/Switch'
 import { FormControlLabel, Snackbar, Alert, useMediaQuery, useTheme } from '@mui/material'
 import { settingsHost, gstSettingsHost } from 'utils/Hosts'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { clearTMDBCache } from 'components/Add/helpers'
 import AppBar from '@mui/material/AppBar'
 import CircularProgress from '@mui/material/CircularProgress'
 import { StyledDialog } from 'style/CustomMaterialUiStyles'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
+import { readLocalBool, writeLocalJson } from 'utils/localPrefs'
 
 import { SettingsHeader, FooterSection, Content, StyledTabs, StyledTab, SecondarySettingsContent } from './style'
 import defaultSettings from './defaultSettings'
@@ -19,7 +20,7 @@ import SecondarySettingsComponent from './SecondarySettingsComponent'
 import MobileAppSettings from './MobileAppSettings'
 import TorznabSettings from './TorznabSettings'
 import TMDBSettings from './TMDBSettings'
-import GStreamerSettings from './GStreamerSettings'
+import GStreamerSettings, { type GStreamerSettingsHandle } from './GStreamerSettings'
 import type { BTSets } from 'types/api'
 
 interface SettingsDialogProps {
@@ -36,18 +37,15 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
   const [cacheSize, setCacheSize] = useState(32)
   const [cachePercentage, setCachePercentage] = useState(40)
   const [preloadCachePercentage, setPreloadCachePercentage] = useState(0)
-  const [isProMode, setIsProMode] = useState(JSON.parse(localStorage.getItem('isProMode') || 'false') as boolean)
-  const [isVlcUsed, setIsVlcUsed] = useState(JSON.parse(localStorage.getItem('isVlcUsed') || 'false') as boolean)
-  const [isInfuseUsed, setIsInfuseUsed] = useState(
-    JSON.parse(localStorage.getItem('isInfuseUsed') || 'false') as boolean,
-  )
-  const [isSenPlayerUsed, setIsSenPlayerUsed] = useState(
-    JSON.parse(localStorage.getItem('isSenPlayerUsed') || 'false') as boolean,
-  )
-  const [isIinaUsed, setIsIinaUsed] = useState(JSON.parse(localStorage.getItem('isIinaUsed') || 'false') as boolean)
+  const [isProMode, setIsProMode] = useState(readLocalBool('isProMode'))
+  const [isVlcUsed, setIsVlcUsed] = useState(readLocalBool('isVlcUsed'))
+  const [isInfuseUsed, setIsInfuseUsed] = useState(readLocalBool('isInfuseUsed'))
+  const [isSenPlayerUsed, setIsSenPlayerUsed] = useState(readLocalBool('isSenPlayerUsed'))
+  const [isIinaUsed, setIsIinaUsed] = useState(readLocalBool('isIinaUsed'))
   const [gstAvailable, setGstAvailable] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState('')
+  const gstRef = useRef<GStreamerSettingsHandle>(null)
 
   const tabMain = 0
   const tabAdditional = 1
@@ -55,24 +53,46 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
   const tabApp = 3
   const tabGStreamer = 4
   const maxTab = gstAvailable ? tabGStreamer : tabApp
+  const isGstTab = gstAvailable && selectedTab === tabGStreamer
 
   useEffect(() => {
-    fetch(gstSettingsHost())
+    const ac = new AbortController()
+    fetch(gstSettingsHost(), { signal: ac.signal })
       .then(response => (response.ok ? response.json() : { built_in: false }))
-      .then(data => setGstAvailable(Boolean(data.built_in)))
-      .catch(() => setGstAvailable(false))
+      .then(data => {
+        if (!ac.signal.aborted) setGstAvailable(Boolean(data.built_in))
+      })
+      .catch(() => {
+        if (!ac.signal.aborted) setGstAvailable(false)
+      })
+    return () => ac.abort()
   }, [])
 
   useEffect(() => {
-    axios.post(settingsHost(), { action: 'get' }).then(({ data }) => {
-      setSettings({ ...data, CacheSize: data.CacheSize / (1024 * 1024) })
-    })
+    const ac = new AbortController()
+    axios
+      .post(settingsHost(), { action: 'get' }, { signal: ac.signal })
+      .then(({ data }) => {
+        if (!ac.signal.aborted) setSettings({ ...data, CacheSize: data.CacheSize / (1024 * 1024) })
+      })
+      .catch(() => {})
+    return () => ac.abort()
   }, [])
 
   const ref = useOnStandaloneAppOutsideClick(handleClose)
 
   const handleSave = async () => {
-    if (!settings || saving) return
+    if (saving) return
+    if (isGstTab) {
+      setSaving(true)
+      try {
+        await gstRef.current?.save()
+      } finally {
+        setSaving(false)
+      }
+      return
+    }
+    if (!settings) return
     setSaving(true)
     try {
       const sets = JSON.parse(JSON.stringify(settings))
@@ -81,10 +101,10 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
       sets.PreloadCache = preloadCachePercentage
       await axios.post(settingsHost(), { action: 'set', sets })
       clearTMDBCache()
-      localStorage.setItem('isVlcUsed', String(isVlcUsed))
-      localStorage.setItem('isInfuseUsed', String(isInfuseUsed))
-      localStorage.setItem('isSenPlayerUsed', String(isSenPlayerUsed))
-      localStorage.setItem('isIinaUsed', String(isIinaUsed))
+      writeLocalJson('isVlcUsed', isVlcUsed)
+      writeLocalJson('isInfuseUsed', isInfuseUsed)
+      writeLocalJson('isSenPlayerUsed', isSenPlayerUsed)
+      writeLocalJson('isIinaUsed', isIinaUsed)
       handleClose()
     } catch (e) {
       setSaveMsg(
@@ -151,7 +171,7 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
               checked={isProMode}
               onChange={({ target: { checked } }) => {
                 setIsProMode(checked)
-                localStorage.setItem('isProMode', String(checked))
+                writeLocalJson('isProMode', checked)
                 if (!checked) setSelectedTab(0)
               }}
               style={{ color: 'white' }}
@@ -247,7 +267,7 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
 
             {gstAvailable && (
               <TabPanel value={selectedTab} index={tabGStreamer} dir={direction}>
-                <GStreamerSettings />
+                <GStreamerSettings ref={gstRef} />
               </TabPanel>
             )}
           </>
@@ -276,7 +296,12 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
           {t('SettingsDialog.ResetToDefault')}
         </Button>
 
-        <Button variant='contained' onClick={handleSave} color='secondary' disabled={saving || !settings}>
+        <Button
+          variant='contained'
+          onClick={handleSave}
+          color='secondary'
+          disabled={saving || (!isGstTab && !settings)}
+        >
           {saving ? <CircularProgress size={22} color='inherit' /> : t('Save')}
         </Button>
       </FooterSection>

@@ -12,7 +12,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getTorrents } from 'utils/Utils'
 import parseTorrent from 'parse-torrent'
 import ptt from 'parse-torrent-title'
-import { ButtonWrapper } from 'style/DialogStyles'
+import { DialogFooter } from 'style/DialogStyles'
 import { StyledDialog, StyledHeader } from 'style/CustomMaterialUiStyles'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 
@@ -338,7 +338,7 @@ export default function AddDialog({
         />
       </Content>
 
-      <ButtonWrapper>
+      <DialogFooter>
         <Button onClick={handleClose} color='secondary' variant='outlined'>
           {t('Cancel')}
         </Button>
@@ -352,7 +352,7 @@ export default function AddDialog({
         >
           {isSaving ? <CircularProgress style={{ color: 'white' }} size={20} /> : t(isEditMode ? 'Save' : 'Add')}
         </Button>
-      </ButtonWrapper>
+      </DialogFooter>
     </StyledDialog>
   )
 }

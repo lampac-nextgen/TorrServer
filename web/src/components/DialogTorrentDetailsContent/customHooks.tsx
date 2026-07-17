@@ -3,12 +3,7 @@ import { cacheHost, settingsHost } from 'utils/Hosts'
 import axios from 'axios'
 import type { BTSets, TorrentCache } from 'types/api'
 
-import {
-  buildCacheDrawModel,
-  buildFocusModel,
-  resolveCellBudget,
-  type CacheDrawModel,
-} from './TorrentCache/buildCacheMap'
+import { buildFocusModel, type CacheDrawModel } from './TorrentCache/buildCacheMap'
 
 /** Active fill cadence (classic TorrServer). */
 const CACHE_POLL_ACTIVE_MS = 100
@@ -16,8 +11,6 @@ const CACHE_POLL_ACTIVE_MS = 100
 const CACHE_POLL_IDLE_MS = 400
 /** Switch to idle after this many unchanged polls. */
 const CACHE_IDLE_AFTER_MS = 2000
-
-export { resolveCellBudget }
 
 const readersFingerprint = (readers: TorrentCache['Readers']) => {
   if (!readers?.length) return ''
@@ -81,10 +74,8 @@ export const useUpdateCache = (hash?: string) => {
     }
 
     const fetchCache = () => {
-      if (cancelled || document.hidden || inFlight.current) {
-        scheduleNext()
-        return
-      }
+      if (cancelled || inFlight.current) return
+      if (document.hidden) return
       inFlight.current = true
       axios
         .post(cacheHost(), { action: 'get', hash })
@@ -112,17 +103,19 @@ export const useUpdateCache = (hash?: string) => {
         })
         .finally(() => {
           inFlight.current = false
-          scheduleNext()
+          if (!document.hidden) scheduleNext()
         })
     }
 
     fetchCache()
 
     const onVisibility = () => {
-      if (!document.hidden) {
-        pollMs.current = CACHE_POLL_ACTIVE_MS
-        fetchCache()
+      if (document.hidden) {
+        if (timerID.current) clearTimeout(timerID.current)
+        return
       }
+      pollMs.current = CACHE_POLL_ACTIVE_MS
+      fetchCache()
     }
     document.addEventListener('visibilitychange', onVisibility)
 
@@ -135,9 +128,6 @@ export const useUpdateCache = (hash?: string) => {
 
   return cache
 }
-
-export const useCreateCacheMap = (cache: TorrentCache, maxCells: number): CacheDrawModel =>
-  useMemo(() => buildCacheDrawModel(cache, maxCells), [cache, maxCells])
 
 export const useCreateFocusMap = (cache: TorrentCache, visibleCells: number): CacheDrawModel =>
   useMemo(() => buildFocusModel(cache, visibleCells), [cache, visibleCells])

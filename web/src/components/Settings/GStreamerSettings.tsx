@@ -12,7 +12,7 @@ import {
   TextField,
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useImperativeHandle, useMemo, useState, forwardRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { gstSettingsHost } from 'utils/Hosts'
 import { GST_RUNTIME_QUERY_KEY } from 'utils/GStreamer'
@@ -116,7 +116,11 @@ const componentStatusKind = (component?: GstComponentStatus | null) => {
   return 'missing'
 }
 
-export default function GStreamerSettings() {
+export interface GStreamerSettingsHandle {
+  save: () => Promise<void>
+}
+
+const GStreamerSettings = forwardRef<GStreamerSettingsHandle>(function GStreamerSettings(_props, ref) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [gstreamerSettings, setGstreamerSettings] = useState<GStreamerConfig>(emptyConfig)
@@ -171,7 +175,7 @@ export default function GStreamerSettings() {
     return Math.max(parsed, GST_MIN_VERSION)
   }
 
-  const saveSettings = async () => {
+  const saveSettings = useCallback(async () => {
     setLoading(true)
     setStatus({ message: t('SettingsDialog.Saving'), type: 'info' })
 
@@ -208,7 +212,9 @@ export default function GStreamerSettings() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [gstSettingsUrl, gstVersionText, gstreamerSettings, queryClient, t])
+
+  useImperativeHandle(ref, () => ({ save: saveSettings }), [saveSettings])
 
   const resetToDefaults = async () => {
     setLoading(true)
@@ -635,4 +641,6 @@ export default function GStreamerSettings() {
       )}
     </GstSettingsContent>
   )
-}
+})
+
+export default GStreamerSettings

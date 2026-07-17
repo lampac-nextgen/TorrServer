@@ -47,15 +47,30 @@ func serveEmbedded(c *gin.Context, path, contentType string) {
 		c.Status(404)
 		return
 	}
-	writeWithCache(c, data, contentType)
+	writeWithCache(c, path, data, contentType)
 }
 
-func writeWithCache(c *gin.Context, data []byte, contentType string) {
+func writeWithCache(c *gin.Context, path string, data []byte, contentType string) {
 	sum := md5.Sum(data)
 	etag := fmt.Sprintf(`"%x"`, sum)
-	c.Header("Cache-Control", "public, max-age=31536000")
+	c.Header("Cache-Control", cacheControlFor(path))
 	c.Header("ETag", etag)
 	c.Data(200, contentType, data)
+}
+
+// index.html / manifest must revalidate so releases are not stuck behind year-long caches.
+// Hashed Vite assets under /static/ can be immutable.
+func cacheControlFor(path string) string {
+	base := filepath.Base(path)
+	ext := strings.ToLower(filepath.Ext(path))
+	if base == "index.html" || ext == ".webmanifest" || base == "site.webmanifest" {
+		return "no-cache, must-revalidate"
+	}
+	if strings.Contains(path, "/static/") || strings.HasPrefix(path, "pages/static/") {
+		return "public, max-age=31536000, immutable"
+	}
+	// favicons and other root assets — short cache
+	return "public, max-age=3600"
 }
 
 func mimeFor(path string) string {

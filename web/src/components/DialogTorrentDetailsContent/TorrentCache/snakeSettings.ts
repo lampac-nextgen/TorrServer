@@ -11,7 +11,6 @@ export interface SnakePieceSettings {
   borderColor: string
   completeColor: string
   backgroundColor: string
-  progressColor: string
   /** Playhead outline — black like master. */
   readerColor: string
   /** Optional light ring so black stroke reads on dark green. */
@@ -37,7 +36,6 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       borderColor: rgba('#fff', 0.16),
       completeColor: mainColors.dark.primary,
       backgroundColor: '#2e3438',
-      progressColor: rgba('#fff', 0.12),
       readerColor: '#0a0a0a',
       readerHaloColor: rgba('#fff', 0.55),
       rangeColor: '#cda184',
@@ -51,7 +49,6 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       borderColor: rgba('#fff', 0.2),
       completeColor: mainColors.dark.primary,
       backgroundColor: '#3a4145',
-      progressColor: '#5c6469',
       readerColor: '#0a0a0a',
       readerHaloColor: rgba('#fff', 0.5),
       rangeColor: '#cda184',
@@ -66,7 +63,6 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       borderColor: '#d0e6da',
       completeColor: mainColors.light.primary,
       backgroundColor: '#ffffff',
-      progressColor: '#b3dfc9',
       readerColor: '#000',
       readerHaloColor: rgba('#fff', 0.9),
       rangeColor: '#7e6bc4',
@@ -80,7 +76,6 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       borderColor: '#b7d9c8',
       completeColor: mainColors.light.primary,
       backgroundColor: '#f4faf7',
-      progressColor: '#c8e6d7',
       readerColor: '#0a0a0a',
       readerHaloColor: rgba('#fff', 0.9),
       rangeColor: '#7e6bc4',

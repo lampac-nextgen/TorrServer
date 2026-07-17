@@ -23,7 +23,9 @@ export default styled.div<{ $isButton?: boolean }>`
       $isButton &&
       css`
         background: ${notificationSuccessBGColor};
-        transition: background 0.2s ease, box-shadow 0.2s ease;
+        transition:
+          background 0.2s ease,
+          box-shadow 0.2s ease;
         cursor: pointer;
 
         :hover,

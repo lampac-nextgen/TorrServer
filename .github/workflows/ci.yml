@@ -88,9 +88,45 @@ jobs:
           version: "~> v2"
           args: check --config .goreleaser.local.yaml
 
+  web:
+    name: Web (typecheck lint test build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: yarn
+          cache-dependency-path: web/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Typecheck
+        run: yarn typecheck
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Test
+        run: yarn test
+
+      - name: Build
+        run: yarn build
+        env:
+          # Ensure release-like embed build (no localhost API baked in)
+          VITE_SERVER_HOST: ''
+
   build:
     name: Build (linux amd64)
     runs-on: ubuntu-22.04
+    needs: [lint, goreleaser-check, web]
     env:
       VITE_TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
     steps:

@@ -2,7 +2,6 @@ import type { CacheMapItem, CachePiece, CacheReader, TorrentCache } from 'types/
 
 /** Soft caps for mini LOD view. */
 export const SNAKE_MAX_CELLS_DETAILED = 6000
-export const SNAKE_MAX_CELLS_MINI = 900
 
 /** Detailed 1:1 window target rows; mini uses fewer. */
 export const SNAKE_FOCUS_TARGET_ROWS = 16
@@ -223,9 +222,6 @@ export const buildCacheDrawModel = (cache: TorrentCache, maxCells: number): Cach
   }
 }
 
-/** Alias — overview = full-torrent LOD model. */
-export const buildOverviewModel = buildCacheDrawModel
-
 export interface FocusWindow {
   start: number
   end: number
@@ -253,8 +249,7 @@ export const resolveFocusWindow = (cache: TorrentCache, visibleCells: number): F
   }
 
   const pieceLength = cache.PiecesLength || 0
-  const capacityPieces =
-    pieceLength > 0 ? Math.max(1, Math.round((cache.Capacity || 0) / pieceLength)) : visibleCells
+  const capacityPieces = pieceLength > 0 ? Math.max(1, Math.round((cache.Capacity || 0) / pieceLength)) : visibleCells
 
   const maxWindow = Math.max(visibleCells, 64)
   let windowSize = Math.min(piecesCount, Math.max(visibleCells, capacityPieces), maxWindow)
@@ -301,9 +296,7 @@ export const buildFocusModel = (cache: TorrentCache, visibleCells: number): Cach
 
   const cells: CacheMapItem[] = []
   for (let id = window.start; id <= window.end; id++) {
-    cells.push(
-      cellFromPiece(id, pieceById.get(id), pieceLength, readerSet.has(id), rangeSet.has(id), readers),
-    )
+    cells.push(cellFromPiece(id, pieceById.get(id), pieceLength, readerSet.has(id), rangeSet.has(id), readers))
   }
 
   return {
@@ -313,17 +306,6 @@ export const buildFocusModel = (cache: TorrentCache, visibleCells: number): Cach
     windowStart: window.start,
     windowEnd: window.end,
   }
-}
-
-/** How many cells fit while keeping readable piece size (~20px). */
-export const resolveCellBudget = (containerWidth: number, isMini: boolean): number => {
-  if (isMini) return SNAKE_MAX_CELLS_MINI
-  if (!containerWidth || containerWidth <= 0) return 2400
-
-  const cellFootprint = 20 + 4
-  const cols = Math.max(1, Math.floor(containerWidth / cellFootprint))
-  const targetRows = 70
-  return Math.min(SNAKE_MAX_CELLS_DETAILED, Math.max(cols * 28, cols * targetRows))
 }
 
 /** Visible cell budget for the 1:1 window (cols × rows). */

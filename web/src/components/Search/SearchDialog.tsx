@@ -23,6 +23,7 @@ import { StyledDialog, StyledHeader } from 'style/CustomMaterialUiStyles'
 import { parseSizeToBytes, formatSizeToClassicUnits } from 'utils/Utils'
 import { getMoviePosters, shortenTitleForPosterSearch } from 'components/Add/helpers'
 import type { BTSets, SearchResultItem, TorznabUrl } from 'types/api'
+import { beginSearchRequest, isCurrentSearch } from './searchRequest'
 
 import {
   Content,
@@ -99,6 +100,8 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [settingsLoaded, setSettingsLoaded] = useState(false)
   const userSortedRef = useRef(false)
+  const searchAbortRef = useRef<AbortController | null>(null)
+  const searchGenRef = useRef(0)
   const fullScreen = useMediaQuery('(max-width:930px)')
   const ref = useOnStandaloneAppOutsideClick(handleClose)
 
@@ -108,8 +111,9 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
   const showAllTrackers = hasTorznab
 
   useEffect(() => {
+    const ac = new AbortController()
     axios
-      .post(settingsHost(), { action: 'get' })
+      .post(settingsHost(), { action: 'get' }, { signal: ac.signal })
       .then(({ data }: { data?: BTSets }) => {
         if (data) {
           const urls = data.TorznabUrls || []
@@ -125,12 +129,29 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
           }
         }
       })
-      .catch(() => {})
-      .finally(() => setSettingsLoaded(true))
+      .catch(err => {
+        if (!axios.isCancel(err) && err?.code !== 'ERR_CANCELED') {
+          /* ignore settings load errors */
+        }
+      })
+      .finally(() => {
+        if (!ac.signal.aborted) setSettingsLoaded(true)
+      })
+    return () => ac.abort()
   }, [])
+
+  useEffect(
+    () => () => {
+      searchAbortRef.current?.abort()
+    },
+    [],
+  )
 
   const handleSearch = async () => {
     if (!query || !hasAnySource) return
+
+    const { ac, gen } = beginSearchRequest(searchAbortRef, searchGenRef)
+
     setLoading(true)
     setSearched(true)
     setResults([])
@@ -139,25 +160,31 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
         const requests: Promise<SearchResultItem[]>[] = []
         if (hasTorznab) {
           requests.push(
-            axios.get<SearchResultItem[]>(torznabSearchHost(), { params: { query } }).then(({ data }) => data || []),
+            axios
+              .get<SearchResultItem[]>(torznabSearchHost(), { params: { query }, signal: ac.signal })
+              .then(({ data }) => data || []),
           )
         }
         if (hasRutor) {
           requests.push(
-            axios.get<SearchResultItem[]>(searchHost(), { params: { query } }).then(({ data }) => data || []),
+            axios
+              .get<SearchResultItem[]>(searchHost(), { params: { query }, signal: ac.signal })
+              .then(({ data }) => data || []),
           )
         }
         if (requests.length === 0) {
-          setErrorMsg(t('Torznab.NoSearchSources'))
+          if (isCurrentSearch(gen, searchGenRef.current, ac.signal)) setErrorMsg(t('Torznab.NoSearchSources'))
           return
         }
         const settled = await Promise.allSettled(requests)
+        if (!isCurrentSearch(gen, searchGenRef.current, ac.signal)) return
+
         const lists: SearchResultItem[][] = []
         let firstError: unknown
         for (const result of settled) {
           if (result.status === 'fulfilled') {
             lists.push(result.value)
-          } else if (!firstError) {
+          } else if (!firstError && !axios.isCancel(result.reason) && result.reason?.code !== 'ERR_CANCELED') {
             firstError = result.reason
           }
         }
@@ -182,7 +209,8 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
         params.index = selectedTracker
       }
 
-      const { data } = await axios.get<SearchResultItem[]>(url, { params })
+      const { data } = await axios.get<SearchResultItem[]>(url, { params, signal: ac.signal })
+      if (!isCurrentSearch(gen, searchGenRef.current, ac.signal)) return
       const next = data || []
       setResults(next)
       if (!userSortedRef.current && next.length > 0) {
@@ -190,9 +218,11 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
         setSortDirection('desc')
       }
     } catch (err) {
+      if (axios.isCancel(err) || (isAxiosError(err) && err.code === 'ERR_CANCELED')) return
+      if (!isCurrentSearch(gen, searchGenRef.current, ac.signal)) return
       setErrorMsg(axiosErrorMessage(err, t('Torznab.SearchFailed')))
     } finally {
-      setLoading(false)
+      if (gen === searchGenRef.current) setLoading(false)
     }
   }
 
@@ -436,7 +466,11 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
                           size='small'
                           sx={{ minWidth: 40, minHeight: 40 }}
                         >
-                          {isAddingThis ? <CircularProgress size={18} color='secondary' /> : <DownloadIcon color='secondary' />}
+                          {isAddingThis ? (
+                            <CircularProgress size={18} color='secondary' />
+                          ) : (
+                            <DownloadIcon color='secondary' />
+                          )}
                         </IconButton>
                       </ResultAction>
                     </ResultRow>

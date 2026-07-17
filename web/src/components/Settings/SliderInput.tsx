@@ -1,5 +1,5 @@
 import { InputAdornment, OutlinedInput, Slider } from '@mui/material'
-import type { ChangeEvent, FocusEvent } from 'react'
+import { useRef, type ChangeEvent, type FocusEvent } from 'react'
 import styled from 'styled-components'
 
 interface SliderInputProps {
@@ -79,6 +79,8 @@ export default function SliderInput({
   valueHint,
   onBlurCallback,
 }: SliderInputProps) {
+  const lastNumericRef = useRef(typeof value === 'number' ? value : sliderMin)
+
   const onBlur = (event: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const blurValue = event.target.value
     const numeric = Number(blurValue)
@@ -92,8 +94,10 @@ export default function SliderInput({
     setValue(next === '' ? '' : Number(next))
   const onSliderChange = (_: Event, newValue: number | number[]) => setValue(newValue as number)
 
-  const displayValue = typeof value === 'number' ? value : 0
+  const displayValue = typeof value === 'number' ? value : lastNumericRef.current
   const readOnlyLabel = [displayValue, unit, valueHint ? `(${valueHint})` : null].filter(Boolean).join(' ')
+
+  if (typeof value === 'number') lastNumericRef.current = value
 
   return (
     <SliderBlock>
@@ -108,6 +112,7 @@ export default function SliderInput({
           step={step}
           color='secondary'
           size='small'
+          disabled={!isProMode}
         />
 
         <ValueBox>

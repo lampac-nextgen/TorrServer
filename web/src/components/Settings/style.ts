@@ -66,39 +66,10 @@ export const SettingsHeader = styled(StyledHeader)`
   }
 `
 
-export const FooterSection = styled.div`
-  ${({
-    theme: {
-      settingsDialog: { footerBG },
-    },
-  }) => css`
-    padding: 16px 20px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    align-items: stretch;
-    gap: 10px;
-    background: ${footerBG};
+import { DialogFooter } from 'style/DialogStyles'
 
-    .MuiButton-root {
-      min-height: 40px;
-      min-width: 128px;
-      padding-left: 16px;
-      padding-right: 16px;
-    }
+export const FooterSection = DialogFooter
 
-    @media (max-width: 500px) {
-      padding: 12px;
-      flex-direction: column-reverse;
-      justify-content: stretch;
-
-      .MuiButton-root {
-        width: 100%;
-        min-width: 0;
-      }
-    }
-  `}
-`
 export const Divider = styled.div`
   height: 1px;
   background-color: rgba(0, 0, 0, 0.12);
@@ -313,14 +284,20 @@ export const StorageButton = styled.div<{ $small?: boolean; $selected?: boolean 
 `
 
 export const StorageIconWrapper = styled.div<{ $small?: boolean; $selected?: boolean }>`
-  ${({ $selected, $small }) => css`
+  ${({
+    $selected,
+    $small,
+    theme: {
+      settingsDialog: { storageSelectedBG, storageUnselectedBG },
+    },
+  }) => css`
     width: ${$small ? '56px' : '108px'};
     height: ${$small ? '56px' : '108px'};
     border-radius: 50%;
-    background: ${$selected ? '#323637' : '#dee3e5'};
+    background: ${$selected ? storageSelectedBG : storageUnselectedBG};
     display: grid;
     place-items: center;
-    box-shadow: ${$selected ? '0 0 0 2px #323637, 0 0 0 4px rgba(50, 54, 55, 0.2)' : 'none'};
+    box-shadow: ${$selected ? `0 0 0 2px ${storageSelectedBG}, 0 0 0 4px rgba(50, 54, 55, 0.25)` : 'none'};
 
     svg {
       transform: rotate(-45deg) scale(0.72);

@@ -15,6 +15,7 @@ import {
 } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { useEffect, useMemo, useState } from 'react'
+import { getAppBasePath } from 'utils/publicUrl'
 
 import { SecondarySettingsContent, SettingSectionLabel } from './style'
 import type { BTSets, SettingsInputHandler } from 'types/api'
@@ -80,13 +81,8 @@ export default function SecondarySettingsComponent({ settings, inputForm }: Seco
     ShowFSActiveTorr,
   } = settings || {}
 
-  // Use useMemo to compute basePath once
-  const basePath = useMemo(() => {
-    if (typeof window !== 'undefined') {
-      return window.location.pathname.split('/')[1] || ''
-    }
-    return ''
-  }, [])
+  // Prefer Vite BASE_URL over fragile pathname splitting
+  const basePath = useMemo(() => getAppBasePath().replace(/^\//, ''), [])
 
   // Helper function to build API URL
   const getApiUrl = useMemo(

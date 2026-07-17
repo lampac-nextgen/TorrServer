@@ -40,7 +40,9 @@ const SearchDialog = lazy(() => import('components/Search/SearchDialog'))
 const AddDialog = lazy(() => import('components/Add/AddDialog'))
 const MultiAddDialog = lazy(() => import('components/Add/MultiAddDialog'))
 
-const snackbarIsClosed = JSON.parse(localStorage.getItem('snackbarIsClosed') || 'false') as boolean
+import { readLocalBool } from 'utils/localPrefs'
+
+const snackbarIsClosed = readLocalBool('snackbarIsClosed')
 
 interface DarkModeContextValue {
   isDarkMode: boolean
@@ -119,11 +121,7 @@ export default function App() {
                       </StyledIconButton>
                     </Tooltip>
 
-                    <Typography
-                      variant='h6'
-                      noWrap
-                      sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
-                    >
+                    <Typography variant='h6' noWrap sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       TorrServer {torrServerVersion}
                     </Typography>
 

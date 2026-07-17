@@ -15,7 +15,7 @@ import {
 } from '@mui/material'
 import CircularProgress from '@mui/material/CircularProgress'
 import { Delete as DeleteIcon } from '@mui/icons-material'
-import { ButtonWrapper } from 'style/DialogStyles'
+import { DialogFooter } from 'style/DialogStyles'
 import { StyledDialog, StyledHeader } from 'style/CustomMaterialUiStyles'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import { TORRENT_CATEGORIES } from 'components/categories'
@@ -242,7 +242,7 @@ export default function MultiAddDialog({ files, handleClose }: MultiAddDialogPro
         })()}
       </MultiFileList>
 
-      <ButtonWrapper>
+      <DialogFooter>
         <Button onClick={handleClose} color='secondary' variant='outlined'>
           {t('Cancel')}
         </Button>
@@ -256,7 +256,7 @@ export default function MultiAddDialog({ files, handleClose }: MultiAddDialogPro
         >
           {isSaving ? <CircularProgress style={{ color: 'white' }} size={20} /> : `${t('Add')} (${newCount})`}
         </Button>
-      </ButtonWrapper>
+      </DialogFooter>
     </StyledDialog>
   )
 }

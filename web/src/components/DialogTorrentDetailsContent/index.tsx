@@ -8,6 +8,7 @@ import { viewedHost } from 'utils/Hosts'
 import { GETTING_INFO, IN_DB } from 'torrentStates'
 import CircularProgress from '@mui/material/CircularProgress'
 import { useTranslation } from 'react-i18next'
+import { readLocalBool } from 'utils/localPrefs'
 import type { PlayableFile, TorrentStat, ViewedFileEntry } from 'types/api'
 
 import { useUpdateCache, useGetSettings } from './customHooks'
@@ -64,7 +65,7 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
   const [playableFileList, setPlayableFileList] = useState<PlayableFile[] | undefined>()
   const [seasonAmount, setSeasonAmount] = useState<number[] | null>(null)
   const [selectedSeason, setSelectedSeason] = useState<number | undefined>()
-  const [isSnakeDebugMode] = useState(JSON.parse(localStorage.getItem('isSnakeDebugMode') || 'false') || false)
+  const [isSnakeDebugMode, setIsSnakeDebugMode] = useState(readLocalBool('isSnakeDebugMode'))
 
   const {
     poster,
@@ -182,6 +183,8 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
             PiecesLength={PiecesLength}
             stat={stat}
             cache={cache}
+            isSnakeDebugMode={isSnakeDebugMode}
+            setIsSnakeDebugMode={setIsSnakeDebugMode}
           />
         ) : (
           <DialogContentGrid>
@@ -271,10 +274,7 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
               {(seasonAmount?.length ?? 0) > 1 && (
                 <>
                   <SectionSubName $mb={7}>{t('SelectSeason')}</SectionSubName>
-                  <ButtonGroup
-                    style={{ marginBottom: '30px', flexWrap: 'wrap', rowGap: 8 }}
-                    color='secondary'
-                  >
+                  <ButtonGroup style={{ marginBottom: '30px', flexWrap: 'wrap', rowGap: 8 }} color='secondary'>
                     {seasonAmount!.map(season => (
                       <Button
                         key={season}

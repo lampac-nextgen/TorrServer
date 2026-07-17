@@ -31,7 +31,11 @@ export default function DonateDialog({ onClose }: DonateDialogProps) {
       <DialogTitle id='form-dialog-title'>{t('Donate')}</DialogTitle>
       <DialogContent>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} useFlexGap flexWrap='wrap'>
-          <Button variant='outlined' color='secondary' onClick={() => window.open('https://boosty.to/yourok', '_blank')}>
+          <Button
+            variant='outlined'
+            color='secondary'
+            onClick={() => window.open('https://boosty.to/yourok', '_blank')}
+          >
             Boosty
           </Button>
           <Button

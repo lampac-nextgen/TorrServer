@@ -261,24 +261,4 @@ export const ResultAction = styled.div`
   justify-content: center;
 `
 
-export const Footer = styled.div`
-  ${({
-    theme: {
-      settingsDialog: { footerBG },
-      addDialog: { separatorColor },
-    },
-  }) => css`
-    padding: 16px 20px;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 10px;
-    border-top: 1px solid ${separatorColor};
-    background: ${footerBG};
-    flex-shrink: 0;
-
-    @media (max-width: 600px) {
-      padding: 12px;
-    }
-  `}
-`
+export { DialogFooter as Footer } from 'style/DialogStyles'
