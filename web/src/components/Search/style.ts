@@ -96,48 +96,6 @@ export const ResultsCount = styled.div`
   white-space: nowrap;
 `
 
-export const SortChips = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-`
-
-export const SortChip = styled.button<{ $active?: boolean }>`
-  ${({
-    $active,
-    theme: {
-      app: { paperColor },
-      addDialog: { separatorColor },
-    },
-  }) => css`
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    height: 28px;
-    padding: 0 10px;
-    border-radius: 14px;
-    border: 1px solid ${separatorColor};
-    background: ${$active ? paperColor : 'transparent'};
-    color: inherit;
-    font-size: 12px;
-    font-weight: ${$active ? 600 : 400};
-    cursor: pointer;
-    line-height: 1;
-    transition:
-      background 0.15s ease,
-      border-color 0.15s ease;
-
-    &:hover {
-      background: ${paperColor};
-    }
-
-    svg {
-      font-size: 14px;
-    }
-  `}
-`
-
 export const ResultsScroll = styled.div`
   flex: 1;
   min-height: 0;

@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next'
 import {
   Box,
   Button,
-  CircularProgress,
   FormControlLabel,
   FormGroup,
   FormHelperText,
@@ -16,6 +15,7 @@ import { useCallback, useEffect, useImperativeHandle, useMemo, useState, forward
 import { useQueryClient } from '@tanstack/react-query'
 import { gstSettingsHost } from 'utils/Hosts'
 import { GST_RUNTIME_QUERY_KEY } from 'utils/GStreamer'
+import { buttonLoadingIcon } from 'utils/buttonLoading'
 
 import {
   Divider,
@@ -614,10 +614,10 @@ const GStreamerSettings = forwardRef<GStreamerSettingsHandle>(function GStreamer
         <Button
           type='button'
           variant='contained'
-          color='primary'
+          color='secondary'
           onClick={saveSettings}
           disabled={loading}
-          startIcon={loading ? <CircularProgress size={20} /> : null}
+          startIcon={buttonLoadingIcon(loading)}
         >
           {t('GStreamer.SaveSettings')}
         </Button>

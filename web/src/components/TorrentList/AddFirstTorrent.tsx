@@ -1,12 +1,59 @@
 import { useTheme } from '@mui/material'
+import ButtonBase from '@mui/material/ButtonBase'
 import CircularProgress from '@mui/material/CircularProgress'
 import CreateNewFolderOutlinedIcon from '@mui/icons-material/CreateNewFolderOutlined'
 import { useState, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
-
-import IconWrapper from './style'
+import styled, { css, keyframes } from 'styled-components'
 
 const AddDialog = lazy(() => import('../Add/AddDialog'))
+
+const float = keyframes`
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+`
+
+const EmptyTorrentCTA = styled(ButtonBase)`
+  ${({
+    theme: {
+      addDialog: { notificationSuccessBGColor, languageSwitchBGColor },
+    },
+  }) => css`
+    && {
+      display: grid;
+      place-items: center;
+      gap: 12px;
+      padding: 28px 40px;
+      border-radius: 8px;
+      background: ${notificationSuccessBGColor};
+      color: inherit;
+      font: inherit;
+      transition:
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+
+      &:hover,
+      &.Mui-focusVisible {
+        background: ${languageSwitchBGColor};
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+
+        .empty-icon {
+          animation: ${float} 1.4s ease-in-out infinite;
+        }
+      }
+
+      .empty-icon {
+        font-size: 64px;
+      }
+
+      .icon-label {
+        font-size: 16px;
+        font-weight: 600;
+        text-align: center;
+      }
+    }
+  `}
+`
 
 export default function AddFirstTorrent() {
   const { t } = useTranslation()
@@ -17,21 +64,10 @@ export default function AddFirstTorrent() {
 
   return (
     <>
-      <IconWrapper
-        onClick={handleClickOpen}
-        $isButton
-        role='button'
-        tabIndex={0}
-        onKeyDown={e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            handleClickOpen()
-          }
-        }}
-      >
+      <EmptyTorrentCTA onClick={handleClickOpen} aria-label={t('NoTorrentsAdded')}>
         <CreateNewFolderOutlinedIcon className='empty-icon' sx={{ color: primary }} />
         <div className='icon-label'>{t('NoTorrentsAdded')}</div>
-      </IconWrapper>
+      </EmptyTorrentCTA>
 
       {isDialogOpen && (
         <Suspense fallback={<CircularProgress size={24} />}>

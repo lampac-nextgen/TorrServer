@@ -1,4 +1,5 @@
 import styled, { css } from 'styled-components'
+import ButtonBase from '@mui/material/ButtonBase'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import { StyledHeader } from 'style/CustomMaterialUiStyles'
@@ -247,38 +248,43 @@ export const GstSettingsContent = styled(SecondarySettingsContent)`
     margin-top: 8px;
   }
 `
-export const StorageButton = styled.div<{ $small?: boolean; $selected?: boolean }>`
+export const StorageButton = styled(ButtonBase)<{ $small?: boolean; $selected?: boolean }>`
   ${({ $small, $selected }) => css`
-    transition: 0.2s;
-    cursor: default;
-    text-align: center;
+    && {
+      transition: 0.2s;
+      cursor: default;
+      text-align: center;
+      display: grid;
+      color: inherit;
+      font: inherit;
+      border-radius: 8px;
+      padding: 4px;
 
-    ${
-      !$selected &&
-      css`
-        cursor: pointer;
+      ${
+        !$selected &&
+        css`
+          cursor: pointer;
 
-        :hover {
-          filter: brightness(0.8);
-        }
-      `
-    }
+          :hover {
+            filter: brightness(0.8);
+          }
+        `
+      }
 
-    ${
-      $small
-        ? css`
-            display: grid;
-            grid-template-columns: max-content 1fr;
-            gap: 20px;
-            align-items: center;
-            justify-items: start;
-            margin-bottom: 20px;
-          `
-        : css`
-            display: grid;
-            place-items: center;
-            gap: 10px;
-          `
+      ${
+        $small
+          ? css`
+              grid-template-columns: max-content 1fr;
+              gap: 20px;
+              align-items: center;
+              justify-items: start;
+              margin-bottom: 20px;
+            `
+          : css`
+              place-items: center;
+              gap: 10px;
+            `
+      }
     }
   `}
 `

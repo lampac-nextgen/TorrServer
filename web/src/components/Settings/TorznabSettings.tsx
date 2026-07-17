@@ -13,10 +13,10 @@ import {
   IconButton,
   Typography,
 } from '@mui/material'
-import CircularProgress from '@mui/material/CircularProgress'
 import DeleteIcon from '@mui/icons-material/Delete'
 import axios from 'axios'
 import { torznabTestHost } from 'utils/Hosts'
+import { buttonLoadingIcon } from 'utils/buttonLoading'
 
 import { SecondarySettingsContent, SettingSectionLabel } from './style'
 import type { BTSets, SettingsInputHandler, SettingsUpdater } from 'types/api'
@@ -189,9 +189,10 @@ export default function TorznabSettings({ settings, inputForm, updateSettings }:
               color='secondary'
               onClick={handleTest}
               disabled={!newHost || !newKey || testing}
+              startIcon={buttonLoadingIcon(testing)}
               style={{ flex: '1 1 auto', minWidth: 100 }}
             >
-              {testing ? <CircularProgress size={24} color='inherit' /> : t('Torznab.Test')}
+              {t('Torznab.Test')}
             </Button>
             <Button
               variant='contained'

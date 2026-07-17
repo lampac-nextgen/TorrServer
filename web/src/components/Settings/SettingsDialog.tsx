@@ -11,6 +11,7 @@ import CircularProgress from '@mui/material/CircularProgress'
 import { StyledDialog } from 'style/CustomMaterialUiStyles'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import { readLocalBool, writeLocalJson } from 'utils/localPrefs'
+import { buttonLoadingIcon } from 'utils/buttonLoading'
 
 import { SettingsHeader, FooterSection, Content, StyledTabs, StyledTab, SecondarySettingsContent } from './style'
 import defaultSettings from './defaultSettings'
@@ -301,8 +302,9 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
           onClick={handleSave}
           color='secondary'
           disabled={saving || (!isGstTab && !settings)}
+          startIcon={buttonLoadingIcon(saving)}
         >
-          {saving ? <CircularProgress size={22} color='inherit' /> : t('Save')}
+          {t('Save')}
         </Button>
       </FooterSection>
       <Snackbar open={!!saveMsg} autoHideDuration={3000} onClose={() => setSaveMsg('')}>

@@ -102,7 +102,7 @@ export default function AboutDialog() {
           </div>
 
           <FooterSection>
-            <Button onClick={onClose} color='primary' variant='contained'>
+            <Button onClick={onClose} color='secondary' variant='contained'>
               {t('Close')}
             </Button>
           </FooterSection>

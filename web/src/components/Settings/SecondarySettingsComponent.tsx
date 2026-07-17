@@ -3,19 +3,21 @@ import TextField from '@mui/material/TextField'
 import {
   Box,
   Button,
-  CircularProgress,
   FormControlLabel,
   FormGroup,
   FormHelperText,
+  IconButton,
   InputAdornment,
   InputLabel,
   MenuItem,
   Select,
   Switch,
 } from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
 import { styled } from '@mui/material/styles'
 import { useEffect, useMemo, useState } from 'react'
 import { getAppBasePath } from 'utils/publicUrl'
+import { buttonLoadingIcon } from 'utils/buttonLoading'
 
 import { SecondarySettingsContent, SettingSectionLabel } from './style'
 import type { BTSets, SettingsInputHandler } from 'types/api'
@@ -458,7 +460,7 @@ export default function SecondarySettingsComponent({ settings, inputForm }: Seco
             color='primary'
             onClick={saveStorageSettings}
             disabled={loading}
-            startIcon={loading ? <CircularProgress size={20} /> : null}
+            startIcon={buttonLoadingIcon(loading)}
           >
             {t('SettingsDialog.SaveStorageSettings')}
           </Button>
@@ -467,9 +469,14 @@ export default function SecondarySettingsComponent({ settings, inputForm }: Seco
         {storageStatus.message && (
           <StatusMessage severity={storageStatus.type}>
             <span>{storageStatus.message}</span>
-            <Button onClick={() => setStorageStatus({ message: '', type: '' })} size='small'>
-              ×
-            </Button>
+            <IconButton
+              aria-label={t('Close')}
+              onClick={() => setStorageStatus({ message: '', type: '' })}
+              size='small'
+              sx={{ color: 'inherit' }}
+            >
+              <CloseIcon fontSize='small' />
+            </IconButton>
           </StatusMessage>
         )}
       </Box>

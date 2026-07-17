@@ -14,6 +14,8 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  ToggleButton,
+  ToggleButtonGroup,
   type SelectChangeEvent,
 } from '@mui/material'
 import { CloudDownload as DownloadIcon, ArrowUpward, ArrowDownward } from '@mui/icons-material'
@@ -22,6 +24,7 @@ import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick
 import { StyledDialog, StyledHeader } from 'style/CustomMaterialUiStyles'
 import { parseSizeToBytes, formatSizeToClassicUnits } from 'utils/Utils'
 import { getMoviePosters, shortenTitleForPosterSearch } from 'components/Add/helpers'
+import { buttonLoadingIcon } from 'utils/buttonLoading'
 import type { BTSets, SearchResultItem, TorznabUrl } from 'types/api'
 import { beginSearchRequest, isCurrentSearch } from './searchRequest'
 
@@ -31,8 +34,6 @@ import {
   SearchToolbar,
   ResultsBar,
   ResultsCount,
-  SortChips,
-  SortChip,
   ResultsScroll,
   EmptyState,
   ResultList,
@@ -377,23 +378,32 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
               color='primary'
               onClick={handleSearch}
               disabled={loading || !hasAnySource || !query}
+              startIcon={buttonLoadingIcon(loading)}
             >
-              {loading ? <CircularProgress size={22} color='inherit' /> : t('Search')}
+              {t('Search')}
             </Button>
           </SearchToolbar>
 
           {searched && results.length > 0 && (
             <ResultsBar>
               <ResultsCount>{t('Torznab.ResultsCount', { count: results.length })}</ResultsCount>
-              <SortChips>
+              <ToggleButtonGroup
+                exclusive
+                size='small'
+                value={sortField}
+                onChange={(_, field: SortField | null) => {
+                  if (field) handleSortChip(field)
+                }}
+                aria-label={t('Torznab.SortBy')}
+                sx={{ flexWrap: 'wrap', gap: 0.5 }}
+              >
                 {sortFields.map(({ field, label }) => {
                   const active = sortField === field
                   return (
-                    <SortChip
+                    <ToggleButton
                       key={field}
-                      type='button'
-                      $active={active}
-                      onClick={() => handleSortChip(field)}
+                      value={field}
+                      selected={active}
                       title={
                         active
                           ? sortDirection === 'asc'
@@ -401,13 +411,26 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
                             : t('Torznab.SortDescending')
                           : t('Torznab.SortBy')
                       }
+                      sx={{
+                        textTransform: 'none',
+                        px: 1.25,
+                        height: 28,
+                        borderRadius: '14px !important',
+                        border: theme => `1px solid ${theme.palette.divider} !important`,
+                        '&.Mui-selected': { fontWeight: 600 },
+                      }}
                     >
                       {label}
-                      {active && (sortDirection === 'asc' ? <ArrowUpward /> : <ArrowDownward />)}
-                    </SortChip>
+                      {active &&
+                        (sortDirection === 'asc' ? (
+                          <ArrowUpward sx={{ ml: 0.5, fontSize: 14 }} />
+                        ) : (
+                          <ArrowDownward sx={{ ml: 0.5, fontSize: 14 }} />
+                        ))}
+                    </ToggleButton>
                   )
                 })}
-              </SortChips>
+              </ToggleButtonGroup>
             </ResultsBar>
           )}
 

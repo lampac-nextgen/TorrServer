@@ -13,7 +13,6 @@ import {
   IconButton,
   type SelectChangeEvent,
 } from '@mui/material'
-import CircularProgress from '@mui/material/CircularProgress'
 import { Delete as DeleteIcon } from '@mui/icons-material'
 import { DialogFooter } from 'style/DialogStyles'
 import { StyledDialog, StyledHeader } from 'style/CustomMaterialUiStyles'
@@ -23,6 +22,7 @@ import { NoImageIcon } from 'icons'
 import { useQuery } from '@tanstack/react-query'
 import { getTorrents } from 'utils/Utils'
 import useChangeLanguage from 'utils/useChangeLanguage'
+import { buttonLoadingIcon } from 'utils/buttonLoading'
 import parseTorrent from 'parse-torrent'
 import type { MultiAddFileState, TorrentStat } from 'types/api'
 
@@ -249,12 +249,12 @@ export default function MultiAddDialog({ files, handleClose }: MultiAddDialogPro
 
         <Button
           variant='contained'
-          style={{ minWidth: '110px' }}
-          disabled={newCount === 0}
+          disabled={newCount === 0 || isSaving}
           onClick={handleSaveAll}
           color='secondary'
+          startIcon={buttonLoadingIcon(isSaving)}
         >
-          {isSaving ? <CircularProgress style={{ color: 'white' }} size={20} /> : `${t('Add')} (${newCount})`}
+          {`${t('Add')} (${newCount})`}
         </Button>
       </DialogFooter>
     </StyledDialog>

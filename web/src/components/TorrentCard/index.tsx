@@ -25,7 +25,6 @@ import Dialog from '@mui/material/Dialog'
 import Slide from '@mui/material/Slide'
 import {
   Button,
-  CircularProgress,
   DialogActions,
   DialogTitle,
   ListItemIcon,
@@ -51,17 +50,12 @@ import {
   useGStreamerRuntime,
 } from 'utils/GStreamer'
 
+import { buttonLoadingIcon } from 'utils/buttonLoading'
+
 const AddDialog = lazy(() => import('components/Add/AddDialog'))
 const DialogTorrentDetailsContent = lazy(() => import('components/DialogTorrentDetailsContent'))
 
-import {
-  StyledButton,
-  TorrentCard,
-  TorrentCardButtons,
-  TorrentCardDescription,
-  TorrentCardPoster,
-  StatusIndicators,
-} from './style'
+import { TorrentCard, TorrentCardButtons, TorrentCardDescription, TorrentCardPoster, StatusIndicators } from './style'
 
 const Transition = forwardRef(function Transition(
   props: ComponentPropsWithoutRef<typeof Slide>,
@@ -432,28 +426,24 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
         </TorrentCardPoster>
 
         <TorrentCardButtons>
-          <StyledButton onClick={openDetailedInfo}>
-            <UnfoldMoreIcon />
-            <span>{t('Details')}</span>
-          </StyledButton>
+          <Button variant='cardAction' startIcon={<UnfoldMoreIcon />} onClick={openDetailedInfo}>
+            {t('Details')}
+          </Button>
 
           {singlePlayer && !unsupportedPlayers[singlePlayer.key] ? (
             singlePlayer.hls ? (
               <>
-                <StyledButton
+                <Button
+                  variant='cardAction'
                   ref={audioButtonRef}
                   disabled={isResolvingAudio || isResolvingPlayers}
                   aria-haspopup='menu'
                   aria-expanded={Boolean(audioMenuAnchor)}
                   onClick={event => resolveAudioTracks(singlePlayer, event.currentTarget)}
+                  startIcon={isResolvingAudio || isResolvingPlayers ? buttonLoadingIcon(true, 18) : <PlayArrowIcon />}
                 >
-                  {isResolvingAudio || isResolvingPlayers ? (
-                    <CircularProgress size={20} color='inherit' />
-                  ) : (
-                    <PlayArrowIcon />
-                  )}
-                  <span>{t('Play')}</span>
-                </StyledButton>
+                  {t('Play')}
+                </Button>
                 <Menu
                   anchorEl={audioMenuAnchor}
                   open={Boolean(audioMenuAnchor)}
@@ -488,15 +478,16 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
             )
           ) : players.length > 1 && availablePlayers.length ? (
             <>
-              <StyledButton
+              <Button
+                variant='cardAction'
                 ref={episodeButtonRef}
                 aria-haspopup='menu'
                 aria-expanded={Boolean(episodeMenuAnchor)}
                 onClick={event => setEpisodeMenuAnchor(event.currentTarget)}
+                startIcon={<PlayArrowIcon />}
               >
-                <PlayArrowIcon />
-                <span>{t('Play')}</span>
-              </StyledButton>
+                {t('Play')}
+              </Button>
               <Menu
                 anchorEl={episodeMenuAnchor}
                 open={Boolean(episodeMenuAnchor)}
@@ -522,19 +513,24 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
               </Menu>
             </>
           ) : gstRuntime.built_in && !playerResolveFailed && players.length === 0 ? (
-            <StyledButton disabled={isResolvingPlayers} onClick={resolvePlayers}>
-              {isResolvingPlayers ? <CircularProgress size={20} color='inherit' /> : <PlayArrowIcon />}
-              <span>{t('Play')}</span>
-            </StyledButton>
+            <Button
+              variant='cardAction'
+              disabled={isResolvingPlayers}
+              onClick={resolvePlayers}
+              startIcon={isResolvingPlayers ? buttonLoadingIcon(true, 18) : <PlayArrowIcon />}
+            >
+              {t('Play')}
+            </Button>
           ) : (
-            <StyledButton
+            <Button
+              variant='cardAction'
+              startIcon={<PlayArrowIcon />}
               onClick={() => {
                 window.open(fullPlaylistLink, '_blank')
               }}
             >
-              <PlayArrowIcon />
-              <span>{t('Playlist')}</span>
-            </StyledButton>
+              {t('Playlist')}
+            </Button>
           )}
 
           {selectedPlayer && (
@@ -553,15 +549,13 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
             />
           )}
 
-          <StyledButton onClick={() => dropTorrent()}>
-            <CloseIcon />
-            <span>{t('Drop')}</span>
-          </StyledButton>
+          <Button variant='cardAction' startIcon={<CloseIcon />} onClick={() => dropTorrent()}>
+            {t('Drop')}
+          </Button>
 
-          <StyledButton onClick={openDeleteTorrentAlert}>
-            <DeleteIcon />
-            <span>{t('Delete')}</span>
-          </StyledButton>
+          <Button variant='cardAction' startIcon={<DeleteIcon />} onClick={openDeleteTorrentAlert}>
+            {t('Delete')}
+          </Button>
         </TorrentCardButtons>
 
         <TorrentCardDescription>

@@ -32,8 +32,6 @@ import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouse
 import { StyledDialog } from 'style/CustomMaterialUiStyles'
 import { useTranslation } from 'react-i18next'
 
-import { StyledButton } from './TorrentCard/style'
-
 export interface VideoPlayerProps {
   videoSrc: string
   downloadSrc?: string
@@ -43,7 +41,7 @@ export interface VideoPlayerProps {
   hls?: boolean
   heartbeatSrc?: string
   showTrigger?: boolean
-  /** Compact outlined button for table/action cells (avoids TorrentCard StyledButton). */
+  /** Compact outlined button for table/action cells (avoids cardAction chrome). */
   inlineTrigger?: boolean
   initiallyOpen?: boolean
   onClose?: () => void
@@ -181,19 +179,6 @@ const CentralControl = styled(IconButton)(({ theme }) => ({
   animation: `${pulse} 0.6s ease-out`,
 }))
 
-const SkipButton = styled(IconButton)(({ theme }) => ({
-  position: 'absolute',
-  top: '50%',
-  transform: 'translateY(-50%)',
-  padding: theme.spacing(1),
-  backgroundColor: 'rgba(0,0,0,0.4)',
-  color: '#fff',
-  opacity: 0,
-  transition: 'opacity 200ms',
-  zIndex: 3,
-  '&:hover': { backgroundColor: 'rgba(0,0,0,0.6)' },
-}))
-
 const VideoWrapper = styled(Box)({
   position: 'relative',
   width: '100%',
@@ -203,9 +188,6 @@ const VideoWrapper = styled(Box)({
     opacity: 1,
   },
   [`&:hover ${CentralControl}`]: {
-    opacity: 1,
-  },
-  [`&:hover ${SkipButton}`]: {
     opacity: 1,
   },
 })
@@ -548,16 +530,17 @@ const VideoPlayer = ({
             {t('Play')}
           </Button>
         ) : (
-          <StyledButton
+          <Button
+            variant='cardAction'
+            startIcon={<PlayArrowIcon />}
             onClick={() => {
               setLoading(true)
               setMediaError(false)
               setOpen(true)
             }}
           >
-            <PlayArrowIcon />
-            <span>{t('Play')}</span>
-          </StyledButton>
+            {t('Play')}
+          </Button>
         ))}
       <StyledDialog
         open={open}

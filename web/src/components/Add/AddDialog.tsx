@@ -15,6 +15,7 @@ import ptt from 'parse-torrent-title'
 import { DialogFooter } from 'style/DialogStyles'
 import { StyledDialog, StyledHeader } from 'style/CustomMaterialUiStyles'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
+import { buttonLoadingIcon } from 'utils/buttonLoading'
 
 import {
   checkImageURL,
@@ -345,12 +346,12 @@ export default function AddDialog({
 
         <Button
           variant='contained'
-          style={{ minWidth: '110px' }}
-          disabled={!torrentSource || (isHashAlreadyExists && !isEditMode) || !isTorrentSourceCorrect}
+          disabled={!torrentSource || (isHashAlreadyExists && !isEditMode) || !isTorrentSourceCorrect || isSaving}
           onClick={handleSave}
           color='secondary'
+          startIcon={buttonLoadingIcon(isSaving)}
         >
-          {isSaving ? <CircularProgress style={{ color: 'white' }} size={20} /> : t(isEditMode ? 'Save' : 'Add')}
+          {t(isEditMode ? 'Save' : 'Add')}
         </Button>
       </DialogFooter>
     </StyledDialog>

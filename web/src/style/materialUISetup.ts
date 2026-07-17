@@ -2,6 +2,7 @@ import { createTheme, useMediaQuery, type PaletteMode, type Theme } from '@mui/m
 import { useEffect, useMemo, useState } from 'react'
 
 import { mainColors, themeColors } from './colors'
+import './mui-augmentation'
 
 export const THEME_MODES = {
   LIGHT: 'light',
@@ -58,6 +59,7 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
   }, [isSystemModeDark, currentThemeMode])
 
   const theme: ResolvedThemeMode = isDarkMode ? THEME_MODES.DARK : THEME_MODES.LIGHT
+  const card = themeColors[theme].torrentCard
 
   const muiTheme = useMemo(
     () =>
@@ -95,6 +97,72 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
               },
               sizeLarge: {
                 minHeight: 40,
+              },
+            },
+            variants: [
+              {
+                props: { variant: 'cardAction' },
+                style: {
+                  backgroundColor: card.buttonBGColor,
+                  color: '#fff',
+                  minHeight: 36,
+                  minWidth: 0,
+                  width: '100%',
+                  borderRadius: 5,
+                  textTransform: 'uppercase',
+                  justifyContent: 'flex-start',
+                  fontSize: '0.8rem',
+                  letterSpacing: '0.009em',
+                  padding: '0 10px',
+                  boxShadow: 'none',
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation',
+                  '&:hover': {
+                    backgroundColor: card.accentCardColor,
+                    boxShadow: 'none',
+                  },
+                  '&:active': {
+                    transform: 'scale(0.98)',
+                  },
+                  '&.Mui-disabled': {
+                    color: '#fff',
+                    opacity: 0.75,
+                  },
+                  '& .MuiButton-startIcon': {
+                    marginRight: 8,
+                    marginLeft: 0,
+                    '& > *:nth-of-type(1)': {
+                      fontSize: 18,
+                    },
+                  },
+                  '@media (max-width: 1260px), (max-height: 500px)': {
+                    justifyContent: 'center',
+                    fontSize: '0.75rem',
+                    padding: '6px 8px',
+                    '& .MuiButton-startIcon': {
+                      display: 'none',
+                    },
+                  },
+                  '@media (max-width: 770px)': {
+                    fontSize: '0.7rem',
+                  },
+                  '@media (max-width: 420px)': {
+                    fontSize: '0.65rem',
+                    padding: '6px 4px',
+                  },
+                },
+              },
+            ],
+          },
+          MuiIconButton: {
+            styleOverrides: {
+              sizeMedium: {
+                width: 36,
+                height: 36,
+              },
+              sizeSmall: {
+                width: 32,
+                height: 32,
               },
             },
           },
@@ -158,7 +226,7 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
           },
         },
       }),
-    [theme],
+    [theme, card],
   )
 
   return [isDarkMode, currentThemeMode, updateThemeMode, muiTheme]

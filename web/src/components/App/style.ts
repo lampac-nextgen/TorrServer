@@ -155,6 +155,7 @@ export const TorrentListWrapper = styled.div`
   `)}
 `
 
+/** Filled circular header actions (theme via app.headerToggleColor). */
 export const HeaderToggle = styled(IconButton)`
   ${({
     theme: {
@@ -162,28 +163,14 @@ export const HeaderToggle = styled(IconButton)`
     },
   }) => css`
     && {
-      cursor: pointer;
       border-radius: 50%;
       background: ${headerToggleColor};
-      height: 36px;
-      width: 36px;
-      transition: all 0.2s;
-      font-weight: 600;
       color: #fff;
+      font-weight: 600;
       padding: 0;
 
       &:hover {
         background: ${rgba(headerToggleColor, 0.7)};
-      }
-
-      @media (max-width: 930px) {
-        height: 36px;
-        width: 36px;
-        font-size: 12px;
-
-        svg {
-          width: 20px;
-        }
       }
     }
   `}
@@ -208,17 +195,9 @@ export const SidebarOverlay = styled.div<{ $isDrawerOpen?: boolean }>`
   }
 `
 
+/** Menu hamburger — hidden in standalone PWA (footer nav). */
 export const StyledIconButton = styled(IconButton)`
   margin-right: 4px;
-  width: 36px;
-  height: 36px;
-  padding: 6px;
-
-  @media (max-width: 930px) {
-    width: 36px;
-    height: 36px;
-    padding: 6px;
-  }
 
   ${standaloneMedia(css`
     display: none;

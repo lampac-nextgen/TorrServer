@@ -148,7 +148,7 @@ export default function PrimarySettingsComponent({
               <div>{t('SettingsDialog.RAM')}</div>
             </StorageButton>
 
-            <StorageButton $small $selected>
+            <StorageButton $small $selected disabled aria-pressed='true'>
               <StorageIconWrapper $small $selected>
                 <USBIcon color={storageSelectedIcon} />
               </StorageIconWrapper>
@@ -183,7 +183,7 @@ export default function PrimarySettingsComponent({
         <CacheStorageSelector>
           <CacheStorageLocationLabel style={{ placeSelf: 'start', gridArea: 'label' }} />
 
-          <StorageButton $selected>
+          <StorageButton $selected disabled aria-pressed='true'>
             <StorageIconWrapper $selected>
               <RAMIcon color={storageSelectedIcon} />
             </StorageIconWrapper>
