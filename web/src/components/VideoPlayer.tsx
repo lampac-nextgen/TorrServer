@@ -543,7 +543,7 @@ const VideoPlayer = ({
               setMediaError(false)
               setOpen(true)
             }}
-            sx={{ minWidth: 96, minHeight: 40, flex: '1 1 auto', px: 1.5 }}
+            sx={{ width: '100%', minWidth: 0 }}
           >
             {t('Play')}
           </Button>

@@ -149,19 +149,11 @@ export const TorrentCardDescription = styled.div`
       }
     }
 
-    .description-status-chip {
+    .description-status-wrapper {
+      display: inline-flex;
       flex-shrink: 0;
-      max-width: 55%;
-      height: 22px;
-
-      .MuiChip-label {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        padding-inline: 8px;
-        font-size: 0.7rem;
-        font-weight: 600;
-      }
+      align-items: center;
+      margin-inline-start: 4px;
     }
 
     .description-torrent-title {
@@ -292,10 +284,6 @@ export const StatusIndicators = styled.div<{ $color?: string }>`
     width: 8px;
     background-color: ${$color};
     border-radius: 50%;
-    position: relative;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
   `}
 `

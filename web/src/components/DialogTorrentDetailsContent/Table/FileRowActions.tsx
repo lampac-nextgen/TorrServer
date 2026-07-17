@@ -27,10 +27,8 @@ export interface FileRowActionsProps {
 }
 
 const actionSx = {
-  minWidth: 96,
-  minHeight: 40,
-  flex: '1 1 auto',
-  px: 1.5,
+  width: '100%',
+  minWidth: 0,
 } as const
 
 export default function FileRowActions({

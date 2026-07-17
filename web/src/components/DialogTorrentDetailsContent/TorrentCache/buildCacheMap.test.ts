@@ -151,12 +151,31 @@ describe('resolveFocusWindow / buildFocusModel', () => {
     }
     const model = buildFocusModel(cache, 20)
     const byId = (id: number) => model.cells.find(c => c.pieceStart === id)
-    expect(byId(10)?.priority).toBe(5) // A
+    expect(byId(10)?.priority).toBe(5) // A on playhead
     expect(byId(11)?.priority).toBe(4) // N
     expect(byId(12)?.priority).toBeGreaterThanOrEqual(2) // R or H
+    // Last incomplete cell in the built window should still be labeled (≥ H)
+    const lastIncomplete = [...model.cells].reverse().find(c => !c.completed && !c.isReader)
+    expect(lastIncomplete?.priority).toBeGreaterThanOrEqual(2)
     expect(priorityDebugLabel(5)).toBe('A')
     expect(priorityDebugLabel(4)).toBe('N')
     expect(priorityDebugLabel(3)).toBe('R')
     expect(priorityDebugLabel(2)).toBe('H')
+  })
+
+  it('keeps A on completed playhead for debug', () => {
+    const cache: TorrentCache = {
+      PiecesCount: 20,
+      PiecesLength: 100,
+      Capacity: 500,
+      Pieces: {
+        5: { Size: 100, Length: 100, Completed: true, Priority: 0 },
+      },
+      Readers: [{ Reader: 5, Start: 5, End: 12 }],
+    }
+    const model = buildFocusModel(cache, 12)
+    const playhead = model.cells.find(c => c.isReader)
+    expect(playhead?.priority).toBe(5)
+    expect(priorityDebugLabel(playhead!.priority)).toBe('A')
   })
 })

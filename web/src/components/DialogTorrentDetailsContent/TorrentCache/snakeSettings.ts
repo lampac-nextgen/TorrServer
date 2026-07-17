@@ -8,30 +8,26 @@ export interface SnakePieceSettings {
   borderWidth: number
   pieceSize: number
   gapBetweenPieces: number
-  /** Idle cell outline */
   borderColor: string
-  /** Fully / partially cached fill */
   completeColor: string
-  /** Empty cell fill */
   backgroundColor: string
   progressColor: string
-  /** Playhead (reader) outline — black on light (classic), bright on dark */
+  /** Playhead outline — orange reads on green/white better than black. */
   readerColor: string
-  /** Optional top playhead tick */
+  /** Optional halo under reader stroke (contrast ring). */
+  readerHaloColor?: string
   readerMarkColor?: string
-  /** Readahead / reader-range outline */
   rangeColor: string
-  /** Empty cells inside reader range */
   rangeEmptyColor?: string
   cacheMaxHeight?: number
 }
 
 /**
- * Color roles (classic TorrServer + clearer contrast):
- * - idle: quiet outline, empty fill
- * - cached: brand green fill + matching border
- * - range: soft violet (light) / warm sand (dark) — window around playhead
- * - reader: black on light (master), light red on dark — highest priority chrome
+ * Visual hierarchy:
+ * 1. reader (playhead) — orange, highest contrast on green cache
+ * 2. range — violet / sand window
+ * 3. cached — brand green
+ * 4. idle — quiet empty
  */
 export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePieceSettings>> = {
   dark: {
@@ -39,28 +35,30 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       borderWidth: 1,
       pieceSize: 20,
       gapBetweenPieces: 4,
-      borderColor: rgba('#fff', 0.18),
+      borderColor: rgba('#fff', 0.16),
       completeColor: mainColors.dark.primary,
-      backgroundColor: '#32383c',
+      backgroundColor: '#2e3438',
       progressColor: rgba('#fff', 0.12),
-      readerColor: '#ff8a80',
-      readerMarkColor: '#ff8a80',
-      rangeColor: '#cda184',
-      rangeEmptyColor: rgba('#cda184', 0.28),
-    },
-    mini: {
-      cacheMaxHeight: 360,
-      borderWidth: 2,
-      pieceSize: 23,
-      gapBetweenPieces: 6,
-      borderColor: '#5c6469',
-      completeColor: mainColors.dark.primary,
-      backgroundColor: '#3d4448',
-      progressColor: '#5c6469',
-      readerColor: '#e8e8e8',
-      readerMarkColor: '#e8e8e8',
+      readerColor: '#ffb74d',
+      readerHaloColor: rgba('#000', 0.55),
+      readerMarkColor: '#ffb74d',
       rangeColor: '#cda184',
       rangeEmptyColor: rgba('#cda184', 0.3),
+    },
+    mini: {
+      cacheMaxHeight: 420,
+      borderWidth: 2,
+      pieceSize: 26,
+      gapBetweenPieces: 5,
+      borderColor: rgba('#fff', 0.2),
+      completeColor: mainColors.dark.primary,
+      backgroundColor: '#3a4145',
+      progressColor: '#5c6469',
+      readerColor: '#ffb74d',
+      readerHaloColor: rgba('#000', 0.5),
+      readerMarkColor: '#ffb74d',
+      rangeColor: '#cda184',
+      rangeEmptyColor: rgba('#cda184', 0.32),
     },
   },
   light: {
@@ -68,35 +66,38 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       borderWidth: 1,
       pieceSize: 20,
       gapBetweenPieces: 4,
-      borderColor: '#d5ebe0',
+      borderColor: '#d0e6da',
       completeColor: mainColors.light.primary,
       backgroundColor: '#ffffff',
       progressColor: '#b3dfc9',
-      // Classic master playhead — black reads clearly on green/white
-      readerColor: '#111111',
-      readerMarkColor: '#111111',
-      rangeColor: '#8b7fd4',
-      rangeEmptyColor: rgba('#afa6e3', 0.35),
+      // Amber playhead — clear on green fill, softer than black
+      readerColor: '#e65100',
+      readerHaloColor: rgba('#fff', 0.95),
+      readerMarkColor: '#e65100',
+      rangeColor: '#7e6bc4',
+      rangeEmptyColor: rgba('#afa6e3', 0.32),
     },
     mini: {
-      cacheMaxHeight: 360,
+      cacheMaxHeight: 420,
       borderWidth: 2,
-      pieceSize: 23,
-      gapBetweenPieces: 6,
-      borderColor: '#4db380',
+      pieceSize: 26,
+      gapBetweenPieces: 5,
+      borderColor: '#b7d9c8',
       completeColor: mainColors.light.primary,
-      backgroundColor: '#dbf2e8',
+      backgroundColor: '#f4faf7',
       progressColor: '#c8e6d7',
-      readerColor: '#0a0a0a',
-      readerMarkColor: '#0a0a0a',
-      rangeColor: '#8b7fd4',
-      rangeEmptyColor: rgba('#afa6e3', 0.4),
+      readerColor: '#e65100',
+      readerHaloColor: rgba('#fff', 0.95),
+      readerMarkColor: '#e65100',
+      rangeColor: '#7e6bc4',
+      rangeEmptyColor: rgba('#afa6e3', 0.36),
     },
   },
 }
 
 /**
- * Keep cells readable. Detailed view uses fixed ~20px pieces (1:1 window, no shrink).
+ * Mini: keep cells large and readable (do not shrink to cram ~10 into a row).
+ * Detailed: fixed ~20px.
  */
 export const resolvePieceMetrics = (
   settings: SnakePieceSettings,
@@ -112,9 +113,11 @@ export const resolvePieceMetrics = (
   }
 
   if (isMini) {
-    const targetCells = containerWidth < 400 ? 10 : containerWidth < 600 ? 12 : 14
-    const pieceSize = Math.max(16, Math.min(basePiece, Math.floor((containerWidth - 8) / targetCells) - baseGap))
-    return { pieceSize, gap: Math.max(4, Math.min(baseGap, Math.round(pieceSize * 0.22))) }
+    // Prefer 8–12 large cells per row; never go below 22px.
+    const targetCells = containerWidth < 280 ? 7 : containerWidth < 400 ? 9 : 11
+    const fitted = Math.floor((containerWidth - 8) / targetCells) - baseGap
+    const pieceSize = Math.max(22, Math.min(28, fitted > 0 ? fitted : basePiece))
+    return { pieceSize, gap: Math.max(4, Math.min(baseGap, 6)) }
   }
 
   return { pieceSize: Math.max(18, basePiece), gap: Math.max(4, baseGap) }

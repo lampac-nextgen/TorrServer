@@ -26,7 +26,6 @@ import Dialog from '@mui/material/Dialog'
 import Slide from '@mui/material/Slide'
 import {
   Button,
-  Chip,
   CircularProgress,
   DialogActions,
   DialogTitle,
@@ -55,7 +54,7 @@ import {
 
 const AddDialog = lazy(() => import('components/Add/AddDialog'))
 
-import { StyledButton, TorrentCard, TorrentCardButtons, TorrentCardDescription, TorrentCardPoster } from './style'
+import { StyledButton, TorrentCard, TorrentCardButtons, TorrentCardDescription, TorrentCardPoster, StatusIndicators } from './style'
 
 const Transition = forwardRef(function Transition(
   props: ComponentPropsWithoutRef<typeof Slide>,
@@ -638,7 +637,7 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
 export const StatusIndicator = ({ stat }: { stat?: number }) => {
   const { t } = useTranslation()
 
-  const values: Record<number, string> = {
+  const labels: Record<number, string> = {
     [GETTING_INFO]: t('TorrentGettingInfo'),
     [PRELOAD]: t('TorrentPreload'),
     [WORKING]: t('TorrentWorking'),
@@ -646,25 +645,21 @@ export const StatusIndicator = ({ stat }: { stat?: number }) => {
     [IN_DB]: t('TorrentInDb'),
   }
 
-  const colors: Record<number, 'info' | 'warning' | 'success' | 'error' | 'default'> = {
-    [GETTING_INFO]: 'info',
-    [PRELOAD]: 'warning',
-    [WORKING]: 'success',
-    [CLOSED]: 'error',
-    [IN_DB]: 'default',
+  const colors: Record<number, string> = {
+    [GETTING_INFO]: '#2196F3',
+    [PRELOAD]: '#FFC107',
+    [WORKING]: '#CDDC39',
+    [CLOSED]: '#E57373',
+    [IN_DB]: '#9E9E9E',
   }
 
-  if (stat == null) return null
+  if (stat == null || !labels[stat]) return null
+  const label = labels[stat]
 
   return (
-    <Chip
-      className='description-status-chip'
-      size='small'
-      label={values[stat]}
-      color={colors[stat]}
-      variant='outlined'
-      title={values[stat]}
-    />
+    <span className='description-status-wrapper'>
+      <StatusIndicators $color={colors[stat]} title={label} aria-label={label} role='img' />
+    </span>
   )
 }
 

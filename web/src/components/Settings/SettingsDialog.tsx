@@ -11,7 +11,7 @@ import CircularProgress from '@mui/material/CircularProgress'
 import { StyledDialog } from 'style/CustomMaterialUiStyles'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 
-import { SettingsHeader, FooterSection, Content, StyledTabs, StyledTab } from './style'
+import { SettingsHeader, FooterSection, Content, StyledTabs, StyledTab, SecondarySettingsContent } from './style'
 import defaultSettings from './defaultSettings'
 import { a11yProps, TabPanel } from './tabComponents'
 import PrimarySettingsComponent from './PrimarySettingsComponent'
@@ -230,17 +230,19 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
             </TabPanel>
 
             <TabPanel value={selectedTab} index={tabApp} dir={direction}>
-              <TMDBSettings settings={settings} updateSettings={updateSettings} />
-              <MobileAppSettings
-                isVlcUsed={isVlcUsed}
-                setIsVlcUsed={setIsVlcUsed}
-                isInfuseUsed={isInfuseUsed}
-                setIsInfuseUsed={setIsInfuseUsed}
-                isSenPlayerUsed={isSenPlayerUsed}
-                setIsSenPlayerUsed={setIsSenPlayerUsed}
-                isIinaUsed={isIinaUsed}
-                setIsIinaUsed={setIsIinaUsed}
-              />
+              <SecondarySettingsContent>
+                <TMDBSettings settings={settings} updateSettings={updateSettings} />
+                <MobileAppSettings
+                  isVlcUsed={isVlcUsed}
+                  setIsVlcUsed={setIsVlcUsed}
+                  isInfuseUsed={isInfuseUsed}
+                  setIsInfuseUsed={setIsInfuseUsed}
+                  isSenPlayerUsed={isSenPlayerUsed}
+                  setIsSenPlayerUsed={setIsSenPlayerUsed}
+                  isIinaUsed={isIinaUsed}
+                  setIsIinaUsed={setIsIinaUsed}
+                />
+              </SecondarySettingsContent>
             </TabPanel>
 
             {gstAvailable && (

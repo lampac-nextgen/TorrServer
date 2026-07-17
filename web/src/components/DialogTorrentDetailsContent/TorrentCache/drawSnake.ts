@@ -20,7 +20,6 @@ export interface DrawSnakeArgs {
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n))
 
-/** Bottom-up solid fill. */
 const fillProgress = (
   ctx: CanvasRenderingContext2D,
   size: number,
@@ -53,10 +52,7 @@ const strokeCell = (ctx: CanvasRenderingContext2D, size: number, color: string, 
 }
 
 /**
- * Crisp HiDPI snake:
- * idle → fill → range (empty only) → borders → reader chrome → priority labels.
- *
- * Hierarchy: reader (playhead) > range > cached > idle.
+ * Hierarchy: reader (amber) > range (violet/sand) > cached (green) > idle.
  */
 export const drawSnake = ({
   ctx,
@@ -79,6 +75,7 @@ export const drawSnake = ({
     borderColor,
     completeColor,
     readerColor,
+    readerHaloColor,
     readerMarkColor,
     rangeColor,
     rangeEmptyColor,
@@ -89,7 +86,7 @@ export const drawSnake = ({
 
   const pixelAlign = borderWidth % 2 === 1 ? 0.5 : 0
   const isDark = theme === 'dark'
-  const rangeIdle = rangeEmptyColor || (isDark ? 'rgba(205, 161, 132, 0.28)' : 'rgba(175, 166, 227, 0.35)')
+  const rangeIdle = rangeEmptyColor || (isDark ? 'rgba(205, 161, 132, 0.28)' : 'rgba(175, 166, 227, 0.32)')
   const markColor = readerMarkColor || readerColor
 
   for (let i = 0; i < cells.length; i++) {
@@ -108,7 +105,6 @@ export const drawSnake = ({
     ctx.save()
     ctx.translate(x, y)
 
-    // Body — never wash completed cells with range tint (keeps green clean).
     const emptyColor = isReaderRange && !isCompleted && !inProgress ? rangeIdle : backgroundColor
     fillProgress(
       ctx,
@@ -118,14 +114,13 @@ export const drawSnake = ({
       inProgress || isCompleted ? completeColor : emptyColor,
     )
 
-    // Borders: reader > range > progress/complete > idle
     if (isReader) {
-      const line = isMini ? 3 : 3
-      strokeCell(ctx, pieceSize, readerColor, line)
-      // Thin playhead tick (black on light, accent on dark)
-      const tickH = Math.max(2, Math.round(pieceSize * 0.14))
+      // Halo + amber stroke — readable on green without harsh black
+      if (readerHaloColor) strokeCell(ctx, pieceSize, readerHaloColor, isMini ? 5 : 4)
+      strokeCell(ctx, pieceSize, readerColor, isMini ? 2.5 : 2.5)
+      const tickH = Math.max(2, Math.round(pieceSize * 0.12))
       ctx.fillStyle = markColor
-      ctx.fillRect(line, line, pieceSize - line * 2, tickH)
+      ctx.fillRect(3, 3, pieceSize - 6, tickH)
     } else if (isReaderRange) {
       strokeCell(ctx, pieceSize, rangeColor, 2)
     } else if (inProgress || isCompleted) {
@@ -144,9 +139,9 @@ export const drawSnake = ({
         const cx = pieceSize / 2
         const cy = pieceSize / 2 + (isReader ? 1 : 0)
         ctx.lineWidth = 3
-        ctx.strokeStyle = isDark ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.92)'
+        ctx.strokeStyle = isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.95)'
         ctx.strokeText(info, cx, cy)
-        ctx.fillStyle = isDark ? '#fff' : '#111'
+        ctx.fillStyle = isDark ? '#fff' : '#1a1a1a'
         ctx.fillText(info, cx, cy)
       }
     }
@@ -179,7 +174,6 @@ export interface HitTestArgs {
   cellCount: number
 }
 
-/** CSS-pixel hit test → cell index, or -1. */
 export const hitTestSnakeCell = (x: number, y: number, args: HitTestArgs): number => {
   const { piecesInOneRow, pieceSize, gap, startingX, cellCount } = args
   if (piecesInOneRow < 1 || cellCount < 1 || pieceSize <= 0) return -1

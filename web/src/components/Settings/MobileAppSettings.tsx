@@ -3,7 +3,7 @@ import { isMacOS, isAppleDevice, isDesktop } from 'utils/Utils'
 import { useTranslation } from 'react-i18next'
 import type { Dispatch, SetStateAction } from 'react'
 
-import { SecondarySettingsContent, SettingSectionLabel } from './style'
+import { SettingSectionLabel } from './style'
 
 interface MobileAppSettingsProps {
   isVlcUsed: boolean
@@ -32,7 +32,7 @@ export default function MobileAppSettings({
   const isDesktopPlatform = isDesktop()
 
   return (
-    <SecondarySettingsContent>
+    <div>
       <SettingSectionLabel>{t('SettingsDialog.MobileAppSettings')}</SettingSectionLabel>
       <FormGroup>
         <FormControlLabel
@@ -93,6 +93,6 @@ export default function MobileAppSettings({
           </>
         )}
       </FormGroup>
-    </SecondarySettingsContent>
+    </div>
   )
 }

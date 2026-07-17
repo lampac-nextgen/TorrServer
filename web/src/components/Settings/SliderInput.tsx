@@ -1,4 +1,4 @@
-import { Grid, OutlinedInput, Slider } from '@mui/material'
+import { Grid, InputAdornment, OutlinedInput, Slider, Typography } from '@mui/material'
 import type { ChangeEvent, FocusEvent } from 'react'
 
 interface SliderInputProps {
@@ -11,6 +11,7 @@ interface SliderInputProps {
   inputMin: number
   inputMax: number
   step?: number
+  unit?: string
   onBlurCallback?: (value: string) => void
 }
 
@@ -24,6 +25,7 @@ export default function SliderInput({
   inputMin,
   inputMax,
   step = 1,
+  unit,
   onBlurCallback,
 }: SliderInputProps) {
   const onBlur = (event: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -39,6 +41,8 @@ export default function SliderInput({
     setValue(next === '' ? '' : Number(next))
   const onSliderChange = (_: Event, newValue: number | number[]) => setValue(newValue as number)
 
+  const displayValue = typeof value === 'number' ? value : 0
+
   return (
     <>
       <div>{title}</div>
@@ -48,23 +52,35 @@ export default function SliderInput({
           <Slider
             min={sliderMin}
             max={sliderMax}
-            value={typeof value === 'number' ? value : 0}
+            value={displayValue}
             onChange={onSliderChange}
             step={step}
             color='secondary'
           />
         </Grid>
 
-        {isProMode && (
+        {isProMode ? (
           <Grid item>
             <OutlinedInput
               value={value}
               margin='dense'
               onChange={onInputChange}
               onBlur={onBlur}
-              style={{ width: '91px', marginTop: '-6px' }}
+              style={{ width: unit ? '110px' : '91px', marginTop: '-6px' }}
+              endAdornment={unit ? <InputAdornment position='end'>{unit}</InputAdornment> : undefined}
               inputProps={{ step, min: inputMin, max: inputMax, type: 'number' }}
             />
+          </Grid>
+        ) : (
+          <Grid item>
+            <Typography
+              component='span'
+              variant='body2'
+              sx={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', minWidth: 64, textAlign: 'right' }}
+            >
+              {displayValue}
+              {unit ? ` ${unit}` : ''}
+            </Typography>
           </Grid>
         )}
       </Grid>

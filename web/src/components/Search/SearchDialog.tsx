@@ -1,16 +1,11 @@
-import { useState, useEffect, useMemo, type KeyboardEvent, type SyntheticEvent } from 'react'
+import { useState, useEffect, useMemo, useRef, type KeyboardEvent, type SyntheticEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import axios, { isAxiosError } from 'axios'
 import {
   TextField,
   Button,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
   CircularProgress,
   Typography,
-  Divider,
   IconButton,
   Snackbar,
   Alert,
@@ -28,15 +23,32 @@ import { StyledDialog, StyledHeader } from 'style/CustomMaterialUiStyles'
 import { parseSizeToBytes, formatSizeToClassicUnits } from 'utils/Utils'
 import { getMoviePosters, shortenTitleForPosterSearch } from 'components/Add/helpers'
 import type { BTSets, SearchResultItem, TorznabUrl } from 'types/api'
-import { useTheme } from 'styled-components'
 
-import { Content } from './style'
+import {
+  Content,
+  SearchBody,
+  SearchToolbar,
+  ResultsBar,
+  ResultsCount,
+  SortChips,
+  SortChip,
+  ResultsScroll,
+  EmptyState,
+  ResultList,
+  ResultRow,
+  ResultMain,
+  ResultTitle,
+  MetaBadges,
+  MetaBadge,
+  ResultAction,
+  Footer,
+} from './style'
 
 export interface SearchDialogProps {
   handleClose: () => void
 }
 
-type SortField = '' | 'size' | 'seeds' | 'peers'
+type SortField = 'size' | 'seeds' | 'peers'
 type SortDirection = 'asc' | 'desc'
 type TrackerSelection = number | 'rutor'
 
@@ -71,26 +83,23 @@ const axiosErrorMessage = (err: unknown, fallback: string): string => {
 
 export default function SearchDialog({ handleClose }: SearchDialogProps) {
   const { t } = useTranslation()
-  const scTheme = useTheme()
-  const chromeBorder = scTheme.settingsDialog.contentBG
-  const chromeSurface = scTheme.app.paperColor
-  const separatorColor = scTheme.addDialog.separatorColor
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResultItem[]>([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
   const [adding, setAdding] = useState(false)
+  const [addingKey, setAddingKey] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
   const [trackers, setTrackers] = useState<TorznabUrl[]>([])
   const [enableRutor, setEnableRutor] = useState(false)
   const [enableTorznab, setEnableTorznab] = useState(false)
   const [selectedTracker, setSelectedTracker] = useState<TrackerSelection>(-1)
-  const [sortField, setSortField] = useState<SortField>('')
+  const [sortField, setSortField] = useState<SortField>('seeds')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [settingsLoaded, setSettingsLoaded] = useState(false)
+  const userSortedRef = useRef(false)
   const fullScreen = useMediaQuery('(max-width:930px)')
-  const isMobile = useMediaQuery('(max-width:600px)')
   const ref = useOnStandaloneAppOutsideClick(handleClose)
 
   const hasTorznab = enableTorznab && trackers.length > 0
@@ -155,7 +164,12 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
         if (lists.length === 0) {
           throw firstError || new Error(t('Torznab.SearchFailed'))
         }
-        setResults(mergeSearchResults(...lists))
+        const merged = mergeSearchResults(...lists)
+        setResults(merged)
+        if (!userSortedRef.current && merged.length > 0) {
+          setSortField('seeds')
+          setSortDirection('desc')
+        }
         return
       }
 
@@ -169,7 +183,12 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
       }
 
       const { data } = await axios.get<SearchResultItem[]>(url, { params })
-      setResults(data || [])
+      const next = data || []
+      setResults(next)
+      if (!userSortedRef.current && next.length > 0) {
+        setSortField('seeds')
+        setSortDirection('desc')
+      }
     } catch (err) {
       setErrorMsg(axiosErrorMessage(err, t('Torznab.SearchFailed')))
     } finally {
@@ -184,7 +203,9 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
   }
 
   const handleAdd = async (item: SearchResultItem) => {
+    const key = resultDedupeKey(item) || item.Title || 'item'
     setAdding(true)
+    setAddingKey(key)
     try {
       const link = item.Magnet || item.Link
       if (!link) {
@@ -212,6 +233,7 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
       setErrorMsg(t('Torznab.FailedToAddTorrent'))
     } finally {
       setAdding(false)
+      setAddingKey(null)
     }
   }
 
@@ -223,12 +245,18 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
     setErrorMsg('')
   }
 
-  const toggleSortDirection = () => {
-    setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'))
+  const handleSortChip = (field: SortField) => {
+    userSortedRef.current = true
+    if (sortField === field) {
+      setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'))
+      return
+    }
+    setSortField(field)
+    setSortDirection('desc')
   }
 
   const sortedResults = useMemo(() => {
-    if (!sortField || results.length === 0) return results
+    if (results.length === 0) return results
 
     const sorted = [...results].sort((a, b) => {
       let aVal: number
@@ -262,36 +290,26 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
     if (!settingsLoaded) return null
     if (!hasAnySource) {
       if (enableTorznab && trackers.length === 0) return t('Torznab.NoIndexersConfigured')
-      if (!enableTorznab && !enableRutor) return t('Torznab.NoSearchSources')
       return t('Torznab.NoSearchSources')
     }
-    if (searched && results.length === 0 && !loading) return t('Torznab.NoResultsFound')
+    if (loading) return null
+    if (searched && results.length === 0) return t('Torznab.NoResultsFound')
     return null
   })()
+
+  const sortFields: { field: SortField; label: string }[] = [
+    { field: 'size', label: t('Torznab.SortBySize') },
+    { field: 'seeds', label: t('Torznab.SortBySeeds') },
+    { field: 'peers', label: t('Torznab.SortByPeers') },
+  ]
 
   return (
     <StyledDialog open onClose={handleClose} fullScreen={fullScreen} fullWidth maxWidth='md' ref={ref}>
       <StyledHeader>{t('Torznab.SearchTorrents')}</StyledHeader>
       <Content>
-        <div style={{ padding: '20px' }}>
-          <div
-            style={{
-              display: 'flex',
-              gap: '8px',
-              marginBottom: '20px',
-              alignItems: 'flex-start',
-              flexWrap: 'wrap',
-            }}
-          >
-            <FormControl
-              variant='outlined'
-              size='small'
-              style={{
-                minWidth: 150,
-                flex: fullScreen ? '1 1 100%' : '0 0 auto',
-              }}
-              disabled={!hasAnySource}
-            >
+        <SearchBody>
+          <SearchToolbar>
+            <FormControl variant='outlined' size='small' className='search-tracker' disabled={!hasAnySource}>
               <InputLabel>{t('Tracker')}</InputLabel>
               <Select
                 value={selectedTracker}
@@ -311,7 +329,8 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
               </Select>
             </FormControl>
             <TextField
-              label={t('Torznab.SearchTorznab')}
+              className='search-query'
+              label={t('Torznab.SearchQuery')}
               value={query}
               onChange={e => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -323,132 +342,110 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
               disabled={!hasAnySource}
             />
             <Button
+              className='search-submit'
               variant='contained'
               color='primary'
               onClick={handleSearch}
               disabled={loading || !hasAnySource || !query}
-              style={{
-                minWidth: fullScreen ? '80px' : '100px',
-                height: '40px',
-              }}
             >
-              {loading ? <CircularProgress size={24} color='inherit' /> : t('Search')}
+              {loading ? <CircularProgress size={22} color='inherit' /> : t('Search')}
             </Button>
-          </div>
+          </SearchToolbar>
 
           {searched && results.length > 0 && (
-            <div
-              style={{
-                display: 'flex',
-                gap: isMobile ? '8px' : '4px',
-                marginBottom: '16px',
-                alignItems: 'center',
-                padding: isMobile ? '12px 8px' : '8px 12px',
-                backgroundColor: chromeSurface,
-                borderRadius: '4px',
-                border: `1px solid ${separatorColor}`,
-                flexWrap: isMobile ? 'wrap' : 'nowrap',
-              }}
-            >
-              <FormControl
-                variant='outlined'
-                size='small'
-                style={{
-                  minWidth: isMobile ? '100%' : 140,
-                  flexShrink: 0,
-                  flex: isMobile ? '1 1 100%' : '0 0 auto',
-                }}
-              >
-                <InputLabel>{t('Torznab.SortBy')}</InputLabel>
-                <Select
-                  value={sortField}
-                  onChange={(e: SelectChangeEvent<SortField>) => setSortField(e.target.value as SortField)}
-                  label={t('Torznab.SortBy')}
-                >
-                  <MenuItem value=''>{t('Torznab.SortByNone')}</MenuItem>
-                  <MenuItem value='size'>{t('Torznab.SortBySize')}</MenuItem>
-                  <MenuItem value='seeds'>{t('Torznab.SortBySeeds')}</MenuItem>
-                  <MenuItem value='peers'>{t('Torznab.SortByPeers')}</MenuItem>
-                </Select>
-              </FormControl>
-              {sortField && (
-                <IconButton
-                  size='small'
-                  onClick={toggleSortDirection}
-                  title={sortDirection === 'asc' ? t('Torznab.SortAscending') : t('Torznab.SortDescending')}
-                  style={{
-                    marginLeft: isMobile ? 'auto' : '4px',
-                    padding: '8px',
-                  }}
-                >
-                  {sortDirection === 'asc' ? <ArrowUpward /> : <ArrowDownward />}
-                </IconButton>
-              )}
-            </div>
+            <ResultsBar>
+              <ResultsCount>{t('Torznab.ResultsCount', { count: results.length })}</ResultsCount>
+              <SortChips>
+                {sortFields.map(({ field, label }) => {
+                  const active = sortField === field
+                  return (
+                    <SortChip
+                      key={field}
+                      type='button'
+                      $active={active}
+                      onClick={() => handleSortChip(field)}
+                      title={
+                        active
+                          ? sortDirection === 'asc'
+                            ? t('Torznab.SortAscending')
+                            : t('Torznab.SortDescending')
+                          : t('Torznab.SortBy')
+                      }
+                    >
+                      {label}
+                      {active && (sortDirection === 'asc' ? <ArrowUpward /> : <ArrowDownward />)}
+                    </SortChip>
+                  )
+                })}
+              </SortChips>
+            </ResultsBar>
           )}
 
-          <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
-            {emptyMessage && (
-              <Typography align='center' variant='body1' color='text.secondary'>
-                {emptyMessage}
-              </Typography>
+          <ResultsScroll>
+            {loading && (
+              <EmptyState>
+                <CircularProgress color='secondary' size={32} />
+              </EmptyState>
             )}
 
-            <List>
-              {sortedResults.map((item, index) => {
-                const sizeBytes = parseSizeToBytes(item.Size || '0')
-                const formattedSize = formatSizeToClassicUnits(sizeBytes)
-                return (
-                  <div key={item.Hash || item.Link || index}>
-                    <ListItem
-                      disablePadding
-                      secondaryAction={
+            {!loading && emptyMessage && (
+              <EmptyState>
+                <Typography variant='body2' color='text.secondary'>
+                  {emptyMessage}
+                </Typography>
+              </EmptyState>
+            )}
+
+            {!loading && sortedResults.length > 0 && (
+              <ResultList>
+                {sortedResults.map((item, index) => {
+                  const sizeBytes = parseSizeToBytes(item.Size || '0')
+                  const formattedSize = formatSizeToClassicUnits(sizeBytes)
+                  const itemKey = resultDedupeKey(item) || `${item.Title || 'item'}-${index}`
+                  const isAddingThis = adding && addingKey === itemKey
+                  return (
+                    <ResultRow
+                      key={itemKey}
+                      role='button'
+                      tabIndex={0}
+                      onClick={() => !adding && handleAdd(item)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          if (!adding) handleAdd(item)
+                        }
+                      }}
+                    >
+                      <ResultMain>
+                        <ResultTitle>{item.Title}</ResultTitle>
+                        <MetaBadges>
+                          <MetaBadge $tone='neutral'>{formattedSize}</MetaBadge>
+                          <MetaBadge $tone='seeds'>S {item.Seed || 0}</MetaBadge>
+                          <MetaBadge $tone='peers'>P {item.Peer || 0}</MetaBadge>
+                        </MetaBadges>
+                      </ResultMain>
+                      <ResultAction>
                         <IconButton
                           edge='end'
                           aria-label='add'
-                          onClick={() => handleAdd(item)}
-                          disabled={adding}
-                          size='medium'
-                          sx={{ minWidth: 44, minHeight: 44 }}
-                        >
-                          <DownloadIcon color='secondary' />
-                        </IconButton>
-                      }
-                    >
-                      <ListItemButton onClick={() => handleAdd(item)}>
-                        <ListItemText
-                          primary={item.Title}
-                          secondary={
-                            <>
-                              <Typography component='span' variant='body2' color='text.primary'>
-                                {formattedSize}
-                              </Typography>
-                              {` • S: ${item.Seed || 0} P: ${item.Peer || 0}`}
-                            </>
-                          }
-                          slotProps={{
-                            primary: {
-                              sx: {
-                                whiteSpace: isMobile ? 'normal' : 'inherit',
-                                fontSize: isMobile ? '0.9rem' : 'inherit',
-                              },
-                            },
-                            secondary: {
-                              sx: {
-                                fontSize: isMobile ? '0.75rem' : 'inherit',
-                              },
-                            },
+                          onClick={e => {
+                            e.stopPropagation()
+                            handleAdd(item)
                           }}
-                        />
-                      </ListItemButton>
-                    </ListItem>
-                    <Divider component='li' />
-                  </div>
-                )
-              })}
-            </List>
-          </div>
-        </div>
+                          disabled={adding}
+                          size='small'
+                          sx={{ minWidth: 40, minHeight: 40 }}
+                        >
+                          {isAddingThis ? <CircularProgress size={18} color='secondary' /> : <DownloadIcon color='secondary' />}
+                        </IconButton>
+                      </ResultAction>
+                    </ResultRow>
+                  )
+                })}
+              </ResultList>
+            )}
+          </ResultsScroll>
+        </SearchBody>
       </Content>
 
       <Snackbar open={!!successMsg} autoHideDuration={1500} onClose={handleAlertClose}>
@@ -462,19 +459,11 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
         </Alert>
       </Snackbar>
 
-      <div
-        style={{
-          padding: '16px',
-          display: 'flex',
-          justifyContent: 'flex-end',
-          borderTop: `1px solid ${separatorColor}`,
-          backgroundColor: chromeBorder,
-        }}
-      >
+      <Footer>
         <Button onClick={handleClose} color='secondary' variant='outlined'>
           {t('Close')}
         </Button>
-      </div>
+      </Footer>
     </StyledDialog>
   )
 }

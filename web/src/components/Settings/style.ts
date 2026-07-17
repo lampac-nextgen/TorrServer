@@ -430,7 +430,6 @@ export const GstSubsectionLabel = styled(SettingSectionLabel)`
 
 export const PreloadCachePercentage = styled.div.attrs<{
   $value?: number
-  $label?: string
   $preloadCachePercentage?: number
   $beforeColor?: string
   $afterColor?: string
@@ -441,7 +440,6 @@ export const PreloadCachePercentage = styled.div.attrs<{
   },
 }))`
   ${({
-    $label,
     $preloadCachePercentage,
     theme: {
       settingsDialog: { preloadCacheBorderColor, preloadCacheFontColor },
@@ -453,12 +451,14 @@ export const PreloadCachePercentage = styled.div.attrs<{
     color: ${preloadCacheFontColor};
     margin-bottom: 10px;
     position: relative;
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+    font-variant-numeric: tabular-nums;
 
-    :before {
-      content: '${$label}';
-      display: grid;
-      place-items: center;
-      font-size: 20px;
+    > * {
+      position: relative;
+      z-index: 1;
     }
 
     :after {
@@ -471,6 +471,7 @@ export const PreloadCachePercentage = styled.div.attrs<{
       left: 0;
       border-radius: 4px;
       filter: opacity(0.15);
+      pointer-events: none;
     }
   `}
 `

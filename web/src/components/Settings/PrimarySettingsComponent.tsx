@@ -68,11 +68,14 @@ export default function PrimarySettingsComponent({
 
         <PreloadCachePercentage
           $value={100 - cachePercentage}
-          $label={`${t('Cache')} ${cacheSize} ${t('MB')}`}
           $preloadCachePercentage={preloadCachePercentage}
           $beforeColor={cacheBeforeReaderColor}
           $afterColor={cacheAfterReaderColor}
-        />
+        >
+          <span>
+            {t('Cache')} {cacheSize} {t('MB')}
+          </span>
+        </PreloadCachePercentage>
 
         <CacheLegendGrid>
           <CacheLegendDot $color={cacheBeforeReaderColor} aria-hidden />
@@ -92,7 +95,7 @@ export default function PrimarySettingsComponent({
 
         <SliderInput
           isProMode={isProMode}
-          title={t('SettingsDialog.CacheSize')}
+          title={`${t('SettingsDialog.CacheSize')} — ${cacheSize} ${t('MB')}`}
           value={cacheSize}
           setValue={v => setCacheSize(v === '' ? cacheSize : v)}
           sliderMin={32}
@@ -100,29 +103,32 @@ export default function PrimarySettingsComponent({
           inputMin={32}
           inputMax={999999}
           step={4}
+          unit={t('MB')}
           onBlurCallback={value => setCacheSize(Math.round(Number(value) / 4) * 4)}
         />
 
         <SliderInput
           isProMode={isProMode}
-          title={t('SettingsDialog.ReaderReadAHead')}
+          title={`${t('SettingsDialog.ReaderReadAHead')} — ${cachePercentage}%`}
           value={cachePercentage}
           setValue={v => setCachePercentage(v === '' ? cachePercentage : v)}
           sliderMin={40}
           sliderMax={95}
           inputMin={0}
           inputMax={100}
+          unit='%'
         />
 
         <SliderInput
           isProMode={isProMode}
-          title={`${t('SettingsDialog.PreloadCache')} - ${preloadCachePercentage}% (${preloadCacheSize} ${t('MB')})`}
+          title={`${t('SettingsDialog.PreloadCache')} — ${preloadCachePercentage}% (${preloadCacheSize} ${t('MB')})`}
           value={preloadCachePercentage}
           setValue={v => setPreloadCachePercentage(v === '' ? preloadCachePercentage : v)}
           sliderMin={0}
           sliderMax={100}
           inputMin={0}
           inputMax={100}
+          unit='%'
         />
       </div>
 

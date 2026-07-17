@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { FormGroup, FormHelperText, TextField } from '@mui/material'
 import type { BTSets, SettingsUpdater, TMDBSettingsConfig } from 'types/api'
 
-import { SecondarySettingsContent, SettingSectionLabel } from './style'
+import { SettingSectionLabel } from './style'
 
 interface TMDBSettingsProps {
   settings?: BTSets
@@ -29,7 +29,7 @@ export default function TMDBSettings({ settings, updateSettings }: TMDBSettingsP
   }
 
   return (
-    <SecondarySettingsContent>
+    <div>
       <SettingSectionLabel>{t('TMDB.Settings')}</SettingSectionLabel>
       <FormGroup>
         <TextField
@@ -87,6 +87,6 @@ export default function TMDBSettings({ settings, updateSettings }: TMDBSettingsP
         <FormHelperText>{t('TMDB.ImageURLRuHint')}</FormHelperText>
       </FormGroup>
       <br />
-    </SecondarySettingsContent>
+    </div>
   )
 }

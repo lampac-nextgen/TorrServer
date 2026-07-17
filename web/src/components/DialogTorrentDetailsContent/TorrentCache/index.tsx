@@ -6,29 +6,23 @@ import { DarkModeContext } from 'components/App'
 import { THEME_MODES } from 'style/materialUISetup'
 import type { CacheMapItem, TorrentCache as TorrentCacheData } from 'types/api'
 
-import { useCreateCacheMap, useCreateFocusMap } from '../customHooks'
+import { useCreateFocusMap } from '../customHooks'
 import {
   priorityDebugLabel,
-  resolveCellBudget,
   resolveFocusVisibleCells,
   resolveFocusWindow,
 } from './buildCacheMap'
-import getShortCacheMap from './getShortCacheMap'
 import { SnakeWrapper, ScrollNotification, SnakeTooltip } from './style'
 import { snakeSettings, resolvePieceMetrics } from './snakeSettings'
 import { drawSnake, setupHiDpiCanvas, hitTestSnakeCell } from './drawSnake'
 
-export type SnakeViewMode = 'detailed' | 'focus' | 'mini' | 'overview'
+export type SnakeViewMode = 'detailed' | 'focus' | 'mini'
 
 export interface TorrentCacheProps {
   cache: TorrentCacheData
   /** @deprecated prefer mode="mini" */
   isMini?: boolean
-  /**
-   * detailed/focus — 1:1 reader window (no LOD merge).
-   * mini — short strip (may use LOD).
-   * overview — legacy LOD full map (unused in UI).
-   */
+  /** detailed/focus/mini — all use 1:1 reader window (no LOD merge). */
   mode?: SnakeViewMode
   isSnakeDebugMode?: boolean
 }
@@ -40,14 +34,10 @@ const emptyCell = (): CacheMapItem => ({
   isReaderRange: false,
 })
 
-const priorityLabel = priorityDebugLabel
-
 const TorrentCache = ({ cache, isMini, mode: modeProp, isSnakeDebugMode }: TorrentCacheProps) => {
   const { t } = useTranslation()
   const mode: SnakeViewMode = modeProp || (isMini ? 'mini' : 'detailed')
   const isMiniView = mode === 'mini'
-  // Detailed cache view = 1:1 piece window (same algorithm as former focus panel).
-  const isPieceWindow = mode === 'detailed' || mode === 'focus'
 
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
   const { width } = dimensions
@@ -57,12 +47,8 @@ const TorrentCache = ({ cache, isMini, mode: modeProp, isSnakeDebugMode }: Torre
   const drawRaf = useRef(0)
   const [tooltip, setTooltip] = useState<{ x: number; y: number; text: string } | null>(null)
 
-  const maxCells = useMemo(() => resolveCellBudget(width, isMiniView), [width, isMiniView])
-  const focusVisible = useMemo(() => resolveFocusVisibleCells(width), [width])
-
-  const overviewModel = useCreateCacheMap(cache, maxCells)
-  const focusModel = useCreateFocusMap(cache, focusVisible)
-  const model = isPieceWindow ? focusModel : overviewModel
+  const focusVisible = useMemo(() => resolveFocusVisibleCells(width, isMiniView), [width, isMiniView])
+  const model = useCreateFocusMap(cache, focusVisible)
   const cacheMap = model.cells
 
   const settingsTarget = isMiniView ? 'mini' : 'default'
@@ -83,15 +69,11 @@ const TorrentCache = ({ cache, isMini, mode: modeProp, isSnakeDebugMode }: Torre
 
   const source = useMemo(() => {
     if (!piecesInOneRow) return []
-    if (!isMiniView) return cacheMap
-
-    const piecesLength = cache?.PiecesLength || 1
-    const preloadPiecesAmount = Math.max(0, Math.round((cache?.Capacity || 0) / piecesLength - 1))
-    return getShortCacheMap({ cacheMap, preloadPiecesAmount, piecesInOneRow })
-  }, [cache?.Capacity, cache?.PiecesLength, cacheMap, isMiniView, piecesInOneRow])
+    return cacheMap
+  }, [cacheMap, piecesInOneRow])
 
   const startingXPoint = piecesInOneRow > 0 ? Math.ceil((canvasWidth - pieceSizeWithGap * piecesInOneRow) / 2) : 0
-  const emptyPlaceholderRows = isMiniView ? 3 : 6
+  const emptyPlaceholderRows = isMiniView ? 4 : 6
   const height =
     piecesInOneRow > 0
       ? Math.max(
@@ -147,9 +129,8 @@ const TorrentCache = ({ cache, isMini, mode: modeProp, isSnakeDebugMode }: Torre
     isSnakeDebugMode,
   ])
 
-  // Keep reader cell visible in the piece window.
   useEffect(() => {
-    if (!isPieceWindow || !wrapperRef.current || !piecesInOneRow || pieceSizeWithGap <= 0) return
+    if (!wrapperRef.current || !piecesInOneRow || pieceSizeWithGap <= 0) return
     const win = resolveFocusWindow(cache, focusVisible)
     if (!win || model.windowStart == null) return
     const localIndex = win.readerPiece - model.windowStart
@@ -162,15 +143,16 @@ const TorrentCache = ({ cache, isMini, mode: modeProp, isSnakeDebugMode }: Torre
     if (top < viewTop || top + pieceSizeWithGap > viewBottom) {
       el.scrollTop = Math.max(0, top - el.clientHeight / 3)
     }
-  }, [isPieceWindow, cache, focusVisible, model.windowStart, piecesInOneRow, pieceSizeWithGap, drawSource])
+  }, [cache, focusVisible, model.windowStart, piecesInOneRow, pieceSizeWithGap, drawSource])
 
   const formatTooltip = useCallback(
     (cell: CacheMapItem) => {
       const start = cell.pieceStart
       const end = cell.pieceEnd
       if (start == null) return ''
-      const fill = Math.round(cell.percentage || 0)
-      const prio = priorityLabel(cell.priority || 0)
+      const fill =
+        cell.completed || (cell.percentage || 0) >= 99.5 ? 100 : Math.round(cell.percentage || 0)
+      const prio = priorityDebugLabel(cell.priority || 0)
       const prioPart = prio ? ` · ${prio}` : ''
       if (end != null && end !== start) {
         return t('SnakeTooltipBucket', { start, end, fill }) + prioPart
@@ -182,7 +164,7 @@ const TorrentCache = ({ cache, isMini, mode: modeProp, isSnakeDebugMode }: Torre
 
   const onCanvasMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (isMiniView || !piecesInOneRow) {
+      if (!piecesInOneRow) {
         setTooltip(null)
         return
       }
@@ -204,8 +186,7 @@ const TorrentCache = ({ cache, isMini, mode: modeProp, isSnakeDebugMode }: Torre
         setTooltip(null)
         return
       }
-      const cell = drawSource[index]
-      const text = formatTooltip(cell)
+      const text = formatTooltip(drawSource[index])
       if (!text) {
         setTooltip(null)
         return
@@ -216,7 +197,7 @@ const TorrentCache = ({ cache, isMini, mode: modeProp, isSnakeDebugMode }: Torre
         text,
       })
     },
-    [isMiniView, piecesInOneRow, pieceSize, gap, startingXPoint, drawSource, formatTooltip],
+    [piecesInOneRow, pieceSize, gap, startingXPoint, drawSource, formatTooltip],
   )
 
   return (
@@ -229,7 +210,7 @@ const TorrentCache = ({ cache, isMini, mode: modeProp, isSnakeDebugMode }: Torre
             measureRef(node)
           }}
         >
-          <SnakeWrapper ref={wrapperRef} $themeType={theme} $isMini={isMiniView} $isFocus={isPieceWindow}>
+          <SnakeWrapper ref={wrapperRef} $themeType={theme} $isMini={isMiniView} $isFocus>
             {piecesInOneRow > 0 && height > 0 ? (
               <canvas ref={canvasRef} onMouseMove={onCanvasMove} onMouseLeave={() => setTooltip(null)} />
             ) : null}
@@ -237,14 +218,11 @@ const TorrentCache = ({ cache, isMini, mode: modeProp, isSnakeDebugMode }: Torre
 
           {tooltip && <SnakeTooltip style={{ left: tooltip.x, top: tooltip.y }}>{tooltip.text}</SnakeTooltip>}
 
-          {isPieceWindow &&
-            model.windowStart != null &&
-            model.windowEnd != null &&
-            model.windowEnd >= model.windowStart && (
-              <ScrollNotification $themeType={theme}>
-                {t('SnakeFocusRange', { start: model.windowStart, end: model.windowEnd })}
-              </ScrollNotification>
-            )}
+          {model.windowStart != null && model.windowEnd != null && model.windowEnd >= model.windowStart && (
+            <ScrollNotification $themeType={theme}>
+              {t('SnakeFocusRange', { start: model.windowStart, end: model.windowEnd })}
+            </ScrollNotification>
+          )}
 
           {isMiniView && cacheMaxHeight != null && height >= cacheMaxHeight && (
             <ScrollNotification $themeType={theme}>{t('ScrollDown')}</ScrollNotification>

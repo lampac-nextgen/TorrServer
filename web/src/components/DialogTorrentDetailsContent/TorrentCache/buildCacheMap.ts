@@ -4,8 +4,9 @@ import type { CacheMapItem, CachePiece, CacheReader, TorrentCache } from 'types/
 export const SNAKE_MAX_CELLS_DETAILED = 6000
 export const SNAKE_MAX_CELLS_MINI = 900
 
-/** Detailed 1:1 window target rows (readable labels on ~20px cells). */
+/** Detailed 1:1 window target rows; mini uses fewer. */
 export const SNAKE_FOCUS_TARGET_ROWS = 16
+export const SNAKE_FOCUS_TARGET_ROWS_MINI = 10
 
 export interface CacheDrawModel {
   cells: CacheMapItem[]
@@ -72,8 +73,8 @@ const pieceFillPercentage = (piece: CachePiece | undefined, pieceLength: number)
 
 /**
  * Map anacrolix priorities to snake labels: 2=H, 3=R, 4=N, 5=A.
- * When API has None/Normal (0/1) on incomplete pieces ahead of the reader,
- * infer the same ladder as server setLoadPriority so debug labels stay useful.
+ * Playhead always displays as A in debug. Incomplete pieces in the reader
+ * window get at least H so labels are visible (API often leaves them at 0/1).
  */
 export const resolveDisplayPriority = (
   id: number,
@@ -81,8 +82,13 @@ export const resolveDisplayPriority = (
   completed: boolean,
   readers: CacheReader[] | undefined,
 ): number => {
+  if (!readers?.length) return apiPriority >= 2 ? apiPriority : 0
+
+  const onPlayhead = readers.some(r => r.Reader === id)
+  if (onPlayhead) return 5
+
   if (apiPriority >= 2) return apiPriority
-  if (completed || !readers?.length) return apiPriority > 0 ? apiPriority : 0
+  if (completed) return 0
 
   let best = 0
   for (const r of readers) {
@@ -91,9 +97,8 @@ export const resolveDisplayPriority = (
     const end = r.End
     if (id < readerPos || id > end) continue
 
-    let inferred = 1
-    if (id === readerPos) inferred = 5
-    else if (id === readerPos + 1) inferred = 4
+    let inferred = 2 // incomplete in-window → at least High (H)
+    if (id === readerPos + 1) inferred = 4
     else {
       const span = Math.max(1, end - readerPos)
       const rah = readerPos + Math.max(2, Math.floor(span * 0.45))
@@ -321,10 +326,11 @@ export const resolveCellBudget = (containerWidth: number, isMini: boolean): numb
   return Math.min(SNAKE_MAX_CELLS_DETAILED, Math.max(cols * 28, cols * targetRows))
 }
 
-/** Visible cell budget for the detailed 1:1 window (cols × rows). */
-export const resolveFocusVisibleCells = (containerWidth: number): number => {
-  if (!containerWidth || containerWidth <= 0) return 40 * SNAKE_FOCUS_TARGET_ROWS
-  const cellFootprint = 20 + 4
+/** Visible cell budget for the 1:1 window (cols × rows). */
+export const resolveFocusVisibleCells = (containerWidth: number, isMini = false): number => {
+  const rows = isMini ? SNAKE_FOCUS_TARGET_ROWS_MINI : SNAKE_FOCUS_TARGET_ROWS
+  const cellFootprint = isMini ? 26 + 5 : 20 + 4
+  if (!containerWidth || containerWidth <= 0) return 10 * rows
   const cols = Math.max(1, Math.floor(containerWidth / cellFootprint))
-  return cols * SNAKE_FOCUS_TARGET_ROWS
+  return cols * rows
 }

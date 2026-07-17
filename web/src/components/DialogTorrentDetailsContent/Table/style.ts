@@ -68,16 +68,28 @@ export const TableStyle = styled.table`
     }
 
     .button-cell {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: stretch;
-      gap: 8px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
       min-width: 0;
+      width: 100%;
 
-      > .MuiButton-root,
-      > a {
-        flex: 1 1 auto;
-        min-width: 96px;
+      > * {
+        min-width: 0;
+        display: flex;
+      }
+
+      .MuiButton-root {
+        width: 100%;
+        min-width: 0;
+        min-height: 32px;
+        height: 32px;
+        padding: 0 8px;
+        font-size: 12px;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .MuiButton-outlined {
