@@ -217,7 +217,14 @@ export default function MultiAddDialog({ files, handleClose }: MultiAddDialogPro
   }
 
   return (
-    <StyledDialog open onClose={handleClose} fullScreen={fullScreen} fullWidth maxWidth='md' ref={ref}>
+    <StyledDialog
+      open
+      onClose={handleClose}
+      fullScreen={fullScreen}
+      fullWidth
+      maxWidth='md'
+      slotProps={{ paper: { ref } }}
+    >
       <StyledHeader>
         {t('AddNewTorrent')} ({newCount})
       </StyledHeader>

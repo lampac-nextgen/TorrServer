@@ -299,7 +299,14 @@ export default function AddDialog({
   }
 
   return (
-    <StyledDialog open onClose={handleClose} fullScreen={fullScreen} fullWidth maxWidth='md' ref={ref}>
+    <StyledDialog
+      open
+      onClose={handleClose}
+      fullScreen={fullScreen}
+      fullWidth
+      maxWidth='md'
+      slotProps={{ paper: { ref } }}
+    >
       <StyledHeader>{t(isEditMode ? 'EditTorrent' : 'AddNewTorrent')}</StyledHeader>
 
       <Content $isEditMode={isEditMode}>

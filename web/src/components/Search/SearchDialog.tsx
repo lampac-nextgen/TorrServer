@@ -336,7 +336,14 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
   ]
 
   return (
-    <StyledDialog open onClose={handleClose} fullScreen={fullScreen} fullWidth maxWidth='md' ref={ref}>
+    <StyledDialog
+      open
+      onClose={handleClose}
+      fullScreen={fullScreen}
+      fullWidth
+      maxWidth='md'
+      slotProps={{ paper: { ref } }}
+    >
       <StyledHeader>{t('Torznab.SearchTorrents')}</StyledHeader>
       <Content>
         <SearchBody>

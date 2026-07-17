@@ -4,6 +4,11 @@ import { THEME_MODES } from 'style/materialUISetup'
 
 const { LIGHT, DARK } = THEME_MODES
 
+/**
+ * Light keeps the classic colored widgets.
+ * Dark uses charcoal greys only — neon green/blue/purple accents read as broken on
+ * the master-style dark shell (#323637 / #545a5e).
+ */
 const colors = {
   light: {
     downloadSpeed: { iconBGColor: '#118f00', valueBGColor: '#13a300' },
@@ -16,14 +21,14 @@ const colors = {
     category: { iconBGColor: '#914820', valueBGColor: '#c9632c' },
   },
   dark: {
-    downloadSpeed: { iconBGColor: '#0c6600', valueBGColor: '#0d7000' },
-    uploadSpeed: { iconBGColor: '#003f9e', valueBGColor: '#0047b3' },
-    peers: { iconBGColor: '#a69c11', valueBGColor: '#b4a913', fontColor: '#1a1a1a' },
-    piecesCount: { iconBGColor: '#8da136', valueBGColor: '#99ae3d' },
-    piecesLength: { iconBGColor: '#07659c', valueBGColor: '#0872af' },
-    status: { iconBGColor: '#938948', valueBGColor: '#9f9450' },
-    size: { iconBGColor: '#81008f', valueBGColor: '#9102a1' },
-    category: { iconBGColor: '#914820', valueBGColor: '#c9632c' },
+    downloadSpeed: { iconBGColor: '#3c4244', valueBGColor: '#4a5256' },
+    uploadSpeed: { iconBGColor: '#3c4244', valueBGColor: '#545a5e' },
+    peers: { iconBGColor: '#454b4f', valueBGColor: '#5a6166', fontColor: '#f1eff3' },
+    piecesCount: { iconBGColor: '#3c4244', valueBGColor: '#4a5256' },
+    piecesLength: { iconBGColor: '#454b4f', valueBGColor: '#5a6166' },
+    status: { iconBGColor: '#4a5256', valueBGColor: '#656f76' },
+    size: { iconBGColor: '#3c4244', valueBGColor: '#545a5e' },
+    category: { iconBGColor: '#454b4f', valueBGColor: '#5a6166' },
   },
 } as const
 

@@ -181,7 +181,14 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
   const handleChange = (_: React.SyntheticEvent, newValue: number) => setSelectedTab(newValue)
 
   return (
-    <StyledDialog open onClose={handleClose} fullScreen={fullScreen} fullWidth maxWidth='md' ref={ref}>
+    <StyledDialog
+      open
+      onClose={handleClose}
+      fullScreen={fullScreen}
+      fullWidth
+      maxWidth='md'
+      slotProps={{ paper: { ref } }}
+    >
       <SettingsHeader>
         <div>{t('SettingsDialog.Settings')}</div>
         <FormControlLabel

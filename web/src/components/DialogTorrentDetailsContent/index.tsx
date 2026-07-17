@@ -29,6 +29,7 @@ import {
   TorrentFilesSection,
   Divider,
   DetailsScrollBody,
+  DetailsDialogShell,
 } from './style'
 import { DownlodSpeedWidget, UploadSpeedWidget, PeersWidget, SizeWidget, StatusWidget, CategoryWidget } from './widgets'
 import TorrentFunctions from './TorrentFunctions'
@@ -170,7 +171,7 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
   }
 
   return (
-    <>
+    <DetailsDialogShell>
       <DialogHeader
         onClose={closeDialog}
         title={isDetailedCacheView ? t('DetailedCacheView.header') : t('TorrentDetails')}
@@ -343,6 +344,6 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
           </DialogContentGrid>
         )}
       </DetailsScrollBody>
-    </>
+    </DetailsDialogShell>
   )
 }

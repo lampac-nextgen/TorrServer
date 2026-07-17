@@ -33,6 +33,7 @@ import {
   Menu,
   MenuItem,
   useMediaQuery,
+  useTheme,
 } from '@mui/material'
 import axios from 'axios'
 import ptt from 'parse-torrent-title'
@@ -601,7 +602,7 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
         fullWidth
         maxWidth='xl'
         slots={{ transition: Transition }}
-        ref={detailedInfoDialogRef}
+        slotProps={{ paper: { ref: detailedInfoDialogRef } }}
       >
         <Suspense fallback={null}>
           <DialogTorrentDetailsContent closeDialog={closeDetailedInfo} torrent={torrent} />
@@ -646,6 +647,8 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
 
 export const StatusIndicator = ({ stat }: { stat?: number }) => {
   const { t } = useTranslation()
+  const theme = useTheme()
+  const isDark = theme.palette.mode === 'dark'
 
   const labels: Record<number, string> = {
     [GETTING_INFO]: t('TorrentGettingInfo'),
@@ -653,14 +656,6 @@ export const StatusIndicator = ({ stat }: { stat?: number }) => {
     [WORKING]: t('TorrentWorking'),
     [CLOSED]: t('TorrentClosed'),
     [IN_DB]: t('TorrentInDb'),
-  }
-
-  const colors: Record<number, 'info' | 'warning' | 'success' | 'error' | 'default'> = {
-    [GETTING_INFO]: 'info',
-    [PRELOAD]: 'warning',
-    [WORKING]: 'success',
-    [CLOSED]: 'error',
-    [IN_DB]: 'default',
   }
 
   if (stat == null || !labels[stat]) return null
@@ -671,12 +666,24 @@ export const StatusIndicator = ({ stat }: { stat?: number }) => {
       <Chip
         size='small'
         label={label}
-        color={colors[stat]}
-        variant='filled'
+        color='default'
+        variant='outlined'
         sx={{
-          height: 22,
-          fontSize: 12,
-          ...(stat === IN_DB && { bgcolor: '#323637', color: '#dee3e5' }),
+          height: 20,
+          fontSize: 10,
+          fontWeight: 500,
+          letterSpacing: 'normal',
+          ...(isDark
+            ? {
+                borderColor: 'rgba(255, 255, 255, 0.28)',
+                color: '#dee3e5',
+                bgcolor: 'rgba(0, 0, 0, 0.22)',
+              }
+            : {
+                borderColor: 'rgba(0, 0, 0, 0.23)',
+                color: 'rgba(0, 0, 0, 0.7)',
+                bgcolor: 'rgba(0, 0, 0, 0.04)',
+              }),
         }}
       />
     </span>

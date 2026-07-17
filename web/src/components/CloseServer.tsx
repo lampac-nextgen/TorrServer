@@ -37,7 +37,7 @@ export default function CloseServer({ isOffline, isLoading }: OfflineAwareProps)
         )}
       </StyledMenuButtonWrapper>
 
-      <StyledDialog open={open} onClose={closeDialog} ref={ref}>
+      <StyledDialog open={open} onClose={closeDialog} slotProps={{ paper: { ref } }}>
         <DialogTitle>{t('CloseServer?')}</DialogTitle>
         <DialogActions>
           <Button variant='outlined' onClick={closeDialog} color='secondary'>

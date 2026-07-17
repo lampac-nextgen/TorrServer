@@ -146,15 +146,17 @@ export const TorrentCardDescription = styled.div`
 
     .description-section-name {
       text-transform: uppercase;
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 500;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.3px;
       color: ${sectionLabelColor};
       min-width: 0;
 
       @media (max-width: 770px) {
-        font-size: 0.75rem;
-        line-height: 12px;
+        font-size: 0.5rem;
+        font-weight: 500;
+        line-height: 10px;
+        letter-spacing: 0.2px;
       }
     }
 
@@ -171,9 +173,9 @@ export const TorrentCardDescription = styled.div`
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       word-break: break-word;
-      font-size: 0.8125rem;
+      font-size: 0.75rem;
       font-weight: 400;
-      line-height: 1.3;
+      line-height: 1.25;
       letter-spacing: 0;
     }
 
@@ -196,12 +198,12 @@ export const TorrentCardDescription = styled.div`
       overflow: hidden;
       text-overflow: ellipsis;
       font-variant-numeric: tabular-nums;
-      font-size: 0.8125rem;
+      font-size: 0.75rem;
       font-weight: 400;
       line-height: 1.2;
 
       @media (max-width: 1260px), (max-height: 500px) {
-        font-size: 0.75rem;
+        font-size: 0.6875rem;
         margin-bottom: 0;
         margin-left: 0;
       }
@@ -210,11 +212,13 @@ export const TorrentCardDescription = styled.div`
     .description-torrent-title,
     .description-statistics-element-value {
       @media (max-width: 770px) {
-        font-size: 0.75rem;
+        font-size: 0.6rem;
+        font-weight: 400;
+        letter-spacing: 0;
       }
 
       @media (max-width: 410px) {
-        font-size: 0.75rem;
+        font-size: 9px;
       }
     }
   `}

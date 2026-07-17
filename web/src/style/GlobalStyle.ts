@@ -27,13 +27,13 @@ export default createGlobalStyle`
     -moz-osx-font-smoothing: grayscale;
     letter-spacing: normal;
     -webkit-tap-highlight-color: transparent;
+    font-synthesis: none;
 
     ${standaloneMedia(css`
       height: 100vh;
       height: 100dvh;
       /* Match browser web metrics — avoid PWA-only tight tracking */
       letter-spacing: normal;
-      font-synthesis: none;
     `)}
   }
 

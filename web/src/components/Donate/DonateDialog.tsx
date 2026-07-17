@@ -26,7 +26,7 @@ export default function DonateDialog({ onClose }: DonateDialogProps) {
       fullScreen={fullScreen}
       fullWidth
       maxWidth='xs'
-      ref={ref}
+      slotProps={{ paper: { ref } }}
     >
       <DialogTitle id='form-dialog-title'>{t('Donate')}</DialogTitle>
       <DialogContent>

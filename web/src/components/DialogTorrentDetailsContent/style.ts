@@ -1,5 +1,6 @@
 import { rgba } from 'polished'
 import styled, { css } from 'styled-components'
+import { standaloneMedia } from 'style/standaloneMedia'
 
 export const DialogContentGrid = styled.div`
   ${({
@@ -45,9 +46,10 @@ export const Poster = styled.div<{ $poster?: boolean }>`
             img {
               border-radius: 5px;
               height: 100%;
-              width: 100%;
+              width: auto;
               max-width: 100%;
-              object-fit: cover;
+              display: block;
+              margin: 0 auto;
             }
           `
         : css`
@@ -70,7 +72,21 @@ export const Poster = styled.div<{ $poster?: boolean }>`
       ${
         $poster
           ? css`
-              height: 200px;
+              height: 220px;
+              width: 100%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background: ${posterBGColor};
+
+              img {
+                height: 100%;
+                width: auto;
+                max-width: 100%;
+                object-fit: contain;
+                object-position: center center;
+                margin: 0;
+              }
             `
           : css`
               display: none;
@@ -189,12 +205,14 @@ export const SectionTitle = styled.div<{ $color?: string; $mb?: number }>`
     font-size: 20px;
     font-weight: 400;
     line-height: 1.2;
+    letter-spacing: normal;
     word-break: break-word;
     color: ${$color || titleFontColor};
 
     @media (max-width: 800px) {
-      font-size: 17px;
-      line-height: 1.2;
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1.25;
       ${$mb && `margin-bottom: ${$mb / 2}px`};
     }
   `}
@@ -330,14 +348,30 @@ export const Divider = styled.div`
   `}
 `
 
+export const DetailsDialogShell = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+`
+
 export const DetailsScrollBody = styled.div`
   ${({
     theme: {
       dialogTorrentDetailsContent: { torrentFilesSectionBGColor },
     },
   }) => css`
+    flex: 1 1 auto;
+    min-height: 0;
     overflow: auto;
-    min-height: 100%;
+    -webkit-overflow-scrolling: touch;
     background: ${torrentFilesSectionBGColor};
+    padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+
+    ${standaloneMedia(css`
+      padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px));
+    `)}
   `}
 `

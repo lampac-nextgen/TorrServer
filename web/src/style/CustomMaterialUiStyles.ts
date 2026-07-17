@@ -57,6 +57,9 @@ export const StyledDialog = styled(Dialog).attrs({
       border-radius: 0;
       font-family: 'Open Sans', sans-serif;
       letter-spacing: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
   `)}
 `

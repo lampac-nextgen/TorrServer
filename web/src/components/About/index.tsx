@@ -53,7 +53,7 @@ export default function AboutDialog() {
         aria-labelledby='form-dialog-title'
         fullScreen={fullScreen}
         maxWidth='xl'
-        ref={ref}
+        slotProps={{ paper: { ref } }}
       >
         <DialogWrapper>
           <HeaderSection>
