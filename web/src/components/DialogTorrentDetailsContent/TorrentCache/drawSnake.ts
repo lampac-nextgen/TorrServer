@@ -55,6 +55,8 @@ const strokeCell = (ctx: CanvasRenderingContext2D, size: number, color: string, 
 /**
  * Crisp HiDPI snake:
  * idle → fill → range (empty only) → borders → reader chrome → priority labels.
+ *
+ * Hierarchy: reader (playhead) > range > cached > idle.
  */
 export const drawSnake = ({
   ctx,
@@ -77,7 +79,9 @@ export const drawSnake = ({
     borderColor,
     completeColor,
     readerColor,
+    readerMarkColor,
     rangeColor,
+    rangeEmptyColor,
   } = settings
 
   ctx.clearRect(0, 0, canvasWidth, canvasHeight)
@@ -85,7 +89,8 @@ export const drawSnake = ({
 
   const pixelAlign = borderWidth % 2 === 1 ? 0.5 : 0
   const isDark = theme === 'dark'
-  const rangeEmptyBg = isDark ? 'rgba(240, 180, 138, 0.28)' : 'rgba(106, 90, 205, 0.16)'
+  const rangeIdle = rangeEmptyColor || (isDark ? 'rgba(205, 161, 132, 0.28)' : 'rgba(175, 166, 227, 0.35)')
+  const markColor = readerMarkColor || readerColor
 
   for (let i = 0; i < cells.length; i++) {
     const cell = cells[i] || { percentage: 0, priority: 0 }
@@ -103,8 +108,8 @@ export const drawSnake = ({
     ctx.save()
     ctx.translate(x, y)
 
-    // Body — never tint completed cells with range wash (that made green look teal).
-    const emptyColor = isReaderRange && !isCompleted && !inProgress ? rangeEmptyBg : backgroundColor
+    // Body — never wash completed cells with range tint (keeps green clean).
+    const emptyColor = isReaderRange && !isCompleted && !inProgress ? rangeIdle : backgroundColor
     fillProgress(
       ctx,
       pieceSize,
@@ -115,10 +120,12 @@ export const drawSnake = ({
 
     // Borders: reader > range > progress/complete > idle
     if (isReader) {
-      strokeCell(ctx, pieceSize, readerColor, isMini ? 3 : 3)
-      // Compact playhead mark (top edge), doesn't obscure fill/labels
-      ctx.fillStyle = readerColor
-      ctx.fillRect(2, 2, pieceSize - 4, Math.max(2, Math.round(pieceSize * 0.12)))
+      const line = isMini ? 3 : 3
+      strokeCell(ctx, pieceSize, readerColor, line)
+      // Thin playhead tick (black on light, accent on dark)
+      const tickH = Math.max(2, Math.round(pieceSize * 0.14))
+      ctx.fillStyle = markColor
+      ctx.fillRect(line, line, pieceSize - line * 2, tickH)
     } else if (isReaderRange) {
       strokeCell(ctx, pieceSize, rangeColor, 2)
     } else if (inProgress || isCompleted) {

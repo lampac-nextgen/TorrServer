@@ -8,29 +8,45 @@ export interface SnakePieceSettings {
   borderWidth: number
   pieceSize: number
   gapBetweenPieces: number
+  /** Idle cell outline */
   borderColor: string
+  /** Fully / partially cached fill */
   completeColor: string
+  /** Empty cell fill */
   backgroundColor: string
   progressColor: string
+  /** Playhead (reader) outline — black on light (classic), bright on dark */
   readerColor: string
-  readerFillColor?: string
+  /** Optional top playhead tick */
+  readerMarkColor?: string
+  /** Readahead / reader-range outline */
   rangeColor: string
+  /** Empty cells inside reader range */
+  rangeEmptyColor?: string
   cacheMaxHeight?: number
 }
 
+/**
+ * Color roles (classic TorrServer + clearer contrast):
+ * - idle: quiet outline, empty fill
+ * - cached: brand green fill + matching border
+ * - range: soft violet (light) / warm sand (dark) — window around playhead
+ * - reader: black on light (master), light red on dark — highest priority chrome
+ */
 export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePieceSettings>> = {
   dark: {
     default: {
       borderWidth: 1,
       pieceSize: 20,
       gapBetweenPieces: 4,
-      borderColor: rgba('#fff', 0.22),
+      borderColor: rgba('#fff', 0.18),
       completeColor: mainColors.dark.primary,
-      backgroundColor: '#2a3033',
-      progressColor: rgba('#fff', 0.15),
-      readerColor: '#ff5252',
-      readerFillColor: rgba('#ff5252', 0.65),
-      rangeColor: '#f0b48a',
+      backgroundColor: '#32383c',
+      progressColor: rgba('#fff', 0.12),
+      readerColor: '#ff8a80',
+      readerMarkColor: '#ff8a80',
+      rangeColor: '#cda184',
+      rangeEmptyColor: rgba('#cda184', 0.28),
     },
     mini: {
       cacheMaxHeight: 360,
@@ -41,9 +57,10 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       completeColor: mainColors.dark.primary,
       backgroundColor: '#3d4448',
       progressColor: '#5c6469',
-      readerColor: '#ff6b6b',
-      readerFillColor: rgba('#ff6b6b', 0.55),
-      rangeColor: '#f0b48a',
+      readerColor: '#e8e8e8',
+      readerMarkColor: '#e8e8e8',
+      rangeColor: '#cda184',
+      rangeEmptyColor: rgba('#cda184', 0.3),
     },
   },
   light: {
@@ -51,13 +68,15 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       borderWidth: 1,
       pieceSize: 20,
       gapBetweenPieces: 4,
-      borderColor: '#8fbfa8',
+      borderColor: '#d5ebe0',
       completeColor: mainColors.light.primary,
-      backgroundColor: '#e8f2ec',
+      backgroundColor: '#ffffff',
       progressColor: '#b3dfc9',
-      readerColor: '#b71c1c',
-      readerFillColor: rgba('#c62828', 0.5),
-      rangeColor: '#6a5acd',
+      // Classic master playhead — black reads clearly on green/white
+      readerColor: '#111111',
+      readerMarkColor: '#111111',
+      rangeColor: '#8b7fd4',
+      rangeEmptyColor: rgba('#afa6e3', 0.35),
     },
     mini: {
       cacheMaxHeight: 360,
@@ -66,11 +85,12 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       gapBetweenPieces: 6,
       borderColor: '#4db380',
       completeColor: mainColors.light.primary,
-      backgroundColor: '#ffffff',
+      backgroundColor: '#dbf2e8',
       progressColor: '#c8e6d7',
-      readerColor: '#b71c1c',
-      readerFillColor: rgba('#b71c1c', 0.45),
-      rangeColor: '#6a5acd',
+      readerColor: '#0a0a0a',
+      readerMarkColor: '#0a0a0a',
+      rangeColor: '#8b7fd4',
+      rangeEmptyColor: rgba('#afa6e3', 0.4),
     },
   },
 }
