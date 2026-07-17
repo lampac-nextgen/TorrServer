@@ -209,7 +209,9 @@
     "UseIINAHint": "Add IINA player button to torrent content list (macOS only)",
     "ViewedHistoryStorage": "Viewed History Storage:",
     "ViewedStorageHint": "Choose where to store viewed history",
-    "SettingsSaveFailed": "Failed to save settings"
+    "SettingsSaveFailed": "Failed to save settings",
+    "AppTabHint": "TMDB settings apply after Save (may restart the server). Player buttons save instantly in this browser.",
+    "MobileAppInstantHint": "These toggles save immediately in this browser — Save is not required."
   },
   "Size": "Size",
   "SpecialThanks": "Special Thanks",

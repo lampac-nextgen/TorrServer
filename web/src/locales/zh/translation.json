@@ -209,7 +209,9 @@
     "UseIINAHint": "将 IINA 播放器按钮添加到种子内容列表（仅 macOS）",
     "ViewedHistoryStorage": "查看历史存储：",
     "ViewedStorageHint": "存储查看历史记录的位置",
-    "SettingsSaveFailed": "保存设置失败"
+    "SettingsSaveFailed": "保存设置失败",
+    "AppTabHint": "TMDB 设置在保存后生效（可能重启服务器）。播放器按钮会立即保存在本浏览器中。",
+    "MobileAppInstantHint": "这些开关会立即保存在本浏览器中，无需点击保存。"
   },
   "Size": "大小",
   "SpecialThanks": "特别感谢",

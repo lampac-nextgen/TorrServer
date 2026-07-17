@@ -4,6 +4,7 @@ import axios, { isAxiosError } from 'axios'
 import {
   TextField,
   Button,
+  Chip,
   CircularProgress,
   Typography,
   IconButton,
@@ -41,7 +42,6 @@ import {
   ResultMain,
   ResultTitle,
   MetaBadges,
-  MetaBadge,
   ResultAction,
   Footer,
 } from './style'
@@ -472,9 +472,15 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
                       <ResultMain>
                         <ResultTitle>{item.Title}</ResultTitle>
                         <MetaBadges>
-                          <MetaBadge $tone='neutral'>{formattedSize}</MetaBadge>
-                          <MetaBadge $tone='seeds'>S {item.Seed || 0}</MetaBadge>
-                          <MetaBadge $tone='peers'>P {item.Peer || 0}</MetaBadge>
+                          <Chip size='small' label={formattedSize} variant='outlined' />
+                          <Chip
+                            size='small'
+                            label={`S ${item.Seed || 0}`}
+                            color='success'
+                            variant='outlined'
+                            sx={{ bgcolor: 'rgba(0, 167, 114, 0.12)' }}
+                          />
+                          <Chip size='small' label={`P ${item.Peer || 0}`} variant='outlined' />
                         </MetaBadges>
                       </ResultMain>
                       <ResultAction>

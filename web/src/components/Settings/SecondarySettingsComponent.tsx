@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import TextField from '@mui/material/TextField'
 import {
+  Alert,
   Box,
   Button,
   FormControlLabel,
@@ -14,32 +15,12 @@ import {
   Switch,
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
-import { styled } from '@mui/material/styles'
 import { useEffect, useMemo, useState } from 'react'
 import { getAppBasePath } from 'utils/publicUrl'
 import { buttonLoadingIcon } from 'utils/buttonLoading'
 
 import { SecondarySettingsContent, SettingSectionLabel } from './style'
 import type { BTSets, SettingsInputHandler } from 'types/api'
-
-// Create a styled status message component
-const StatusMessage = styled('div')<{ severity?: string }>(({ theme, severity }) => ({
-  padding: theme.spacing(1.5, 2),
-  marginTop: theme.spacing(1),
-  borderRadius: theme.shape.borderRadius,
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  backgroundColor:
-    severity === 'error' ? '#f44336' : severity === 'success' ? '#4caf50' : severity === 'info' ? '#2196f3' : '#ff9800',
-  color: 'white',
-  '& button': {
-    color: 'white',
-    minWidth: 'auto',
-    padding: '4px 8px',
-    marginLeft: theme.spacing(1),
-  },
-}))
 
 interface SecondarySettingsProps {
   settings?: BTSets
@@ -467,17 +448,30 @@ export default function SecondarySettingsComponent({ settings, inputForm }: Seco
         </Box>
 
         {storageStatus.message && (
-          <StatusMessage severity={storageStatus.type}>
-            <span>{storageStatus.message}</span>
-            <IconButton
-              aria-label={t('Close')}
-              onClick={() => setStorageStatus({ message: '', type: '' })}
-              size='small'
-              sx={{ color: 'inherit' }}
-            >
-              <CloseIcon fontSize='small' />
-            </IconButton>
-          </StatusMessage>
+          <Alert
+            severity={
+              storageStatus.type === 'error'
+                ? 'error'
+                : storageStatus.type === 'success'
+                  ? 'success'
+                  : storageStatus.type === 'info'
+                    ? 'info'
+                    : 'warning'
+            }
+            sx={{ mt: 1 }}
+            action={
+              <IconButton
+                aria-label={t('Close')}
+                onClick={() => setStorageStatus({ message: '', type: '' })}
+                size='small'
+                color='inherit'
+              >
+                <CloseIcon fontSize='small' />
+              </IconButton>
+            }
+          >
+            {storageStatus.message}
+          </Alert>
         )}
       </Box>
     </SecondarySettingsContent>

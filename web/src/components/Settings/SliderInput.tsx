@@ -35,13 +35,28 @@ const SliderTitle = styled.div`
   line-height: 1.35;
   margin-bottom: 4px;
   word-break: break-word;
+
+  @media (max-width: 600px) {
+    font-size: 12px;
+  }
 `
 
-const SliderRow = styled.div`
+const SliderRow = styled.div<{ $hasHint?: boolean }>`
   display: grid;
-  grid-template-columns: minmax(0, 1fr) ${VALUE_COL} ${HINT_COL};
+  grid-template-columns: ${({ $hasHint }) =>
+    $hasHint ? `minmax(0, 1fr) ${VALUE_COL} ${HINT_COL}` : `minmax(0, 1fr) ${VALUE_COL}`};
   column-gap: 10px;
   align-items: center;
+
+  @media (max-width: 600px) {
+    grid-template-columns: minmax(0, 1fr) minmax(5.25rem, 6.25rem);
+    column-gap: 8px;
+
+    /* Hint already shown in title on mobile — drop side column */
+    > :nth-child(3) {
+      display: none;
+    }
+  }
 `
 
 const ValueBox = styled.div`
@@ -114,7 +129,7 @@ export default function SliderInput({
     <SliderBlock>
       <SliderTitle>{title}</SliderTitle>
 
-      <SliderRow>
+      <SliderRow $hasHint={Boolean(valueHint)}>
         <Slider
           min={sliderMin}
           max={sliderMax}
@@ -155,7 +170,11 @@ export default function SliderInput({
           )}
         </ValueBox>
 
-        <HintBox>{valueHint ? <HintText>{valueHint}</HintText> : null}</HintBox>
+        {valueHint ? (
+          <HintBox>
+            <HintText>{valueHint}</HintText>
+          </HintBox>
+        ) : null}
       </SliderRow>
     </SliderBlock>
   )

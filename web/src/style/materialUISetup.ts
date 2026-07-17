@@ -172,6 +172,27 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
               variant: 'filled',
             },
           },
+          MuiChip: {
+            defaultProps: {
+              size: 'small',
+            },
+            styleOverrides: {
+              root: {
+                fontWeight: 500,
+              },
+              sizeSmall: {
+                height: 22,
+                fontSize: 11,
+              },
+            },
+          },
+          MuiToggleButton: {
+            styleOverrides: {
+              root: {
+                textTransform: 'none',
+              },
+            },
+          },
           MuiTypography: {
             styleOverrides: {
               h6: {

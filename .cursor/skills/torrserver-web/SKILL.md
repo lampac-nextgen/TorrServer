@@ -20,7 +20,7 @@ description: >-
 - Stay on MUI 6 — no MUI 7 unless asked.
 - Keep dual styling: MUI for buttons/dialogs/feedback; styled-components for shells/canvas/PWA.
 - File row: **all** player/copy/preload actions visible as equal outlined buttons — never a «⋯» menu.
-- Snake: poll `/cache` at **100ms**; skip unchanged; `memo`; **full-torrent** LOD (byte buckets), never crop to reader-only window; HiDPI bottom-up paint.
+- Snake: poll `/cache` at **100ms** (idle 400ms); skip unchanged; `memo`; **focus-window** around playhead (`buildFocusModel`, ~64–120 cells); HiDPI bottom-up paint. Optional full-torrent LOD (`buildCacheDrawModel`) is available but not the default UI path.
 - GStreamer: keep runtime React Query cache + probe cache in card; heartbeat `no-store`.
 - No lord-icon / Lottie for empty states — use `@mui/icons-material` + light CSS motion.
 - Relative asset base for Go embed (`./`). Do not break Basic Auth / API hosts in `utils/Hosts.ts`.
@@ -41,7 +41,7 @@ Remind user to restart server + hard refresh. Do not commit unless asked.
 | Toast / errors | `AppSnackbar` / `useAppToast` + MUI `Alert` |
 | Loading list | MUI `Skeleton` |
 | Buffer bar | MUI `LinearProgress` + Filled/Capacity (not preload target alone) |
-| Status | MUI `Chip` (`StatusIndicator`) |
+| Status | MUI `Chip` size=`small` (torrent card / widgets) |
 | Destructive | Confirm dialog; Cancel `autoFocus` |
 | Heavy dialogs | `React.lazy` + `Suspense`; do not static-import from always-mounted trees |
 | Code split | Keep vite `manualChunks`: `mui`, `hls`, `vendor` |
@@ -49,7 +49,8 @@ Remind user to restart server + hard refresh. Do not commit unless asked.
 ## Snake vs “cache”
 
 - Server torrent piece buffer UI = snake (`useUpdateCache` → `TorrentCache`).
-- Snake: full-torrent map + viewport LOD (`buildCacheDrawModel`); fetch equal-skip + `memo`; HiDPI bottom-up fill with reader/range priority.
+- Snake: sliding focus-window (`buildFocusModel`) centered on the primary reader; fetch equal-skip + `memo`; HiDPI bottom-up fill with reader/range priority.
+- `buildCacheDrawModel` (full-torrent byte buckets) remains for tests / future detailed LOD — do not treat docs that still say “full-torrent only” as current UI.
 
 ## Prompt for new chats
 

@@ -32,6 +32,7 @@ export default function MobileAppSettings() {
   return (
     <div>
       <SettingSectionLabel>{t('SettingsDialog.MobileAppSettings')}</SettingSectionLabel>
+      <FormHelperText sx={{ mb: 1, mt: 0 }}>{t('SettingsDialog.MobileAppInstantHint')}</FormHelperText>
       <FormGroup>
         <FormControlLabel
           control={

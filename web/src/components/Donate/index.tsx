@@ -1,9 +1,8 @@
 import { useState, lazy, Suspense } from 'react'
 import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
-import IconButton from '@mui/material/IconButton'
+import Alert from '@mui/material/Alert'
 import CreditCardIcon from '@mui/icons-material/CreditCard'
-import CloseIcon from '@mui/icons-material/Close'
 import CircularProgress from '@mui/material/CircularProgress'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
@@ -42,28 +41,29 @@ export default function DonateSnackbar() {
         }}
         open={snackbarOpen}
         onClose={disableSnackbar}
-        message={t('Donate?')}
-        action={
-          <>
+      >
+        <Alert
+          severity='info'
+          variant='filled'
+          onClose={disableSnackbar}
+          action={
             <Button
-              style={{ marginRight: '10px' }}
-              color='secondary'
+              color='inherit'
               size='small'
               onClick={() => {
                 setOpen(true)
                 disableSnackbar()
               }}
+              startIcon={<CreditCardIcon fontSize='small' />}
             >
-              <CreditCardIcon style={{ marginRight: '10px' }} fontSize='small' />
               {t('Support')}
             </Button>
-
-            <IconButton size='small' aria-label='close' color='inherit' onClick={disableSnackbar}>
-              <CloseIcon fontSize='small' />
-            </IconButton>
-          </>
-        }
-      />
+          }
+          icon={false}
+        >
+          {t('Donate?')}
+        </Alert>
+      </StyledSnackbar>
     </>
   )
 }

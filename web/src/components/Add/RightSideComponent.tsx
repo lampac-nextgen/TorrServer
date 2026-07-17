@@ -9,6 +9,7 @@ import {
   MenuItem,
   Select,
   TextField,
+  ToggleButton,
   useTheme,
   type SelectChangeEvent,
 } from '@mui/material'
@@ -237,17 +238,29 @@ export default function RightSideComponent({
           </PosterSuggestions>
 
           {currentLang !== 'en' && (
-            <PosterLanguageSwitch
-              onClick={() => {
-                const newLanguage = posterSearchLanguage === 'en' ? 'ru' : 'en'
-                setPosterSearchLanguage(newLanguage)
-                posterSearch(isCustomTitleEnabled ? title : originalTorrentTitle ? parsedTitle : title, newLanguage, {
-                  shouldRefreshMainPoster: true,
-                })
-              }}
-              $showbutton={isPosterUrlCorrect}
-            >
-              {posterSearchLanguage === 'en' ? 'EN' : 'RU'}
+            <PosterLanguageSwitch $showbutton={isPosterUrlCorrect}>
+              <ToggleButton
+                value={posterSearchLanguage}
+                selected
+                size='small'
+                color='secondary'
+                onClick={() => {
+                  const newLanguage = posterSearchLanguage === 'en' ? 'ru' : 'en'
+                  setPosterSearchLanguage(newLanguage)
+                  posterSearch(isCustomTitleEnabled ? title : originalTorrentTitle ? parsedTitle : title, newLanguage, {
+                    shouldRefreshMainPoster: true,
+                  })
+                }}
+                sx={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: '50%',
+                  border: 'none',
+                  fontWeight: 600,
+                }}
+              >
+                {posterSearchLanguage === 'en' ? 'EN' : 'RU'}
+              </ToggleButton>
             </PosterLanguageSwitch>
           )}
 

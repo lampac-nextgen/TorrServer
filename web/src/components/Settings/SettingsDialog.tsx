@@ -1,7 +1,7 @@
 import axios from 'axios'
 import Button from '@mui/material/Button'
 import Switch from '@mui/material/Switch'
-import { FormControlLabel, Snackbar, Alert, useMediaQuery, useTheme } from '@mui/material'
+import { FormControlLabel, FormHelperText, Snackbar, Alert, useMediaQuery, useTheme } from '@mui/material'
 import { settingsHost, gstSettingsHost } from 'utils/Hosts'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -12,6 +12,8 @@ import { StyledDialog } from 'style/CustomMaterialUiStyles'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import { readLocalBool, writeLocalJson } from 'utils/localPrefs'
 import { buttonLoadingIcon } from 'utils/buttonLoading'
+import { useOptionalAppToast } from 'components/Feedback/AppSnackbar'
+import { notifySettingsChanged } from 'utils/settingsEvents'
 
 import { SettingsHeader, FooterSection, Content, StyledTabs, StyledTab, SecondarySettingsContent } from './style'
 import defaultSettings from './defaultSettings'
@@ -30,14 +32,15 @@ interface SettingsDialogProps {
 
 export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
   const { t } = useTranslation()
+  const toast = useOptionalAppToast()
   const fullScreen = useMediaQuery('(max-width:930px)')
   const { direction } = useTheme()
 
   const [settings, setSettings] = useState<BTSets | undefined>()
   const [selectedTab, setSelectedTab] = useState(0)
-  const [cacheSize, setCacheSize] = useState(32)
-  const [cachePercentage, setCachePercentage] = useState(40)
-  const [preloadCachePercentage, setPreloadCachePercentage] = useState(0)
+  const [cacheSize, setCacheSize] = useState(defaultSettings.CacheSize ?? 64)
+  const [cachePercentage, setCachePercentage] = useState(defaultSettings.ReaderReadAHead ?? 95)
+  const [preloadCachePercentage, setPreloadCachePercentage] = useState(defaultSettings.PreloadCache ?? 50)
   const [isProMode, setIsProMode] = useState(readLocalBool('isProMode'))
   const [gstAvailable, setGstAvailable] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -98,6 +101,12 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
       sets.PreloadCache = preloadCachePercentage
       await axios.post(settingsHost(), { action: 'set', sets })
       clearTMDBCache()
+      notifySettingsChanged()
+      toast?.showToast({
+        message: t('SettingsDialog.StorageSettingsSaved'),
+        severity: 'success',
+        autoHideDuration: 4000,
+      })
       handleClose()
     } catch (e) {
       setSaveMsg(
@@ -106,6 +115,23 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleReset = async () => {
+    if (isGstTab) {
+      setSaving(true)
+      try {
+        await gstRef.current?.reset()
+      } finally {
+        setSaving(false)
+      }
+      return
+    }
+    setCacheSize(defaultSettings.CacheSize ?? 64)
+    setCachePercentage(defaultSettings.ReaderReadAHead ?? 95)
+    setPreloadCachePercentage(defaultSettings.PreloadCache ?? 50)
+    updateSettings(defaultSettings)
+    clearTMDBCache()
   }
 
   const inputForm: import('types/api').SettingsInputHandler = ({ target: { type, value, checked, id } }) => {
@@ -128,7 +154,6 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
     } else if (type === 'url' || type === 'text') {
       sets[id] = value
     } else if (!type && value !== undefined) {
-      // Fallback for custom handlers that don't provide type
       sets[id] = value
     }
     setSettings(sets)
@@ -244,6 +269,7 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
 
             <TabPanel value={selectedTab} index={tabApp} dir={direction}>
               <SecondarySettingsContent>
+                <FormHelperText sx={{ mb: 1.5, mt: 0 }}>{t('SettingsDialog.AppTabHint')}</FormHelperText>
                 <TMDBSettings settings={settings} updateSettings={updateSettings} />
                 <MobileAppSettings />
               </SecondarySettingsContent>
@@ -265,18 +291,7 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
           {t('Cancel')}
         </Button>
 
-        <Button
-          onClick={() => {
-            setCacheSize(defaultSettings.CacheSize ?? 64)
-            setCachePercentage(defaultSettings.ReaderReadAHead ?? 95)
-            setPreloadCachePercentage(defaultSettings.PreloadCache ?? 50)
-            updateSettings(defaultSettings)
-            // Clear TMDB cache when resetting to defaults
-            clearTMDBCache()
-          }}
-          color='secondary'
-          variant='outlined'
-        >
+        <Button onClick={handleReset} color='secondary' variant='outlined' disabled={saving}>
           {t('SettingsDialog.ResetToDefault')}
         </Button>
 

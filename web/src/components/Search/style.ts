@@ -185,35 +185,6 @@ export const MetaBadges = styled.div`
   align-items: center;
 `
 
-export const MetaBadge = styled.span<{ $tone?: 'neutral' | 'seeds' | 'peers' }>`
-  ${({
-    $tone = 'neutral',
-    theme: {
-      addDialog: { separatorColor },
-    },
-  }) => {
-    const tones = {
-      neutral: { bg: separatorColor },
-      seeds: { bg: 'rgba(0, 167, 114, 0.22)' },
-      peers: { bg: separatorColor },
-    }
-    const { bg } = tones[$tone]
-    return css`
-      display: inline-flex;
-      align-items: center;
-      height: 20px;
-      padding: 0 8px;
-      border-radius: 10px;
-      font-size: 11px;
-      font-variant-numeric: tabular-nums;
-      line-height: 1;
-      white-space: nowrap;
-      background: ${bg};
-      opacity: 0.95;
-    `
-  }}
-`
-
 export const ResultAction = styled.div`
   display: flex;
   align-items: center;

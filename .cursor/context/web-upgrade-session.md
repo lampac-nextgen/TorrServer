@@ -31,7 +31,7 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 5. **No React Router** (still SPA without client routes).
 6. **No Jackett/Prowlarr 1-click sync** in web polish scope.
 7. **File row actions:** all visible equal outlined buttons — **no «⋯» overflow menu** (Infuse / SenPlayer / IINA / Copy / Play / Preload).
-8. **Snake:** full-torrent map (no crop); viewport LOD + byte-accurate buckets; HiDPI bottom-up fill; reader/range on top; poll 100ms + memo + skip unchanged.
+8. **Snake:** focus-window around playhead (`buildFocusModel`); HiDPI bottom-up fill; reader/range on top; poll 100ms active / 400ms idle + memo + skip unchanged. Full-torrent LOD (`buildCacheDrawModel`) optional later — not default UI.
 9. **GStreamer:** keep React Query runtime cache (60s, invalidate on Settings save); keep in-card `audioTracksByFile` probe cache; heartbeat `cache: 'no-store'`.
 10. **Empty / offline UI:** MUI icons only — **no lord-icon** (removed script + base64).
 
@@ -44,7 +44,7 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 - `AppSnackbar` + `useAppToast` / `useOptionalAppToast`
 - Header toggles → `styled(IconButton)`
 - Lazy: Search / Add / Donate / MultiAddDialog; vite `manualChunks`: `mui`, `hls`, `vendor`
-- Cache poll 250ms + visibility pause + `inFlight` guard
+- Cache poll 100ms active / 400ms idle + visibility pause + `inFlight` guard
 - i18n: GStreamer + `Copied` / confirms / playback strings across locales
 
 ### Details / player / list
@@ -55,7 +55,7 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 - ShortTable: no hardcoded black
 - AddDialog: shared `['torrents']` query (no second 1s poll)
 - Search: no full-content loading overlay; Alert snackbars
-- TorrentList Skeleton; StatusIndicator → Chip
+- TorrentList Skeleton; StatusIndicator → MUI `Chip` (size small)
 - PWA sidebar overlay `top: 90px` under standalone
 - lord-icon removed → `CreateNewFolderOutlined` / `CloudOffOutlined` + CSS float on hover
 
@@ -114,6 +114,6 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 ## Open follow-ups (ask before doing)
 
 - Commit / PR for `feature/web-upgrade`
-- Speed snake poll to 100ms
 - MUI Drawer for mobile sidebar
-- Further Phase-3 Stack/DialogFooter cleanup
+- Optional: mini-snake on torrent cards; offline service worker
+- Long-term: merge dual theme (styled-components → MUI palette) before MUI 7

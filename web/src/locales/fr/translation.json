@@ -209,7 +209,9 @@
     "UseIINAHint": "Ajouter un bouton de lecteur IINA à la liste de contenu du torrent (macOS uniquement)",
     "ViewedHistoryStorage": "Stockage de l'historique des vues :",
     "ViewedStorageHint": "Choisissez où stocker l'historique des vues",
-    "SettingsSaveFailed": "Échec de l'enregistrement des paramètres"
+    "SettingsSaveFailed": "Échec de l'enregistrement des paramètres",
+    "AppTabHint": "Les paramètres TMDB s'appliquent après Enregistrer (redémarrage possible). Les boutons lecteurs s'enregistrent immédiatement dans ce navigateur.",
+    "MobileAppInstantHint": "Ces options s'enregistrent immédiatement dans ce navigateur — Enregistrer n'est pas nécessaire."
   },
   "Size": "Taille",
   "SpecialThanks": "Remerciements spéciaux",

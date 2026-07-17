@@ -41,7 +41,8 @@ export const DialogFooter = styled.div`
 
     @media (max-width: 500px) {
       padding: 12px;
-      flex-direction: column-reverse;
+      /* Keep DOM order: Cancel → Default → Save (primary at bottom for thumb reach) */
+      flex-direction: column;
       justify-content: stretch;
 
       .MuiButton-root {

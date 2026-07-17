@@ -25,6 +25,7 @@ import Dialog from '@mui/material/Dialog'
 import Slide from '@mui/material/Slide'
 import {
   Button,
+  Chip,
   DialogActions,
   DialogTitle,
   ListItemIcon,
@@ -55,7 +56,7 @@ import { buttonLoadingIcon } from 'utils/buttonLoading'
 const AddDialog = lazy(() => import('components/Add/AddDialog'))
 const DialogTorrentDetailsContent = lazy(() => import('components/DialogTorrentDetailsContent'))
 
-import { TorrentCard, TorrentCardButtons, TorrentCardDescription, TorrentCardPoster, StatusIndicators } from './style'
+import { TorrentCard, TorrentCardButtons, TorrentCardDescription, TorrentCardPoster } from './style'
 
 const Transition = forwardRef(function Transition(
   props: ComponentPropsWithoutRef<typeof Slide>,
@@ -653,12 +654,12 @@ export const StatusIndicator = ({ stat }: { stat?: number }) => {
     [IN_DB]: t('TorrentInDb'),
   }
 
-  const colors: Record<number, string> = {
-    [GETTING_INFO]: '#2196F3',
-    [PRELOAD]: '#FFC107',
-    [WORKING]: '#CDDC39',
-    [CLOSED]: '#E57373',
-    [IN_DB]: '#9E9E9E',
+  const colors: Record<number, 'info' | 'warning' | 'success' | 'error' | 'default'> = {
+    [GETTING_INFO]: 'info',
+    [PRELOAD]: 'warning',
+    [WORKING]: 'success',
+    [CLOSED]: 'error',
+    [IN_DB]: 'default',
   }
 
   if (stat == null || !labels[stat]) return null
@@ -666,7 +667,7 @@ export const StatusIndicator = ({ stat }: { stat?: number }) => {
 
   return (
     <span className='description-status-wrapper'>
-      <StatusIndicators $color={colors[stat]} title={label} aria-label={label} role='img' />
+      <Chip size='small' label={label} color={colors[stat]} variant='filled' sx={{ height: 22, fontSize: 11 }} />
     </span>
   )
 }

@@ -322,35 +322,14 @@ export const UpdatePosterButton = styled(Button)`
 `
 
 export const PosterLanguageSwitch = styled.div<{ $showbutton?: boolean }>`
-  ${({
-    $showbutton,
-    theme: {
-      addDialog: { languageSwitchBGColor, languageSwitchFontColor },
-    },
-  }) => css`
+  ${({ $showbutton }) => css`
     grid-area: poster;
     z-index: 5;
     position: absolute;
     top: 0;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 44px;
-    height: 44px;
-    background: ${languageSwitchBGColor};
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    color: ${languageSwitchFontColor};
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    -webkit-tap-highlight-color: transparent;
-
     ${!$showbutton && 'display: none'};
-
-    :hover {
-      filter: brightness(1.1);
-    }
   `}
 `
 

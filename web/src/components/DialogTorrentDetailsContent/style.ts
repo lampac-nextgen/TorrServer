@@ -124,11 +124,12 @@ export const CacheSection = styled.section`
     min-width: 0;
 
     @media (max-width: 800px) {
-      padding: 16px;
+      padding: 16px 12px;
     }
 
     @media (max-width: 420px) {
-      padding: 12px;
+      padding: 12px 10px;
+    }
     }
   `}
 `
@@ -146,7 +147,11 @@ export const TorrentFilesSection = styled.section`
     min-height: 100%;
 
     @media (max-width: 800px) {
-      padding: 20px;
+      padding: 16px 12px 20px;
+    }
+
+    @media (max-width: 420px) {
+      padding: 12px 10px 16px;
     }
   `}
 `

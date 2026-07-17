@@ -121,11 +121,10 @@ export const TorrentCardDescription = styled.div`
     border-radius: 5px;
     padding: 5px;
     display: grid;
-    grid-template-rows: 55% 1fr;
+    grid-template-rows: auto 1fr;
     gap: 10px;
 
     @media (max-width: 770px) {
-      grid-template-rows: 60% 1fr;
       gap: 3px;
     }
 
@@ -217,15 +216,5 @@ export const TorrentCardDescription = styled.div`
         font-size: 0.7rem;
       }
     }
-  `}
-`
-
-export const StatusIndicators = styled.div<{ $color?: string }>`
-  ${({ $color }) => css`
-    height: 8px;
-    width: 8px;
-    background-color: ${$color};
-    border-radius: 50%;
-    box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
   `}
 `

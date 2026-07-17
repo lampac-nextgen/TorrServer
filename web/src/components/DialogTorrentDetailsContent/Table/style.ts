@@ -215,21 +215,34 @@ export const ShortTable = styled.div<{ $isViewed?: boolean }>`
       }
 
       &-buttons {
-        padding: 20px;
+        padding: 12px;
         border-bottom: 2px solid ${$isViewed ? viewedPrimaryColor : defaultPrimaryColor};
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        align-items: center;
-        gap: 20px;
         background: ${shortTableButtonsBGColor};
 
+        .button-cell {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+          width: 100%;
+        }
+
         .MuiButton-root {
-          min-height: 44px;
+          min-height: 40px;
+          font-size: 12px;
+          padding: 6px 8px;
         }
 
         @media (max-width: 410px) {
-          gap: 10px;
-          grid-template-columns: 1fr;
+          padding: 10px;
+
+          .button-cell {
+            gap: 6px;
+          }
+
+          .MuiButton-root {
+            min-height: 36px;
+            font-size: 11px;
+          }
         }
       }
     }

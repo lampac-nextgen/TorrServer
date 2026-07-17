@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { cacheHost, settingsHost } from 'utils/Hosts'
 import axios from 'axios'
 import type { BTSets, TorrentCache } from 'types/api'
+import { SETTINGS_CHANGED_EVENT } from 'utils/settingsEvents'
 
 import { buildFocusModel, type CacheDrawModel } from './TorrentCache/buildCacheMap'
 
@@ -134,6 +135,14 @@ export const useCreateFocusMap = (cache: TorrentCache, visibleCells: number): Ca
 
 export const useGetSettings = () => {
   const [settings, setSettings] = useState<BTSets | undefined>()
+  const [tick, setTick] = useState(0)
+
+  useEffect(() => {
+    const onChanged = () => setTick(n => n + 1)
+    window.addEventListener(SETTINGS_CHANGED_EVENT, onChanged)
+    return () => window.removeEventListener(SETTINGS_CHANGED_EVENT, onChanged)
+  }, [])
+
   useEffect(() => {
     let cancelled = false
     axios.post(settingsHost(), { action: 'get' }).then(({ data }) => {
@@ -142,7 +151,7 @@ export const useGetSettings = () => {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [tick])
 
   return settings
 }

@@ -1,7 +1,7 @@
 import { NoImageIcon } from 'icons'
 import { humanizeSize, removeRedundantCharacters } from 'utils/Utils'
 import { useEffect, useState } from 'react'
-import { Button, ButtonGroup, LinearProgress, Stack, Typography } from '@mui/material'
+import { Button, ButtonGroup, Box, LinearProgress, Stack, Typography } from '@mui/material'
 import ptt from 'parse-torrent-title'
 import axios from 'axios'
 import { viewedHost } from 'utils/Hosts'
@@ -139,6 +139,8 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
     cacheDisplayTarget > 0 && Filled != null && Filled > 0
       ? Math.min(100, Math.round((Filled * 100) / cacheDisplayTarget))
       : null
+  const preloadMarkerPct =
+    Capacity && Capacity > 0 && preloadSize > 0 ? Math.min(100, Math.round((preloadSize * 100) / Capacity)) : null
 
   const getParsedTitle = () => {
     const newNameStringArr: Array<string | number> = []
@@ -254,27 +256,47 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
                     {`${humanizeSize(Filled || 0)} / ${humanizeSize(cacheDisplayTarget)}`}
                     {cacheFillPercent != null ? ` · ${cacheFillPercent}%` : ''}
                   </Typography>
-                  <LinearProgress
-                    variant='determinate'
-                    value={cacheFillPercent ?? 0}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-valuenow={cacheFillPercent ?? 0}
-                    sx={{
-                      height: 10,
-                      borderRadius: 1,
-                      border: `1px solid ${bufferTrackBorderColor}`,
-                      backgroundColor: bufferEmptyTrackColor,
-                      '& .MuiLinearProgress-bar': {
+                  <Box sx={{ position: 'relative' }}>
+                    <LinearProgress
+                      variant='determinate'
+                      value={cacheFillPercent ?? 0}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={cacheFillPercent ?? 0}
+                      sx={{
+                        height: 10,
                         borderRadius: 1,
-                        background: `linear-gradient(90deg, ${bufferTrailStartColor}, ${bufferTrailEndColor})`,
-                      },
-                    }}
-                  />
+                        border: `1px solid ${bufferTrackBorderColor}`,
+                        backgroundColor: bufferEmptyTrackColor,
+                        '& .MuiLinearProgress-bar': {
+                          borderRadius: 1,
+                          background: `linear-gradient(90deg, ${bufferTrailStartColor}, ${bufferTrailEndColor})`,
+                        },
+                      }}
+                    />
+                    {preloadMarkerPct != null && preloadMarkerPct > 0 && (
+                      <Box
+                        aria-hidden
+                        title={t('SettingsDialog.PreloadCache')}
+                        sx={{
+                          position: 'absolute',
+                          left: `${preloadMarkerPct}%`,
+                          top: -2,
+                          bottom: -2,
+                          width: 2,
+                          ml: '-1px',
+                          borderRadius: 1,
+                          bgcolor: bufferTrackBorderColor,
+                          boxShadow: `0 0 0 1px ${bufferEmptyTrackColor}`,
+                          pointerEvents: 'none',
+                        }}
+                      />
+                    )}
+                  </Box>
                 </Stack>
               </SectionHeader>
 
-              <TorrentCache isMini cache={cache} isSnakeDebugMode={isSnakeDebugMode} />
+              <TorrentCache mode='mini' cache={cache} isSnakeDebugMode={isSnakeDebugMode} />
               <Button
                 style={{ marginTop: '20px', width: '100%' }}
                 variant='outlined'

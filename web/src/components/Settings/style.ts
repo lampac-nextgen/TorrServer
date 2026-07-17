@@ -61,6 +61,12 @@ export const SettingsHeader = styled(StyledHeader)`
   grid-auto-flow: column;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+
+  @media (max-width: 420px) {
+    padding-inline: 12px;
+  }
 
   @media (max-width: 340px) {
     grid-auto-flow: row;
@@ -93,6 +99,7 @@ export const Content = styled.div<{ $isLoading?: boolean }>`
     background: ${contentBG};
     overflow: auto;
     flex: 1;
+    -webkit-overflow-scrolling: touch;
 
     ${
       $isLoading &&
@@ -102,17 +109,32 @@ export const Content = styled.div<{ $isLoading?: boolean }>`
         place-items: center;
       `
     }
+
+    @media (max-width: 600px) {
+      /* Keep first paint readable: section label + cache bar stay in view */
+      scroll-padding-top: 8px;
+    }
   `}
 `
 
 export const CacheLegendGrid = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 16px;
+  font-size: 12px;
+
+  @media (max-width: 600px) {
+    gap: 12px;
+    font-size: 12px;
+  }
+`
+
+export const CacheLegendItem = styled.div`
   display: grid;
   grid-template-columns: auto max-content minmax(0, 1fr);
   column-gap: 12px;
-  row-gap: 8px;
   align-items: start;
-  margin: 0 0 16px;
-  font-size: 12px;
 
   .cache-legend-value {
     white-space: nowrap;
@@ -126,9 +148,18 @@ export const CacheLegendGrid = styled.div`
   }
 
   @media (max-width: 600px) {
+    grid-template-columns: auto minmax(0, 1fr);
     column-gap: 10px;
-    row-gap: 8px;
-    font-size: 12px;
+    row-gap: 2px;
+
+    .cache-legend-value {
+      grid-column: 2;
+      white-space: normal;
+    }
+
+    .cache-legend-desc {
+      grid-column: 2;
+    }
   }
 `
 
@@ -337,7 +368,18 @@ export const CacheStorageSelector = styled.div`
 
   @media (max-width: 930px) {
     justify-content: start;
-    column-gap: 28px;
+    column-gap: 16px;
+  }
+
+  @media (max-width: 600px) {
+    column-gap: 10px;
+    row-gap: 6px;
+
+    .MuiToggleButton-root {
+      padding-top: 10px !important;
+      padding-bottom: 10px !important;
+      font-size: 12px;
+    }
   }
 `
 
@@ -367,34 +409,6 @@ export const SettingSectionLabel = styled.div`
   }
 `
 
-export const SettingsStatusMessage = styled.div<{ $severity?: string }>`
-  ${({ $severity }) => css`
-    padding: 12px 16px;
-    margin-top: 8px;
-    border-radius: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: #fff;
-    background-color: ${
-      $severity === 'error'
-        ? '#c82e3f'
-        : $severity === 'success'
-          ? '#00a572'
-          : $severity === 'info'
-            ? '#545a5e'
-            : '#cda184'
-    };
-
-    button {
-      color: #fff;
-      min-width: auto;
-      padding: 4px 8px;
-      margin-left: 8px;
-    }
-  `}
-`
-
 export const GstRuntimeStatusList = styled.div`
   display: grid;
   gap: 12px;
@@ -402,14 +416,27 @@ export const GstRuntimeStatusList = styled.div`
 `
 
 export const GstRuntimeStatusItem = styled.div<{ $ok?: boolean; $warn?: boolean }>`
-  ${({ $ok, $warn }) => css`
+  ${({
+    $ok,
+    $warn,
+    theme: {
+      settingsDialog: { cacheAfterReaderColor, cacheBeforeReaderColor, preloadCacheBorderColor },
+      addDialog: { separatorColor },
+    },
+  }) => css`
     display: flex;
     flex-direction: column;
     gap: 6px;
     padding: 12px 16px;
     border-radius: 5px;
-    border: 1px solid ${$ok ? '#88cdaa' : $warn ? '#cda184' : '#dee3e5'};
-    background: ${$ok ? 'rgba(136, 205, 170, 0.2)' : $warn ? 'rgba(205, 161, 132, 0.2)' : 'rgba(222, 227, 229, 0.35)'};
+    border: 1px solid ${$ok ? cacheAfterReaderColor : $warn ? '#cda184' : separatorColor};
+    background: ${
+      $ok
+        ? `color-mix(in srgb, ${cacheAfterReaderColor} 22%, transparent)`
+        : $warn
+          ? 'rgba(205, 161, 132, 0.2)'
+          : `color-mix(in srgb, ${cacheBeforeReaderColor} 18%, transparent)`
+    };
     font-size: 13px;
     line-height: 1.4;
 
@@ -432,7 +459,8 @@ export const GstRuntimeStatusItem = styled.div<{ $ok?: boolean; $warn?: boolean 
 
     .gst-status-error {
       font-size: 12px;
-      color: #545a5e;
+      color: ${preloadCacheBorderColor};
+      opacity: 0.75;
       word-break: break-word;
     }
   `}

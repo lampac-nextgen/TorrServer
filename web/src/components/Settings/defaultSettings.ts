@@ -36,6 +36,12 @@ const defaultSettings: BTSets = {
   SslKey: '',
   ShowFSActiveTorr: true,
   StoreSettingsInJson: true,
+  TMDBSettings: {
+    APIKey: '',
+    APIURL: 'https://api.themoviedb.org/3',
+    ImageURL: 'https://image.tmdb.org',
+    ImageURLRu: 'https://imagetmdb.com',
+  },
 }
 
 export default defaultSettings

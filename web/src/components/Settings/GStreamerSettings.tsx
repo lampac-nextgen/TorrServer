@@ -9,6 +9,7 @@ import {
   MenuItem,
   Switch,
   TextField,
+  Alert,
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { useCallback, useEffect, useImperativeHandle, useMemo, useState, forwardRef } from 'react'
@@ -24,7 +25,6 @@ import {
   GstSettingsContent,
   GstSubsectionLabel,
   SettingSectionLabel,
-  SettingsStatusMessage,
 } from './style'
 
 const GST_MIN_VERSION = 1.22
@@ -118,6 +118,7 @@ const componentStatusKind = (component?: GstComponentStatus | null) => {
 
 export interface GStreamerSettingsHandle {
   save: () => Promise<void>
+  reset: () => Promise<void>
 }
 
 const GStreamerSettings = forwardRef<GStreamerSettingsHandle>(function GStreamerSettings(_props, ref) {
@@ -214,9 +215,7 @@ const GStreamerSettings = forwardRef<GStreamerSettingsHandle>(function GStreamer
     }
   }, [gstSettingsUrl, gstVersionText, gstreamerSettings, queryClient, t])
 
-  useImperativeHandle(ref, () => ({ save: saveSettings }), [saveSettings])
-
-  const resetToDefaults = async () => {
+  const resetToDefaults = useCallback(async () => {
     setLoading(true)
     setStatus({ message: t('SettingsDialog.Saving'), type: 'info' })
 
@@ -254,7 +253,9 @@ const GStreamerSettings = forwardRef<GStreamerSettingsHandle>(function GStreamer
     } finally {
       setLoading(false)
     }
-  }
+  }, [defaults, gstSettingsUrl, queryClient, t])
+
+  useImperativeHandle(ref, () => ({ save: saveSettings, reset: resetToDefaults }), [saveSettings, resetToDefaults])
 
   const renderRuntimeStatus = (label: string, component?: GstComponentStatus | null) => {
     const kind = componentStatusKind(component)
@@ -627,17 +628,31 @@ const GStreamerSettings = forwardRef<GStreamerSettingsHandle>(function GStreamer
       </Box>
 
       {status.message && (
-        <SettingsStatusMessage $severity={status.type}>
-          <span>{status.message}</span>
-          <IconButton
-            type='button'
-            aria-label={t('Close')}
-            onClick={() => setStatus({ message: '', type: '' })}
-            size='small'
-          >
-            <CloseIcon fontSize='small' />
-          </IconButton>
-        </SettingsStatusMessage>
+        <Alert
+          severity={
+            status.type === 'error'
+              ? 'error'
+              : status.type === 'success'
+                ? 'success'
+                : status.type === 'info'
+                  ? 'info'
+                  : 'warning'
+          }
+          sx={{ mt: 1 }}
+          action={
+            <IconButton
+              type='button'
+              aria-label={t('Close')}
+              onClick={() => setStatus({ message: '', type: '' })}
+              size='small'
+              color='inherit'
+            >
+              <CloseIcon fontSize='small' />
+            </IconButton>
+          }
+        >
+          {status.message}
+        </Alert>
       )}
     </GstSettingsContent>
   )

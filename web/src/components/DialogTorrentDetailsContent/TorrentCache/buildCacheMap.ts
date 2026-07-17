@@ -239,13 +239,15 @@ export const resolveFocusWindow = (cache: TorrentCache, visibleCells: number): F
   const readers = cache.Readers || []
   let readerPiece = 0
   if (readers.length > 0) {
-    let minReader = piecesCount
+    // Prefer the furthest-ahead reader so preload/stream progress drives the window
+    // (min id stuck the view at piece 0 when dual preload readers exist).
+    let bestReader = -1
     for (const r of readers) {
-      if (r.Reader != null && r.Reader >= 0 && r.Reader < piecesCount && r.Reader < minReader) {
-        minReader = r.Reader
+      if (r.Reader != null && r.Reader >= 0 && r.Reader < piecesCount && r.Reader > bestReader) {
+        bestReader = r.Reader
       }
     }
-    readerPiece = minReader < piecesCount ? minReader : 0
+    readerPiece = bestReader >= 0 ? bestReader : 0
   }
 
   const pieceLength = cache.PiecesLength || 0

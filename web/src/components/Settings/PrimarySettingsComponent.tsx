@@ -1,14 +1,14 @@
 import { useTranslation } from 'react-i18next'
 import { USBIcon, RAMIcon } from 'icons'
-import { FormControlLabel, Switch } from '@mui/material'
+import { FormControlLabel, Switch, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import TextField from '@mui/material/TextField'
 import { useTheme } from 'styled-components'
 
 import {
   CacheLegendGrid,
+  CacheLegendItem,
   CacheLegendDot,
   MainSettingsContent,
-  StorageButton,
   StorageIconWrapper,
   CacheStorageSelector,
   SettingSectionLabel,
@@ -82,17 +82,21 @@ export default function PrimarySettingsComponent({
         </PreloadCachePercentage>
 
         <CacheLegendGrid>
-          <CacheLegendDot $color={cacheBeforeReaderColor} aria-hidden />
-          <div className='cache-legend-value'>
-            {100 - cachePercentage}% ({Math.round((cacheSize / 100) * (100 - cachePercentage))} {t('MB')})
-          </div>
-          <div className='cache-legend-desc'>{t('SettingsDialog.CacheBeforeReaderDesc')}</div>
+          <CacheLegendItem>
+            <CacheLegendDot $color={cacheBeforeReaderColor} aria-hidden />
+            <div className='cache-legend-value'>
+              {100 - cachePercentage}% ({Math.round((cacheSize / 100) * (100 - cachePercentage))} {t('MB')})
+            </div>
+            <div className='cache-legend-desc'>{t('SettingsDialog.CacheBeforeReaderDesc')}</div>
+          </CacheLegendItem>
 
-          <CacheLegendDot $color={cacheAfterReaderColor} aria-hidden />
-          <div className='cache-legend-value'>
-            {cachePercentage}% ({Math.round((cacheSize / 100) * cachePercentage)} {t('MB')})
-          </div>
-          <div className='cache-legend-desc'>{t('SettingsDialog.CacheAfterReaderDesc')}</div>
+          <CacheLegendItem>
+            <CacheLegendDot $color={cacheAfterReaderColor} aria-hidden />
+            <div className='cache-legend-value'>
+              {cachePercentage}% ({Math.round((cacheSize / 100) * cachePercentage)} {t('MB')})
+            </div>
+            <div className='cache-legend-desc'>{t('SettingsDialog.CacheAfterReaderDesc')}</div>
+          </CacheLegendItem>
         </CacheLegendGrid>
 
         <SliderInput
@@ -138,23 +142,28 @@ export default function PrimarySettingsComponent({
         <div>
           <CacheStorageLocationLabel />
 
-          <div style={{ display: 'grid', gridAutoFlow: 'column' }}>
-            <StorageButton $small onClick={() => updateSettings({ UseDisk: false })}>
+          <ToggleButtonGroup
+            exclusive
+            value='disk'
+            onChange={(_, value) => {
+              if (value === 'ram') updateSettings({ UseDisk: false })
+            }}
+            color='secondary'
+            sx={{ display: 'grid', gridAutoFlow: 'column', gap: 1, mb: 1 }}
+          >
+            <ToggleButton value='ram' sx={{ flexDirection: 'column', gap: 0.5, py: 1.5, textTransform: 'none' }}>
               <StorageIconWrapper $small>
                 <RAMIcon color={storageUnselectedIcon} />
               </StorageIconWrapper>
-
-              <div>{t('SettingsDialog.RAM')}</div>
-            </StorageButton>
-
-            <StorageButton $small $selected disabled aria-pressed='true'>
+              {t('SettingsDialog.RAM')}
+            </ToggleButton>
+            <ToggleButton value='disk' sx={{ flexDirection: 'column', gap: 0.5, py: 1.5, textTransform: 'none' }}>
               <StorageIconWrapper $small $selected>
                 <USBIcon color={storageSelectedIcon} />
               </StorageIconWrapper>
-
-              <div>{t('SettingsDialog.Disk')}</div>
-            </StorageButton>
-          </div>
+              {t('SettingsDialog.Disk')}
+            </ToggleButton>
+          </ToggleButtonGroup>
 
           <FormControlLabel
             control={
@@ -182,21 +191,34 @@ export default function PrimarySettingsComponent({
         <CacheStorageSelector>
           <CacheStorageLocationLabel style={{ placeSelf: 'start', gridArea: 'label' }} />
 
-          <StorageButton $selected disabled aria-pressed='true'>
-            <StorageIconWrapper $selected>
-              <RAMIcon color={storageSelectedIcon} />
-            </StorageIconWrapper>
-
-            <div>{t('SettingsDialog.RAM')}</div>
-          </StorageButton>
-
-          <StorageButton onClick={() => updateSettings({ UseDisk: true })}>
-            <StorageIconWrapper>
-              <USBIcon color={storageUnselectedIcon} />
-            </StorageIconWrapper>
-
-            <div>{t('SettingsDialog.Disk')}</div>
-          </StorageButton>
+          <ToggleButtonGroup
+            exclusive
+            value='ram'
+            onChange={(_, value) => {
+              if (value === 'disk') updateSettings({ UseDisk: true })
+            }}
+            color='secondary'
+            sx={{ display: 'contents' }}
+          >
+            <ToggleButton
+              value='ram'
+              sx={{ gridArea: 'ram', flexDirection: 'column', gap: 1, py: 2, textTransform: 'none', width: '100%' }}
+            >
+              <StorageIconWrapper $selected>
+                <RAMIcon color={storageSelectedIcon} />
+              </StorageIconWrapper>
+              {t('SettingsDialog.RAM')}
+            </ToggleButton>
+            <ToggleButton
+              value='disk'
+              sx={{ gridArea: 'disk', flexDirection: 'column', gap: 1, py: 2, textTransform: 'none', width: '100%' }}
+            >
+              <StorageIconWrapper>
+                <USBIcon color={storageUnselectedIcon} />
+              </StorageIconWrapper>
+              {t('SettingsDialog.Disk')}
+            </ToggleButton>
+          </ToggleButtonGroup>
         </CacheStorageSelector>
       )}
     </MainSettingsContent>
