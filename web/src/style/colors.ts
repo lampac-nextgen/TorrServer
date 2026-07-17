@@ -11,7 +11,6 @@ export const themeColors = {
     },
     torrentCard: {
       accentCardColor: '#337a57',
-      sectionLabelColor: 'rgba(0, 0, 0, 0.72)',
       buttonBGColor: rgba('#337a57', 0.5),
       cardPrimaryColor: '#00a572',
       cardSecondaryColor: '#74c39c',
@@ -20,7 +19,7 @@ export const themeColors = {
       posterBGColor: '#74c39c',
       gradientStartColor: '#e4f6ed',
       gradientEndColor: '#b5dec9',
-      cacheSectionBGColor: '#a8d4be',
+      cacheSectionBGColor: '#88cdaa',
       widgetFontColor: '#fff',
       titleFontColor: '#000',
       subNameFontColor: '#7c7b7c',
@@ -93,7 +92,6 @@ export const themeColors = {
     },
     torrentCard: {
       accentCardColor: '#323637',
-      sectionLabelColor: 'rgba(255, 255, 255, 0.72)',
       buttonBGColor: rgba('#323637', 0.5),
       cardPrimaryColor: '#545a5e',
       cardSecondaryColor: rgba('#dee3e5', 0.4),

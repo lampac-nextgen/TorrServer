@@ -5,12 +5,18 @@
  * Values follow master adaptive cuts (700 / 840 / 970 / 1100 / 1260 / 1450).
  */
 export const BP = {
-  /** Phones — densest typography / 2×2 actions */
+  /** Master: densest card button gap */
+  narrow: 340,
+  /** Master: densest card type */
+  micro: 410,
+  /** Phones — 2×2 file actions / densest UI */
   phone: 420,
   /** Forms densify (≈ MUI sm) */
   compact: 600,
   /** Shell drawer + torrent list 1-column (master) */
   mobile: 700,
+  /** Master torrent-card densify (poster/type) */
+  cardDense: 770,
   /** Details poster stack / padding densify (master 840) */
   tablet: 840,
   /** Dialog fullscreen (master MUI md ≈ 960) */

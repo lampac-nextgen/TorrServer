@@ -25,7 +25,8 @@ description: >-
 - No lord-icon / Lottie for empty states — use `@mui/icons-material` + light CSS motion.
 - Relative asset base for Go embed (`./`). Do not break Basic Auth / API hosts in `utils/Hosts.ts`.
 - Breakpoints: only `web/src/style/breakpoints.ts` (`BP` + `mediaMax` / `queryMax`). Shell/list 1-col = **`mobile` (700)**; dialog fullscreen = **`dialog` (960)**; details stack = **1450**. Do not hardcode px in `@media`.
-- **Three layers:** Universal (type/CDN Open Sans, palette, `100dvh`, `dialogPaperSx`) · Mobile (`mediaMax`/`queryMax` only) · PWA (`standaloneMedia` / `isStandaloneApp` for chrome only — no font overrides; no self-hosted woff2).
+- **Three layers:** Universal (type/CDN Open Sans 300/400/600, master letter-spacing `-0.1px`, palette, `100dvh`, `dialogPaperSx`) · Mobile (`mediaMax`/`queryMax` only) · PWA (`standaloneMedia` / `isStandaloneApp` for chrome only — PWA bands **90px** like master + safe-area; no self-hosted woff2).
+- Visual parity with master: do not invent theme colors, letter-spacing, card type sizes, or chrome heights unless fixing a real MUI6/safe-area bug.
 
 ## Workflow after UI changes that ship in the binary
 

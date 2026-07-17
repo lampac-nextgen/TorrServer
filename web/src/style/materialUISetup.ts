@@ -34,19 +34,6 @@ export const LAYOUT_LIST_3COL_MEDIA = queryMax('list3')
 
 const typography = {
   fontFamily: 'Open Sans, sans-serif',
-  letterSpacing: 'normal',
-  h6: {
-    letterSpacing: 'normal',
-  },
-  body1: {
-    letterSpacing: 'normal',
-  },
-  body2: {
-    letterSpacing: 'normal',
-  },
-  button: {
-    letterSpacing: 'normal',
-  },
 }
 
 export const darkTheme = createTheme({
@@ -260,16 +247,6 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
             styleOverrides: {
               h6: {
                 fontSize: '1rem',
-                fontWeight: 500,
-                letterSpacing: 'normal',
-              },
-              body1: {
-                fontSize: '0.875rem',
-                letterSpacing: 'normal',
-              },
-              body2: {
-                fontSize: '0.8125rem',
-                letterSpacing: 'normal',
               },
             },
           },

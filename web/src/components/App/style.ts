@@ -27,7 +27,6 @@ export const AppWrapper = styled.div<{ $isDrawerOpen?: boolean }>`
 
     ${mediaMax('mobile')} {
       grid-template-columns: 0 1fr;
-      grid-template-rows: calc(60px + env(safe-area-inset-top, 0px)) 1fr;
     }
 
     ${standaloneMedia(css`
@@ -66,22 +65,18 @@ export const AppHeader = styled.div`
       0px 4px 5px 0px rgb(0 0 0 / 14%),
       0px 1px 10px 0px rgb(0 0 0 / 12%);
     padding: 0 16px;
-    padding-top: env(safe-area-inset-top, 0px);
     z-index: 3;
     min-width: 0;
 
     ${mediaMax('mobile')} {
-      height: calc(60px + env(safe-area-inset-top, 0px));
+      height: 60px;
       box-sizing: border-box;
-      align-items: end;
-      padding-bottom: 8px;
     }
 
     ${standaloneMedia(css`
       grid-template-columns: max-content 1fr;
       align-items: end;
       padding: 7px 16px;
-      padding-top: calc(7px + env(safe-area-inset-top, 0px));
       position: fixed;
       top: 0;
       left: 0;
@@ -122,7 +117,7 @@ export const AppSidebarStyle = styled.div<{ $isDrawerOpen?: boolean }>`
 
     ${mediaMax('mobile')} {
       position: fixed;
-      top: calc(60px + env(safe-area-inset-top, 0px));
+      top: 60px;
       left: 0;
       bottom: 0;
       width: 240px;
@@ -163,15 +158,12 @@ export const TorrentListWrapper = styled.div`
 
   ${mediaMax('mobile')} {
     grid-template-columns: minmax(0, 1fr);
-    padding: 8px;
-    gap: 10px;
   }
 
   ${standaloneMedia(css`
     /* Grid row is already 1fr between header/footer — do not re-subtract chrome. */
     height: auto;
-    padding: 8px;
-    gap: 10px;
+    padding-bottom: 15px;
   `)}
 `
 
@@ -195,12 +187,12 @@ export const HeaderToggle = styled(IconButton)`
       }
 
       ${mediaMax('mobile')} {
-        width: 44px;
-        height: 44px;
+        width: 28px;
+        height: 28px;
         font-size: 12px;
 
         svg {
-          font-size: 20px;
+          font-size: 17px;
         }
       }
     }
@@ -213,7 +205,7 @@ export const SidebarOverlay = styled.div<{ $isDrawerOpen?: boolean }>`
   ${mediaMax('mobile')} {
     display: ${({ $isDrawerOpen }) => ($isDrawerOpen ? 'block' : 'none')};
     position: fixed;
-    top: calc(60px + env(safe-area-inset-top, 0px));
+    top: 60px;
     left: 0;
     right: 0;
     bottom: 0;

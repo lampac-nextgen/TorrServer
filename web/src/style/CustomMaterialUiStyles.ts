@@ -23,22 +23,12 @@ export const dialogPaperSx: SxProps<Theme> = {
 export const StyledMenuButtonWrapper = styled(ListItemButton)`
   ${standaloneMedia(css`
     width: 100%;
-    height: 100%;
-    min-height: 0;
+    height: 60px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     font-size: 10px;
-    font-weight: 400;
-    letter-spacing: normal;
-    text-transform: none;
-    padding: 2px 2px 4px !important;
-    font-family: inherit;
-
-    .MuiSvgIcon-root {
-      font-size: 22px;
-    }
   `)}
 `
 

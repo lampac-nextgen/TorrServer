@@ -6,8 +6,6 @@ export const ScrollNotification = styled.div<{ $themeType?: SnakeThemeMode }>`
   margin-top: 10px;
   text-transform: uppercase;
   align-self: center;
-  font-size: 12px;
-  letter-spacing: 0.04em;
   color: ${({ $themeType }) => ($themeType === 'dark' ? 'rgba(255, 255, 255, 0.55)' : 'rgba(0, 0, 0, 0.5)')};
 `
 

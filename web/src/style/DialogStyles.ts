@@ -4,16 +4,14 @@ import { mediaMax } from 'style/breakpoints'
 export const Header = styled.div`
   ${({ theme: { primary } }) => css`
     background: ${primary};
-    font-size: 18px;
     color: #fff;
-    font-weight: 500;
-    font-family: 'Open Sans', sans-serif;
-    letter-spacing: normal;
+    font-size: 20px;
+    font-weight: 600;
     box-shadow:
       0px 2px 4px -1px rgb(0 0 0 / 20%),
       0px 4px 5px 0px rgb(0 0 0 / 14%),
       0px 1px 10px 0px rgb(0 0 0 / 12%);
-    padding: 12px 16px;
+    padding: 15px 24px;
     position: relative;
   `}
 `
