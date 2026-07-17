@@ -52,7 +52,7 @@ const strokeCell = (ctx: CanvasRenderingContext2D, size: number, color: string, 
 }
 
 /**
- * Hierarchy: reader (amber) > range (violet/sand) > cached (green) > idle.
+ * Hierarchy: reader (black outline) > range (violet/sand) > cached (green) > idle.
  */
 export const drawSnake = ({
   ctx,
@@ -76,7 +76,6 @@ export const drawSnake = ({
     completeColor,
     readerColor,
     readerHaloColor,
-    readerMarkColor,
     rangeColor,
     rangeEmptyColor,
   } = settings
@@ -87,7 +86,6 @@ export const drawSnake = ({
   const pixelAlign = borderWidth % 2 === 1 ? 0.5 : 0
   const isDark = theme === 'dark'
   const rangeIdle = rangeEmptyColor || (isDark ? 'rgba(205, 161, 132, 0.28)' : 'rgba(175, 166, 227, 0.32)')
-  const markColor = readerMarkColor || readerColor
 
   for (let i = 0; i < cells.length; i++) {
     const cell = cells[i] || { percentage: 0, priority: 0 }
@@ -115,12 +113,9 @@ export const drawSnake = ({
     )
 
     if (isReader) {
-      // Halo + amber stroke — readable on green without harsh black
-      if (readerHaloColor) strokeCell(ctx, pieceSize, readerHaloColor, isMini ? 5 : 4)
-      strokeCell(ctx, pieceSize, readerColor, isMini ? 2.5 : 2.5)
-      const tickH = Math.max(2, Math.round(pieceSize * 0.12))
-      ctx.fillStyle = markColor
-      ctx.fillRect(3, 3, pieceSize - 6, tickH)
+      // Master-style square outline: optional light halo + black (or theme) stroke
+      if (readerHaloColor) strokeCell(ctx, pieceSize, readerHaloColor, isMini ? 4 : 3)
+      strokeCell(ctx, pieceSize, readerColor, isMini ? 2.5 : 2)
     } else if (isReaderRange) {
       strokeCell(ctx, pieceSize, rangeColor, 2)
     } else if (inProgress || isCompleted) {
@@ -137,7 +132,7 @@ export const drawSnake = ({
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
         const cx = pieceSize / 2
-        const cy = pieceSize / 2 + (isReader ? 1 : 0)
+        const cy = pieceSize / 2
         ctx.lineWidth = 3
         ctx.strokeStyle = isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.95)'
         ctx.strokeText(info, cx, cy)

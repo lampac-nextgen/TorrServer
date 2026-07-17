@@ -95,7 +95,7 @@ export default function PrimarySettingsComponent({
 
         <SliderInput
           isProMode={isProMode}
-          title={`${t('SettingsDialog.CacheSize')} — ${cacheSize} ${t('MB')}`}
+          title={t('SettingsDialog.CacheSize')}
           value={cacheSize}
           setValue={v => setCacheSize(v === '' ? cacheSize : v)}
           sliderMin={32}
@@ -109,7 +109,7 @@ export default function PrimarySettingsComponent({
 
         <SliderInput
           isProMode={isProMode}
-          title={`${t('SettingsDialog.ReaderReadAHead')} — ${cachePercentage}%`}
+          title={t('SettingsDialog.ReaderReadAHead')}
           value={cachePercentage}
           setValue={v => setCachePercentage(v === '' ? cachePercentage : v)}
           sliderMin={40}
@@ -121,7 +121,7 @@ export default function PrimarySettingsComponent({
 
         <SliderInput
           isProMode={isProMode}
-          title={`${t('SettingsDialog.PreloadCache')} — ${preloadCachePercentage}% (${preloadCacheSize} ${t('MB')})`}
+          title={t('SettingsDialog.PreloadCache')}
           value={preloadCachePercentage}
           setValue={v => setPreloadCachePercentage(v === '' ? preloadCachePercentage : v)}
           sliderMin={0}
@@ -129,6 +129,7 @@ export default function PrimarySettingsComponent({
           inputMin={0}
           inputMax={100}
           unit='%'
+          valueHint={`${preloadCacheSize} ${t('MB')}`}
         />
       </div>
 

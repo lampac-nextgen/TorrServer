@@ -168,7 +168,7 @@
     "RemoveCacheOnDropDesc": "Если отключено, кеш очищается при удалении торрента.",
     "RemoveRetrackers": "Удалять",
     "ReplaceRetrackers": "Заменять",
-    "ResetToDefault": "Настройки по умолчанию",
+    "ResetToDefault": "По умолчанию",
     "ResponsiveMode": "Включить быстрый режим чтения",
     "ResponsiveModeHint": "Получать данные торрента как можно быстрее для лучшего потокового воспроизведения",
     "RetrackersMode": "Ретрекеры",

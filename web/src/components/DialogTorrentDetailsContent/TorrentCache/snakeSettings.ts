@@ -12,11 +12,10 @@ export interface SnakePieceSettings {
   completeColor: string
   backgroundColor: string
   progressColor: string
-  /** Playhead outline — orange reads on green/white better than black. */
+  /** Playhead outline — black like master. */
   readerColor: string
-  /** Optional halo under reader stroke (contrast ring). */
+  /** Optional light ring so black stroke reads on dark green. */
   readerHaloColor?: string
-  readerMarkColor?: string
   rangeColor: string
   rangeEmptyColor?: string
   cacheMaxHeight?: number
@@ -24,7 +23,7 @@ export interface SnakePieceSettings {
 
 /**
  * Visual hierarchy:
- * 1. reader (playhead) — orange, highest contrast on green cache
+ * 1. reader (playhead) — black square outline
  * 2. range — violet / sand window
  * 3. cached — brand green
  * 4. idle — quiet empty
@@ -39,9 +38,8 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       completeColor: mainColors.dark.primary,
       backgroundColor: '#2e3438',
       progressColor: rgba('#fff', 0.12),
-      readerColor: '#ffb74d',
-      readerHaloColor: rgba('#000', 0.55),
-      readerMarkColor: '#ffb74d',
+      readerColor: '#0a0a0a',
+      readerHaloColor: rgba('#fff', 0.55),
       rangeColor: '#cda184',
       rangeEmptyColor: rgba('#cda184', 0.3),
     },
@@ -54,9 +52,8 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       completeColor: mainColors.dark.primary,
       backgroundColor: '#3a4145',
       progressColor: '#5c6469',
-      readerColor: '#ffb74d',
-      readerHaloColor: rgba('#000', 0.5),
-      readerMarkColor: '#ffb74d',
+      readerColor: '#0a0a0a',
+      readerHaloColor: rgba('#fff', 0.5),
       rangeColor: '#cda184',
       rangeEmptyColor: rgba('#cda184', 0.32),
     },
@@ -70,10 +67,8 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       completeColor: mainColors.light.primary,
       backgroundColor: '#ffffff',
       progressColor: '#b3dfc9',
-      // Amber playhead — clear on green fill, softer than black
-      readerColor: '#e65100',
-      readerHaloColor: rgba('#fff', 0.95),
-      readerMarkColor: '#e65100',
+      readerColor: '#000',
+      readerHaloColor: rgba('#fff', 0.9),
       rangeColor: '#7e6bc4',
       rangeEmptyColor: rgba('#afa6e3', 0.32),
     },
@@ -86,9 +81,8 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       completeColor: mainColors.light.primary,
       backgroundColor: '#f4faf7',
       progressColor: '#c8e6d7',
-      readerColor: '#e65100',
-      readerHaloColor: rgba('#fff', 0.95),
-      readerMarkColor: '#e65100',
+      readerColor: '#0a0a0a',
+      readerHaloColor: rgba('#fff', 0.9),
       rangeColor: '#7e6bc4',
       rangeEmptyColor: rgba('#afa6e3', 0.36),
     },

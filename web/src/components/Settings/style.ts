@@ -72,17 +72,30 @@ export const FooterSection = styled.div`
       settingsDialog: { footerBG },
     },
   }) => css`
-    padding: 20px;
-    display: grid;
-    grid-auto-flow: column;
-    justify-content: end;
+    padding: 16px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: stretch;
     gap: 10px;
-    align-items: center;
     background: ${footerBG};
 
+    .MuiButton-root {
+      min-height: 40px;
+      min-width: 128px;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
     @media (max-width: 500px) {
-      grid-auto-flow: row;
+      padding: 12px;
+      flex-direction: column-reverse;
       justify-content: stretch;
+
+      .MuiButton-root {
+        width: 100%;
+        min-width: 0;
+      }
     }
   `}
 `
@@ -157,12 +170,14 @@ export const CacheLegendDot = styled.span<{ $color?: string }>`
 
 export const MainSettingsContent = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 40px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 32px;
   padding: 20px;
+  align-items: start;
 
   @media (max-width: 930px) {
     grid-template-columns: 1fr;
+    gap: 28px;
   }
 
   @media (max-width: 600px) {
@@ -299,31 +314,40 @@ export const StorageButton = styled.div<{ $small?: boolean; $selected?: boolean 
 
 export const StorageIconWrapper = styled.div<{ $small?: boolean; $selected?: boolean }>`
   ${({ $selected, $small }) => css`
-    width: ${$small ? '60px' : '150px'};
-    height: ${$small ? '60px' : '150px'};
+    width: ${$small ? '56px' : '108px'};
+    height: ${$small ? '56px' : '108px'};
     border-radius: 50%;
     background: ${$selected ? '#323637' : '#dee3e5'};
+    display: grid;
+    place-items: center;
+    box-shadow: ${$selected ? '0 0 0 2px #323637, 0 0 0 4px rgba(50, 54, 55, 0.2)' : 'none'};
 
     svg {
-      transform: rotate(-45deg) scale(0.75);
+      transform: rotate(-45deg) scale(0.72);
     }
 
     @media (max-width: 930px) {
-      width: ${$small ? '50px' : '90px'};
-      height: ${$small ? '50px' : '90px'};
+      width: ${$small ? '48px' : '84px'};
+      height: ${$small ? '48px' : '84px'};
     }
   `}
 `
 
 export const CacheStorageSelector = styled.div`
   display: grid;
-  grid-template-rows: max-content 1fr;
-  grid-template-areas: 'label label';
-  place-items: center;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: max-content auto;
+  grid-template-areas:
+    'label label'
+    'ram disk';
+  align-content: start;
+  justify-items: center;
+  column-gap: 24px;
+  row-gap: 8px;
 
   @media (max-width: 930px) {
     justify-content: start;
-    column-gap: 30px;
+    column-gap: 28px;
   }
 `
 
