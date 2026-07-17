@@ -1,4 +1,5 @@
 import styled, { css } from 'styled-components'
+import { mediaMax } from 'style/breakpoints'
 
 export const Header = styled.div`
   ${({ theme: { primary } }) => css`
@@ -35,21 +36,27 @@ export const DialogFooter = styled.div`
     background: ${footerBG};
 
     .MuiButton-root {
-      min-height: 36px;
+      min-height: 44px;
       min-width: 96px;
       padding-left: 14px;
       padding-right: 14px;
     }
 
-    @media (max-width: 500px) {
+    ${mediaMax('compact')} {
       padding: 12px;
-      /* Keep DOM order: Cancel → Default → Save (primary at bottom for thumb reach) */
-      flex-direction: column;
-      justify-content: stretch;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+
+      /* Cancel | Reset on first row; Save full-width below (primary thumb reach) */
+      .MuiButton-root:last-child {
+        grid-column: 1 / -1;
+      }
 
       .MuiButton-root {
         width: 100%;
         min-width: 0;
+        min-height: 44px;
       }
     }
   `}

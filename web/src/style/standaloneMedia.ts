@@ -3,8 +3,8 @@ import { css } from 'styled-components'
 
 /**
  * CSS standalone rules must match JS `detectStandaloneApp()`.
- * `display-mode: standalone` covers most PWAs; `html[data-standalone='1']`
- * covers iOS `navigator.standalone` where the media query may not match.
+ * Use for layout/chrome only (display, height, safe-area padding).
+ * Do NOT put font-size / letter-spacing / font-family here — one type stack for all modes.
  */
 export const standaloneMedia = (styles: Interpolation<object>): RuleSet<object> => css`
   @media screen and (display-mode: standalone) {

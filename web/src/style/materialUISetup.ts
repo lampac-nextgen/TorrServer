@@ -2,7 +2,10 @@ import { createTheme, useMediaQuery, type PaletteMode, type Theme } from '@mui/m
 import { useEffect, useMemo, useState } from 'react'
 
 import { mainColors, themeColors } from './colors'
+import { BP, MEDIA_SHORT_VIEWPORT, queryMax } from './breakpoints'
 import './mui-augmentation'
+
+export { BP, mediaMax, queryMax, MEDIA_SHORT_VIEWPORT } from './breakpoints'
 
 export const THEME_MODES = {
   LIGHT: 'light',
@@ -13,17 +16,21 @@ export const THEME_MODES = {
 export type ThemePreference = (typeof THEME_MODES)[keyof typeof THEME_MODES]
 export type ResolvedThemeMode = typeof THEME_MODES.LIGHT | typeof THEME_MODES.DARK
 
-/** Shared layout breakpoint (matches MUI theme `md`). Shell drawer + single-column list. */
-export const LAYOUT_MOBILE_MAX = 930
-export const LAYOUT_MOBILE_MEDIA = `(max-width: ${LAYOUT_MOBILE_MAX}px)`
-
-/**
- * Dialog fullscreen cutoff (Apple-first).
- * Wider than shell mobile so iPad landscape (~1024–1100) gets fullscreen dialogs
- * while the torrent list can stay 2-column above 930.
- */
-export const LAYOUT_DIALOG_FULLSCREEN_MAX = 1100
-export const LAYOUT_DIALOG_FULLSCREEN_MEDIA = `(max-width: ${LAYOUT_DIALOG_FULLSCREEN_MAX}px)`
+/** Compat aliases — prefer `BP` / `mediaMax` / `queryMax`. */
+export const LAYOUT_PHONE_MAX = BP.phone
+export const LAYOUT_PHONE_MEDIA = queryMax('phone')
+export const LAYOUT_COMPACT_MAX = BP.compact
+export const LAYOUT_COMPACT_MEDIA = queryMax('compact')
+export const LAYOUT_MOBILE_MAX = BP.mobile
+export const LAYOUT_MOBILE_MEDIA = queryMax('mobile')
+export const LAYOUT_LIST_1COL_MAX = BP.mobile
+export const LAYOUT_LIST_1COL_MEDIA = queryMax('mobile')
+export const LAYOUT_LIST_2COL_MAX = BP.list2
+export const LAYOUT_LIST_2COL_MEDIA = queryMax('list2')
+export const LAYOUT_DIALOG_FULLSCREEN_MAX = BP.dialog
+export const LAYOUT_DIALOG_FULLSCREEN_MEDIA = queryMax('dialog')
+export const LAYOUT_LIST_3COL_MAX = BP.list3
+export const LAYOUT_LIST_3COL_MEDIA = queryMax('list3')
 
 const typography = {
   fontFamily: 'Open Sans, sans-serif',
@@ -91,9 +98,9 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
         breakpoints: {
           values: {
             xs: 0,
-            sm: 600,
-            md: 930,
-            lg: 1200,
+            sm: BP.compact,
+            md: BP.mobile,
+            lg: BP.list3,
             xl: 1536,
           },
         },
@@ -159,9 +166,9 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
                       fontSize: 18,
                     },
                   },
-                  '@media (max-width: 1260px), (max-height: 500px)': {
+                  [`@media ${queryMax('list3')}, ${MEDIA_SHORT_VIEWPORT}`]: {
                     justifyContent: 'center',
-                    fontSize: '0.65rem',
+                    fontSize: '0.75rem',
                     fontWeight: 400,
                     letterSpacing: '0.02em',
                     minHeight: 40,
@@ -170,13 +177,14 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
                       display: 'none',
                     },
                   },
-                  '@media (max-width: 770px)': {
-                    fontSize: '0.6rem',
+                  [`@media ${queryMax('mobile')}`]: {
+                    fontSize: '0.75rem',
                     fontWeight: 400,
                   },
-                  '@media (max-width: 420px)': {
-                    fontSize: '0.55rem',
-                    padding: '6px 4px',
+                  [`@media ${queryMax('phone')}`]: {
+                    fontSize: '0.75rem',
+                    fontWeight: 400,
+                    padding: '6px 8px',
                     minHeight: 40,
                   },
                 },
@@ -185,13 +193,27 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
           },
           MuiIconButton: {
             styleOverrides: {
+              root: {
+                [`@media ${queryMax('mobile')}`]: {
+                  minWidth: 44,
+                  minHeight: 44,
+                },
+              },
               sizeMedium: {
                 width: 36,
                 height: 36,
+                [`@media ${queryMax('mobile')}`]: {
+                  width: 44,
+                  height: 44,
+                },
               },
               sizeSmall: {
                 width: 32,
                 height: 32,
+                [`@media ${queryMax('mobile')}`]: {
+                  width: 44,
+                  height: 44,
+                },
               },
             },
           },

@@ -1,4 +1,5 @@
 import styled, { css } from 'styled-components'
+import { mediaMax } from 'style/breakpoints'
 
 const viewedIndicator = css`
   ${({
@@ -19,6 +20,7 @@ const viewedIndicator = css`
     }
   `}
 `
+
 export const TableStyle = styled.table`
   ${({
     theme: {
@@ -106,7 +108,7 @@ export const TableStyle = styled.table`
       }
     }
 
-    @media (max-width: 970px) {
+    ${mediaMax('shortTable')} {
       display: none;
     }
   `}
@@ -117,11 +119,11 @@ export const ShortTableWrapper = styled.div`
   gap: 20px;
   grid-template-columns: repeat(2, 1fr);
 
-  @media (max-width: 970px) {
+  ${mediaMax('shortTable')} {
     display: grid;
   }
 
-  @media (max-width: 820px) {
+  ${mediaMax('tablet')} {
     gap: 15px;
     grid-template-columns: 1fr;
   }
@@ -159,8 +161,9 @@ export const ShortTable = styled.div<{ $isViewed?: boolean }>`
         text-transform: uppercase;
         font-size: 13px;
         font-weight: 600;
+        word-break: break-word;
 
-        @media (max-width: 880px) {
+        ${mediaMax('tablet')} {
           font-size: 12px;
           padding: 10px;
         }
@@ -189,7 +192,7 @@ export const ShortTable = styled.div<{ $isViewed?: boolean }>`
           place-items: center;
           padding: 0 10px;
 
-          @media (max-width: 880px) {
+          ${mediaMax('tablet')} {
             font-size: 12px;
           }
         }
@@ -203,7 +206,7 @@ export const ShortTable = styled.div<{ $isViewed?: boolean }>`
           padding: 12px 10px;
           position: relative;
 
-          @media (max-width: 880px) {
+          ${mediaMax('tablet')} {
             font-size: 12px;
             padding: 10px 8px;
           }
@@ -231,12 +234,12 @@ export const ShortTable = styled.div<{ $isViewed?: boolean }>`
         }
 
         .MuiButton-root {
-          min-height: 40px;
+          min-height: 44px;
           font-size: 12px;
           padding: 6px 8px;
         }
 
-        @media (max-width: 410px) {
+        ${mediaMax('phone')} {
           padding: 10px;
 
           .button-cell {
@@ -244,7 +247,7 @@ export const ShortTable = styled.div<{ $isViewed?: boolean }>`
           }
 
           .MuiButton-root {
-            min-height: 36px;
+            min-height: 44px;
             font-size: 12px;
           }
         }

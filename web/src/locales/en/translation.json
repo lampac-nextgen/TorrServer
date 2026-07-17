@@ -49,8 +49,6 @@
     "header": "$t(DetailedCacheView.button)"
   },
   "Details": "Details",
-  "Donate?": "Want to donate?",
-  "Donate": "Donate",
   "Download": "Download",
   "DownloadPlaylist": "Download Playlist",
   "DownloadSpeed": "Download speed",
@@ -223,7 +221,7 @@
   "TorrentClosed": "Сlosed",
   "TorrentContent": "Torrent Content",
   "TorrentDetails": "Torrent Details",
-  "TorrentGettingInfo": "Getting info…",
+  "TorrentGettingInfo": "Getting Info",
   "TorrentInDb": "In DB",
   "TorrentPreload": "Preload",
   "TorrentSize": "Torrent size",

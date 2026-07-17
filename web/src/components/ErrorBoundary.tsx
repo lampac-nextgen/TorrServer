@@ -32,7 +32,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
     return (
       <div
         style={{
-          minHeight: '100vh',
+          minHeight: '100dvh',
           display: 'grid',
           placeItems: 'center',
           padding: 24,

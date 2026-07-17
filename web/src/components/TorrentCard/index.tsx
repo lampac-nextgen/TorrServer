@@ -21,11 +21,9 @@ import {
 import { getPeerString, humanizeSize, humanizeSpeed, removeRedundantCharacters } from 'utils/Utils'
 import { playlistTorrHost, streamHost, torrentsHost } from 'utils/Hosts'
 import { NoImageIcon } from 'icons'
-import Dialog from '@mui/material/Dialog'
 import Slide from '@mui/material/Slide'
 import {
   Button,
-  Chip,
   DialogActions,
   DialogTitle,
   ListItemIcon,
@@ -33,12 +31,11 @@ import {
   Menu,
   MenuItem,
   useMediaQuery,
-  useTheme,
 } from '@mui/material'
 import axios from 'axios'
 import ptt from 'parse-torrent-title'
 import { useTranslation } from 'react-i18next'
-import { StyledDialog } from 'style/CustomMaterialUiStyles'
+import { StyledDialog, dialogPaperSx } from 'style/CustomMaterialUiStyles'
 import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import { GETTING_INFO, IN_DB, CLOSED, PRELOAD, WORKING } from 'torrentStates'
@@ -58,7 +55,7 @@ import { buttonLoadingIcon } from 'utils/buttonLoading'
 const AddDialog = lazy(() => import('components/Add/AddDialog'))
 const DialogTorrentDetailsContent = lazy(() => import('components/DialogTorrentDetailsContent'))
 
-import { TorrentCard, TorrentCardButtons, TorrentCardDescription, TorrentCardPoster } from './style'
+import { TorrentCard, TorrentCardButtons, TorrentCardDescription, TorrentCardPoster, StatusIndicators } from './style'
 
 const Transition = forwardRef(function Transition(
   props: ComponentPropsWithoutRef<typeof Slide>,
@@ -453,7 +450,15 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
                   onClose={() => setAudioMenuAnchor(null)}
                   anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
                   transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-                  slotProps={{ paper: { style: { maxHeight: '65vh', width: 420, maxWidth: 'calc(100vw - 32px)' } } }}
+                  slotProps={{
+                    paper: {
+                      style: {
+                        maxHeight: 'min(65dvh, calc(100dvh - 160px))',
+                        width: 420,
+                        maxWidth: 'min(420px, calc(100% - 32px))',
+                      },
+                    },
+                  }}
                 >
                   {audioMenuTracks.map((track, ordinal) => {
                     const label = audioTrackLabel(track, ordinal)
@@ -497,7 +502,15 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
                 onClose={() => setEpisodeMenuAnchor(null)}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
                 transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-                slotProps={{ paper: { style: { maxHeight: '65vh', width: 420, maxWidth: 'calc(100vw - 32px)' } } }}
+                slotProps={{
+                  paper: {
+                    style: {
+                      maxHeight: 'min(65dvh, calc(100dvh - 160px))',
+                      width: 420,
+                      maxWidth: 'min(420px, calc(100% - 32px))',
+                    },
+                  },
+                }}
               >
                 {availablePlayers.map(player => (
                   <MenuItem
@@ -563,18 +576,18 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
 
         <TorrentCardDescription>
           <div className='description-title-wrapper'>
-            <div className='description-title-header'>
-              <div className='description-section-name'>
-                {category ? (catIndex >= 0 && catArray ? t(catArray.name) : category) : t('Name')}
-              </div>
-              <StatusIndicator stat={stat} />
+            <div className='description-section-name'>
+              {category ? (catIndex >= 0 && catArray ? t(catArray.name) : category) : t('Name')}
             </div>
             <div className='description-torrent-title'>{parsedTitle}</div>
           </div>
 
           <div className='description-statistics-wrapper'>
             <div className='description-statistics-element-wrapper'>
-              <div className='description-section-name'>{t('Size')}</div>
+              <div className='description-section-name'>
+                <StatusIndicator stat={stat} />
+                {t('Size')}
+              </div>
               <div className='description-statistics-element-value'>
                 {torrentSize != null && torrentSize > 0 && humanizeSize(torrentSize)}
               </div>
@@ -602,14 +615,14 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
         fullWidth
         maxWidth='xl'
         slots={{ transition: Transition }}
-        slotProps={{ paper: { ref: detailedInfoDialogRef } }}
+        slotProps={{ paper: { ref: detailedInfoDialogRef, sx: dialogPaperSx } }}
       >
         <Suspense fallback={null}>
           <DialogTorrentDetailsContent closeDialog={closeDetailedInfo} torrent={torrent} />
         </Suspense>
       </StyledDialog>
 
-      <Dialog open={isDeleteTorrentOpened} onClose={closeDeleteTorrentAlert}>
+      <StyledDialog open={isDeleteTorrentOpened} onClose={closeDeleteTorrentAlert}>
         <DialogTitle>{t('DeleteTorrent?')}</DialogTitle>
         <DialogActions>
           <Button variant='outlined' onClick={closeDeleteTorrentAlert} color='secondary' autoFocus>
@@ -627,7 +640,7 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
             {t('OK')}
           </Button>
         </DialogActions>
-      </Dialog>
+      </StyledDialog>
 
       {isEditDialogOpen && (
         <Suspense fallback={null}>
@@ -647,8 +660,6 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
 
 export const StatusIndicator = ({ stat }: { stat?: number }) => {
   const { t } = useTranslation()
-  const theme = useTheme()
-  const isDark = theme.palette.mode === 'dark'
 
   const labels: Record<number, string> = {
     [GETTING_INFO]: t('TorrentGettingInfo'),
@@ -658,34 +669,19 @@ export const StatusIndicator = ({ stat }: { stat?: number }) => {
     [IN_DB]: t('TorrentInDb'),
   }
 
+  const colors: Record<number, string> = {
+    [GETTING_INFO]: '#2196F3',
+    [PRELOAD]: '#FFC107',
+    [WORKING]: '#CDDC39',
+    [CLOSED]: '#E57373',
+    [IN_DB]: '#9E9E9E',
+  }
+
   if (stat == null || !labels[stat]) return null
-  const label = labels[stat]
 
   return (
     <span className='description-status-wrapper'>
-      <Chip
-        size='small'
-        label={label}
-        color='default'
-        variant='outlined'
-        sx={{
-          height: 20,
-          fontSize: 10,
-          fontWeight: 500,
-          letterSpacing: 'normal',
-          ...(isDark
-            ? {
-                borderColor: 'rgba(255, 255, 255, 0.28)',
-                color: '#dee3e5',
-                bgcolor: 'rgba(0, 0, 0, 0.22)',
-              }
-            : {
-                borderColor: 'rgba(0, 0, 0, 0.23)',
-                color: 'rgba(0, 0, 0, 0.7)',
-                bgcolor: 'rgba(0, 0, 0, 0.04)',
-              }),
-        }}
-      />
+      <StatusIndicators $color={colors[stat]} title={labels[stat]} aria-label={labels[stat]} role='img' />
     </span>
   )
 }

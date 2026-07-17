@@ -2,16 +2,17 @@ import styled, { css } from 'styled-components'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import { StyledHeader } from 'style/CustomMaterialUiStyles'
+import { mediaMax } from 'style/breakpoints'
 
 export const StyledTabs = styled(Tabs)`
   .MuiTabs-flexContainer {
-    @media (max-width: 600px) {
+    ${mediaMax('compact')} {
       gap: 0;
     }
   }
 
   .MuiTabs-scrollButtons {
-    @media (max-width: 600px) {
+    ${mediaMax('compact')} {
       width: 24px;
     }
   }
@@ -24,13 +25,13 @@ export const StyledTab = styled(Tab)`
   white-space: nowrap;
   flex-shrink: 0;
 
-  @media (max-width: 600px) {
+  ${mediaMax('compact')} {
     padding: 6px 12px;
     font-size: 12px;
     min-height: 44px;
   }
 
-  @media (max-width: 400px) {
+  ${mediaMax('phone')} {
     padding: 6px 8px;
     font-size: 12px;
   }
@@ -45,12 +46,12 @@ export const StyledTab = styled(Tab)`
   }
 
   .disabled-hint {
-    font-size: 9px;
+    font-size: 12px;
     opacity: 0.7;
     display: block;
     line-height: 1.1;
 
-    @media (max-width: 600px) {
+    ${mediaMax('compact')} {
       display: none;
     }
   }
@@ -63,12 +64,13 @@ export const SettingsHeader = styled(StyledHeader)`
   gap: 8px;
   min-width: 0;
 
-  @media (max-width: 420px) {
-    padding-inline: 12px;
-  }
-
-  @media (max-width: 340px) {
+  ${mediaMax('compact')} {
     grid-auto-flow: row;
+    padding-inline: 12px;
+
+    .MuiFormControlLabel-label {
+      font-size: 13px;
+    }
   }
 `
 
@@ -98,18 +100,19 @@ export const Content = styled.div<{ $isLoading?: boolean }>`
     background: ${contentBG};
     overflow: auto;
     flex: 1;
+    min-height: 0;
     -webkit-overflow-scrolling: touch;
 
     ${
       $isLoading &&
       css`
-        min-height: 500px;
+        min-height: min(500px, 50dvh);
         display: grid;
         place-items: center;
       `
     }
 
-    @media (max-width: 600px) {
+    ${mediaMax('compact')} {
       /* Keep first paint readable: section label + cache bar stay in view */
       scroll-padding-top: 8px;
     }
@@ -123,7 +126,7 @@ export const CacheLegendGrid = styled.div`
   margin: 0 0 16px;
   font-size: 12px;
 
-  @media (max-width: 600px) {
+  ${mediaMax('compact')} {
     gap: 12px;
     font-size: 12px;
   }
@@ -146,7 +149,7 @@ export const CacheLegendItem = styled.div`
     line-height: 1.45;
   }
 
-  @media (max-width: 600px) {
+  ${mediaMax('compact')} {
     grid-template-columns: auto minmax(0, 1fr);
     column-gap: 10px;
     row-gap: 2px;
@@ -170,7 +173,7 @@ export const CacheLegendDot = styled.span<{ $color?: string }>`
   background: ${({ $color }) => $color};
   margin-top: 2px;
 
-  @media (max-width: 600px) {
+  ${mediaMax('compact')} {
     width: 12px;
     height: 12px;
     margin-top: 3px;
@@ -184,12 +187,12 @@ export const MainSettingsContent = styled.div`
   padding: 20px;
   align-items: start;
 
-  @media (max-width: 930px) {
+  ${mediaMax('mobile')} {
     grid-template-columns: 1fr;
     gap: 28px;
   }
 
-  @media (max-width: 600px) {
+  ${mediaMax('compact')} {
     padding: 16px 12px;
     gap: 24px;
   }
@@ -200,14 +203,14 @@ export const MainSettingsContent = styled.div`
     justify-content: space-between;
     width: 100%;
 
-    @media (max-width: 600px) {
+    ${mediaMax('compact')} {
       flex-wrap: wrap;
       gap: 4px;
     }
   }
 
   .MuiFormControlLabel-label {
-    @media (max-width: 600px) {
+    ${mediaMax('compact')} {
       font-size: 14px;
       flex: 1;
       min-width: 0;
@@ -216,7 +219,7 @@ export const MainSettingsContent = styled.div`
   }
 
   .MuiFormHelperText-root {
-    @media (max-width: 600px) {
+    ${mediaMax('compact')} {
       font-size: 12px;
       margin-top: 2px;
     }
@@ -225,7 +228,7 @@ export const MainSettingsContent = styled.div`
 export const SecondarySettingsContent = styled.div`
   padding: 20px;
 
-  @media (max-width: 600px) {
+  ${mediaMax('compact')} {
     padding: 16px 12px;
   }
 
@@ -235,14 +238,14 @@ export const SecondarySettingsContent = styled.div`
     justify-content: space-between;
     width: 100%;
 
-    @media (max-width: 600px) {
+    ${mediaMax('compact')} {
       flex-wrap: wrap;
       gap: 4px;
     }
   }
 
   .MuiFormControlLabel-label {
-    @media (max-width: 600px) {
+    ${mediaMax('compact')} {
       font-size: 14px;
       flex: 1;
       min-width: 0;
@@ -251,20 +254,20 @@ export const SecondarySettingsContent = styled.div`
   }
 
   .MuiFormHelperText-root {
-    @media (max-width: 600px) {
+    ${mediaMax('compact')} {
       font-size: 12px;
       margin-top: 2px;
     }
   }
 
   .MuiInputLabel-root {
-    @media (max-width: 600px) {
+    ${mediaMax('compact')} {
       font-size: 14px;
     }
   }
 
   .MuiOutlinedInput-root {
-    @media (max-width: 600px) {
+    ${mediaMax('compact')} {
       font-size: 14px;
     }
   }
@@ -306,7 +309,7 @@ export const StorageIconWrapper = styled.div<{ $small?: boolean; $selected?: boo
       transform: rotate(-45deg) scale(0.72);
     }
 
-    @media (max-width: 930px) {
+    ${mediaMax('mobile')} {
       width: ${$small ? '44px' : '64px'};
       height: ${$small ? '44px' : '64px'};
     }
@@ -317,7 +320,7 @@ export const CacheStorageSelector = styled.div`
   ${({
     theme: {
       table: { outlinedButtonBorderColor },
-      settingsDialog: { cacheAfterReaderColor },
+      settingsDialog: { cacheAfterReaderColor, preloadCacheBorderColor },
     },
   }) => css`
     display: grid;
@@ -341,16 +344,16 @@ export const CacheStorageSelector = styled.div`
     }
 
     .MuiToggleButton-root.Mui-selected {
-      border-color: ${cacheAfterReaderColor} !important;
-      background-color: rgba(0, 165, 114, 0.08);
+      border-color: ${preloadCacheBorderColor} !important;
+      background-color: color-mix(in srgb, ${cacheAfterReaderColor} 14%, transparent);
     }
 
-    @media (max-width: 930px) {
+    ${mediaMax('mobile')} {
       justify-content: stretch;
       column-gap: 16px;
     }
 
-    @media (max-width: 600px) {
+    ${mediaMax('compact')} {
       column-gap: 10px;
       row-gap: 6px;
 
@@ -368,12 +371,12 @@ export const SettingSectionLabel = styled.div`
   font-weight: 500;
   padding-bottom: 10px;
 
-  @media (max-width: 600px) {
+  ${mediaMax('compact')} {
     font-size: 14px;
     padding-bottom: 8px;
   }
 
-  @media (max-width: 400px) {
+  ${mediaMax('phone')} {
     font-size: 13px;
     padding-bottom: 8px;
   }
@@ -383,7 +386,7 @@ export const SettingSectionLabel = styled.div`
     font-size: 12px;
     font-weight: 400;
 
-    @media (max-width: 600px) {
+    ${mediaMax('compact')} {
       font-size: 12px;
     }
   }

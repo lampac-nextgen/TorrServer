@@ -13,7 +13,7 @@ import { getTorrents } from 'utils/Utils'
 import parseTorrent from 'parse-torrent'
 import ptt from 'parse-torrent-title'
 import { DialogFooter } from 'style/DialogStyles'
-import { StyledDialog, StyledHeader } from 'style/CustomMaterialUiStyles'
+import { StyledDialog, StyledHeader, dialogPaperSx } from 'style/CustomMaterialUiStyles'
 import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import { buttonLoadingIcon } from 'utils/buttonLoading'
@@ -305,7 +305,7 @@ export default function AddDialog({
       fullScreen={fullScreen}
       fullWidth
       maxWidth='md'
-      slotProps={{ paper: { ref } }}
+      slotProps={{ paper: { ref, sx: dialogPaperSx } }}
     >
       <StyledHeader>{t(isEditMode ? 'EditTorrent' : 'AddNewTorrent')}</StyledHeader>
 

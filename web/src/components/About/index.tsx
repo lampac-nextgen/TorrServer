@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { useMediaQuery } from '@mui/material'
 import { echoHost } from 'utils/Hosts'
 import { publicUrl } from 'utils/publicUrl'
-import { StyledDialog, StyledMenuButtonWrapper } from 'style/CustomMaterialUiStyles'
+import { StyledDialog, StyledMenuButtonWrapper, dialogPaperSx } from 'style/CustomMaterialUiStyles'
 import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
 import { isStandaloneApp } from 'utils/Utils'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
@@ -53,7 +53,7 @@ export default function AboutDialog() {
         aria-labelledby='form-dialog-title'
         fullScreen={fullScreen}
         maxWidth='xl'
-        slotProps={{ paper: { ref } }}
+        slotProps={{ paper: { ref, sx: dialogPaperSx } }}
       >
         <DialogWrapper>
           <HeaderSection>
@@ -62,7 +62,7 @@ export default function AboutDialog() {
             <img src={publicUrl('icon.png')} alt='ts-icon' />
           </HeaderSection>
 
-          <div style={{ overflow: 'auto' }}>
+          <div style={{ overflow: 'auto', flex: 1, minHeight: 0, WebkitOverflowScrolling: 'touch' }}>
             <ThanksSection>{t('ThanksToEveryone')}</ThanksSection>
 
             <Section>

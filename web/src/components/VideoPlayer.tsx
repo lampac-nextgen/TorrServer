@@ -13,7 +13,10 @@ import {
   Typography,
   useMediaQuery,
 } from '@mui/material'
+import { mediaMax, queryMax } from 'style/breakpoints'
 import { keyframes, styled } from '@mui/material/styles'
+import styledSC, { css } from 'styled-components'
+import { standaloneMedia } from 'style/standaloneMedia'
 import CloseIcon from '@mui/icons-material/Close'
 import Forward10Icon from '@mui/icons-material/Forward10'
 import FullscreenIcon from '@mui/icons-material/Fullscreen'
@@ -29,8 +32,10 @@ import VolumeOffIcon from '@mui/icons-material/VolumeOff'
 import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import Hls from 'hls.js'
 import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
-import { StyledDialog } from 'style/CustomMaterialUiStyles'
-import { LAYOUT_MOBILE_MEDIA } from 'style/materialUISetup'
+import { StyledDialog, dialogPaperSx } from 'style/CustomMaterialUiStyles'
+import { DIALOG_SAFE_TOP } from 'components/App/PWAFooter/style'
+import { isStandaloneApp } from 'utils/Utils'
+import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import { useTranslation } from 'react-i18next'
 
 export interface VideoPlayerProps {
@@ -78,7 +83,7 @@ const PrettoSlider = styled(Slider)(({ theme }) => ({
   color: theme.palette.primary.main,
   height: 6,
   padding: '13px 0',
-  '@media (max-width: 930px)': {
+  [mediaMax('mobile')]: {
     height: 8,
     padding: '16px 0',
   },
@@ -88,7 +93,7 @@ const PrettoSlider = styled(Slider)(({ theme }) => ({
     backgroundColor: '#fff',
     border: '2px solid currentColor',
     // MUI v5+ centers the thumb with transform; do not use v4 margin offsets
-    '@media (max-width: 930px)': {
+    [mediaMax('mobile')]: {
       height: 20,
       width: 20,
     },
@@ -96,14 +101,14 @@ const PrettoSlider = styled(Slider)(({ theme }) => ({
   '& .MuiSlider-track': {
     height: 6,
     borderRadius: 4,
-    '@media (max-width: 930px)': {
+    [mediaMax('mobile')]: {
       height: 8,
     },
   },
   '& .MuiSlider-rail': {
     height: 6,
     borderRadius: 4,
-    '@media (max-width: 930px)': {
+    [mediaMax('mobile')]: {
       height: 8,
     },
   },
@@ -124,20 +129,32 @@ const pulse = keyframes`
   }
 `
 
-const PlayerHeader = styled(DialogTitle)(({ theme }) => ({
-  backgroundColor: theme.palette.primary.main,
-  color: theme.palette.primary.contrastText,
-  padding: theme.spacing(1, 2),
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-}))
+const PlayerHeader = styledSC(DialogTitle)`
+  ${({ theme }) => css`
+    && {
+      background-color: ${theme.primary};
+      color: #fff;
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    ${standaloneMedia(css`
+      && {
+        padding-top: calc(8px + ${DIALOG_SAFE_TOP});
+      }
+    `)}
+  `}
+`
 
 const PlayerIconButton = styled(IconButton)({
   color: '#fff',
   padding: 12,
+  minWidth: 44,
+  minHeight: 44,
   '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' },
-  '@media (max-width: 930px)': {
+  [mediaMax('mobile')]: {
     padding: 10,
   },
 })
@@ -156,7 +173,7 @@ const Controls = styled(Box)(({ theme }) => ({
   gap: theme.spacing(0.5),
   zIndex: 3,
   pointerEvents: 'auto',
-  '@media (max-width: 930px)': {
+  [mediaMax('mobile')]: {
     opacity: 1,
     padding: theme.spacing(0, 1, 2, 1),
     gap: theme.spacing(0),
@@ -197,8 +214,8 @@ const VideoEl = styled('video')({
   width: '100%',
   display: 'block',
   cursor: 'pointer',
-  '@media (max-width: 930px)': {
-    height: 'min(94.5vh, 100dvh)',
+  [mediaMax('dialog')]: {
+    height: 'min(94.5dvh, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 120px))',
     width: '100%',
     maxHeight: '100%',
     objectFit: 'contain',
@@ -221,7 +238,7 @@ const LoadingOverlay = styled(Box)({
 const TimeRow = styled(Box)(({ theme }) => ({
   color: '#fff',
   paddingLeft: theme.spacing(2),
-  [theme.breakpoints.down('sm')]: {
+  [mediaMax('compact')]: {
     paddingLeft: theme.spacing(1),
     fontSize: 12,
   },
@@ -243,7 +260,7 @@ const ControlRow = styled(Box)({
   flexWrap: 'wrap',
   columnGap: 0,
   rowGap: 2,
-  '@media (max-width: 930px)': {
+  [mediaMax('mobile')]: {
     justifyContent: 'flex-start',
   },
 })
@@ -289,7 +306,7 @@ const VideoPlayer = ({
   initiallyOpen = false,
   onClose,
 }: VideoPlayerProps) => {
-  const isMobile = useMediaQuery(LAYOUT_MOBILE_MEDIA)
+  const isMobile = useMediaQuery(queryMax('dialog'))
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const hlsRef = useRef<Hls | null>(null)
   const onNotSupportedRef = useRef(onNotSupported)
@@ -485,6 +502,7 @@ const VideoPlayer = ({
     setMediaError(false)
     onClose?.()
   }
+  const playerPaperRef = useOnStandaloneAppOutsideClick(closePlayer)
 
   const handleKey = useCallback(
     (e: globalThis.KeyboardEvent) => {
@@ -549,13 +567,13 @@ const VideoPlayer = ({
         maxWidth='lg'
         fullWidth
         fullScreen={isMobile}
-        slotProps={{
-          paper: {
-            sx: theme => ({
-              backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#fff',
-              borderRadius: theme.spacing(1),
-            }),
-          },
+        className={isStandaloneApp ? 'ts-immersive' : undefined}
+        slotProps={{ paper: { ref: playerPaperRef, sx: dialogPaperSx } }}
+        PaperProps={{
+          sx: theme => ({
+            backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#fff',
+            borderRadius: isMobile ? 0 : theme.spacing(1),
+          }),
         }}
       >
         <PlayerHeader>

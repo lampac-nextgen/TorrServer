@@ -1,30 +1,39 @@
 import { ListItemButton } from '@mui/material'
 import Dialog from '@mui/material/Dialog'
-import { pwaChromeBottom, pwaFooterHeight } from 'components/App/PWAFooter/style'
+import type { SxProps, Theme } from '@mui/material/styles'
+import { DIALOG_SAFE_TOP, pwaFooterChrome } from 'components/App/PWAFooter/style'
 import styled, { css } from 'styled-components'
 import { Header } from 'style/DialogStyles'
 import { isStandaloneApp } from 'utils/Utils'
 
 import { standaloneMedia } from './standaloneMedia'
 
-/** Footer / sidebar menu item — same Open Sans metrics as the rest of the app. */
+/** Flex column paper — scroll children use flex:1; min-height:0. */
+export const dialogPaperSx: SxProps<Theme> = {
+  display: 'flex',
+  flexDirection: 'column',
+  maxHeight: '100%',
+  overflow: 'hidden',
+}
+
+/**
+ * PWA footer tab — layout only (master).
+ * Inherit Open Sans from body; denser label for 4-up chrome.
+ */
 export const StyledMenuButtonWrapper = styled(ListItemButton)`
   ${standaloneMedia(css`
     width: 100%;
-    height: ${pwaFooterHeight}px;
-    min-height: ${pwaFooterHeight}px;
+    height: 60px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 2px;
-    padding: 4px 2px !important;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 400;
-    letter-spacing: 0;
-    line-height: 1.2;
+    letter-spacing: normal;
     text-transform: none;
+    padding: 4px 2px !important;
+    font-family: inherit;
 
     .MuiSvgIcon-root {
       font-size: 22px;
@@ -33,41 +42,27 @@ export const StyledMenuButtonWrapper = styled(ListItemButton)`
 `
 
 /**
- * PWA dialogs: hideBackdrop (master). Paper fills the area above the footer so
- * the torrent list cannot bleed through.
+ * PWA dialog: hideBackdrop + lift above footer.
+ * Immersive video: add class `ts-immersive` to drop footer margin.
  */
 export const StyledDialog = styled(Dialog).attrs({
   ...(isStandaloneApp && { hideBackdrop: true, transitionDuration: 0 }),
 })`
   ${standaloneMedia(css`
-    margin-bottom: ${pwaChromeBottom};
+    margin-bottom: ${pwaFooterChrome};
 
-    .MuiDialog-container {
-      height: 100%;
-      max-height: 100%;
-      align-items: stretch;
+    &.ts-immersive {
+      margin-bottom: 0;
     }
 
     .MuiDialog-container .MuiPaper-root {
       box-shadow: none;
-      height: 100% !important;
-      max-height: none !important;
-      width: 100%;
-      margin: 0 !important;
-      border-radius: 0;
-      font-family: 'Open Sans', sans-serif;
-      letter-spacing: 0;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
     }
   `)}
 `
 
 export const StyledHeader = styled(Header)`
   ${standaloneMedia(css`
-    padding-top: calc(10px + env(safe-area-inset-top, 0px));
-    font-family: 'Open Sans', sans-serif;
-    letter-spacing: 0;
+    padding-top: ${DIALOG_SAFE_TOP};
   `)}
 `

@@ -15,7 +15,7 @@ import {
 } from '@mui/material'
 import { Delete as DeleteIcon } from '@mui/icons-material'
 import { DialogFooter } from 'style/DialogStyles'
-import { StyledDialog, StyledHeader } from 'style/CustomMaterialUiStyles'
+import { StyledDialog, StyledHeader, dialogPaperSx } from 'style/CustomMaterialUiStyles'
 import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import { TORRENT_CATEGORIES } from 'components/categories'
@@ -223,7 +223,7 @@ export default function MultiAddDialog({ files, handleClose }: MultiAddDialogPro
       fullScreen={fullScreen}
       fullWidth
       maxWidth='md'
-      slotProps={{ paper: { ref } }}
+      slotProps={{ paper: { ref, sx: dialogPaperSx } }}
     >
       <StyledHeader>
         {t('AddNewTorrent')} ({newCount})

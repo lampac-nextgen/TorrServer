@@ -172,5 +172,7 @@ export const CategoryWidget = ({ data }: CategoryWidgetProps) => {
     )
   }
 
-  return null
+  return (
+    <StatisticsField title={t('Category')} value='—' iconBg={iconBGColor} valueBg={valueBGColor} icon={CategoryIcon} />
+  )
 }

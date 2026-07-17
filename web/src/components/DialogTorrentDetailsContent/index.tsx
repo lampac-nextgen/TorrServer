@@ -1,7 +1,7 @@
 import { NoImageIcon } from 'icons'
 import { humanizeSize, removeRedundantCharacters } from 'utils/Utils'
 import { useEffect, useState } from 'react'
-import { Button, ButtonGroup, Box, LinearProgress, Stack, Typography } from '@mui/material'
+import { Button, Box, LinearProgress, Stack, Typography } from '@mui/material'
 import ptt from 'parse-torrent-title'
 import axios from 'axios'
 import { viewedHost } from 'utils/Hosts'
@@ -29,14 +29,13 @@ import {
   TorrentFilesSection,
   Divider,
   DetailsScrollBody,
-  DetailsDialogShell,
 } from './style'
 import { DownlodSpeedWidget, UploadSpeedWidget, PeersWidget, SizeWidget, StatusWidget, CategoryWidget } from './widgets'
 import TorrentFunctions from './TorrentFunctions'
 import { isFilePlayable } from './helpers'
 
 const Loader = () => (
-  <div style={{ minHeight: '80vh', display: 'grid', placeItems: 'center' }}>
+  <div style={{ minHeight: 160, display: 'grid', placeItems: 'center', padding: 24 }}>
     <CircularProgress color='secondary' />
   </div>
 )
@@ -171,18 +170,14 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
   }
 
   return (
-    <DetailsDialogShell>
+    <>
       <DialogHeader
         onClose={closeDialog}
         title={isDetailedCacheView ? t('DetailedCacheView.header') : t('TorrentDetails')}
         {...(isDetailedCacheView && { onBack: () => setIsDetailedCacheView(false) })}
       />
 
-      <DetailsScrollBody
-        style={{
-          ...(isDetailedCacheView && { display: 'flex', flexDirection: 'column' }),
-        }}
-      >
+      <DetailsScrollBody>
         {isLoading ? (
           <Loader />
         ) : isDetailedCacheView ? (
@@ -250,7 +245,7 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
                   <Typography
                     component='div'
                     variant='body2'
-                    fontWeight={600}
+                    fontWeight={400}
                     textAlign='center'
                     aria-label={`${humanizeSize(Filled || 0)} / ${humanizeSize(cacheDisplayTarget)}`}
                   >
@@ -315,17 +310,18 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
               {(seasonAmount?.length ?? 0) > 1 && (
                 <>
                   <SectionSubName $mb={7}>{t('SelectSeason')}</SectionSubName>
-                  <ButtonGroup style={{ marginBottom: '30px', flexWrap: 'wrap', rowGap: 8 }} color='secondary'>
+                  <Stack direction='row' useFlexGap flexWrap='wrap' spacing={1} sx={{ mb: '30px' }}>
                     {seasonAmount!.map(season => (
                       <Button
                         key={season}
+                        color='secondary'
                         variant={selectedSeason === season ? 'contained' : 'outlined'}
                         onClick={() => setSelectedSeason(season)}
                       >
                         {season}
                       </Button>
                     ))}
-                  </ButtonGroup>
+                  </Stack>
 
                   <SectionTitle $mb={20}>
                     {t('Season')} {selectedSeason}
@@ -344,6 +340,6 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
           </DialogContentGrid>
         )}
       </DetailsScrollBody>
-    </DetailsDialogShell>
+    </>
   )
 }

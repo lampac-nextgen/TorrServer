@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { clearTMDBCache } from 'components/Add/helpers'
 import AppBar from '@mui/material/AppBar'
 import CircularProgress from '@mui/material/CircularProgress'
-import { StyledDialog } from 'style/CustomMaterialUiStyles'
+import { StyledDialog, dialogPaperSx } from 'style/CustomMaterialUiStyles'
 import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import { readLocalBool, writeLocalJson } from 'utils/localPrefs'
@@ -187,7 +187,7 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
       fullScreen={fullScreen}
       fullWidth
       maxWidth='md'
-      slotProps={{ paper: { ref } }}
+      slotProps={{ paper: { ref, sx: dialogPaperSx } }}
     >
       <SettingsHeader>
         <div>{t('SettingsDialog.Settings')}</div>

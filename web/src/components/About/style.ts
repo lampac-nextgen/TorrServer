@@ -1,10 +1,13 @@
 import styled, { css } from 'styled-components'
 import { standaloneMedia } from 'style/standaloneMedia'
+import { mediaMax } from 'style/breakpoints'
+import { DIALOG_SAFE_TOP } from 'components/App/PWAFooter/style'
 
 export const DialogWrapper = styled.div`
   height: 100%;
-  display: grid;
-  grid-template-rows: max-content 1fr max-content;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 `
 
 export const HeaderSection = styled.section`
@@ -19,7 +22,7 @@ export const HeaderSection = styled.section`
     width: 48px;
   }
 
-  @media (max-width: 930px) {
+  ${mediaMax('mobile')} {
     font-size: 18px;
     padding: 10px 16px;
 
@@ -29,22 +32,28 @@ export const HeaderSection = styled.section`
   }
 
   ${standaloneMedia(css`
-    padding-top: 24px;
+    padding-top: ${DIALOG_SAFE_TOP};
   `)}
 `
 
 export const ThanksSection = styled.section`
-  padding: 16px 20px;
-  text-align: center;
-  font-size: 15px;
-  font-weight: 400;
-  background: #e8e5eb;
-  color: #323637;
+  ${({
+    theme: {
+      aboutDialog: { bandBG, bandFontColor },
+    },
+  }) => css`
+    padding: 16px 20px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 400;
+    background: ${bandBG};
+    color: ${bandFontColor};
 
-  @media (max-width: 930px) {
-    font-size: 14px;
-    padding: 20px 16px;
-  }
+    ${mediaMax('mobile')} {
+      font-size: 14px;
+      padding: 20px 16px;
+    }
+  `}
 `
 
 export const Section = styled.section`
@@ -64,27 +73,33 @@ export const Section = styled.section`
   > div {
     display: grid;
     gap: 10px;
-    grid-template-columns: repeat(4, max-content);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
 
-    @media (max-width: 930px) {
-      grid-template-columns: repeat(3, 1fr);
+    ${mediaMax('tablet')} {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
-    @media (max-width: 780px) {
-      grid-template-columns: repeat(2, 1fr);
+    ${mediaMax('mobile')} {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    @media (max-width: 550px) {
+    ${mediaMax('compact')} {
       grid-template-columns: 1fr;
     }
   }
 `
 
 export const FooterSection = styled.div`
-  padding: 20px;
-  display: flex;
-  justify-content: flex-end;
-  background: #e8e5eb;
+  ${({
+    theme: {
+      aboutDialog: { bandBG },
+    },
+  }) => css`
+    padding: 20px;
+    display: flex;
+    justify-content: flex-end;
+    background: ${bandBG};
+  `}
 `
 
 export const LinkWrapper = styled.a<{ $isLink?: boolean }>`
@@ -100,6 +115,7 @@ export const LinkWrapper = styled.a<{ $isLink?: boolean }>`
     background: #545a5e;
     color: #f1eff3;
     transition: 0.2s;
+    min-width: 0;
 
     > * {
       transition: 0.2s;

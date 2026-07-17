@@ -1,6 +1,7 @@
 import { InputAdornment, OutlinedInput, Slider } from '@mui/material'
 import { useRef, type ChangeEvent, type FocusEvent } from 'react'
 import styled from 'styled-components'
+import { mediaMax } from 'style/breakpoints'
 
 interface SliderInputProps {
   isProMode?: boolean
@@ -36,7 +37,7 @@ const SliderTitle = styled.div`
   margin-bottom: 4px;
   word-break: break-word;
 
-  @media (max-width: 600px) {
+  ${mediaMax('compact')} {
     font-size: 12px;
   }
 `
@@ -48,7 +49,7 @@ const SliderRow = styled.div<{ $hasHint?: boolean }>`
   column-gap: 10px;
   align-items: center;
 
-  @media (max-width: 600px) {
+  ${mediaMax('compact')} {
     grid-template-columns: minmax(0, 1fr) minmax(4.5rem, 5.5rem);
     column-gap: 6px;
 

@@ -1,3 +1,4 @@
+import { mediaMax } from 'style/breakpoints'
 import styled, { css } from 'styled-components'
 
 export const MainSectionButtonGroup = styled.div`
@@ -28,7 +29,7 @@ export const MainSectionButtonGroup = styled.div`
     padding-bottom: 8px;
   }
 
-  @media (max-width: 880px) {
+  ${mediaMax('mobile')} {
     grid-template-columns: 1fr;
   }
 `
@@ -41,13 +42,14 @@ export const SmallLabel = styled.div<{ $mb?: number }>`
     },
   }) => css`
     ${$mb && `margin-bottom: ${$mb}px`};
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 400;
     line-height: 1.2;
     color: ${fontColor};
 
-    @media (max-width: 800px) {
-      font-size: 12px;
+    ${mediaMax('mobile')} {
+      font-size: 13px;
+      font-weight: 400;
       ${$mb && `margin-bottom: ${$mb / 1.5}px`};
     }
   `}

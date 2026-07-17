@@ -1,3 +1,4 @@
+import { mediaMax } from 'style/breakpoints'
 import styled, { css } from 'styled-components'
 
 export const DetailedViewWidgetSection = styled.section`
@@ -9,7 +10,7 @@ export const DetailedViewWidgetSection = styled.section`
     padding: 40px;
     background: linear-gradient(145deg, ${gradientStartColor}, ${gradientEndColor});
 
-    @media (max-width: 800px) {
+    ${mediaMax('mobile')} {
       padding: 20px;
     }
   `}
@@ -26,7 +27,7 @@ export const DetailedViewCacheSection = styled.section`
     background: ${cacheSectionBGColor};
     flex: 1;
 
-    @media (max-width: 800px) {
+    ${mediaMax('mobile')} {
       padding: 20px;
     }
   `}

@@ -14,6 +14,7 @@ Locked:
 - No Vue, no MUI 7, no full Emotion rewrite, no FileRow ⋯ menu
 - Snake poll 100ms + memo + sparse/downsample (see context); GStreamer probe/runtime caches stay
 - No lord-icon; empty/offline = MUI icons
+- Layers: Universal (CDN Open Sans, no self-host woff2) · Mobile (breakpoints only) · PWA (standaloneMedia chrome only)
 - Do not commit unless I ask
 
 Reply in Russian when I write in Russian. Code/comments in English.

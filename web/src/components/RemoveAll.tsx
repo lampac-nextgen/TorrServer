@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogTitle } from '@mui/material'
+import { Button, DialogActions, DialogTitle } from '@mui/material'
 import ListItemButton from '@mui/material/ListItemButton'
 import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
@@ -6,6 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import { useState } from 'react'
 import { torrentsHost } from 'utils/Hosts'
 import { useTranslation } from 'react-i18next'
+import { StyledDialog } from 'style/CustomMaterialUiStyles'
 import type { OfflineAwareProps } from 'types/api'
 
 import UnsafeButton from './UnsafeButton'
@@ -37,7 +38,7 @@ export default function RemoveAll({ isOffline, isLoading }: OfflineAwareProps) {
         <ListItemText primary={t('RemoveAll')} />
       </ListItemButton>
 
-      <Dialog open={open} onClose={closeDialog}>
+      <StyledDialog open={open} onClose={closeDialog}>
         <DialogTitle>{t('DeleteTorrents?')}</DialogTitle>
         <DialogActions>
           <Button variant='outlined' onClick={closeDialog} color='secondary'>
@@ -58,7 +59,7 @@ export default function RemoveAll({ isOffline, isLoading }: OfflineAwareProps) {
             {t('OK')}
           </UnsafeButton>
         </DialogActions>
-      </Dialog>
+      </StyledDialog>
     </>
   )
 }

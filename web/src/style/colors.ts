@@ -78,6 +78,10 @@ export const themeColors = {
       storageSelectedIcon: '#dee3e5',
       storageUnselectedIcon: '#323637',
     },
+    aboutDialog: {
+      bandBG: '#e8e5eb',
+      bandFontColor: '#323637',
+    },
   },
   dark: {
     app: {
@@ -155,6 +159,10 @@ export const themeColors = {
       storageUnselectedBG: rgba('#545a5e', 0.9),
       storageSelectedIcon: '#dee3e5',
       storageUnselectedIcon: '#323637',
+    },
+    aboutDialog: {
+      bandBG: '#3c4244',
+      bandFontColor: '#f1eff3',
     },
   },
 }

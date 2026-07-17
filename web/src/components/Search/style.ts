@@ -1,5 +1,6 @@
 import styled, { css } from 'styled-components'
 import { DialogFooter } from 'style/DialogStyles'
+import { mediaMax } from 'style/breakpoints'
 
 export const Content = styled.div`
   ${({
@@ -15,7 +16,7 @@ export const Content = styled.div`
     min-height: 0;
     max-height: calc(100dvh - 160px);
 
-    @media (max-width: 930px) {
+    ${mediaMax('mobile')} {
       max-height: none;
       flex: 1 1 auto;
     }
@@ -29,7 +30,7 @@ export const SearchBody = styled.div`
   min-height: 0;
   padding: 16px 20px 0;
 
-  @media (max-width: 600px) {
+  ${mediaMax('compact')} {
     padding: 12px 12px 0;
   }
 `
@@ -67,7 +68,7 @@ export const SearchToolbar = styled.div`
     flex: 0 0 auto;
   }
 
-  @media (max-width: 600px) {
+  ${mediaMax('compact')} {
     .search-tracker {
       flex: 1 1 100%;
       min-width: 0;
@@ -78,7 +79,7 @@ export const SearchToolbar = styled.div`
     }
   }
 
-  @media (max-width: 420px) {
+  ${mediaMax('phone')} {
     flex-direction: column;
 
     .search-query,
@@ -103,6 +104,21 @@ export const ResultsBar = styled.div`
   flex-shrink: 0;
   margin-bottom: 8px;
   padding: 4px 0;
+
+  ${mediaMax('compact')} {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+
+    .MuiToggleButtonGroup-root {
+      width: 100%;
+      display: flex;
+    }
+
+    .MuiToggleButton-root {
+      flex: 1 1 0;
+    }
+  }
 `
 
 export const ResultsCount = styled.div`
@@ -165,7 +181,7 @@ export const ResultRow = styled.li`
       outline-offset: 2px;
     }
 
-    @media (max-width: 600px) {
+    ${mediaMax('compact')} {
       padding: 8px 10px;
       gap: 6px 8px;
     }
@@ -189,7 +205,7 @@ export const ResultTitle = styled.div`
   overflow: hidden;
   word-break: break-word;
 
-  @media (max-width: 600px) {
+  ${mediaMax('compact')} {
     font-size: 12.5px;
   }
 `
@@ -208,7 +224,7 @@ export const ResultAction = styled.div`
 `
 
 export const Footer = styled(DialogFooter)`
-  @media (max-width: 420px) {
+  ${mediaMax('phone')} {
     .MuiButton-root {
       width: 100%;
     }

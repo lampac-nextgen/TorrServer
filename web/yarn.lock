@@ -3358,11 +3358,6 @@ react-copy-to-clipboard@^5.1.0:
     copy-to-clipboard "^3.3.3"
     prop-types "^15.8.1"
 
-react-div-100vh@^0.7.0:
-  version "0.7.0"
-  resolved "https://registry.npmjs.org/react-div-100vh/-/react-div-100vh-0.7.0.tgz"
-  integrity sha512-I3d77tQyaSlOx/6vurDDLk7upb5GA2ldEtVXkk7Kn5cy+tLlS0KlqDK14xUxlxh7jz4StjgKcwFyrpymsPpomA==
-
 react-dom@^19.0.0:
   version "19.2.7"
   resolved "https://registry.npmjs.org/react-dom/-/react-dom-19.2.7.tgz"

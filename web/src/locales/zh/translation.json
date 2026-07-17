@@ -49,8 +49,6 @@
     "header": "$t(DetailedCacheView.button)"
   },
   "Details": "详细信息",
-  "Donate?": "想要捐赠？",
-  "Donate": "捐赠",
   "Download": "下载",
   "DownloadPlaylist": "下载播放列表",
   "DownloadSpeed": "下载速度",
@@ -224,7 +222,7 @@
   "TorrentContent": "种子内容",
   "TorrentDetails": "种子详情",
   "TorrentGettingInfo": "获取信息",
-  "TorrentInDb": "已保存",
+  "TorrentInDb": "在数据库中",
   "TorrentPreload": "预加载",
   "TorrentSize": "种子大小",
   "TorrentState": "控制",

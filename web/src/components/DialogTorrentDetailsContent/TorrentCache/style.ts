@@ -43,7 +43,7 @@ export const SnakeWrapper = styled.div<{
           max-height: ${snakeSettings[$themeType ?? 'light'].mini.cacheMaxHeight}px;
         `
       : css`
-          max-height: min(70vh, 640px);
+          max-height: min(70dvh, 640px);
         `}
 
   canvas {

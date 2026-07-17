@@ -14,10 +14,8 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material'
 import { echoHost } from 'utils/Hosts'
-import Div100vh from 'react-div-100vh'
 import axios from 'axios'
 import TorrentList from 'components/TorrentList'
-import DonateSnackbar from 'components/Donate'
 import useChangeLanguage from 'utils/useChangeLanguage'
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles'
 import { ThemeProvider as StyledComponentsThemeProvider } from 'styled-components'
@@ -35,14 +33,9 @@ import Sidebar from './Sidebar'
 import PWAFooter from './PWAFooter'
 import { PWAInstallationGuide } from './PWAInstallationGuide'
 
-const DonateDialog = lazy(() => import('components/Donate/DonateDialog'))
 const SearchDialog = lazy(() => import('components/Search/SearchDialog'))
 const AddDialog = lazy(() => import('components/Add/AddDialog'))
 const MultiAddDialog = lazy(() => import('components/Add/MultiAddDialog'))
-
-import { readLocalBool } from 'utils/localPrefs'
-
-const snackbarIsClosed = readLocalBool('snackbarIsClosed')
 
 interface DarkModeContextValue {
   isDarkMode: boolean
@@ -53,7 +46,6 @@ export const DarkModeContext = createContext<DarkModeContextValue>({ isDarkMode:
 export default function App() {
   const { t } = useTranslation()
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-  const [isDonationDialogOpen, setIsDonationDialogOpen] = useState(false)
   const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false)
   const [torrServerVersion, setTorrServerVersion] = useState('')
   const [listPollMs, setListPollMs] = useState(1000)
@@ -107,155 +99,143 @@ export default function App() {
           >
             <CssBaseline />
             <AppSnackbarProvider>
-              <Div100vh>
-                <AppWrapper $isDrawerOpen={isDrawerOpen}>
-                  <AppHeader>
-                    <Tooltip title={t('Menu', { defaultValue: 'Menu' })}>
-                      <StyledIconButton
-                        edge='start'
-                        color='inherit'
-                        aria-label={t('Menu', { defaultValue: 'Menu' })}
-                        onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-                      >
-                        {isDrawerOpen ? <CloseIcon /> : <MenuIcon />}
-                      </StyledIconButton>
-                    </Tooltip>
-
-                    <Typography variant='h6' noWrap sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      TorrServer {torrServerVersion}
-                    </Typography>
-
-                    <div
-                      style={{
-                        justifySelf: 'end',
-                        display: 'grid',
-                        gridTemplateColumns: isStandaloneApp ? 'repeat(4, 1fr)' : 'repeat(3, 1fr)',
-                        gap: '6px',
-                        flexShrink: 0,
-                      }}
+              <AppWrapper $isDrawerOpen={isDrawerOpen}>
+                <AppHeader>
+                  <Tooltip title={t('Menu', { defaultValue: 'Menu' })}>
+                    <StyledIconButton
+                      edge='start'
+                      color='inherit'
+                      aria-label={t('Menu', { defaultValue: 'Menu' })}
+                      onClick={() => setIsDrawerOpen(!isDrawerOpen)}
                     >
-                      {isStandaloneApp && (
-                        <Tooltip title={t('Search')}>
-                          <HeaderToggle
-                            color='inherit'
-                            aria-label={t('Search')}
-                            onClick={() => setIsSearchDialogOpen(true)}
-                          >
-                            <SearchIcon />
-                          </HeaderToggle>
-                        </Tooltip>
-                      )}
+                      {isDrawerOpen ? <CloseIcon /> : <MenuIcon />}
+                    </StyledIconButton>
+                  </Tooltip>
 
-                      <Tooltip
-                        title={
+                  <Typography variant='h6' noWrap sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    TorrServer {torrServerVersion}
+                  </Typography>
+
+                  <div
+                    style={{
+                      justifySelf: 'end',
+                      display: 'grid',
+                      gridTemplateColumns: isStandaloneApp ? 'repeat(4, 1fr)' : 'repeat(3, 1fr)',
+                      gap: '6px',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {isStandaloneApp && (
+                      <Tooltip title={t('Search')}>
+                        <HeaderToggle
+                          color='inherit'
+                          aria-label={t('Search')}
+                          onClick={() => setIsSearchDialogOpen(true)}
+                        >
+                          <SearchIcon />
+                        </HeaderToggle>
+                      </Tooltip>
+                    )}
+
+                    <Tooltip
+                      title={
+                        sortABC
+                          ? t('SortByDate', { defaultValue: 'Sort by date' })
+                          : t('SortByName', { defaultValue: 'Sort by name' })
+                      }
+                    >
+                      <HeaderToggle
+                        color='inherit'
+                        aria-label={
                           sortABC
                             ? t('SortByDate', { defaultValue: 'Sort by date' })
                             : t('SortByName', { defaultValue: 'Sort by name' })
                         }
+                        onClick={() => (sortABC === true ? handleClickSortDate() : handleClickSortABC())}
                       >
-                        <HeaderToggle
-                          color='inherit'
-                          aria-label={
-                            sortABC
-                              ? t('SortByDate', { defaultValue: 'Sort by date' })
-                              : t('SortByName', { defaultValue: 'Sort by name' })
-                          }
-                          onClick={() => (sortABC === true ? handleClickSortDate() : handleClickSortABC())}
-                        >
-                          {sortABC === true ? <SortByAlphaIcon /> : <SortIcon />}
-                        </HeaderToggle>
-                      </Tooltip>
+                        {sortABC === true ? <SortByAlphaIcon /> : <SortIcon />}
+                      </HeaderToggle>
+                    </Tooltip>
 
-                      <Tooltip title={t('Theme', { defaultValue: 'Theme' })}>
-                        <HeaderToggle
-                          color='inherit'
-                          aria-label={t('Theme', { defaultValue: 'Theme' })}
-                          onClick={() => {
-                            if (currentThemeMode === THEME_MODES.LIGHT) updateThemeMode(THEME_MODES.DARK)
-                            if (currentThemeMode === THEME_MODES.DARK) updateThemeMode(THEME_MODES.AUTO)
-                            if (currentThemeMode === THEME_MODES.AUTO) updateThemeMode(THEME_MODES.LIGHT)
-                          }}
-                        >
-                          {currentThemeMode === THEME_MODES.LIGHT ? (
-                            <Brightness5Icon />
-                          ) : currentThemeMode === THEME_MODES.DARK ? (
-                            <Brightness4Icon />
-                          ) : (
-                            <BrightnessAutoIcon />
-                          )}
-                        </HeaderToggle>
-                      </Tooltip>
+                    <Tooltip title={t('Theme', { defaultValue: 'Theme' })}>
+                      <HeaderToggle
+                        color='inherit'
+                        aria-label={t('Theme', { defaultValue: 'Theme' })}
+                        onClick={() => {
+                          if (currentThemeMode === THEME_MODES.LIGHT) updateThemeMode(THEME_MODES.DARK)
+                          if (currentThemeMode === THEME_MODES.DARK) updateThemeMode(THEME_MODES.AUTO)
+                          if (currentThemeMode === THEME_MODES.AUTO) updateThemeMode(THEME_MODES.LIGHT)
+                        }}
+                      >
+                        {currentThemeMode === THEME_MODES.LIGHT ? (
+                          <Brightness5Icon />
+                        ) : currentThemeMode === THEME_MODES.DARK ? (
+                          <Brightness4Icon />
+                        ) : (
+                          <BrightnessAutoIcon />
+                        )}
+                      </HeaderToggle>
+                    </Tooltip>
 
-                      <Tooltip title={t('Language', { defaultValue: 'Language' })}>
-                        <HeaderToggle
-                          color='inherit'
-                          aria-label={t('Language', { defaultValue: 'Language' })}
-                          onClick={() =>
-                            currentLang === 'en'
-                              ? changeLang('ru')
-                              : currentLang === 'ru'
-                                ? changeLang('ua')
-                                : currentLang === 'ua'
-                                  ? changeLang('zh')
-                                  : currentLang === 'zh'
-                                    ? changeLang('bg')
-                                    : currentLang === 'bg'
-                                      ? changeLang('fr')
-                                      : currentLang === 'fr'
-                                        ? changeLang('ro')
-                                        : changeLang('en')
-                          }
-                        >
-                          {currentLang.toUpperCase()}
-                        </HeaderToggle>
-                      </Tooltip>
+                    <Tooltip title={t('Language', { defaultValue: 'Language' })}>
+                      <HeaderToggle
+                        color='inherit'
+                        aria-label={t('Language', { defaultValue: 'Language' })}
+                        onClick={() =>
+                          currentLang === 'en'
+                            ? changeLang('ru')
+                            : currentLang === 'ru'
+                              ? changeLang('ua')
+                              : currentLang === 'ua'
+                                ? changeLang('zh')
+                                : currentLang === 'zh'
+                                  ? changeLang('bg')
+                                  : currentLang === 'bg'
+                                    ? changeLang('fr')
+                                    : currentLang === 'fr'
+                                      ? changeLang('ro')
+                                      : changeLang('en')
+                        }
+                      >
+                        {currentLang.toUpperCase()}
+                      </HeaderToggle>
+                    </Tooltip>
+                  </div>
+                </AppHeader>
+
+                <SidebarOverlay $isDrawerOpen={isDrawerOpen} onClick={() => setIsDrawerOpen(false)} />
+
+                <Sidebar
+                  isOffline={isOffline}
+                  isLoading={isLoading}
+                  isDrawerOpen={isDrawerOpen}
+                  setGlobalFilterCategory={setGlobalFilterCategory}
+                />
+
+                <TorrentList
+                  isOffline={isOffline}
+                  torrents={torrents}
+                  isLoading={isLoading}
+                  sortABC={sortABC}
+                  sortCategory={globalCategoryFilter}
+                />
+
+                <PWAFooter isOffline={isOffline} isLoading={isLoading} />
+
+                <Suspense
+                  fallback={
+                    <div style={{ display: 'grid', placeItems: 'center', padding: 24 }}>
+                      <CircularProgress size={32} />
                     </div>
-                  </AppHeader>
+                  }
+                >
+                  {isSearchDialogOpen && <SearchDialog handleClose={() => setIsSearchDialogOpen(false)} />}
+                  {launchSource && <AddDialog hash={launchSource} handleClose={() => setLaunchSource(null)} />}
+                  {launchFiles && <MultiAddDialog files={launchFiles} handleClose={() => setLaunchFiles(null)} />}
+                </Suspense>
 
-                  <SidebarOverlay $isDrawerOpen={isDrawerOpen} onClick={() => setIsDrawerOpen(false)} />
-
-                  <Sidebar
-                    isOffline={isOffline}
-                    isLoading={isLoading}
-                    isDrawerOpen={isDrawerOpen}
-                    setIsDonationDialogOpen={setIsDonationDialogOpen}
-                    setGlobalFilterCategory={setGlobalFilterCategory}
-                  />
-
-                  <TorrentList
-                    isOffline={isOffline}
-                    torrents={torrents}
-                    isLoading={isLoading}
-                    sortABC={sortABC}
-                    sortCategory={globalCategoryFilter}
-                  />
-
-                  <PWAFooter
-                    isOffline={isOffline}
-                    isLoading={isLoading}
-                    setIsDonationDialogOpen={setIsDonationDialogOpen}
-                  />
-
-                  <Suspense
-                    fallback={
-                      <div style={{ display: 'grid', placeItems: 'center', padding: 24 }}>
-                        <CircularProgress size={32} />
-                      </div>
-                    }
-                  >
-                    {isDonationDialogOpen && <DonateDialog onClose={() => setIsDonationDialogOpen(false)} />}
-                    {isSearchDialogOpen && <SearchDialog handleClose={() => setIsSearchDialogOpen(false)} />}
-                    {launchSource && <AddDialog hash={launchSource} handleClose={() => setLaunchSource(null)} />}
-                    {launchFiles && <MultiAddDialog files={launchFiles} handleClose={() => setLaunchFiles(null)} />}
-                  </Suspense>
-
-                  {snackbarIsClosed ? (
-                    detectApplePlatform().isIOS && !isStandaloneApp && <PWAInstallationGuide />
-                  ) : (
-                    <DonateSnackbar />
-                  )}
-                </AppWrapper>
-              </Div100vh>
+                {detectApplePlatform().isIOS && !isStandaloneApp && <PWAInstallationGuide />}
+              </AppWrapper>
             </AppSnackbarProvider>
           </StyledComponentsThemeProvider>
         </MuiThemeProvider>

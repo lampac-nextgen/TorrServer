@@ -65,23 +65,23 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 
 ---
 
-## Responsive (mobile / tablet) — 2026-07-17
+## Responsive (mobile / tablet) — 2026-07-18
 
-- Shell drawer / overlay / single-column list: **930px** (`LAYOUT_MOBILE_MAX`).
-- Dialog fullscreen: **1100px** (`LAYOUT_DIALOG_FULLSCREEN_MAX`) so iPad landscape gets edge-to-edge dialogs while list can stay 2-col above 930.
-- Typography: MUI `h6` weight **500** (master parity); `cardAction` letter-spacing **0.01em**.
-- PWA chrome: footer content **56px** + safe-area; header **52px** + safe-area; Open Sans 400/600; `letter-spacing: normal`.
-- Header: `minmax(0,1fr)` title + ellipsis; denser toggles.
-- VideoPlayer: control row wraps; PiP hidden on mobile (`LAYOUT_MOBILE_MEDIA`).
-- Details: poster `object-fit: cover` + width 100%; widgets use `minmax(0,1fr)` + value ellipsis; seasons wrap.
-- Search toolbar always `flexWrap`.
+- Canonical breakpoints: `web/src/style/breakpoints.ts` (`BP` + `mediaMax` / `queryMax`).
+- Shell / list 1-column: **`mobile` (700)**. Dialog fullscreen: **`dialog` (960)**.
+- List columns: 3 @ `list3` (1260), 2 @ `list2` (1100), 1 @ `mobile` (700). Card compact starts at `list3` (covers list2).
+- Typography: Open Sans via **Google Fonts CDN** (`index.html` 400/600) — one stack for desktop/mobile/PWA; **no** self-hosted woff2.
+- Floor: **≥12px** on cards / cardAction / PWA tabs.
+- PWA chrome: 90px + `env(safe-area-inset-*)`; list uses grid `1fr` (no double-subtract); unified `DIALOG_SAFE_TOP`.
+- Layers: Universal · Mobile (width) · PWA (`standaloneMedia` chrome only).
+- Donate button/dialog removed.
+- Status on card: 8px colored dot next to Size (not Chip).
 
 ### Still open (ask before doing)
 
 - Mobile sidebar as full MUI `Drawer` (custom slide + overlay still used)
 - Broader `Stack` migrations across dialogs
 - Settings/details skeletons beyond torrent list
-- Snake poll 100ms — only if still laggy after memo removal
 - Offline service worker
 
 ---

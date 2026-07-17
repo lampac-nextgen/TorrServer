@@ -1,8 +1,4 @@
 import Divider from '@mui/material/Divider'
-import ListItemButton from '@mui/material/ListItemButton'
-import ListItemIcon from '@mui/material/ListItemIcon'
-import ListItemText from '@mui/material/ListItemText'
-import { CreditCard as CreditCardIcon } from '@mui/icons-material'
 import List from '@mui/material/List'
 import { useTranslation } from 'react-i18next'
 import AddDialogButton from 'components/Add'
@@ -22,17 +18,10 @@ import { AppSidebarStyle } from './style'
 
 interface SidebarProps extends OfflineAwareProps {
   isDrawerOpen: boolean
-  setIsDonationDialogOpen: (open: boolean) => void
   setGlobalFilterCategory: (key: string) => void
 }
 
-const Sidebar = ({
-  isDrawerOpen,
-  setIsDonationDialogOpen,
-  isOffline,
-  isLoading,
-  setGlobalFilterCategory,
-}: SidebarProps) => {
+const Sidebar = ({ isDrawerOpen, isOffline, isLoading, setGlobalFilterCategory }: SidebarProps) => {
   const { t } = useTranslation()
 
   return (
@@ -78,14 +67,6 @@ const Sidebar = ({
         <SettingsDialog isOffline={isOffline} isLoading={isLoading} />
 
         <AboutDialog />
-
-        <ListItemButton onClick={() => setIsDonationDialogOpen(true)}>
-          <ListItemIcon>
-            <CreditCardIcon />
-          </ListItemIcon>
-
-          <ListItemText primary={t('Donate')} />
-        </ListItemButton>
 
         <CloseServer isOffline={isOffline} isLoading={isLoading} />
       </List>

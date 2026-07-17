@@ -17,12 +17,13 @@ import {
   InputLabel,
   ToggleButton,
   ToggleButtonGroup,
+  useTheme,
   type SelectChangeEvent,
 } from '@mui/material'
 import { CloudDownload as DownloadIcon, ArrowUpward, ArrowDownward } from '@mui/icons-material'
 import { torznabSearchHost, torrentsHost, settingsHost, searchHost } from 'utils/Hosts'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
-import { StyledDialog, StyledHeader } from 'style/CustomMaterialUiStyles'
+import { StyledDialog, StyledHeader, dialogPaperSx } from 'style/CustomMaterialUiStyles'
 import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
 import { parseSizeToBytes, formatSizeToClassicUnits } from 'utils/Utils'
 import { getMoviePosters, shortenTitleForPosterSearch } from 'components/Add/helpers'
@@ -105,6 +106,8 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
   const searchAbortRef = useRef<AbortController | null>(null)
   const searchGenRef = useRef(0)
   const fullScreen = useMediaQuery(LAYOUT_DIALOG_FULLSCREEN_MEDIA)
+  const theme = useTheme()
+  const isDark = theme.palette.mode === 'dark'
   const ref = useOnStandaloneAppOutsideClick(handleClose)
 
   const hasTorznab = enableTorznab && trackers.length > 0
@@ -342,7 +345,7 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
       fullScreen={fullScreen}
       fullWidth
       maxWidth='md'
-      slotProps={{ paper: { ref } }}
+      slotProps={{ paper: { ref, sx: dialogPaperSx } }}
     >
       <StyledHeader>{t('Torznab.SearchTorrents')}</StyledHeader>
       <Content>
@@ -425,7 +428,7 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
                         height: 28,
                         borderRadius: '14px !important',
                         border: theme => `1px solid ${theme.palette.divider} !important`,
-                        '&.Mui-selected': { fontWeight: 600 },
+                        '&.Mui-selected': { fontWeight: 500 },
                       }}
                     >
                       {label}
@@ -484,9 +487,11 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
                           <Chip
                             size='small'
                             label={`S ${item.Seed || 0}`}
-                            color='success'
+                            color={isDark ? 'default' : 'success'}
                             variant='outlined'
-                            sx={{ bgcolor: 'rgba(0, 167, 114, 0.12)' }}
+                            sx={
+                              isDark ? { bgcolor: 'rgba(255, 255, 255, 0.08)' } : { bgcolor: 'rgba(0, 167, 114, 0.12)' }
+                            }
                           />
                           <Chip size='small' label={`P ${item.Peer || 0}`} variant='outlined' />
                         </MetaBadges>

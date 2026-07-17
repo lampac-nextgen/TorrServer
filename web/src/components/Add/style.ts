@@ -1,5 +1,6 @@
 import { Button } from '@mui/material'
 import styled, { css } from 'styled-components'
+import { mediaMax } from 'style/breakpoints'
 
 export const Content = styled.div<{ $isEditMode?: boolean }>`
   ${({
@@ -18,19 +19,20 @@ export const Content = styled.div<{ $isEditMode?: boolean }>`
     overflow: auto;
     color: ${fontColor};
     min-width: 0;
+    min-height: 0;
 
-    @media (max-width: 540px) {
+    ${mediaMax('compact')} {
       overflow: auto;
       -webkit-overflow-scrolling: touch;
     }
 
-    @media (max-width: 930px) {
+    ${mediaMax('dialog')} {
       grid-template-columns: minmax(0, 1fr);
       height: auto;
       max-height: none;
     }
 
-    @media (max-width: 500px) {
+    ${mediaMax('compact')} {
       align-content: start;
     }
   `}
@@ -56,6 +58,11 @@ export const RightSideContainer = styled.div<{
     height: 530px;
     max-height: min(530px, calc(100dvh - 180px));
     min-width: 0;
+
+    ${mediaMax('dialog')} {
+      height: auto;
+      max-height: none;
+    }
 
     ${
       $notificationMessage &&
@@ -90,12 +97,12 @@ export const RightSideContainer = styled.div<{
       `
     };
 
-    @media (max-width: 930px) {
+    ${mediaMax('mobile')} {
       height: auto;
       max-height: none;
     }
 
-    @media (max-width: 500px) {
+    ${mediaMax('compact')} {
       min-height: 170px;
     }
   `}
@@ -109,6 +116,11 @@ export const LeftSide = styled.div`
     display: flex;
     flex-direction: column;
     border-right: 1px solid ${separatorColor};
+
+    ${mediaMax('mobile')} {
+      border-right: none;
+      border-bottom: 1px solid ${separatorColor};
+    }
   `}
 `
 
@@ -144,14 +156,14 @@ export const LeftSideBottomSectionNoFile = styled.div<{ $isDragActive?: boolean 
 
   ${({ $isDragActive }) => $isDragActive && `border: 4px dashed green`};
 
-  @media (max-width: 930px) {
+  ${mediaMax('mobile')} {
     border: 4px dashed transparent;
     height: 400px;
     place-items: center;
     grid-template-rows: 40% 1fr;
   }
 
-  @media (max-width: 500px) {
+  ${mediaMax('compact')} {
     height: 170px;
     grid-template-rows: 1fr;
 
@@ -201,7 +213,7 @@ export const PosterWrapper = styled.div`
     'poster suggestions'
     'clear empty';
 
-  @media (max-width: 540px) {
+  ${mediaMax('compact')} {
     grid-template-columns: 1fr;
     gap: 5px 0;
     justify-items: center;
@@ -220,11 +232,11 @@ export const PosterSuggestions = styled.div`
   grid-template-rows: repeat(4, max-content);
   gap: 5px;
 
-  @media (max-width: 540px) {
+  ${mediaMax('compact')} {
     grid-auto-flow: row;
     grid-template-columns: repeat(5, max-content);
   }
-  @media (max-width: 375px) {
+  ${mediaMax('phone')} {
     grid-template-columns: repeat(4, max-content);
   }
 `
@@ -234,12 +246,12 @@ export const PosterSuggestionsItem = styled.div`
   width: 71px;
   height: 71px;
 
-  @media (max-width: 430px) {
+  ${mediaMax('phone')} {
     width: 60px;
     height: 60px;
   }
 
-  @media (max-width: 355px) {
+  ${mediaMax('phone')} {
     width: 52px;
     height: 52px;
   }
@@ -302,8 +314,11 @@ export const ClearPosterButton = styled(Button)<{ $showbutton?: boolean }>`
   min-height: 44px;
   ${({ $showbutton }) => !$showbutton && 'display: none'};
 
-  @media (max-width: 540px) {
-    transform: translateY(-140%);
+  ${mediaMax('compact')} {
+    position: static;
+    transform: none;
+    justify-self: center;
+    width: 100%;
     min-height: 44px;
   }
 `
@@ -315,8 +330,11 @@ export const UpdatePosterButton = styled(Button)`
   position: absolute;
   min-height: 44px;
 
-  @media (max-width: 540px) {
-    transform: translateY(-140%);
+  ${mediaMax('compact')} {
+    position: static;
+    transform: none;
+    justify-self: center;
+    width: 100%;
     min-height: 44px;
   }
 `
@@ -383,7 +401,7 @@ export const MultiFilePoster = styled.div`
       border-radius: 50%;
       background: rgba(0, 0, 0, 0.5);
       color: #fff;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       display: grid;
       place-items: center;

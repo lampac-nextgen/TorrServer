@@ -24,7 +24,8 @@ description: >-
 - GStreamer: keep runtime React Query cache + probe cache in card; heartbeat `no-store`.
 - No lord-icon / Lottie for empty states — use `@mui/icons-material` + light CSS motion.
 - Relative asset base for Go embed (`./`). Do not break Basic Auth / API hosts in `utils/Hosts.ts`.
-- Shell / list single-column: **`LAYOUT_MOBILE_MAX = 930`**. Dialog fullscreen: **`LAYOUT_DIALOG_FULLSCREEN_MAX = 1100`** (iPad landscape). Do not conflate the two.
+- Breakpoints: only `web/src/style/breakpoints.ts` (`BP` + `mediaMax` / `queryMax`). Shell/list 1-col = **`mobile` (700)**; dialog fullscreen = **`dialog` (960)**; details stack = **1450**. Do not hardcode px in `@media`.
+- **Three layers:** Universal (type/CDN Open Sans, palette, `100dvh`, `dialogPaperSx`) · Mobile (`mediaMax`/`queryMax` only) · PWA (`standaloneMedia` / `isStandaloneApp` for chrome only — no font overrides; no self-hosted woff2).
 
 ## Workflow after UI changes that ship in the binary
 
@@ -42,7 +43,7 @@ Always use `--clean` so orphan hashed chunks are removed. Restart TorrServer + h
 | Toast / errors | `AppSnackbar` / `useAppToast` + MUI `Alert` |
 | Loading list | MUI `Skeleton` |
 | Buffer bar | MUI `LinearProgress` + Filled/Capacity (not preload target alone) |
-| Status | MUI `Chip` size=`small` (torrent card / widgets) |
+| Status on card | 8px colored dot next to Size (master) — not Chip labels |
 | Destructive | Confirm dialog; Cancel `autoFocus` |
 | Heavy dialogs | `React.lazy` + `Suspense`; do not static-import from always-mounted trees |
 | Code split | Keep vite `manualChunks`: `mui`, `hls`, `vendor` |
