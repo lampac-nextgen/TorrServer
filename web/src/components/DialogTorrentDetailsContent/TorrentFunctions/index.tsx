@@ -53,13 +53,13 @@ const TorrentFunctions = memo(
 
             <MainSectionButtonGroup>
               <a style={{ textDecoration: 'none' }} href={fullPlaylistLink}>
-                <Button style={{ width: '100%' }} variant='contained' color='primary' size='large'>
+                <Button variant='contained' color='primary' size='large'>
                   {t('Full')}
                 </Button>
               </a>
 
               <a style={{ textDecoration: 'none' }} href={partialPlaylistLink}>
-                <Button style={{ width: '100%' }} variant='contained' color='primary' size='large'>
+                <Button variant='contained' color='primary' size='large'>
                   {t('FromLatestFile')}
                 </Button>
               </a>
@@ -79,7 +79,7 @@ const TorrentFunctions = memo(
         <MainSectionButtonGroup>
           {(isOnlyOnePlayableFile || !viewedFileList?.length) && (
             <a style={{ textDecoration: 'none' }} href={fullPlaylistLink}>
-              <Button style={{ width: '100%' }} variant='contained' color='primary' size='large'>
+              <Button variant='contained' color='primary' size='large'>
                 {t('DownloadPlaylist')}
               </Button>
             </a>

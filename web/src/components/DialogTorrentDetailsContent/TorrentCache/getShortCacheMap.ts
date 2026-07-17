@@ -9,7 +9,9 @@ interface GetShortCacheMapArgs {
 export default ({ cacheMap, preloadPiecesAmount, piecesInOneRow }: GetShortCacheMapArgs): CacheMapItem[] => {
   if (!piecesInOneRow || piecesInOneRow < 1) return []
 
-  const cacheMapWithoutEmptyBlocks = cacheMap.filter(({ percentage }) => percentage > 0)
+  const cacheMapWithoutEmptyBlocks = cacheMap.filter(
+    ({ percentage, isReader, isReaderRange }) => percentage > 0 || isReader || isReaderRange,
+  )
 
   const getFullAmountOfBlocks = (amountOfBlocks: number) => {
     // counts existing blocks plus empty fillers so the last row is complete

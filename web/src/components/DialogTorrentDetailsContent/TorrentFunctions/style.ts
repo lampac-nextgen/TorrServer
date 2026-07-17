@@ -3,15 +3,29 @@ import styled, { css } from 'styled-components'
 export const MainSectionButtonGroup = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  gap: 12px 16px;
+  align-items: stretch;
 
-  :not(:last-child) {
-    margin-bottom: 30px;
+  &:not(:last-child) {
+    margin-bottom: 24px;
   }
 
-  a,
-  .MuiButton-root {
+  > a,
+  > span {
+    display: flex;
+    min-width: 0;
     width: 100%;
+  }
+
+  > .MuiButton-root,
+  > a > .MuiButton-root,
+  > span > .MuiButton-root {
+    width: 100%;
+    min-height: 44px;
+    height: 100%;
+    box-sizing: border-box;
+    padding-top: 8px;
+    padding-bottom: 8px;
   }
 
   @media (max-width: 880px) {

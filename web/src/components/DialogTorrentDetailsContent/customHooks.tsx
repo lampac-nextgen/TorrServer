@@ -3,12 +3,14 @@ import { cacheHost, settingsHost } from 'utils/Hosts'
 import axios from 'axios'
 import type { BTSets, CacheMapItem, TorrentCache } from 'types/api'
 
-const CACHE_POLL_MS = 500
+/** Match classic TorrServer so preload/cache snake updates in real time. */
+const CACHE_POLL_MS = 100
 
 export const useUpdateCache = (hash?: string) => {
   const [cache, setCache] = useState<TorrentCache>({})
   const componentIsMounted = useRef(true)
   const timerID = useRef<ReturnType<typeof setInterval> | null>(null)
+  const inFlight = useRef(false)
 
   useEffect(
     () => () => {
@@ -24,7 +26,8 @@ export const useUpdateCache = (hash?: string) => {
     }
 
     const fetchCache = () => {
-      if (document.hidden) return
+      if (document.hidden || inFlight.current) return
+      inFlight.current = true
       axios
         .post(cacheHost(), { action: 'get', hash })
         .then(({ data }) => {
@@ -32,6 +35,9 @@ export const useUpdateCache = (hash?: string) => {
         })
         .catch(() => {
           if (componentIsMounted.current) setCache({})
+        })
+        .finally(() => {
+          inFlight.current = false
         })
     }
 

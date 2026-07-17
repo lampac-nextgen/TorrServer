@@ -171,7 +171,17 @@ const TorrentCache = ({ cache, isMini, isSnakeDebugMode }: TorrentCacheProps) =>
   )
 }
 
-export default memo(
-  TorrentCache,
-  (prev, next) => isEqual(prev.cache.Pieces, next.cache.Pieces) && isEqual(prev.cache.Readers, next.cache.Readers),
-)
+export default memo(TorrentCache, (prev, next) => {
+  const a = prev.cache
+  const b = next.cache
+  return (
+    a.Filled === b.Filled &&
+    a.Capacity === b.Capacity &&
+    a.PiecesCount === b.PiecesCount &&
+    a.PiecesLength === b.PiecesLength &&
+    prev.isMini === next.isMini &&
+    prev.isSnakeDebugMode === next.isSnakeDebugMode &&
+    isEqual(a.Pieces, b.Pieces) &&
+    isEqual(a.Readers, b.Readers)
+  )
+})

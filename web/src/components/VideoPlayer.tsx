@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   CircularProgress,
   DialogContent,
   DialogTitle,
@@ -41,6 +42,8 @@ export interface VideoPlayerProps {
   hls?: boolean
   heartbeatSrc?: string
   showTrigger?: boolean
+  /** Compact outlined button for table/action cells (avoids TorrentCard StyledButton). */
+  inlineTrigger?: boolean
   initiallyOpen?: boolean
   onClose?: () => void
 }
@@ -292,6 +295,7 @@ const VideoPlayer = ({
   hls = false,
   heartbeatSrc = '',
   showTrigger = true,
+  inlineTrigger = false,
   initiallyOpen = false,
   onClose,
 }: VideoPlayerProps) => {
@@ -518,17 +522,31 @@ const VideoPlayer = ({
 
   return (
     <>
-      {showTrigger && (
-        <StyledButton
-          onClick={() => {
-            setLoading(true)
-            setOpen(true)
-          }}
-        >
-          <PlayArrowIcon />
-          <span>{t('Play')}</span>
-        </StyledButton>
-      )}
+      {showTrigger &&
+        (inlineTrigger ? (
+          <Button
+            variant='outlined'
+            color='primary'
+            size='small'
+            onClick={() => {
+              setLoading(true)
+              setOpen(true)
+            }}
+            sx={{ width: '100%', minHeight: 36 }}
+          >
+            {t('OpenLink')}
+          </Button>
+        ) : (
+          <StyledButton
+            onClick={() => {
+              setLoading(true)
+              setOpen(true)
+            }}
+          >
+            <PlayArrowIcon />
+            <span>{t('Play')}</span>
+          </StyledButton>
+        ))}
       <StyledDialog
         open={open}
         onClose={closePlayer}

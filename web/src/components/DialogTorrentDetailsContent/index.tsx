@@ -124,6 +124,12 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
   const preloadPerc = settings?.PreloadCache
   const preloadSize = ((Capacity || 0) / 100) * (preloadPerc || 0)
   const bufferSize = preloadSize > 33554432 ? preloadSize : 33554432 // Not less than 32MB
+  // Classic TorrServer shows filled vs full cache capacity (not the preload target).
+  const cacheDisplayTarget = Capacity && Capacity > 0 ? Capacity : bufferSize
+  const cacheFillPercent =
+    cacheDisplayTarget > 0 && Filled != null && Filled > 0
+      ? Math.min(100, Math.round((Filled * 100) / cacheDisplayTarget))
+      : null
 
   const getParsedTitle = () => {
     const newNameStringArr: Array<string | number> = []
@@ -229,13 +235,11 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
                 <LoadingProgress
                   $value={Filled || 0}
                   style={{ marginTop: '5px' }}
-                  $fullAmount={bufferSize}
-                  aria-label={`${humanizeSize(Filled || 0)} / ${humanizeSize(bufferSize)}`}
+                  $fullAmount={cacheDisplayTarget}
+                  aria-label={`${humanizeSize(Filled || 0)} / ${humanizeSize(cacheDisplayTarget)}`}
                 >
-                  {`${humanizeSize(Filled || 0)} / ${humanizeSize(bufferSize)}`}
-                  {bufferSize > 0 && Filled != null && Filled > 0
-                    ? ` · ${Math.min(100, Math.round(((Filled || 0) * 100) / bufferSize))}%`
-                    : ''}
+                  {`${humanizeSize(Filled || 0)} / ${humanizeSize(cacheDisplayTarget)}`}
+                  {cacheFillPercent != null ? ` · ${cacheFillPercent}%` : ''}
                 </LoadingProgress>
               </SectionHeader>
 

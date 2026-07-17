@@ -6,7 +6,7 @@ const viewedIndicator = css`
       table: { defaultPrimaryColor },
     },
   }) => css`
-    :before {
+    &::before {
       content: '';
       width: 10px;
       height: 10px;
@@ -50,7 +50,7 @@ export const TableStyle = styled.table`
       border-bottom: 1px solid ${dividerColor};
       background: ${rowBGColor};
 
-      :last-of-type {
+      &:last-of-type {
         border-bottom: 2px solid ${defaultPrimaryColor};
       }
 
@@ -68,14 +68,19 @@ export const TableStyle = styled.table`
     }
 
     .button-cell {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
+      display: flex;
+      flex-wrap: nowrap;
       align-items: center;
+      gap: 8px;
+      min-width: 0;
 
-      button,
-      a,
-      .MuiButton-root {
+      > .MuiButton-root,
+      > a {
+        flex: 1 1 0;
+        min-width: 0;
+      }
+
+      > a .MuiButton-root {
         width: 100%;
       }
 
@@ -84,7 +89,13 @@ export const TableStyle = styled.table`
       }
 
       .MuiIconButton-root {
-        justify-self: center;
+        flex: 0 0 auto;
+        width: 40px;
+        height: 40px;
+        padding: 8px;
+        border: none;
+        border-radius: 50%;
+        background: transparent;
       }
     }
 
@@ -157,7 +168,7 @@ export const ShortTable = styled.div<{ $isViewed?: boolean }>`
         display: grid;
         grid-template-rows: 30px 1fr;
         background: black;
-        :not(:last-child) {
+        &:not(:last-child) {
           border-right: 1px solid ${$isViewed ? viewedPrimaryColor : defaultPrimaryColor};
         }
 

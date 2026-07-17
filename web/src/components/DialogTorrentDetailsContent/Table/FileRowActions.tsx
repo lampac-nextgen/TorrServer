@@ -103,24 +103,20 @@ export default function FileRowActions({
           hls={hls}
           heartbeatSrc={heartbeatSrc}
           onNotSupported={onPlayerNotSupported}
+          inlineTrigger
         />
       ) : (
         showOpenLink &&
         openLinkHref && (
           <a style={{ textDecoration: 'none' }} href={openLinkHref} target='_blank' rel='noreferrer'>
-            <Button style={{ width: '100%' }} variant='outlined' color='primary' size='small'>
+            <Button variant='outlined' color='primary' size='small'>
               {t('OpenLink')}
             </Button>
           </a>
         )
       )}
-      <IconButton
-        aria-label={t('More', { defaultValue: 'More' })}
-        size='small'
-        onClick={openMenu}
-        sx={{ minWidth: 44, minHeight: 44 }}
-      >
-        <MoreVertIcon />
+      <IconButton aria-label={t('More', { defaultValue: 'More' })} size='small' onClick={openMenu}>
+        <MoreVertIcon fontSize='small' />
       </IconButton>
       <Menu anchorEl={anchorEl} open={menuOpen} onClose={closeMenu}>
         {menuItems}
