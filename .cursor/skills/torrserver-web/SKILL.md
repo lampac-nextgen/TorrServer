@@ -20,7 +20,7 @@ description: >-
 - Stay on MUI 6 — no MUI 7 unless asked.
 - Keep dual styling: MUI for buttons/dialogs/feedback; styled-components for shells/canvas/PWA.
 - File row: **all** player/copy/preload actions visible as equal outlined buttons — never a «⋯» menu.
-- Snake: poll `/cache` at **250ms**; keep `memo` on `TorrentCache` unless user asks otherwise.
+- Snake: poll `/cache` at **250ms**; **no** `memo` on `TorrentCache` (deep `isEqual` caused stutter vs classic).
 - GStreamer: keep runtime React Query cache + probe cache in card; heartbeat `no-store`.
 - No lord-icon / Lottie for empty states — use `@mui/icons-material` + light CSS motion.
 - Relative asset base for Go embed (`./`). Do not break Basic Auth / API hosts in `utils/Hosts.ts`.
@@ -49,8 +49,7 @@ Remind user to restart server + hard refresh. Do not commit unless asked.
 ## Snake vs “cache”
 
 - Server torrent piece buffer UI = snake (`useUpdateCache` → `TorrentCache`).
-- UI `memo` only skips redraw when `Pieces`/`Readers`/Filled deep-equal — not HTTP caching.
-- Do not “remove cache” from snake thinking it will make data fresher; poll already fetches live.
+- Snake: poll already live; do not re-add `memo`/`isEqual` on `TorrentCache` — it stuttered vs classic.
 
 ## Prompt for new chats
 

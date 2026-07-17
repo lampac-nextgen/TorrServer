@@ -31,7 +31,7 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 5. **No React Router** (still SPA without client routes).
 6. **No Jackett/Prowlarr 1-click sync** in web polish scope.
 7. **File row actions:** all visible equal outlined buttons — **no «⋯» overflow menu** (Infuse / SenPlayer / IINA / Copy / Play / Preload).
-8. **Snake (cache map):** live poll from `/cache`; keep `memo` on `TorrentCache`; poll **250ms** (not 100ms unless user asks). Memo ≠ stale data.
+8. **Snake (cache map):** live poll from `/cache` at **250ms**; **no** `memo` on `TorrentCache` (removed — deep `lodash.isEqual` on Pieces caused stutter vs classic).
 9. **GStreamer:** keep React Query runtime cache (60s, invalidate on Settings save); keep in-card `audioTracksByFile` probe cache; heartbeat `cache: 'no-store'`.
 10. **Empty / offline UI:** MUI icons only — **no lord-icon** (removed script + base64).
 
@@ -71,7 +71,7 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 - Broader `Stack` migrations across dialogs
 - Full `DialogFooter` adoption everywhere Settings/Add/Search/delete
 - Settings/details skeletons beyond torrent list
-- Snake poll 100ms or remove `memo` — **not recommended** unless visible freeze
+- Snake poll 100ms — only if still laggy after memo removal
 
 ---
 
@@ -106,6 +106,5 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 
 - Commit / PR for `feature/web-upgrade`
 - Speed snake poll to 100ms
-- Remove snake `memo`
 - MUI Drawer for mobile sidebar
 - Further Phase-3 Stack/DialogFooter cleanup

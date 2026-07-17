@@ -123,19 +123,17 @@ export const TorrentCardDescription = styled.div`
     .description-title-wrapper {
       display: flex;
       flex-direction: column;
+      min-width: 0;
+      gap: 4px;
     }
 
-    // .description-title-wrapper > .description-section-name {
-    //   display: flex;
-    //   flex-wrap: nowrap;
-    //   justify-content: space-between;
-    //   self-align: end;
-    // }
-
-    // .description-category-wrapper {
-    //   display: inline-flex;
-    //   color: #1a1a1a;
-    // }
+    .description-title-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-width: 0;
+    }
 
     .description-section-name {
       text-transform: uppercase;
@@ -143,6 +141,7 @@ export const TorrentCardDescription = styled.div`
       font-weight: 600;
       letter-spacing: 0.4px;
       color: ${sectionLabelColor};
+      min-width: 0;
 
       @media (max-width: 770px) {
         font-size: 0.75rem;
@@ -150,38 +149,40 @@ export const TorrentCardDescription = styled.div`
       }
     }
 
-    .description-status-wrapper {
-      display: inline-block;
-      height: 8px;
-      margin-inline-end: 4px;
-      vertical-align: baseline;
+    .description-status-chip {
+      flex-shrink: 0;
+      max-width: 55%;
+      height: 22px;
+
+      .MuiChip-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-inline: 8px;
+        font-size: 0.7rem;
+        font-weight: 600;
+      }
     }
 
     .description-torrent-title {
       overflow: hidden;
-      word-break: break-all;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      word-break: break-word;
+      line-height: 1.25;
     }
 
     .description-statistics-wrapper {
       display: grid;
-      grid-template-columns: 80px 80px 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr);
+      gap: 6px;
       align-self: end;
-
-      @media (max-width: 1260px), (max-height: 500px) {
-        grid-template-columns: 70px 70px 1fr;
-      }
-
-      @media (max-width: 770px) {
-        grid-template-columns: 65px 65px 1fr;
-      }
-
-      @media (max-width: 700px) {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-      }
+      min-width: 0;
     }
 
     .description-statistics-element-wrapper {
+      min-width: 0;
     }
 
     .description-statistics-element-value {

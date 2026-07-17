@@ -555,18 +555,18 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
 
         <TorrentCardDescription>
           <div className='description-title-wrapper'>
-            <div className='description-section-name'>
-              {category ? (catIndex >= 0 && catArray ? t(catArray.name) : category) : t('Name')}
+            <div className='description-title-header'>
+              <div className='description-section-name'>
+                {category ? (catIndex >= 0 && catArray ? t(catArray.name) : category) : t('Name')}
+              </div>
+              <StatusIndicator stat={stat} />
             </div>
             <div className='description-torrent-title'>{parsedTitle}</div>
           </div>
 
           <div className='description-statistics-wrapper'>
             <div className='description-statistics-element-wrapper'>
-              <div className='description-section-name'>
-                <StatusIndicator stat={stat} />
-                {t('Size')}
-              </div>
+              <div className='description-section-name'>{t('Size')}</div>
               <div className='description-statistics-element-value'>
                 {torrentSize != null && torrentSize > 0 && humanizeSize(torrentSize)}
               </div>
@@ -657,9 +657,14 @@ export const StatusIndicator = ({ stat }: { stat?: number }) => {
   if (stat == null) return null
 
   return (
-    <span className='description-status-wrapper'>
-      <Chip size='small' label={values[stat]} color={colors[stat]} variant='outlined' />
-    </span>
+    <Chip
+      className='description-status-chip'
+      size='small'
+      label={values[stat]}
+      color={colors[stat]}
+      variant='outlined'
+      title={values[stat]}
+    />
   )
 }
 

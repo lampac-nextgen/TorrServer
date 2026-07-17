@@ -1,7 +1,6 @@
 import Measure from 'react-measure'
-import { useState, memo, useRef, useEffect, useContext, useMemo } from 'react'
+import { useState, useRef, useEffect, useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import isEqual from 'lodash/isEqual'
 import { DarkModeContext } from 'components/App'
 import { THEME_MODES } from 'style/materialUISetup'
 import type { TorrentCache as TorrentCacheData } from 'types/api'
@@ -171,17 +170,4 @@ const TorrentCache = ({ cache, isMini, isSnakeDebugMode }: TorrentCacheProps) =>
   )
 }
 
-export default memo(TorrentCache, (prev, next) => {
-  const a = prev.cache
-  const b = next.cache
-  return (
-    a.Filled === b.Filled &&
-    a.Capacity === b.Capacity &&
-    a.PiecesCount === b.PiecesCount &&
-    a.PiecesLength === b.PiecesLength &&
-    prev.isMini === next.isMini &&
-    prev.isSnakeDebugMode === next.isSnakeDebugMode &&
-    isEqual(a.Pieces, b.Pieces) &&
-    isEqual(a.Readers, b.Readers)
-  )
-})
+export default TorrentCache
