@@ -1,9 +1,11 @@
 import { useTheme } from '@mui/material'
-import { useState } from 'react'
+import CircularProgress from '@mui/material/CircularProgress'
+import { useState, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import AddDialog from '../Add/AddDialog'
 import IconWrapper from './style'
+
+const AddDialog = lazy(() => import('../Add/AddDialog'))
 
 export default function AddFirstTorrent() {
   const { t } = useTranslation()
@@ -26,7 +28,11 @@ export default function AddFirstTorrent() {
         <div className='icon-label'>{t('NoTorrentsAdded')}</div>
       </IconWrapper>
 
-      {isDialogOpen && <AddDialog handleClose={handleClose} />}
+      {isDialogOpen && (
+        <Suspense fallback={<CircularProgress size={24} />}>
+          <AddDialog handleClose={handleClose} />
+        </Suspense>
+      )}
     </>
   )
 }

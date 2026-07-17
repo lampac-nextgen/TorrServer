@@ -334,5 +334,10 @@
   "Uncategorized": "Uncategorized",
   "UploadFile": "Upload File",
   "UploadSpeed": "Upload speed",
-  "Viewed": "Viewed"
+  "Viewed": "Viewed",
+  "Copied": "Copied",
+  "NoPlayableFiles": "No playable files in this torrent",
+  "PlaybackError": "Playback failed",
+  "ConfirmDropTorrent": "Drop this torrent from memory?",
+  "ConfirmRemoveViews": "Clear all viewed markers for this torrent?"
 }

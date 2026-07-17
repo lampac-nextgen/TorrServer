@@ -1,14 +1,15 @@
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
 import IconButton from '@mui/material/IconButton'
 import CreditCardIcon from '@mui/icons-material/CreditCard'
 import CloseIcon from '@mui/icons-material/Close'
+import CircularProgress from '@mui/material/CircularProgress'
 import { useTranslation } from 'react-i18next'
 import styled, { css } from 'styled-components'
 import { standaloneMedia } from 'style/standaloneMedia'
 
-import DonateDialog from './DonateDialog'
+const DonateDialog = lazy(() => import('./DonateDialog'))
 
 const StyledSnackbar = styled(Snackbar)`
   ${standaloneMedia(css`
@@ -28,7 +29,11 @@ export default function DonateSnackbar() {
 
   return (
     <>
-      {open && <DonateDialog onClose={() => setOpen(false)} />}
+      {open && (
+        <Suspense fallback={<CircularProgress size={24} />}>
+          <DonateDialog onClose={() => setOpen(false)} />
+        </Suspense>
+      )}
 
       <StyledSnackbar
         anchorOrigin={{

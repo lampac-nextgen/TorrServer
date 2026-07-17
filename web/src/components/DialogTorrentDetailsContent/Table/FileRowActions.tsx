@@ -1,8 +1,7 @@
-import { useState, type MouseEvent, type ReactNode } from 'react'
-import { Button, IconButton, Menu, MenuItem, ListItemText } from '@mui/material'
-import MoreVertIcon from '@mui/icons-material/MoreVert'
+import { Button, Tooltip } from '@mui/material'
 import CopyToClipboard from 'react-copy-to-clipboard'
 import { useTranslation } from 'react-i18next'
+import { useOptionalAppToast } from 'components/Feedback/AppSnackbar'
 
 import VideoPlayer from '../../VideoPlayer'
 
@@ -27,6 +26,13 @@ export interface FileRowActionsProps {
   externalPlayers: ExternalPlayerLink[]
 }
 
+const actionSx = {
+  minWidth: 96,
+  minHeight: 40,
+  flex: '1 1 auto',
+  px: 1.5,
+} as const
+
 export default function FileRowActions({
   preloadLabel,
   onPreload,
@@ -43,58 +49,16 @@ export default function FileRowActions({
   externalPlayers,
 }: FileRowActionsProps) {
   const { t } = useTranslation()
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const menuOpen = Boolean(anchorEl)
-
-  const openMenu = (e: MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget)
-  const closeMenu = () => setAnchorEl(null)
-
-  const menuItems: ReactNode[] = []
-  externalPlayers.forEach(player => {
-    menuItems.push(
-      <MenuItem
-        key={player.label}
-        component='a'
-        href={player.href}
-        onClick={closeMenu}
-        sx={{ textDecoration: 'none', color: 'inherit' }}
-      >
-        <ListItemText>{player.label}</ListItemText>
-      </MenuItem>,
-    )
-  })
-  menuItems.push(
-    <CopyToClipboard key='copy' text={copyText}>
-      <MenuItem
-        onClick={() => {
-          closeMenu()
-        }}
-      >
-        <ListItemText>{t('CopyLink')}</ListItemText>
-      </MenuItem>
-    </CopyToClipboard>,
-  )
-  if (playerSupported && showOpenLink && openLinkHref) {
-    menuItems.push(
-      <MenuItem
-        key='open'
-        component='a'
-        href={openLinkHref}
-        target='_blank'
-        rel='noreferrer'
-        onClick={closeMenu}
-        sx={{ textDecoration: 'none', color: 'inherit' }}
-      >
-        <ListItemText>{t('OpenLink')}</ListItemText>
-      </MenuItem>,
-    )
-  }
+  const toast = useOptionalAppToast()
 
   return (
     <div className='button-cell'>
-      <Button onClick={onPreload} variant='outlined' color='primary' size='small'>
-        {preloadLabel}
-      </Button>
+      <Tooltip title={preloadLabel}>
+        <Button onClick={onPreload} variant='outlined' color='primary' size='small' sx={actionSx}>
+          {preloadLabel}
+        </Button>
+      </Tooltip>
+
       {playerSupported ? (
         <VideoPlayer
           title={playerTitle}
@@ -108,19 +72,39 @@ export default function FileRowActions({
       ) : (
         showOpenLink &&
         openLinkHref && (
-          <a style={{ textDecoration: 'none' }} href={openLinkHref} target='_blank' rel='noreferrer'>
-            <Button variant='outlined' color='primary' size='small'>
+          <Tooltip title={t('OpenLink')}>
+            <Button
+              component='a'
+              href={openLinkHref}
+              target='_blank'
+              rel='noreferrer'
+              variant='outlined'
+              color='primary'
+              size='small'
+              sx={actionSx}
+            >
               {t('OpenLink')}
             </Button>
-          </a>
+          </Tooltip>
         )
       )}
-      <IconButton aria-label={t('More', { defaultValue: 'More' })} size='small' onClick={openMenu}>
-        <MoreVertIcon fontSize='small' />
-      </IconButton>
-      <Menu anchorEl={anchorEl} open={menuOpen} onClose={closeMenu}>
-        {menuItems}
-      </Menu>
+
+      {externalPlayers.map(player => (
+        <Tooltip key={player.label} title={player.label}>
+          <Button component='a' href={player.href} variant='outlined' color='primary' size='small' sx={actionSx}>
+            {player.label}
+          </Button>
+        </Tooltip>
+      ))}
+
+      <CopyToClipboard
+        text={copyText}
+        onCopy={() => toast?.showToast({ message: t('Copied', { defaultValue: 'Copied' }), severity: 'success' })}
+      >
+        <Button variant='outlined' color='primary' size='small' sx={actionSx}>
+          {t('CopyLink')}
+        </Button>
+      </CopyToClipboard>
     </div>
   )
 }

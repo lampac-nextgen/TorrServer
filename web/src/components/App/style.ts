@@ -148,34 +148,35 @@ export const TorrentListWrapper = styled.div`
   `)}
 `
 
-export const HeaderToggle = styled.div`
+export const HeaderToggle = styled(IconButton)`
   ${({
     theme: {
       app: { headerToggleColor },
     },
   }) => css`
-    cursor: pointer;
-    border-radius: 50%;
-    background: ${headerToggleColor};
-    height: 44px;
-    width: 44px;
-    transition: all 0.2s;
-    font-weight: 600;
-    display: grid;
-    place-items: center;
-    color: #fff;
+    && {
+      cursor: pointer;
+      border-radius: 50%;
+      background: ${headerToggleColor};
+      height: 44px;
+      width: 44px;
+      transition: all 0.2s;
+      font-weight: 600;
+      color: #fff;
+      padding: 0;
 
-    :hover {
-      background: ${rgba(headerToggleColor, 0.7)};
-    }
+      &:hover {
+        background: ${rgba(headerToggleColor, 0.7)};
+      }
 
-    @media (max-width: 700px) {
-      height: 40px;
-      width: 40px;
-      font-size: 12px;
+      @media (max-width: 700px) {
+        height: 40px;
+        width: 40px;
+        font-size: 12px;
 
-      svg {
-        width: 20px;
+        svg {
+          width: 20px;
+        }
       }
     }
   `}
@@ -193,6 +194,10 @@ export const SidebarOverlay = styled.div<{ $isDrawerOpen?: boolean }>`
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
     z-index: 1;
+
+    ${standaloneMedia(css`
+      top: 90px;
+    `)}
   }
 `
 

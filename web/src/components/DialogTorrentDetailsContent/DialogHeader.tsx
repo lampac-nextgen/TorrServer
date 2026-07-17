@@ -1,6 +1,7 @@
 import { AppBar, IconButton, Toolbar, Typography } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { ArrowBack } from '@mui/icons-material'
+import { useTranslation } from 'react-i18next'
 import { isStandaloneApp } from 'utils/Utils'
 
 interface DialogHeaderProps {
@@ -10,11 +11,13 @@ interface DialogHeaderProps {
 }
 
 export default function DialogHeader({ title, onClose, onBack }: DialogHeaderProps) {
+  const { t } = useTranslation()
+
   return (
     <AppBar sx={{ position: 'relative', ...(isStandaloneApp && { paddingTop: '30px' }) }}>
       <Toolbar>
         {onBack && (
-          <IconButton edge='start' color='inherit' onClick={onBack} aria-label='back'>
+          <IconButton edge='start' color='inherit' onClick={onBack} aria-label={t('Back', { defaultValue: 'Back' })}>
             <ArrowBack />
           </IconButton>
         )}
@@ -23,7 +26,13 @@ export default function DialogHeader({ title, onClose, onBack }: DialogHeaderPro
           {title}
         </Typography>
 
-        <IconButton autoFocus color='inherit' onClick={onClose} aria-label='close' sx={{ marginRight: '-10px' }}>
+        <IconButton
+          autoFocus
+          color='inherit'
+          onClick={onClose}
+          aria-label={t('Close', { defaultValue: 'Close' })}
+          sx={{ marginRight: '-10px' }}
+        >
           <CloseIcon />
         </IconButton>
       </Toolbar>

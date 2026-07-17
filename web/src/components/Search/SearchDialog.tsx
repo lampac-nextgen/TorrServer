@@ -13,6 +13,7 @@ import {
   Divider,
   IconButton,
   Snackbar,
+  Alert,
   useMediaQuery,
   Select,
   MenuItem,
@@ -271,7 +272,7 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
   return (
     <StyledDialog open onClose={handleClose} fullScreen={fullScreen} fullWidth maxWidth='md' ref={ref}>
       <StyledHeader>{t('Torznab.SearchTorrents')}</StyledHeader>
-      <Content $isLoading={loading}>
+      <Content>
         <div style={{ padding: '20px' }}>
           <div
             style={{
@@ -450,8 +451,16 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
         </div>
       </Content>
 
-      <Snackbar open={!!successMsg} autoHideDuration={1500} onClose={handleAlertClose} message={successMsg} />
-      <Snackbar open={!!errorMsg} autoHideDuration={1500} onClose={handleAlertClose} message={errorMsg} />
+      <Snackbar open={!!successMsg} autoHideDuration={1500} onClose={handleAlertClose}>
+        <Alert onClose={handleAlertClose} severity='success' variant='filled' sx={{ width: '100%' }}>
+          {successMsg}
+        </Alert>
+      </Snackbar>
+      <Snackbar open={!!errorMsg} autoHideDuration={1500} onClose={handleAlertClose}>
+        <Alert onClose={handleAlertClose} severity='error' variant='filled' sx={{ width: '100%' }}>
+          {errorMsg}
+        </Alert>
+      </Snackbar>
 
       <div
         style={{

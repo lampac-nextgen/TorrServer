@@ -59,6 +59,15 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
     () =>
       createTheme({
         typography,
+        breakpoints: {
+          values: {
+            xs: 0,
+            sm: 600,
+            md: 930,
+            lg: 1200,
+            xl: 1536,
+          },
+        },
         palette: {
           mode: theme as PaletteMode,
           primary: { main: mainColors[theme].primary },
@@ -74,9 +83,20 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
                 borderRadius: 8,
                 textTransform: 'none',
               },
+              sizeSmall: {
+                minHeight: 36,
+              },
+              sizeMedium: {
+                minHeight: 44,
+              },
               sizeLarge: {
                 minHeight: 44,
               },
+            },
+          },
+          MuiAlert: {
+            defaultProps: {
+              variant: 'filled',
             },
           },
           MuiTypography: {

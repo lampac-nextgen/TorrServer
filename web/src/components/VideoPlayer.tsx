@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Button,
   CircularProgress,
@@ -307,6 +308,7 @@ const VideoPlayer = ({
   const [open, setOpen] = useState(initiallyOpen)
   const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null)
   const [loading, setLoading] = useState(true)
+  const [mediaError, setMediaError] = useState(false)
   const [playing, setPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -369,6 +371,7 @@ const VideoPlayer = ({
         } else {
           hlsPlayer!.stopLoad()
           setLoading(false)
+          setMediaError(true)
         }
       })
       hlsPlayer.loadSource(videoSrc)
@@ -490,6 +493,7 @@ const VideoPlayer = ({
 
   const closePlayer = () => {
     setOpen(false)
+    setMediaError(false)
     onClose?.()
   }
 
@@ -530,16 +534,18 @@ const VideoPlayer = ({
             size='small'
             onClick={() => {
               setLoading(true)
+              setMediaError(false)
               setOpen(true)
             }}
-            sx={{ width: '100%', minHeight: 36 }}
+            sx={{ minWidth: 96, minHeight: 40, flex: '1 1 auto', px: 1.5 }}
           >
-            {t('OpenLink')}
+            {t('Play')}
           </Button>
         ) : (
           <StyledButton
             onClick={() => {
               setLoading(true)
+              setMediaError(false)
               setOpen(true)
             }}
           >
@@ -570,6 +576,21 @@ const VideoPlayer = ({
             <CloseIcon fontSize='medium' />
           </PlayerIconButton>
         </PlayerHeader>
+        {mediaError && (
+          <Alert
+            severity='error'
+            action={
+              downloadSrc ? (
+                <Button color='inherit' size='small' component='a' href={downloadSrc} target='_blank' rel='noreferrer'>
+                  {t('OpenLink')}
+                </Button>
+              ) : undefined
+            }
+            sx={{ borderRadius: 0 }}
+          >
+            {t('PlaybackError')}
+          </Alert>
+        )}
         <DialogContent style={{ padding: 0 }}>
           <VideoWrapper onClick={handlePlayPause} style={isMobile ? { minHeight: 240 } : {}}>
             <VideoEl

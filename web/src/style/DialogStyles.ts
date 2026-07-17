@@ -19,8 +19,22 @@ export const ButtonWrapper = styled.div`
   padding: 20px;
   display: flex;
   justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
 
   > :not(:last-child) {
-    margin-right: 10px;
+    margin-right: 0;
+  }
+
+  @media (max-width: 500px) {
+    flex-direction: column-reverse;
+
+    .MuiButton-root {
+      width: 100%;
+    }
   }
 `
+
+/** Shared dialog footer: Cancel (outlined) + primary CTA row. */
+export const DialogFooter = ButtonWrapper

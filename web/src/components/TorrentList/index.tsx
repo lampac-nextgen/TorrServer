@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import TorrentCard from 'components/TorrentCard'
-import CircularProgress from '@mui/material/CircularProgress'
+import Skeleton from '@mui/material/Skeleton'
+import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { useTranslation } from 'react-i18next'
 import { TorrentListWrapper, CenteredGrid } from 'components/App/style'
@@ -33,16 +34,32 @@ export default function TorrentList({ isOffline, isLoading, sortABC, torrents, s
     })
   }, [torrents, sortCategory, sortABC])
 
-  if (isLoading || isOffline || !torrents?.length) {
+  if (isLoading) {
+    return (
+      <TorrentListWrapper>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Stack key={i} spacing={1} sx={{ p: 2 }}>
+            <Skeleton variant='rounded' height={160} />
+            <Skeleton width='60%' />
+            <Skeleton width='40%' />
+          </Stack>
+        ))}
+      </TorrentListWrapper>
+    )
+  }
+
+  if (isOffline) {
     return (
       <CenteredGrid>
-        {isOffline ? (
-          <NoServerConnection />
-        ) : isLoading ? (
-          <CircularProgress color='secondary' />
-        ) : (
-          !torrents?.length && <AddFirstTorrent />
-        )}
+        <NoServerConnection />
+      </CenteredGrid>
+    )
+  }
+
+  if (!torrents?.length) {
+    return (
+      <CenteredGrid>
+        <AddFirstTorrent />
       </CenteredGrid>
     )
   }

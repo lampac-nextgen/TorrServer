@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react'
 import Button from '@mui/material/Button'
 import { torrentsHost } from 'utils/Hosts'
 import axios from 'axios'
@@ -26,7 +26,8 @@ import {
 import { Content } from './style'
 import RightSideComponent from './RightSideComponent'
 import LeftSideComponent from './LeftSideComponent'
-import MultiAddDialog from './MultiAddDialog'
+
+const MultiAddDialog = lazy(() => import('./MultiAddDialog'))
 
 export interface AddDialogProps {
   handleClose: () => void
@@ -75,7 +76,8 @@ export default function AddDialog({
     queryKey: ['torrents'],
     queryFn: getTorrents,
     retry: 1,
-    refetchInterval: 1000,
+    // Share App list cache; avoid a second 1s poll while the dialog is open.
+    staleTime: 1000,
   })
 
   useEffect(() => {
@@ -287,7 +289,11 @@ export default function AddDialog({
   }
 
   if (multiFiles) {
-    return <MultiAddDialog files={multiFiles} handleClose={handleClose} />
+    return (
+      <Suspense fallback={<CircularProgress />}>
+        <MultiAddDialog files={multiFiles} handleClose={handleClose} />
+      </Suspense>
+    )
   }
 
   return (

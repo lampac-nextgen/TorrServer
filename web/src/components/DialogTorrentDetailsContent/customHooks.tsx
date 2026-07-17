@@ -3,8 +3,8 @@ import { cacheHost, settingsHost } from 'utils/Hosts'
 import axios from 'axios'
 import type { BTSets, CacheMapItem, TorrentCache } from 'types/api'
 
-/** Match classic TorrServer so preload/cache snake updates in real time. */
-const CACHE_POLL_MS = 100
+/** Match classic TorrServer realtime feel without overloading the UI thread. */
+const CACHE_POLL_MS = 250
 
 export const useUpdateCache = (hash?: string) => {
   const [cache, setCache] = useState<TorrentCache>({})

@@ -1,4 +1,5 @@
 import CssBaseline from '@mui/material/CssBaseline'
+import CircularProgress from '@mui/material/CircularProgress'
 import { createContext, lazy, Suspense, useEffect, useState } from 'react'
 import Typography from '@mui/material/Typography'
 import Tooltip from '@mui/material/Tooltip'
@@ -23,6 +24,7 @@ import { ThemeProvider as StyledComponentsThemeProvider } from 'styled-component
 import { useQuery } from '@tanstack/react-query'
 import { detectApplePlatform, getTorrents, isStandaloneApp } from 'utils/Utils'
 import GlobalStyle from 'style/GlobalStyle'
+import { AppSnackbarProvider } from 'components/Feedback/AppSnackbar'
 import { THEME_MODES, useMaterialUITheme } from 'style/materialUISetup'
 import getStyledComponentsTheme from 'style/getStyledComponentsTheme'
 import useLaunchHandler from 'utils/useLaunchHandler'
@@ -102,149 +104,156 @@ export default function App() {
             theme={getStyledComponentsTheme(isDarkMode ? THEME_MODES.DARK : THEME_MODES.LIGHT)}
           >
             <CssBaseline />
+            <AppSnackbarProvider>
+              <Div100vh>
+                <AppWrapper $isDrawerOpen={isDrawerOpen}>
+                  <AppHeader>
+                    <Tooltip title={t('Menu', { defaultValue: 'Menu' })}>
+                      <StyledIconButton
+                        edge='start'
+                        color='inherit'
+                        aria-label={t('Menu', { defaultValue: 'Menu' })}
+                        onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+                      >
+                        {isDrawerOpen ? <CloseIcon /> : <MenuIcon />}
+                      </StyledIconButton>
+                    </Tooltip>
 
-            <Div100vh>
-              <AppWrapper $isDrawerOpen={isDrawerOpen}>
-                <AppHeader>
-                  <Tooltip title={t('Menu', { defaultValue: 'Menu' })}>
-                    <StyledIconButton
-                      edge='start'
-                      color='inherit'
-                      aria-label={t('Menu', { defaultValue: 'Menu' })}
-                      onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+                    <Typography variant='h6' noWrap>
+                      TorrServer {torrServerVersion}
+                    </Typography>
+
+                    <div
+                      style={{
+                        justifySelf: 'end',
+                        display: 'grid',
+                        gridTemplateColumns: isStandaloneApp ? 'repeat(4, 1fr)' : 'repeat(3, 1fr)',
+                        gap: '10px',
+                      }}
                     >
-                      {isDrawerOpen ? <CloseIcon /> : <MenuIcon />}
-                    </StyledIconButton>
-                  </Tooltip>
+                      {isStandaloneApp && (
+                        <Tooltip title={t('Search')}>
+                          <HeaderToggle
+                            color='inherit'
+                            aria-label={t('Search')}
+                            onClick={() => setIsSearchDialogOpen(true)}
+                          >
+                            <SearchIcon />
+                          </HeaderToggle>
+                        </Tooltip>
+                      )}
 
-                  <Typography variant='h6' noWrap>
-                    TorrServer {torrServerVersion}
-                  </Typography>
-
-                  <div
-                    style={{
-                      justifySelf: 'end',
-                      display: 'grid',
-                      gridTemplateColumns: isStandaloneApp ? 'repeat(4, 1fr)' : 'repeat(3, 1fr)',
-                      gap: '10px',
-                    }}
-                  >
-                    {isStandaloneApp && (
-                      <Tooltip title={t('Search')}>
-                        <HeaderToggle
-                          role='button'
-                          aria-label={t('Search')}
-                          onClick={() => setIsSearchDialogOpen(true)}
-                        >
-                          <SearchIcon />
-                        </HeaderToggle>
-                      </Tooltip>
-                    )}
-
-                    <Tooltip
-                      title={
-                        sortABC
-                          ? t('SortByDate', { defaultValue: 'Sort by date' })
-                          : t('SortByName', { defaultValue: 'Sort by name' })
-                      }
-                    >
-                      <HeaderToggle
-                        role='button'
-                        aria-label={
+                      <Tooltip
+                        title={
                           sortABC
                             ? t('SortByDate', { defaultValue: 'Sort by date' })
                             : t('SortByName', { defaultValue: 'Sort by name' })
                         }
-                        onClick={() => (sortABC === true ? handleClickSortDate() : handleClickSortABC())}
                       >
-                        {sortABC === true ? <SortByAlphaIcon /> : <SortIcon />}
-                      </HeaderToggle>
-                    </Tooltip>
+                        <HeaderToggle
+                          color='inherit'
+                          aria-label={
+                            sortABC
+                              ? t('SortByDate', { defaultValue: 'Sort by date' })
+                              : t('SortByName', { defaultValue: 'Sort by name' })
+                          }
+                          onClick={() => (sortABC === true ? handleClickSortDate() : handleClickSortABC())}
+                        >
+                          {sortABC === true ? <SortByAlphaIcon /> : <SortIcon />}
+                        </HeaderToggle>
+                      </Tooltip>
 
-                    <Tooltip title={t('Theme', { defaultValue: 'Theme' })}>
-                      <HeaderToggle
-                        role='button'
-                        aria-label={t('Theme', { defaultValue: 'Theme' })}
-                        onClick={() => {
-                          if (currentThemeMode === THEME_MODES.LIGHT) updateThemeMode(THEME_MODES.DARK)
-                          if (currentThemeMode === THEME_MODES.DARK) updateThemeMode(THEME_MODES.AUTO)
-                          if (currentThemeMode === THEME_MODES.AUTO) updateThemeMode(THEME_MODES.LIGHT)
-                        }}
-                      >
-                        {currentThemeMode === THEME_MODES.LIGHT ? (
-                          <Brightness5Icon />
-                        ) : currentThemeMode === THEME_MODES.DARK ? (
-                          <Brightness4Icon />
-                        ) : (
-                          <BrightnessAutoIcon />
-                        )}
-                      </HeaderToggle>
-                    </Tooltip>
+                      <Tooltip title={t('Theme', { defaultValue: 'Theme' })}>
+                        <HeaderToggle
+                          color='inherit'
+                          aria-label={t('Theme', { defaultValue: 'Theme' })}
+                          onClick={() => {
+                            if (currentThemeMode === THEME_MODES.LIGHT) updateThemeMode(THEME_MODES.DARK)
+                            if (currentThemeMode === THEME_MODES.DARK) updateThemeMode(THEME_MODES.AUTO)
+                            if (currentThemeMode === THEME_MODES.AUTO) updateThemeMode(THEME_MODES.LIGHT)
+                          }}
+                        >
+                          {currentThemeMode === THEME_MODES.LIGHT ? (
+                            <Brightness5Icon />
+                          ) : currentThemeMode === THEME_MODES.DARK ? (
+                            <Brightness4Icon />
+                          ) : (
+                            <BrightnessAutoIcon />
+                          )}
+                        </HeaderToggle>
+                      </Tooltip>
 
-                    <Tooltip title={t('Language', { defaultValue: 'Language' })}>
-                      <HeaderToggle
-                        role='button'
-                        aria-label={t('Language', { defaultValue: 'Language' })}
-                        onClick={() =>
-                          currentLang === 'en'
-                            ? changeLang('ru')
-                            : currentLang === 'ru'
-                              ? changeLang('ua')
-                              : currentLang === 'ua'
-                                ? changeLang('zh')
-                                : currentLang === 'zh'
-                                  ? changeLang('bg')
-                                  : currentLang === 'bg'
-                                    ? changeLang('fr')
-                                    : currentLang === 'fr'
-                                      ? changeLang('ro')
-                                      : changeLang('en')
-                        }
-                      >
-                        {currentLang.toUpperCase()}
-                      </HeaderToggle>
-                    </Tooltip>
-                  </div>
-                </AppHeader>
+                      <Tooltip title={t('Language', { defaultValue: 'Language' })}>
+                        <HeaderToggle
+                          color='inherit'
+                          aria-label={t('Language', { defaultValue: 'Language' })}
+                          onClick={() =>
+                            currentLang === 'en'
+                              ? changeLang('ru')
+                              : currentLang === 'ru'
+                                ? changeLang('ua')
+                                : currentLang === 'ua'
+                                  ? changeLang('zh')
+                                  : currentLang === 'zh'
+                                    ? changeLang('bg')
+                                    : currentLang === 'bg'
+                                      ? changeLang('fr')
+                                      : currentLang === 'fr'
+                                        ? changeLang('ro')
+                                        : changeLang('en')
+                          }
+                        >
+                          {currentLang.toUpperCase()}
+                        </HeaderToggle>
+                      </Tooltip>
+                    </div>
+                  </AppHeader>
 
-                <SidebarOverlay $isDrawerOpen={isDrawerOpen} onClick={() => setIsDrawerOpen(false)} />
+                  <SidebarOverlay $isDrawerOpen={isDrawerOpen} onClick={() => setIsDrawerOpen(false)} />
 
-                <Sidebar
-                  isOffline={isOffline}
-                  isLoading={isLoading}
-                  isDrawerOpen={isDrawerOpen}
-                  setIsDonationDialogOpen={setIsDonationDialogOpen}
-                  setGlobalFilterCategory={setGlobalFilterCategory}
-                />
+                  <Sidebar
+                    isOffline={isOffline}
+                    isLoading={isLoading}
+                    isDrawerOpen={isDrawerOpen}
+                    setIsDonationDialogOpen={setIsDonationDialogOpen}
+                    setGlobalFilterCategory={setGlobalFilterCategory}
+                  />
 
-                <TorrentList
-                  isOffline={isOffline}
-                  torrents={torrents}
-                  isLoading={isLoading}
-                  sortABC={sortABC}
-                  sortCategory={globalCategoryFilter}
-                />
+                  <TorrentList
+                    isOffline={isOffline}
+                    torrents={torrents}
+                    isLoading={isLoading}
+                    sortABC={sortABC}
+                    sortCategory={globalCategoryFilter}
+                  />
 
-                <PWAFooter
-                  isOffline={isOffline}
-                  isLoading={isLoading}
-                  setIsDonationDialogOpen={setIsDonationDialogOpen}
-                />
+                  <PWAFooter
+                    isOffline={isOffline}
+                    isLoading={isLoading}
+                    setIsDonationDialogOpen={setIsDonationDialogOpen}
+                  />
 
-                <Suspense fallback={null}>
-                  {isDonationDialogOpen && <DonateDialog onClose={() => setIsDonationDialogOpen(false)} />}
-                  {isSearchDialogOpen && <SearchDialog handleClose={() => setIsSearchDialogOpen(false)} />}
-                  {launchSource && <AddDialog hash={launchSource} handleClose={() => setLaunchSource(null)} />}
-                  {launchFiles && <MultiAddDialog files={launchFiles} handleClose={() => setLaunchFiles(null)} />}
-                </Suspense>
+                  <Suspense
+                    fallback={
+                      <div style={{ display: 'grid', placeItems: 'center', padding: 24 }}>
+                        <CircularProgress size={32} />
+                      </div>
+                    }
+                  >
+                    {isDonationDialogOpen && <DonateDialog onClose={() => setIsDonationDialogOpen(false)} />}
+                    {isSearchDialogOpen && <SearchDialog handleClose={() => setIsSearchDialogOpen(false)} />}
+                    {launchSource && <AddDialog hash={launchSource} handleClose={() => setLaunchSource(null)} />}
+                    {launchFiles && <MultiAddDialog files={launchFiles} handleClose={() => setLaunchFiles(null)} />}
+                  </Suspense>
 
-                {snackbarIsClosed ? (
-                  detectApplePlatform().isIOS && !isStandaloneApp && <PWAInstallationGuide />
-                ) : (
-                  <DonateSnackbar />
-                )}
-              </AppWrapper>
-            </Div100vh>
+                  {snackbarIsClosed ? (
+                    detectApplePlatform().isIOS && !isStandaloneApp && <PWAInstallationGuide />
+                  ) : (
+                    <DonateSnackbar />
+                  )}
+                </AppWrapper>
+              </Div100vh>
+            </AppSnackbarProvider>
           </StyledComponentsThemeProvider>
         </MuiThemeProvider>
       </DarkModeContext.Provider>

@@ -4,6 +4,8 @@ import {
   useEffect,
   useRef,
   useState,
+  lazy,
+  Suspense,
   type ComponentPropsWithoutRef,
   type ForwardedRef,
   type ReactElement,
@@ -24,6 +26,7 @@ import Dialog from '@mui/material/Dialog'
 import Slide from '@mui/material/Slide'
 import {
   Button,
+  Chip,
   CircularProgress,
   DialogActions,
   DialogTitle,
@@ -36,7 +39,6 @@ import {
 import axios from 'axios'
 import ptt from 'parse-torrent-title'
 import { useTranslation } from 'react-i18next'
-import AddDialog from 'components/Add/AddDialog'
 import { StyledDialog } from 'style/CustomMaterialUiStyles'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import { GETTING_INFO, IN_DB, CLOSED, PRELOAD, WORKING } from 'torrentStates'
@@ -51,14 +53,9 @@ import {
   useGStreamerRuntime,
 } from 'utils/GStreamer'
 
-import {
-  StatusIndicators,
-  StyledButton,
-  TorrentCard,
-  TorrentCardButtons,
-  TorrentCardDescription,
-  TorrentCardPoster,
-} from './style'
+const AddDialog = lazy(() => import('components/Add/AddDialog'))
+
+import { StyledButton, TorrentCard, TorrentCardButtons, TorrentCardDescription, TorrentCardPoster } from './style'
 
 const Transition = forwardRef(function Transition(
   props: ComponentPropsWithoutRef<typeof Slide>,
@@ -605,7 +602,7 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
       <Dialog open={isDeleteTorrentOpened} onClose={closeDeleteTorrentAlert}>
         <DialogTitle>{t('DeleteTorrent?')}</DialogTitle>
         <DialogActions>
-          <Button variant='outlined' onClick={closeDeleteTorrentAlert} color='secondary'>
+          <Button variant='outlined' onClick={closeDeleteTorrentAlert} color='secondary' autoFocus>
             {t('Cancel')}
           </Button>
 
@@ -616,7 +613,6 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
               closeDeleteTorrentAlert()
             }}
             color='secondary'
-            autoFocus
           >
             {t('OK')}
           </Button>
@@ -624,14 +620,16 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
       </Dialog>
 
       {isEditDialogOpen && (
-        <AddDialog
-          hash={hash}
-          title={title}
-          name={name}
-          poster={poster}
-          handleClose={handleCloseEditDialog}
-          category={category}
-        />
+        <Suspense fallback={null}>
+          <AddDialog
+            hash={hash}
+            title={title}
+            name={name}
+            poster={poster}
+            handleClose={handleCloseEditDialog}
+            category={category}
+          />
+        </Suspense>
       )}
     </>
   )
@@ -648,20 +646,19 @@ export const StatusIndicator = ({ stat }: { stat?: number }) => {
     [IN_DB]: t('TorrentInDb'),
   }
 
-  const colors: Record<number, string> = {
-    [GETTING_INFO]: '#2196F3',
-    [PRELOAD]: '#FFC107',
-    [WORKING]: '#CDDC39',
-    [CLOSED]: '#E57373',
-    [IN_DB]: '#9E9E9E',
+  const colors: Record<number, 'info' | 'warning' | 'success' | 'error' | 'default'> = {
+    [GETTING_INFO]: 'info',
+    [PRELOAD]: 'warning',
+    [WORKING]: 'success',
+    [CLOSED]: 'error',
+    [IN_DB]: 'default',
   }
+
+  if (stat == null) return null
 
   return (
     <span className='description-status-wrapper'>
-      <StatusIndicators
-        $color={stat != null ? colors[stat] : undefined}
-        title={stat != null ? values[stat] : undefined}
-      />
+      <Chip size='small' label={values[stat]} color={colors[stat]} variant='outlined' />
     </span>
   )
 }

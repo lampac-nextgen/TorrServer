@@ -58,6 +58,15 @@ export default defineConfig(({ mode }) => {
       emptyOutDir: true,
       sourcemap: true,
       chunkSizeWarningLimit: 2000,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            mui: ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
+            hls: ['hls.js'],
+            vendor: ['react', 'react-dom', '@tanstack/react-query', 'i18next', 'react-i18next', 'axios'],
+          },
+        },
+      },
     },
   }
 })

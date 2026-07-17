@@ -1,7 +1,7 @@
 import axios from 'axios'
 import Button from '@mui/material/Button'
 import Switch from '@mui/material/Switch'
-import { FormControlLabel, Snackbar, useMediaQuery, useTheme } from '@mui/material'
+import { FormControlLabel, Snackbar, Alert, useMediaQuery, useTheme } from '@mui/material'
 import { settingsHost, gstSettingsHost } from 'utils/Hosts'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -278,7 +278,11 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
           {saving ? <CircularProgress size={22} color='inherit' /> : t('Save')}
         </Button>
       </FooterSection>
-      <Snackbar open={!!saveMsg} autoHideDuration={3000} onClose={() => setSaveMsg('')} message={saveMsg} />
+      <Snackbar open={!!saveMsg} autoHideDuration={3000} onClose={() => setSaveMsg('')}>
+        <Alert onClose={() => setSaveMsg('')} severity='error' variant='filled' sx={{ width: '100%' }}>
+          {saveMsg}
+        </Alert>
+      </Snackbar>
     </StyledDialog>
   )
 }

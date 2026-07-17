@@ -302,7 +302,21 @@
     "TranscodeAV1": "Transcode AV1",
     "TranscodeVP9": "Transcode VP9",
     "TranscodeHint": "When disabled, compatible tracks are copied. Enable for codecs the client cannot play directly.",
-    "X264Ultrafast": "Use x264 ultrafast preset"
+    "X264Ultrafast": "Use x264 ultrafast preset",
+    "HDRToSDR": "HDR 转 SDR",
+    "HDRToSDRHint": "转码时将 HDR 转换为 SDR。",
+    "HardwareAcceleration": "硬件加速",
+    "HardwareAccelerationHint": "在可用时使用 GPU 进行编解码。",
+    "SectionAudio": "音频",
+    "SegmentDiff": "Copy 分段对齐",
+    "SegmentDiffHint": "Copy 模式下分段边界的容差。",
+    "Subtitles": "字幕",
+    "SubtitlesHint": "在 HLS 中嵌入或提取字幕。",
+    "TranscodeAVI": "转码 AVI",
+    "TranscodeVP8": "转码为 VP8",
+    "UseGPU": "使用 GPU",
+    "UseGPUHint": "尽可能启用硬件加速。",
+    "X264UltrafastHint": "更快的 x264 编码，质量较低。"
   },
   "TMDB": {
     "Settings": "TMDB",
@@ -320,5 +334,10 @@
   "Uncategorized": "未分类",
   "UploadFile": "上传文件",
   "UploadSpeed": "上传速度",
-  "Viewed": "查看"
+  "Viewed": "查看",
+  "Copied": "已复制",
+  "NoPlayableFiles": "此种子中没有可播放的文件",
+  "PlaybackError": "播放失败",
+  "ConfirmDropTorrent": "从内存中重置此种子？",
+  "ConfirmRemoveViews": "清除此种子的所有已观看标记？"
 }

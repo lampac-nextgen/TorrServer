@@ -1,7 +1,7 @@
 import { NoImageIcon } from 'icons'
 import { humanizeSize, removeRedundantCharacters } from 'utils/Utils'
 import { useEffect, useState } from 'react'
-import { Button, ButtonGroup } from '@mui/material'
+import { Button, ButtonGroup, LinearProgress, Stack, Typography } from '@mui/material'
 import ptt from 'parse-torrent-title'
 import axios from 'axios'
 import { viewedHost } from 'utils/Hosts'
@@ -22,7 +22,6 @@ import {
   SectionTitle,
   SectionSubName,
   WidgetWrapper,
-  LoadingProgress,
   SectionHeader,
   CacheSection,
   TorrentFilesSection,
@@ -232,15 +231,26 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
               <SectionHeader>
                 <SectionTitle $mb={12}>{t('Buffer')}</SectionTitle>
                 {bufferSize <= 33554432 && <SectionSubName>{t('BufferNote')}</SectionSubName>}
-                <LoadingProgress
-                  $value={Filled || 0}
-                  style={{ marginTop: '5px' }}
-                  $fullAmount={cacheDisplayTarget}
-                  aria-label={`${humanizeSize(Filled || 0)} / ${humanizeSize(cacheDisplayTarget)}`}
-                >
-                  {`${humanizeSize(Filled || 0)} / ${humanizeSize(cacheDisplayTarget)}`}
-                  {cacheFillPercent != null ? ` · ${cacheFillPercent}%` : ''}
-                </LoadingProgress>
+                <Stack spacing={1} sx={{ mt: 0.5 }}>
+                  <Typography
+                    component='div'
+                    variant='body1'
+                    fontWeight={600}
+                    textAlign='center'
+                    aria-label={`${humanizeSize(Filled || 0)} / ${humanizeSize(cacheDisplayTarget)}`}
+                  >
+                    {`${humanizeSize(Filled || 0)} / ${humanizeSize(cacheDisplayTarget)}`}
+                    {cacheFillPercent != null ? ` · ${cacheFillPercent}%` : ''}
+                  </Typography>
+                  <LinearProgress
+                    variant='determinate'
+                    value={cacheFillPercent ?? 0}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={cacheFillPercent ?? 0}
+                    sx={{ height: 10, borderRadius: 1 }}
+                  />
+                </Stack>
               </SectionHeader>
 
               <TorrentCache isMini cache={cache} isSnakeDebugMode={isSnakeDebugMode} />

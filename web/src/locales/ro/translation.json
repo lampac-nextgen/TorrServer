@@ -308,7 +308,21 @@
     "TempFS": "Activează bufferul de fișier pentru fluxul sursă",
     "TempFSHint": "Creează un buffer circular temporar gst-XXXXXX în directorul de lucru TorrServer. Ajută la atenuarea scăderilor de viteză pe torrentele slabe, se recomandă stocare pe SSD.",
     "TempFSRing": "Buffer suplimentar pentru flux",
-    "TempFSRingHint": "0 = buffer de bază de aproximativ 90 de secunde. Fiecare unitate adaugă ~30 de secunde, 10 adaugă aproximativ 300 de secunde."
+    "TempFSRingHint": "0 = buffer de bază de aproximativ 90 de secunde. Fiecare unitate adaugă ~30 de secunde, 10 adaugă aproximativ 300 de secunde.",
+    "HDRToSDR": "HDR către SDR",
+    "HDRToSDRHint": "Convertește HDR în SDR la transcodare.",
+    "HardwareAcceleration": "Accelerare hardware",
+    "HardwareAccelerationHint": "Folosește GPU pentru decodare/codare când este disponibil.",
+    "SectionAudio": "Audio",
+    "SegmentDiff": "Aliniere segmente copy",
+    "SegmentDiffHint": "Toleranță pentru limitele de segment în modul copy.",
+    "Subtitles": "Subtitrări",
+    "SubtitlesHint": "Încorporează sau extrage subtitrările în HLS.",
+    "TranscodeAVI": "Transcodare AVI",
+    "TranscodeVP8": "Transcodare VP8",
+    "UseGPU": "Folosește GPU",
+    "UseGPUHint": "Activează accelerarea hardware când este posibil.",
+    "X264UltrafastHint": "Codare x264 mai rapidă, calitate mai redusă."
   },
   "TMDB": {
     "Settings": "TMDB",
@@ -326,5 +340,10 @@
   "Uncategorized": "Necategorizat",
   "UploadFile": "Upload fișier",
   "UploadSpeed": "Viteza de Upload",
-  "Viewed": "Vizualizat"
+  "Viewed": "Vizualizat",
+  "Copied": "Copiat",
+  "NoPlayableFiles": "Nu există fișiere redabile în acest torrent",
+  "PlaybackError": "Redarea a eșuat",
+  "ConfirmDropTorrent": "Eliminați acest torrent din memorie?",
+  "ConfirmRemoveViews": "Ștergeți toate marcajele vizionate?"
 }

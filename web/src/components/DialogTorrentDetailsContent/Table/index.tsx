@@ -79,7 +79,7 @@ const Table = memo(
     }
 
     return !playableFileList?.length ? (
-      'No playable files in this torrent'
+      t('NoPlayableFiles')
     ) : (
       <>
         <TableStyle>
@@ -91,7 +91,7 @@ const Table = memo(
               {fileHasEpisodeText && <th style={{ width: '0' }}>{t('Episode')}</th>}
               {fileHasResolutionText && <th style={{ width: '0' }}>{t('Resolution')}</th>}
               <th style={{ width: '100px' }}>{t('Size')}</th>
-              <th style={{ width: '280px' }}>{t('Actions')}</th>
+              <th style={{ width: '420px' }}>{t('Actions')}</th>
             </tr>
           </thead>
 

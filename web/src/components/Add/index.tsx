@@ -1,14 +1,16 @@
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import ListItemIcon from '@mui/material/ListItemIcon'
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd'
 import ListItemText from '@mui/material/ListItemText'
+import CircularProgress from '@mui/material/CircularProgress'
 import { useTranslation } from 'react-i18next'
 import { StyledMenuButtonWrapper } from 'style/CustomMaterialUiStyles'
 import { isStandaloneApp } from 'utils/Utils'
 import type { OfflineAwareProps } from 'types/api'
 
-import AddDialog from './AddDialog'
 import { StyledPWAAddButton } from './style'
+
+const AddDialog = lazy(() => import('./AddDialog'))
 
 export default function AddDialogButton({ isOffline, isLoading }: OfflineAwareProps) {
   const { t } = useTranslation()
@@ -32,7 +34,11 @@ export default function AddDialogButton({ isOffline, isLoading }: OfflineAwarePr
         )}
       </StyledMenuButtonWrapper>
 
-      {isDialogOpen && <AddDialog handleClose={handleClose} />}
+      {isDialogOpen && (
+        <Suspense fallback={<CircularProgress size={24} sx={{ m: 2 }} />}>
+          <AddDialog handleClose={handleClose} />
+        </Suspense>
+      )}
     </div>
   )
 }

@@ -69,33 +69,19 @@ export const TableStyle = styled.table`
 
     .button-cell {
       display: flex;
-      flex-wrap: nowrap;
-      align-items: center;
+      flex-wrap: wrap;
+      align-items: stretch;
       gap: 8px;
       min-width: 0;
 
       > .MuiButton-root,
       > a {
-        flex: 1 1 0;
-        min-width: 0;
-      }
-
-      > a .MuiButton-root {
-        width: 100%;
+        flex: 1 1 auto;
+        min-width: 96px;
       }
 
       .MuiButton-outlined {
         border-color: rgba(0, 152, 121, 0.45);
-      }
-
-      .MuiIconButton-root {
-        flex: 0 0 auto;
-        width: 40px;
-        height: 40px;
-        padding: 8px;
-        border: none;
-        border-radius: 50%;
-        background: transparent;
       }
     }
 
@@ -167,7 +153,7 @@ export const ShortTable = styled.div<{ $isViewed?: boolean }>`
       &-field {
         display: grid;
         grid-template-rows: 30px 1fr;
-        background: black;
+        background: ${$isViewed ? viewedPrimaryColor : defaultPrimaryColor};
         &:not(:last-child) {
           border-right: 1px solid ${$isViewed ? viewedPrimaryColor : defaultPrimaryColor};
         }

@@ -302,7 +302,21 @@
     "TranscodeAV1": "Transcode AV1",
     "TranscodeVP9": "Transcode VP9",
     "TranscodeHint": "When disabled, compatible tracks are copied. Enable for codecs the client cannot play directly.",
-    "X264Ultrafast": "Use x264 ultrafast preset"
+    "X264Ultrafast": "Use x264 ultrafast preset",
+    "HDRToSDR": "HDR към SDR",
+    "HDRToSDRHint": "Преобразува HDR в SDR при транскодиране.",
+    "HardwareAcceleration": "Хардуерно ускорение",
+    "HardwareAccelerationHint": "Използва GPU за декодиране/кодиране, когато е налично.",
+    "SectionAudio": "Аудио",
+    "SegmentDiff": "Подравняване на copy сегменти",
+    "SegmentDiffHint": "Допуск за границата на сегмента в copy режим.",
+    "Subtitles": "Субтитри",
+    "SubtitlesHint": "Вграждане или извличане на субтитри в HLS.",
+    "TranscodeAVI": "Транскодиране на AVI",
+    "TranscodeVP8": "Транскодиране към VP8",
+    "UseGPU": "Използвай GPU",
+    "UseGPUHint": "Включва хардуерно ускорение, когато е възможно.",
+    "X264UltrafastHint": "По-бързо x264 кодиране с по-ниско качество."
   },
   "TMDB": {
     "Settings": "TMDB",
@@ -320,5 +334,10 @@
   "Uncategorized": "Некатегоризиран",
   "UploadFile": "Качи файл",
   "UploadSpeed": "Скорост на качване",
-  "Viewed": "Гледан"
+  "Viewed": "Гледан",
+  "Copied": "Копирано",
+  "NoPlayableFiles": "Няма възпроизводими файлове в този торент",
+  "PlaybackError": "Грешка при възпроизвеждане",
+  "ConfirmDropTorrent": "Да се изчисти този торент от паметта?",
+  "ConfirmRemoveViews": "Изчистване на всички маркери за преглед?"
 }
