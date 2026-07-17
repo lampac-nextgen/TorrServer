@@ -1,4 +1,9 @@
-import styled, { css } from 'styled-components'
+import styled, { css, keyframes } from 'styled-components'
+
+const float = keyframes`
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+`
 
 export default styled.div<{ $isButton?: boolean }>`
   ${({
@@ -9,29 +14,40 @@ export default styled.div<{ $isButton?: boolean }>`
   }) => css`
     display: grid;
     place-items: center;
-    padding: 20px 40px;
-    border-radius: 5px;
+    gap: 12px;
+    padding: 28px 40px;
+    border-radius: 8px;
+    outline: none;
 
     ${
       $isButton &&
       css`
         background: ${notificationSuccessBGColor};
-        transition: 0.2s;
+        transition: background 0.2s ease, box-shadow 0.2s ease;
         cursor: pointer;
 
-        :hover {
+        :hover,
+        :focus-visible {
           background: ${languageSwitchBGColor};
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+
+          .empty-icon {
+            animation: ${float} 1.4s ease-in-out infinite;
+          }
         }
       `
     }
 
-    lord-icon {
-      width: 200px;
-      height: 200px;
+    .empty-icon {
+      font-size: 120px !important;
+      width: 1em;
+      height: 1em;
+      transition: transform 0.2s ease;
     }
 
     .icon-label {
       font-size: 20px;
+      text-align: center;
     }
   `}
 `
