@@ -12,7 +12,7 @@ Ship path: web build → go run gen_web.go --clean → embedded in server/web/pa
 
 Locked:
 - No Vue, no MUI 7, no full Emotion rewrite, no FileRow ⋯ menu
-- Snake poll 250ms, no TorrentCache memo; GStreamer probe/runtime caches stay
+- Snake poll 100ms + memo + sparse/downsample (see context); GStreamer probe/runtime caches stay
 - No lord-icon; empty/offline = MUI icons
 - Do not commit unless I ask
 
