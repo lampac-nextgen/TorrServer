@@ -39,10 +39,6 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
   const [cachePercentage, setCachePercentage] = useState(40)
   const [preloadCachePercentage, setPreloadCachePercentage] = useState(0)
   const [isProMode, setIsProMode] = useState(readLocalBool('isProMode'))
-  const [isVlcUsed, setIsVlcUsed] = useState(readLocalBool('isVlcUsed'))
-  const [isInfuseUsed, setIsInfuseUsed] = useState(readLocalBool('isInfuseUsed'))
-  const [isSenPlayerUsed, setIsSenPlayerUsed] = useState(readLocalBool('isSenPlayerUsed'))
-  const [isIinaUsed, setIsIinaUsed] = useState(readLocalBool('isIinaUsed'))
   const [gstAvailable, setGstAvailable] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState('')
@@ -102,10 +98,6 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
       sets.PreloadCache = preloadCachePercentage
       await axios.post(settingsHost(), { action: 'set', sets })
       clearTMDBCache()
-      writeLocalJson('isVlcUsed', isVlcUsed)
-      writeLocalJson('isInfuseUsed', isInfuseUsed)
-      writeLocalJson('isSenPlayerUsed', isSenPlayerUsed)
-      writeLocalJson('isIinaUsed', isIinaUsed)
       handleClose()
     } catch (e) {
       setSaveMsg(
@@ -253,16 +245,7 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
             <TabPanel value={selectedTab} index={tabApp} dir={direction}>
               <SecondarySettingsContent>
                 <TMDBSettings settings={settings} updateSettings={updateSettings} />
-                <MobileAppSettings
-                  isVlcUsed={isVlcUsed}
-                  setIsVlcUsed={setIsVlcUsed}
-                  isInfuseUsed={isInfuseUsed}
-                  setIsInfuseUsed={setIsInfuseUsed}
-                  isSenPlayerUsed={isSenPlayerUsed}
-                  setIsSenPlayerUsed={setIsSenPlayerUsed}
-                  isIinaUsed={isIinaUsed}
-                  setIsIinaUsed={setIsIinaUsed}
-                />
+                <MobileAppSettings />
               </SecondarySettingsContent>
             </TabPanel>
 

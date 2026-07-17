@@ -1,42 +1,46 @@
 import { FormControlLabel, FormGroup, FormHelperText, Switch, Link } from '@mui/material'
 import { isMacOS, isAppleDevice, isDesktop } from 'utils/Utils'
 import { useTranslation } from 'react-i18next'
-import type { Dispatch, SetStateAction } from 'react'
+import { useState } from 'react'
+import { readLocalBool, writeLocalJson } from 'utils/localPrefs'
 
 import { SettingSectionLabel } from './style'
 
-interface MobileAppSettingsProps {
-  isVlcUsed: boolean
-  setIsVlcUsed: Dispatch<SetStateAction<boolean>>
-  isInfuseUsed: boolean
-  setIsInfuseUsed: Dispatch<SetStateAction<boolean>>
-  isSenPlayerUsed: boolean
-  setIsSenPlayerUsed: Dispatch<SetStateAction<boolean>>
-  isIinaUsed: boolean
-  setIsIinaUsed: Dispatch<SetStateAction<boolean>>
-}
+const PLAYER_KEYS = {
+  vlc: 'isVlcUsed',
+  infuse: 'isInfuseUsed',
+  senPlayer: 'isSenPlayerUsed',
+  iina: 'isIinaUsed',
+} as const
 
-export default function MobileAppSettings({
-  isVlcUsed,
-  setIsVlcUsed,
-  isInfuseUsed,
-  setIsInfuseUsed,
-  isSenPlayerUsed,
-  setIsSenPlayerUsed,
-  isIinaUsed,
-  setIsIinaUsed,
-}: MobileAppSettingsProps) {
+export default function MobileAppSettings() {
   const { t } = useTranslation()
   const isMac = isMacOS()
   const isApple = isAppleDevice()
   const isDesktopPlatform = isDesktop()
+
+  const [isVlcUsed, setIsVlcUsed] = useState(() => readLocalBool(PLAYER_KEYS.vlc))
+  const [isInfuseUsed, setIsInfuseUsed] = useState(() => readLocalBool(PLAYER_KEYS.infuse))
+  const [isSenPlayerUsed, setIsSenPlayerUsed] = useState(() => readLocalBool(PLAYER_KEYS.senPlayer))
+  const [isIinaUsed, setIsIinaUsed] = useState(() => readLocalBool(PLAYER_KEYS.iina))
+
+  const togglePref = (key: string, checked: boolean, setChecked: (v: boolean) => void) => {
+    setChecked(checked)
+    writeLocalJson(key, checked)
+  }
 
   return (
     <div>
       <SettingSectionLabel>{t('SettingsDialog.MobileAppSettings')}</SettingSectionLabel>
       <FormGroup>
         <FormControlLabel
-          control={<Switch checked={isVlcUsed} onChange={() => setIsVlcUsed(prev => !prev)} color='secondary' />}
+          control={
+            <Switch
+              checked={isVlcUsed}
+              onChange={(_, checked) => togglePref(PLAYER_KEYS.vlc, checked, setIsVlcUsed)}
+              color='secondary'
+            />
+          }
           label={t('SettingsDialog.UseVLC')}
           labelPlacement='start'
         />
@@ -58,7 +62,11 @@ export default function MobileAppSettings({
           <>
             <FormControlLabel
               control={
-                <Switch checked={isInfuseUsed} onChange={() => setIsInfuseUsed(prev => !prev)} color='secondary' />
+                <Switch
+                  checked={isInfuseUsed}
+                  onChange={(_, checked) => togglePref(PLAYER_KEYS.infuse, checked, setIsInfuseUsed)}
+                  color='secondary'
+                />
               }
               label={t('SettingsDialog.UseInfuse')}
               labelPlacement='start'
@@ -72,7 +80,7 @@ export default function MobileAppSettings({
               control={
                 <Switch
                   checked={isSenPlayerUsed}
-                  onChange={() => setIsSenPlayerUsed(prev => !prev)}
+                  onChange={(_, checked) => togglePref(PLAYER_KEYS.senPlayer, checked, setIsSenPlayerUsed)}
                   color='secondary'
                 />
               }
@@ -85,7 +93,13 @@ export default function MobileAppSettings({
         {isMac && (
           <>
             <FormControlLabel
-              control={<Switch checked={isIinaUsed} onChange={() => setIsIinaUsed(prev => !prev)} color='secondary' />}
+              control={
+                <Switch
+                  checked={isIinaUsed}
+                  onChange={(_, checked) => togglePref(PLAYER_KEYS.iina, checked, setIsIinaUsed)}
+                  color='secondary'
+                />
+              }
               label={t('SettingsDialog.UseIINA')}
               labelPlacement='start'
             />
