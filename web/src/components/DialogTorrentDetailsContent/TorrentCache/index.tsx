@@ -8,6 +8,7 @@ import type { CacheMapItem, TorrentCache as TorrentCacheData } from 'types/api'
 
 import { useCreateCacheMap, useCreateFocusMap } from '../customHooks'
 import {
+  priorityDebugLabel,
   resolveCellBudget,
   resolveFocusVisibleCells,
   resolveFocusWindow,
@@ -39,13 +40,7 @@ const emptyCell = (): CacheMapItem => ({
   isReaderRange: false,
 })
 
-const priorityLabel = (priority: number) => {
-  if (priority === 2) return 'H'
-  if (priority === 3) return 'R'
-  if (priority === 4) return 'N'
-  if (priority === 5) return 'A'
-  return ''
-}
+const priorityLabel = priorityDebugLabel
 
 const TorrentCache = ({ cache, isMini, mode: modeProp, isSnakeDebugMode }: TorrentCacheProps) => {
   const { t } = useTranslation()

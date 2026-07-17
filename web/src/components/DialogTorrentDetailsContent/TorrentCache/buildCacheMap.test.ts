@@ -6,6 +6,7 @@ import {
   buildFocusModel,
   clampReaderRangeInclusive,
   forEachPieceInReaderRange,
+  priorityDebugLabel,
   resolveFocusWindow,
 } from './buildCacheMap'
 
@@ -138,5 +139,24 @@ describe('resolveFocusWindow / buildFocusModel', () => {
     expect(readerCell!.pieceStart).toBe(9)
     expect(readerCell!.priority).toBe(5)
     expect(readerCell!.percentage).toBe(0)
+  })
+
+  it('infers H/R/N/A when API priority is missing on incomplete range pieces', () => {
+    const cache: TorrentCache = {
+      PiecesCount: 40,
+      PiecesLength: 100,
+      Capacity: 800,
+      Pieces: {},
+      Readers: [{ Reader: 10, Start: 10, End: 30 }],
+    }
+    const model = buildFocusModel(cache, 20)
+    const byId = (id: number) => model.cells.find(c => c.pieceStart === id)
+    expect(byId(10)?.priority).toBe(5) // A
+    expect(byId(11)?.priority).toBe(4) // N
+    expect(byId(12)?.priority).toBeGreaterThanOrEqual(2) // R or H
+    expect(priorityDebugLabel(5)).toBe('A')
+    expect(priorityDebugLabel(4)).toBe('N')
+    expect(priorityDebugLabel(3)).toBe('R')
+    expect(priorityDebugLabel(2)).toBe('H')
   })
 })

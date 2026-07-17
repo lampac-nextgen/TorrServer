@@ -340,8 +340,6 @@
   "PlaybackError": "Playback failed",
   "ConfirmDropTorrent": "Drop this torrent from memory?",
   "ConfirmRemoveViews": "Clear all viewed markers for this torrent?",
-  "SnakeBucket": "1 cell ≈ {{count}} pieces",
-  "SnakeFocus": "Reader window",
   "SnakeFocusRange": "pieces {{start}}–{{end}}",
   "SnakeTooltipBucket": "pieces {{start}}–{{end}} · {{fill}}%",
   "SnakeTooltipPiece": "piece #{{id}} · {{fill}}%"

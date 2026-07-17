@@ -1,11 +1,11 @@
-import type { CacheMapItem, CachePiece, TorrentCache } from 'types/api'
+import type { CacheMapItem, CachePiece, CacheReader, TorrentCache } from 'types/api'
 
-/** Soft caps — prefer finer buckets so fill progress stays visible on huge torrents. */
+/** Soft caps for mini LOD view. */
 export const SNAKE_MAX_CELLS_DETAILED = 6000
 export const SNAKE_MAX_CELLS_MINI = 900
 
-/** Focus / detailed strip target rows around the reader (1:1, no LOD). */
-export const SNAKE_FOCUS_TARGET_ROWS = 28
+/** Detailed 1:1 window target rows (readable labels on ~20px cells). */
+export const SNAKE_FOCUS_TARGET_ROWS = 16
 
 export interface CacheDrawModel {
   cells: CacheMapItem[]
@@ -70,18 +70,64 @@ const pieceFillPercentage = (piece: CachePiece | undefined, pieceLength: number)
   return Math.min(100, (size / length) * 100)
 }
 
+/**
+ * Map anacrolix priorities to snake labels: 2=H, 3=R, 4=N, 5=A.
+ * When API has None/Normal (0/1) on incomplete pieces ahead of the reader,
+ * infer the same ladder as server setLoadPriority so debug labels stay useful.
+ */
+export const resolveDisplayPriority = (
+  id: number,
+  apiPriority: number,
+  completed: boolean,
+  readers: CacheReader[] | undefined,
+): number => {
+  if (apiPriority >= 2) return apiPriority
+  if (completed || !readers?.length) return apiPriority > 0 ? apiPriority : 0
+
+  let best = 0
+  for (const r of readers) {
+    if (r.Reader == null || r.Start == null || r.End == null) continue
+    const readerPos = r.Reader
+    const end = r.End
+    if (id < readerPos || id > end) continue
+
+    let inferred = 1
+    if (id === readerPos) inferred = 5
+    else if (id === readerPos + 1) inferred = 4
+    else {
+      const span = Math.max(1, end - readerPos)
+      const rah = readerPos + Math.max(2, Math.floor(span * 0.45))
+      if (id <= rah) inferred = 3
+      else if (id <= rah + 5) inferred = 2
+    }
+    if (inferred > best) best = inferred
+  }
+  return best > 0 ? best : apiPriority
+}
+
+/** Priority → debug letter (master convention). */
+export const priorityDebugLabel = (priority: number): string => {
+  if (priority === 2) return 'H'
+  if (priority === 3) return 'R'
+  if (priority === 4) return 'N'
+  if (priority === 5) return 'A'
+  return ''
+}
+
 const cellFromPiece = (
   id: number,
   piece: CachePiece | undefined,
   pieceLength: number,
   isReader: boolean,
   isReaderRange: boolean,
+  readers: CacheReader[] | undefined,
 ): CacheMapItem => {
   const percentage = pieceFillPercentage(piece, pieceLength)
   const completed = Boolean(piece?.Completed) || percentage >= 100
+  const apiPriority = piece?.Priority || 0
   return {
     percentage: completed ? 100 : percentage,
-    priority: piece?.Priority || 0,
+    priority: resolveDisplayPriority(id, apiPriority, completed, readers),
     completed,
     isReader,
     isReaderRange,
@@ -148,7 +194,6 @@ export const buildCacheDrawModel = (cache: TorrentCache, maxCells: number): Cach
     const cap = capacity[b]
     let percentage = 0
     if (cap > 0) percentage = Math.min(100, (filled[b] / cap) * 100)
-    // Only mark complete when the bucket is truly full — keeps near-end fill visible.
     const completed = cap > 0 && filled[b] >= cap - 0.5
     const pieceStart = b * bucketSize
     const pieceEnd = Math.min(pieceStart + bucketSize, piecesCount) - 1
@@ -184,7 +229,7 @@ export interface FocusWindow {
 
 /**
  * Sliding 1:1 window around the primary reader.
- * `visibleCells` ≈ cols × focusRows — how many piece cells fit in the view.
+ * Sized to ~cache capacity (or on-screen rows), centered on the playhead.
  */
 export const resolveFocusWindow = (cache: TorrentCache, visibleCells: number): FocusWindow | null => {
   const piecesCount = cache.PiecesCount ?? 0
@@ -206,11 +251,10 @@ export const resolveFocusWindow = (cache: TorrentCache, visibleCells: number): F
   const capacityPieces =
     pieceLength > 0 ? Math.max(1, Math.round((cache.Capacity || 0) / pieceLength)) : visibleCells
 
-  // Prefer cache-capacity window, but never smaller than what fits on screen.
-  let windowSize = Math.max(visibleCells, Math.min(capacityPieces * 2, piecesCount))
-  windowSize = Math.min(piecesCount, Math.max(1, windowSize))
+  const maxWindow = Math.max(visibleCells, 64)
+  let windowSize = Math.min(piecesCount, Math.max(visibleCells, capacityPieces), maxWindow)
+  windowSize = Math.max(1, windowSize)
 
-  // Center on reader so fill ahead/behind is equally visible.
   let start = readerPiece - Math.floor(windowSize / 2)
   if (start < 0) start = 0
   let end = start + windowSize - 1
@@ -223,7 +267,7 @@ export const resolveFocusWindow = (cache: TorrentCache, visibleCells: number): F
 }
 
 /**
- * 1:1 focus model for debug: one cell per piece in [window.start, window.end].
+ * 1:1 focus model: one cell per piece in [window.start, window.end].
  */
 export const buildFocusModel = (cache: TorrentCache, visibleCells: number): CacheDrawModel => {
   const piecesCount = cache.PiecesCount ?? 0
@@ -233,6 +277,7 @@ export const buildFocusModel = (cache: TorrentCache, visibleCells: number): Cach
   }
 
   const pieceLength = cache.PiecesLength || 0
+  const readers = cache.Readers || []
   const pieceById = new Map<number, CachePiece>()
   forEachPiece(cache.Pieces, (id, piece) => {
     if (id >= window.start && id <= window.end) pieceById.set(id, piece)
@@ -240,7 +285,7 @@ export const buildFocusModel = (cache: TorrentCache, visibleCells: number): Cach
 
   const readerSet = new Set<number>()
   const rangeSet = new Set<number>()
-  for (const reader of cache.Readers || []) {
+  for (const reader of readers) {
     if (reader.Reader != null && reader.Reader >= window.start && reader.Reader <= window.end) {
       readerSet.add(reader.Reader)
     }
@@ -251,7 +296,9 @@ export const buildFocusModel = (cache: TorrentCache, visibleCells: number): Cach
 
   const cells: CacheMapItem[] = []
   for (let id = window.start; id <= window.end; id++) {
-    cells.push(cellFromPiece(id, pieceById.get(id), pieceLength, readerSet.has(id), rangeSet.has(id)))
+    cells.push(
+      cellFromPiece(id, pieceById.get(id), pieceLength, readerSet.has(id), rangeSet.has(id), readers),
+    )
   }
 
   return {
@@ -268,15 +315,13 @@ export const resolveCellBudget = (containerWidth: number, isMini: boolean): numb
   if (isMini) return SNAKE_MAX_CELLS_MINI
   if (!containerWidth || containerWidth <= 0) return 2400
 
-  // Match detailed pieceSize + gap (20+4); more pieces → LOD merge, not tinier squares.
   const cellFootprint = 20 + 4
   const cols = Math.max(1, Math.floor(containerWidth / cellFootprint))
-  // More rows → finer buckets on 50k–100k piece torrents (scroll instead of huge merge).
   const targetRows = 70
   return Math.min(SNAKE_MAX_CELLS_DETAILED, Math.max(cols * 28, cols * targetRows))
 }
 
-/** Visible cell budget for the focus strip (cols × rows). */
+/** Visible cell budget for the detailed 1:1 window (cols × rows). */
 export const resolveFocusVisibleCells = (containerWidth: number): number => {
   if (!containerWidth || containerWidth <= 0) return 40 * SNAKE_FOCUS_TARGET_ROWS
   const cellFootprint = 20 + 4

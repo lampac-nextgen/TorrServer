@@ -340,8 +340,6 @@
   "PlaybackError": "Échec de la lecture",
   "ConfirmDropTorrent": "Retirer ce torrent de la mémoire ?",
   "ConfirmRemoveViews": "Effacer tous les marqueurs de visionnage ?",
-  "SnakeBucket": "1 cellule ≈ {{count}} pièces",
-  "SnakeFocus": "Fenêtre lecteur",
   "SnakeFocusRange": "pièces {{start}}–{{end}}",
   "SnakeTooltipBucket": "pièces {{start}}–{{end}} · {{fill}}%",
   "SnakeTooltipPiece": "pièce #{{id}} · {{fill}}%"

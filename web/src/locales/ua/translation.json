@@ -340,8 +340,6 @@
   "PlaybackError": "Помилка відтворення",
   "ConfirmDropTorrent": "Скинути цей торрент з пам’яті?",
   "ConfirmRemoveViews": "Очистити всі позначки перегляду для цього торренту?",
-  "SnakeBucket": "1 клітинка ≈ {{count}} блоків",
-  "SnakeFocus": "Вікно reader",
   "SnakeFocusRange": "блоки {{start}}–{{end}}",
   "SnakeTooltipBucket": "блоки {{start}}–{{end}} · {{fill}}%",
   "SnakeTooltipPiece": "блок #{{id}} · {{fill}}%"

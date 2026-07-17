@@ -1,5 +1,6 @@
 import type { CacheMapItem } from 'types/api'
 
+import { priorityDebugLabel } from './buildCacheMap'
 import { snakeSettings, type SnakeThemeMode, type SnakeVariant } from './snakeSettings'
 
 export interface DrawSnakeArgs {
@@ -19,7 +20,7 @@ export interface DrawSnakeArgs {
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n))
 
-/** Bottom-up solid fill — clearer than linearGradient for piece progress. */
+/** Bottom-up solid fill. */
 const fillProgress = (
   ctx: CanvasRenderingContext2D,
   size: number,
@@ -39,15 +40,21 @@ const fillProgress = (
     return
   }
 
-  // At least 2px so early fill stays noticeable.
   const filledH = Math.max(2, Math.round(size * ratio))
   ctx.fillStyle = fillColor
   ctx.fillRect(0, size - filledH, size, Math.min(filledH, size))
 }
 
+const strokeCell = (ctx: CanvasRenderingContext2D, size: number, color: string, line: number) => {
+  const inset = line / 2
+  ctx.lineWidth = line
+  ctx.strokeStyle = color
+  ctx.strokeRect(inset, inset, size - line, size - line)
+}
+
 /**
- * Crisp HiDPI snake render with strong reader / range highlighting.
- * Layers: empty → fill → range tint → border (reader > range > progress) → debug labels.
+ * Crisp HiDPI snake:
+ * idle → fill → range (empty only) → borders → reader chrome → priority labels.
  */
 export const drawSnake = ({
   ctx,
@@ -71,7 +78,6 @@ export const drawSnake = ({
     completeColor,
     readerColor,
     rangeColor,
-    readerFillColor,
   } = settings
 
   ctx.clearRect(0, 0, canvasWidth, canvasHeight)
@@ -79,6 +85,7 @@ export const drawSnake = ({
 
   const pixelAlign = borderWidth % 2 === 1 ? 0.5 : 0
   const isDark = theme === 'dark'
+  const rangeEmptyBg = isDark ? 'rgba(240, 180, 138, 0.28)' : 'rgba(106, 90, 205, 0.16)'
 
   for (let i = 0; i < cells.length; i++) {
     const cell = cells[i] || { percentage: 0, priority: 0 }
@@ -96,85 +103,44 @@ export const drawSnake = ({
     ctx.save()
     ctx.translate(x, y)
 
-    // Empty base: range cells get a tinted idle background so the window stands out.
-    const emptyBase =
-      isReaderRange && !isReader && !inProgress && !isCompleted
-        ? rangeColor
-        : backgroundColor
+    // Body — never tint completed cells with range wash (that made green look teal).
+    const emptyColor = isReaderRange && !isCompleted && !inProgress ? rangeEmptyBg : backgroundColor
+    fillProgress(
+      ctx,
+      pieceSize,
+      isCompleted ? 100 : percentage,
+      emptyColor,
+      inProgress || isCompleted ? completeColor : emptyColor,
+    )
 
-    if (isReader && readerFillColor) {
-      fillProgress(ctx, pieceSize, Math.max(percentage, 12), backgroundColor, completeColor)
-      // Top reader marker band
-      ctx.fillStyle = readerFillColor
-      ctx.fillRect(0, 0, pieceSize, Math.max(3, Math.round(pieceSize * 0.22)))
-    } else if (isReaderRange && !isReader) {
-      // Range: tinted empty + progress fill on top
-      fillProgress(
-        ctx,
-        pieceSize,
-        isCompleted ? 100 : percentage,
-        isDark ? 'rgba(230, 176, 137, 0.35)' : 'rgba(126, 107, 196, 0.22)',
-        inProgress || isCompleted ? completeColor : emptyBase,
-      )
-      // Soft overlay so range is obvious even when filled
-      ctx.fillStyle = rangeColor
-      ctx.globalAlpha = isDark ? 0.18 : 0.14
-      ctx.fillRect(0, 0, pieceSize, pieceSize)
-      ctx.globalAlpha = 1
-    } else {
-      fillProgress(
-        ctx,
-        pieceSize,
-        isCompleted ? 100 : percentage,
-        backgroundColor,
-        inProgress || isCompleted ? completeColor : backgroundColor,
-      )
-    }
-
-    // Border priority: reader > range > complete/progress > idle
-    let stroke = borderColor
-    let line = borderWidth
+    // Borders: reader > range > progress/complete > idle
     if (isReader) {
-      stroke = readerColor
-      line = isMini ? 3 : 3
+      strokeCell(ctx, pieceSize, readerColor, isMini ? 3 : 3)
+      // Compact playhead mark (top edge), doesn't obscure fill/labels
+      ctx.fillStyle = readerColor
+      ctx.fillRect(2, 2, pieceSize - 4, Math.max(2, Math.round(pieceSize * 0.12)))
     } else if (isReaderRange) {
-      stroke = rangeColor
-      line = Math.max(borderWidth + 1, 2)
+      strokeCell(ctx, pieceSize, rangeColor, 2)
     } else if (inProgress || isCompleted) {
-      stroke = completeColor
-      line = Math.max(borderWidth, 2)
+      strokeCell(ctx, pieceSize, completeColor, Math.max(borderWidth, 2))
+    } else {
+      strokeCell(ctx, pieceSize, borderColor, borderWidth)
     }
 
-    const strokeInset = line / 2
-    ctx.lineWidth = line
-    ctx.strokeStyle = stroke
-    ctx.strokeRect(strokeInset, strokeInset, pieceSize - line, pieceSize - line)
-
-    // Reader: inner accent frame so it pops against dense grids
-    if (isReader) {
-      const inner = line + 1.5
-      ctx.lineWidth = 1
-      ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.55)'
-      ctx.strokeRect(inner, inner, pieceSize - inner * 2, pieceSize - inner * 2)
-    }
-
-    if (isSnakeDebugMode && (cell.priority || 0) > 0) {
-      let info = ''
-      const priority = cell.priority || 0
-      if (priority === 2) info = 'H'
-      else if (priority === 3) info = 'R'
-      else if (priority === 4) info = 'N'
-      else if (priority === 5) info = 'A'
+    if (isSnakeDebugMode) {
+      const info = priorityDebugLabel(cell.priority || 0)
       if (info) {
-        ctx.font = `bold ${isMini ? 12 : 10}px ui-monospace, SFMono-Regular, Menlo, monospace`
+        const fontSize = Math.max(9, Math.min(isMini ? 13 : 11, Math.floor(pieceSize * 0.55)))
+        ctx.font = `bold ${fontSize}px ui-monospace, SFMono-Regular, Menlo, monospace`
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
-        // Halo for readability on green fill
+        const cx = pieceSize / 2
+        const cy = pieceSize / 2 + (isReader ? 1 : 0)
         ctx.lineWidth = 3
-        ctx.strokeStyle = isDark ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.9)'
-        ctx.strokeText(info, pieceSize / 2, pieceSize / 2)
+        ctx.strokeStyle = isDark ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.92)'
+        ctx.strokeText(info, cx, cy)
         ctx.fillStyle = isDark ? '#fff' : '#111'
-        ctx.fillText(info, pieceSize / 2, pieceSize / 2)
+        ctx.fillText(info, cx, cy)
       }
     }
 
