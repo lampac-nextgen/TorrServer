@@ -19,7 +19,7 @@ interface SliderInputProps {
 }
 
 const SliderBlock = styled.div`
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 
   &:last-child {
     margin-bottom: 0;
@@ -44,7 +44,7 @@ const ValueBox = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  min-width: 88px;
+  min-width: 108px;
 `
 
 const ValueText = styled.span`
@@ -124,12 +124,18 @@ export default function SliderInput({
               onChange={onInputChange}
               onBlur={onBlur}
               sx={{
-                width: 96,
+                width: unit ? 118 : 96,
                 '& .MuiOutlinedInput-input': {
-                  py: '8px',
-                  px: '10px',
+                  py: '6px',
+                  px: '8px',
                   fontVariantNumeric: 'tabular-nums',
                   textAlign: 'right',
+                  // Hide spinners so 3-digit values (e.g. 256) are not clipped
+                  MozAppearance: 'textfield',
+                  '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
+                    WebkitAppearance: 'none',
+                    margin: 0,
+                  },
                 },
               }}
               endAdornment={unit ? <InputAdornment position='end'>{unit}</InputAdornment> : undefined}

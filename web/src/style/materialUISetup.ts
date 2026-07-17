@@ -88,13 +88,13 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
                 textTransform: 'none',
               },
               sizeSmall: {
-                minHeight: 36,
+                minHeight: 32,
               },
               sizeMedium: {
-                minHeight: 44,
+                minHeight: 36,
               },
               sizeLarge: {
-                minHeight: 44,
+                minHeight: 40,
               },
             },
           },

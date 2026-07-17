@@ -28,7 +28,7 @@ export function getPeerString(torrent?: TorrentStat | null): string | null {
   const total = torrent.total_peers
   if (active == null) return null
   const seeders = torrent.connected_seeders ?? 0
-  return `${active} / ${total ?? 0} · ${seeders}`
+  return `${active}/${total ?? 0} · ${seeders}`
 }
 
 export const removeRedundantCharacters = (string: string): string => {

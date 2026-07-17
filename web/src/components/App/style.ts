@@ -15,8 +15,8 @@ export const AppWrapper = styled.div<{ $isDrawerOpen?: boolean }>`
     height: 100%;
     background: ${rgba(appSecondaryColor, 0.8)};
     display: grid;
-    grid-template-columns: ${$isDrawerOpen ? '240px' : '60px'} 1fr;
-    grid-template-rows: 60px 1fr;
+    grid-template-columns: ${$isDrawerOpen ? '220px' : '52px'} 1fr;
+    grid-template-rows: 52px 1fr;
     grid-template-areas:
       'head head'
       'side content';
@@ -108,7 +108,7 @@ export const AppSidebarStyle = styled.div<{ $isDrawerOpen?: boolean }>`
 
     @media (max-width: 930px) {
       position: fixed;
-      top: 60px;
+      top: 52px;
       left: 0;
       bottom: 0;
       width: 240px;
@@ -165,8 +165,8 @@ export const HeaderToggle = styled(IconButton)`
       cursor: pointer;
       border-radius: 50%;
       background: ${headerToggleColor};
-      height: 44px;
-      width: 44px;
+      height: 36px;
+      width: 36px;
       transition: all 0.2s;
       font-weight: 600;
       color: #fff;
@@ -177,8 +177,8 @@ export const HeaderToggle = styled(IconButton)`
       }
 
       @media (max-width: 930px) {
-        height: 40px;
-        width: 40px;
+        height: 36px;
+        width: 36px;
         font-size: 12px;
 
         svg {
@@ -195,7 +195,7 @@ export const SidebarOverlay = styled.div<{ $isDrawerOpen?: boolean }>`
   @media (max-width: 930px) {
     display: ${({ $isDrawerOpen }) => ($isDrawerOpen ? 'block' : 'none')};
     position: fixed;
-    top: 60px;
+    top: 52px;
     left: 0;
     right: 0;
     bottom: 0;
@@ -209,14 +209,14 @@ export const SidebarOverlay = styled.div<{ $isDrawerOpen?: boolean }>`
 `
 
 export const StyledIconButton = styled(IconButton)`
-  margin-right: 6px;
-  width: 44px;
-  height: 44px;
-  padding: 8px;
+  margin-right: 4px;
+  width: 36px;
+  height: 36px;
+  padding: 6px;
 
   @media (max-width: 930px) {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     padding: 6px;
   }
 

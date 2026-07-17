@@ -291,8 +291,8 @@ export const StorageIconWrapper = styled.div<{ $small?: boolean; $selected?: boo
       settingsDialog: { storageSelectedBG, storageUnselectedBG },
     },
   }) => css`
-    width: ${$small ? '56px' : '108px'};
-    height: ${$small ? '56px' : '108px'};
+    width: ${$small ? '48px' : '72px'};
+    height: ${$small ? '48px' : '72px'};
     border-radius: 50%;
     background: ${$selected ? storageSelectedBG : storageUnselectedBG};
     display: grid;
@@ -304,8 +304,8 @@ export const StorageIconWrapper = styled.div<{ $small?: boolean; $selected?: boo
     }
 
     @media (max-width: 930px) {
-      width: ${$small ? '48px' : '84px'};
-      height: ${$small ? '48px' : '84px'};
+      width: ${$small ? '44px' : '64px'};
+      height: ${$small ? '44px' : '64px'};
     }
   `}
 `
@@ -329,17 +329,17 @@ export const CacheStorageSelector = styled.div`
 `
 
 export const SettingSectionLabel = styled.div`
-  font-size: 25px;
-  padding-bottom: 20px;
+  font-size: 18px;
+  padding-bottom: 12px;
 
   @media (max-width: 600px) {
-    font-size: 20px;
-    padding-bottom: 16px;
+    font-size: 16px;
+    padding-bottom: 10px;
   }
 
   @media (max-width: 400px) {
-    font-size: 18px;
-    padding-bottom: 12px;
+    font-size: 15px;
+    padding-bottom: 8px;
   }
 
   small {
@@ -424,9 +424,9 @@ export const GstRuntimeStatusItem = styled.div<{ $ok?: boolean; $warn?: boolean 
 `
 
 export const GstSubsectionLabel = styled(SettingSectionLabel)`
-  font-size: 20px;
-  padding-bottom: 12px;
-  margin-top: 20px;
+  font-size: 16px;
+  padding-bottom: 10px;
+  margin-top: 16px;
 `
 
 export const PreloadCachePercentage = styled.div.attrs<{
@@ -447,14 +447,14 @@ export const PreloadCachePercentage = styled.div.attrs<{
     },
   }) => css`
     border: 1px solid ${preloadCacheBorderColor};
-    padding: 10px 20px;
+    padding: 8px 16px;
     border-radius: 5px;
     color: ${preloadCacheFontColor};
     margin-bottom: 10px;
     position: relative;
     display: grid;
     place-items: center;
-    font-size: 20px;
+    font-size: 16px;
     font-variant-numeric: tabular-nums;
 
     > * {

@@ -8,11 +8,11 @@ export const TorrentCard = styled.div`
   }) => css`
     border-radius: 5px;
     display: grid;
-    grid-template-columns: 120px minmax(0, 260px) minmax(0, 1fr);
-    grid-template-rows: 210px;
+    grid-template-columns: 110px minmax(0, 1fr) minmax(132px, 0.9fr);
+    grid-template-rows: 180px;
     grid-template-areas: 'poster description buttons';
-    gap: 10px;
-    padding: 10px;
+    gap: 8px;
+    padding: 8px;
     background: ${cardPrimaryColor};
     box-shadow:
       0px 2px 4px -1px rgb(0 0 0 / 20%),
@@ -100,7 +100,7 @@ export const TorrentCardPoster = styled.button<{ $isPoster?: boolean }>`
 export const TorrentCardButtons = styled.div`
   grid-area: buttons;
   display: grid;
-  gap: 10px;
+  gap: 8px;
 
   @media (max-width: 1260px), (max-height: 500px) {
     grid-template-columns: repeat(4, 1fr);
@@ -146,15 +146,15 @@ export const TorrentCardDescription = styled.div`
 
     .description-section-name {
       text-transform: uppercase;
-      font-size: 12px;
+      font-size: 10px;
       font-weight: 600;
       letter-spacing: 0.4px;
       color: ${sectionLabelColor};
       min-width: 0;
 
       @media (max-width: 770px) {
-        font-size: 0.75rem;
-        line-height: 14px;
+        font-size: 0.65rem;
+        line-height: 12px;
       }
     }
 
@@ -187,8 +187,14 @@ export const TorrentCardDescription = styled.div`
     }
 
     .description-statistics-element-value {
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       margin-left: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-variant-numeric: tabular-nums;
+      font-size: 0.875rem;
+      line-height: 1.2;
 
       @media (max-width: 1260px), (max-height: 500px) {
         font-size: 0.7rem;
@@ -229,17 +235,17 @@ export const StyledButton = styled.button`
     text-transform: uppercase;
     background: ${buttonBGColor};
     color: #fff;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     letter-spacing: 0.009em;
-    padding: 0 12px;
-    min-height: 44px;
+    padding: 0 10px;
+    min-height: 36px;
     min-width: 0;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
 
     svg {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       flex-shrink: 0;
     }
 
@@ -257,14 +263,14 @@ export const StyledButton = styled.button`
     }
 
     > :first-child {
-      margin-right: 10px;
+      margin-right: 8px;
     }
 
     @media (max-width: 1260px), (max-height: 500px) {
-      padding: 8px 10px;
+      padding: 6px 8px;
       justify-content: center;
-      font-size: 0.8rem;
-      min-height: 44px;
+      font-size: 0.75rem;
+      min-height: 36px;
 
       svg {
         display: none;
@@ -281,8 +287,8 @@ export const StyledButton = styled.button`
 
     @media (max-width: 420px) {
       font-size: 0.65rem;
-      padding: 8px 6px;
-      min-height: 44px;
+      padding: 6px 4px;
+      min-height: 36px;
     }
   `}
 `
