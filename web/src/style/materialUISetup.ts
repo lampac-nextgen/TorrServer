@@ -12,6 +12,10 @@ export const THEME_MODES = {
 export type ThemePreference = (typeof THEME_MODES)[keyof typeof THEME_MODES]
 export type ResolvedThemeMode = typeof THEME_MODES.LIGHT | typeof THEME_MODES.DARK
 
+/** Shared layout breakpoint (matches MUI theme `md`). Use for shell drawer + fullscreen dialogs. */
+export const LAYOUT_MOBILE_MAX = 930
+export const LAYOUT_MOBILE_MEDIA = `(max-width: ${LAYOUT_MOBILE_MAX}px)`
+
 const typography = { fontFamily: 'Open Sans, sans-serif' }
 
 export const darkTheme = createTheme({

@@ -257,6 +257,12 @@ const VolumeSlider = styled(Slider)(sliderAccentStyles)
 const ControlRow = styled(Box)({
   display: 'flex',
   alignItems: 'center',
+  flexWrap: 'wrap',
+  columnGap: 0,
+  rowGap: 2,
+  '@media (max-width: 930px)': {
+    justifyContent: 'flex-start',
+  },
 })
 
 const SpeedMenu = styled(Menu)({
@@ -714,11 +720,13 @@ const VideoPlayer = ({
                     </MenuItem>
                   ))}
                 </SpeedMenu>
-                <Tooltip title={t('PIP')}>
-                  <PlayerIconButton size='medium' onClick={() => videoRef.current?.requestPictureInPicture()}>
-                    <PictureInPictureIcon fontSize='medium' />
-                  </PlayerIconButton>
-                </Tooltip>
+                {!isMobile && (
+                  <Tooltip title={t('PIP')}>
+                    <PlayerIconButton size='medium' onClick={() => videoRef.current?.requestPictureInPicture()}>
+                      <PictureInPictureIcon fontSize='medium' />
+                    </PlayerIconButton>
+                  </Tooltip>
+                )}
 
                 <Tooltip title={t('Download')}>
                   <PlayerIconButton size='medium' onClick={downloadVideo}>

@@ -45,6 +45,9 @@ export const Poster = styled.div<{ $poster?: boolean }>`
             img {
               border-radius: 5px;
               height: 100%;
+              width: 100%;
+              max-width: 100%;
+              object-fit: cover;
             }
           `
         : css`
@@ -198,7 +201,7 @@ export const SectionHeader = styled.div`
 
 export const WidgetWrapper = styled.div<{ $detailedView?: boolean }>`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(max-content, 220px));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
   gap: 20px;
 
   @media (max-width: 800px) {
@@ -212,21 +215,21 @@ export const WidgetWrapper = styled.div<{ $detailedView?: boolean }>`
     $detailedView
       ? css`
           @media (max-width: 800px) {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(2, minmax(0, 1fr));
           }
           @media (max-width: 410px) {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
           }
         `
       : css`
           @media (max-width: 800px) {
-            grid-template-columns: repeat(auto-fit, minmax(max-content, 185px));
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
           }
           @media (max-width: 480px) {
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
           }
           @media (max-width: 390px) {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
           }
         `}
 `
@@ -294,6 +297,9 @@ export const WidgetFieldValue = styled.div<{ $bgColor?: string; $fontColor?: str
     background: ${$bgColor};
     border-radius: 0 8px 8px 0;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
 
     @media (max-width: 800px) {
       font-size: 16px;

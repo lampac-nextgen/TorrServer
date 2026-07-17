@@ -119,7 +119,11 @@ export default function App() {
                       </StyledIconButton>
                     </Tooltip>
 
-                    <Typography variant='h6' noWrap>
+                    <Typography
+                      variant='h6'
+                      noWrap
+                      sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
+                    >
                       TorrServer {torrServerVersion}
                     </Typography>
 
@@ -128,7 +132,8 @@ export default function App() {
                         justifySelf: 'end',
                         display: 'grid',
                         gridTemplateColumns: isStandaloneApp ? 'repeat(4, 1fr)' : 'repeat(3, 1fr)',
-                        gap: '10px',
+                        gap: '6px',
+                        flexShrink: 0,
                       }}
                     >
                       {isStandaloneApp && (

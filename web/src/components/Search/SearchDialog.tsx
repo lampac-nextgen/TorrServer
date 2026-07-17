@@ -280,7 +280,7 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
               gap: '8px',
               marginBottom: '20px',
               alignItems: 'flex-start',
-              flexWrap: fullScreen ? 'wrap' : 'nowrap',
+              flexWrap: 'wrap',
             }}
           >
             <FormControl

@@ -65,7 +65,16 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 
 ---
 
-## Intentionally incomplete / optional
+## Responsive (mobile / tablet) — 2026-07-17
+
+- Shell drawer / overlay / single-column list aligned to **930px** (was 700) to match dialog fullscreen.
+- Header: `minmax(0,1fr)` title + ellipsis; denser toggles.
+- VideoPlayer: control row wraps; PiP hidden on mobile.
+- Details: poster `object-fit: cover` + width 100%; widgets use `minmax(0,1fr)` + value ellipsis; seasons wrap.
+- DonateDialog: fullscreen ≤930 + stacked buttons.
+- Search toolbar always `flexWrap`.
+- Shared constants: `LAYOUT_MOBILE_MAX` / `LAYOUT_MOBILE_MEDIA` in `materialUISetup.ts`.
+
 
 - Mobile sidebar as full MUI `Drawer` (custom slide + overlay still used)
 - Broader `Stack` migrations across dialogs

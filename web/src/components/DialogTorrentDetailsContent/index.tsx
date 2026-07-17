@@ -271,7 +271,10 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
               {(seasonAmount?.length ?? 0) > 1 && (
                 <>
                   <SectionSubName $mb={7}>{t('SelectSeason')}</SectionSubName>
-                  <ButtonGroup style={{ marginBottom: '30px' }} color='secondary'>
+                  <ButtonGroup
+                    style={{ marginBottom: '30px', flexWrap: 'wrap', rowGap: 8 }}
+                    color='secondary'
+                  >
                     {seasonAmount!.map(season => (
                       <Button
                         key={season}

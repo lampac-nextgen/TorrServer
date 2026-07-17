@@ -22,7 +22,7 @@ export const AppWrapper = styled.div<{ $isDrawerOpen?: boolean }>`
       'side content';
     transition: grid-template-columns 195ms cubic-bezier(0.4, 0, 0.6, 1) 0ms;
 
-    @media (max-width: 700px) {
+    @media (max-width: 930px) {
       grid-template-columns: 0 1fr;
     }
 
@@ -53,13 +53,20 @@ export const AppHeader = styled.div`
     display: grid;
     grid-auto-flow: column;
     align-items: center;
-    grid-template-columns: repeat(2, max-content) 1fr;
+    grid-template-columns: max-content minmax(0, 1fr) max-content;
+    gap: 8px;
     box-shadow:
       0px 2px 4px -1px rgb(0 0 0 / 20%),
       0px 4px 5px 0px rgb(0 0 0 / 14%),
       0px 1px 10px 0px rgb(0 0 0 / 12%);
     padding: 0 16px;
     z-index: 3;
+    min-width: 0;
+
+    @media (max-width: 930px) {
+      padding: 0 8px;
+      gap: 4px;
+    }
 
     ${standaloneMedia(css`
       grid-template-columns: max-content 1fr;
@@ -99,7 +106,7 @@ export const AppSidebarStyle = styled.div<{ $isDrawerOpen?: boolean }>`
       fill: ${sidebarFillColor};
     }
 
-    @media (max-width: 700px) {
+    @media (max-width: 930px) {
       position: fixed;
       top: 60px;
       left: 0;
@@ -135,7 +142,7 @@ export const TorrentListWrapper = styled.div`
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  @media (max-width: 700px) {
+  @media (max-width: 930px) {
     grid-template-columns: minmax(0, 1fr);
     padding: 12px;
     gap: 12px;
@@ -169,7 +176,7 @@ export const HeaderToggle = styled(IconButton)`
         background: ${rgba(headerToggleColor, 0.7)};
       }
 
-      @media (max-width: 700px) {
+      @media (max-width: 930px) {
         height: 40px;
         width: 40px;
         font-size: 12px;
@@ -185,7 +192,7 @@ export const HeaderToggle = styled(IconButton)`
 export const SidebarOverlay = styled.div<{ $isDrawerOpen?: boolean }>`
   display: none;
 
-  @media (max-width: 700px) {
+  @media (max-width: 930px) {
     display: ${({ $isDrawerOpen }) => ($isDrawerOpen ? 'block' : 'none')};
     position: fixed;
     top: 60px;
@@ -207,7 +214,7 @@ export const StyledIconButton = styled(IconButton)`
   height: 44px;
   padding: 8px;
 
-  @media (max-width: 700px) {
+  @media (max-width: 930px) {
     width: 40px;
     height: 40px;
     padding: 6px;

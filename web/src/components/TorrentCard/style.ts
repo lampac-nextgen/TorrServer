@@ -203,7 +203,7 @@ export const TorrentCardDescription = styled.div`
       }
 
       @media (max-width: 410px) {
-        font-size: 9px;
+        font-size: 0.7rem;
       }
     }
   `}
