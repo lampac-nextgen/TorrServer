@@ -65,6 +65,20 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
           secondary: { main: mainColors[theme].secondary },
         },
         components: {
+          MuiButton: {
+            defaultProps: {
+              disableElevation: true,
+            },
+            styleOverrides: {
+              root: {
+                borderRadius: 8,
+                textTransform: 'none',
+              },
+              sizeLarge: {
+                minHeight: 44,
+              },
+            },
+          },
           MuiTypography: {
             styleOverrides: {
               h6: {

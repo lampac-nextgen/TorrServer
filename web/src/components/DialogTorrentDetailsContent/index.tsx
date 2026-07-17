@@ -224,20 +224,25 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
 
             <CacheSection>
               <SectionHeader>
-                <SectionTitle $mb={20}>{t('Buffer')}</SectionTitle>
+                <SectionTitle $mb={12}>{t('Buffer')}</SectionTitle>
                 {bufferSize <= 33554432 && <SectionSubName>{t('BufferNote')}</SectionSubName>}
                 <LoadingProgress
-                  $value={Filled}
+                  $value={Filled || 0}
                   style={{ marginTop: '5px' }}
                   $fullAmount={bufferSize}
-                  $label={`${humanizeSize(Filled || 0)} / ${humanizeSize(bufferSize)}`}
-                />
+                  aria-label={`${humanizeSize(Filled || 0)} / ${humanizeSize(bufferSize)}`}
+                >
+                  {`${humanizeSize(Filled || 0)} / ${humanizeSize(bufferSize)}`}
+                  {bufferSize > 0 && Filled != null && Filled > 0
+                    ? ` · ${Math.min(100, Math.round(((Filled || 0) * 100) / bufferSize))}%`
+                    : ''}
+                </LoadingProgress>
               </SectionHeader>
 
               <TorrentCache isMini cache={cache} isSnakeDebugMode={isSnakeDebugMode} />
               <Button
-                style={{ marginTop: '30px' }}
-                variant='contained'
+                style={{ marginTop: '20px', width: '100%' }}
+                variant='outlined'
                 color='primary'
                 size='large'
                 onClick={() => setIsDetailedCacheView(true)}

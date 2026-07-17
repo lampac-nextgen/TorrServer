@@ -27,13 +27,13 @@ export const SmallLabel = styled.div<{ $mb?: number }>`
     },
   }) => css`
     ${$mb && `margin-bottom: ${$mb}px`};
-    font-size: 20px;
-    font-weight: 300;
-    line-height: 1;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.2;
     color: ${fontColor};
 
     @media (max-width: 800px) {
-      font-size: 18px;
+      font-size: 15px;
       ${$mb && `margin-bottom: ${$mb / 1.5}px`};
     }
   `}

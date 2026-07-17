@@ -71,8 +71,8 @@ function getMimeType(url: string): string {
 const canPlayNativeHls = (video: HTMLVideoElement) =>
   Boolean(video.canPlayType('application/vnd.apple.mpegurl') || video.canPlayType('application/x-mpegURL'))
 
-const PrettoSlider = styled(Slider)({
-  color: '#00a572',
+const PrettoSlider = styled(Slider)(({ theme }) => ({
+  color: theme.palette.primary.main,
   height: 6,
   padding: '13px 0',
   '@media (max-width: 930px)': {
@@ -104,7 +104,7 @@ const PrettoSlider = styled(Slider)({
       height: 8,
     },
   },
-})
+}))
 
 const pulse = keyframes`
   0% {
@@ -122,8 +122,8 @@ const pulse = keyframes`
 `
 
 const PlayerHeader = styled(DialogTitle)(({ theme }) => ({
-  backgroundColor: '#00a572',
-  color: '#fff',
+  backgroundColor: theme.palette.primary.main,
+  color: theme.palette.primary.contrastText,
   padding: theme.spacing(1, 2),
   display: 'flex',
   justifyContent: 'space-between',

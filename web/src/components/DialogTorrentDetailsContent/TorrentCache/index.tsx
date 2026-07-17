@@ -51,8 +51,27 @@ const TorrentCache = ({ cache, isMini, isSnakeDebugMode }: TorrentCacheProps) =>
   }, [cache?.Capacity, cache?.PiecesLength, cacheMap, isMini, piecesInOneRow])
 
   const startingXPoint = piecesInOneRow > 0 ? Math.ceil((canvasWidth - pieceSizeWithGap * piecesInOneRow) / 2) : 0
+  const emptyPlaceholderRows = isMini ? 3 : 4
   const height =
-    piecesInOneRow > 0 && source.length > 0 ? Math.ceil(source.length / piecesInOneRow) * pieceSizeWithGap : 0
+    piecesInOneRow > 0
+      ? Math.max(
+          source.length > 0 ? Math.ceil(source.length / piecesInOneRow) : emptyPlaceholderRows,
+          emptyPlaceholderRows,
+        ) * pieceSizeWithGap
+      : 0
+
+  const drawSource = useMemo(
+    () =>
+      source.length > 0
+        ? source
+        : Array.from({ length: Math.max(piecesInOneRow, 1) * emptyPlaceholderRows }, () => ({
+            percentage: 0,
+            priority: 0,
+            isReader: false,
+            isReaderRange: false,
+          })),
+    [source, piecesInOneRow, emptyPlaceholderRows],
+  )
 
   useEffect(() => {
     if (!canvasWidth || !height || !piecesInOneRow) return
@@ -70,7 +89,7 @@ const TorrentCache = ({ cache, isMini, isSnakeDebugMode }: TorrentCacheProps) =>
 
     ctx.clearRect(0, 0, canvasWidth, height)
 
-    source.forEach(({ percentage = 0, priority = 0, isReader, isReaderRange }, i) => {
+    drawSource.forEach(({ percentage = 0, priority = 0, isReader, isReaderRange }, i) => {
       const inProgress = percentage > 0 && percentage < 100
       const isCompleted = percentage === 100
       const currentRow = i % piecesInOneRow
@@ -122,6 +141,7 @@ const TorrentCache = ({ cache, isMini, isSnakeDebugMode }: TorrentCacheProps) =>
     pieceSize,
     gap,
     source,
+    drawSource,
     backgroundColor,
     borderColor,
     borderWidth,

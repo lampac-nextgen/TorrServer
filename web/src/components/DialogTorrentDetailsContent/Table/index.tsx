@@ -3,8 +3,6 @@ import { streamHost } from 'utils/Hosts'
 import isEqual from 'lodash/isEqual'
 import { humanizeSize, detectStandaloneApp, isMacOS, isAppleDevice } from 'utils/Utils'
 import ptt from 'parse-torrent-title'
-import { Button } from '@mui/material'
-import CopyToClipboard from 'react-copy-to-clipboard'
 import { useTranslation } from 'react-i18next'
 import {
   gstreamerHeartbeatUrl,
@@ -14,10 +12,9 @@ import {
 } from 'utils/GStreamer'
 import type { PlayableFile } from 'types/api'
 
-import VideoPlayer from '../../VideoPlayer'
 import { TableStyle, ShortTableWrapper, ShortTable } from './style'
+import FileRowActions, { type ExternalPlayerLink } from './FileRowActions'
 
-// russian episode detection support
 ptt.addHandler('episode', /(\d{1,4})[- |. ]серия|серия[- |. ](\d{1,4})/i, {
   type: 'integer',
 })
@@ -59,8 +56,6 @@ const Table = memo(
     const fileHasEpisodeText = !!playableFileList?.find(({ path }) => ptt.parse(path).episode)
     const fileHasSeasonText = !!playableFileList?.find(({ path }) => ptt.parse(path).season)
     const fileHasResolutionText = !!playableFileList?.find(({ path }) => ptt.parse(path).resolution)
-
-    // if files in list is more then 1 and no season text detected by ptt.parse, show full name
     const shouldDisplayFullFileName = (playableFileList?.length ?? 0) > 1 && !fileHasEpisodeText
 
     const isVlcUsed = JSON.parse(localStorage.getItem('isVlcUsed') || 'null') ?? false
@@ -73,6 +68,15 @@ const Table = memo(
     const shouldShowOpenLink =
       !isStandalone ||
       (!(isApple && isInfuseUsed) && !(isApple && isSenPlayerUsed) && !isVlcUsed && !(isMac && isIinaUsed))
+
+    const buildExternalPlayers = (fullLink: URL, infuseLink: string, senPlayerLink: string, iinaLink: string) => {
+      const externalPlayers: ExternalPlayerLink[] = []
+      if (isApple && isInfuseUsed) externalPlayers.push({ label: t('Infuse'), href: infuseLink })
+      if (isApple && isSenPlayerUsed) externalPlayers.push({ label: t('SenPlayer'), href: senPlayerLink })
+      if (isVlcUsed) externalPlayers.push({ label: 'VLC', href: `vlc://${fullLink}` })
+      if (isMac && isIinaUsed) externalPlayers.push({ label: 'IINA', href: iinaLink })
+      return externalPlayers
+    }
 
     return !playableFileList?.length ? (
       'No playable files in this torrent'
@@ -87,7 +91,7 @@ const Table = memo(
               {fileHasEpisodeText && <th style={{ width: '0' }}>{t('Episode')}</th>}
               {fileHasResolutionText && <th style={{ width: '0' }}>{t('Resolution')}</th>}
               <th style={{ width: '100px' }}>{t('Size')}</th>
-              <th style={{ width: '400px' }}>{t('Actions')}</th>
+              <th style={{ width: '280px' }}>{t('Actions')}</th>
             </tr>
           </thead>
 
@@ -117,69 +121,21 @@ const Table = memo(
                     {fileHasResolutionText && <td data-label='resolution'>{resolution}</td>}
                     <td data-label='size'>{humanizeSize(length)}</td>
                     <td>
-                      <div className='button-cell'>
-                        <Button onClick={() => preloadBuffer(id)} variant='outlined' color='primary' size='small'>
-                          {t('Preload')}
-                        </Button>
-                        {isApple && isInfuseUsed && (
-                          <a style={{ textDecoration: 'none' }} href={infuseLink}>
-                            <Button style={{ width: '100%' }} variant='outlined' color='primary' size='small'>
-                              {t('Infuse')}
-                            </Button>
-                          </a>
-                        )}
-                        {isApple && isSenPlayerUsed && (
-                          <a style={{ textDecoration: 'none' }} href={senPlayerLink}>
-                            <Button style={{ width: '100%' }} variant='outlined' color='primary' size='small'>
-                              {t('SenPlayer')}
-                            </Button>
-                          </a>
-                        )}
-                        {isVlcUsed && (
-                          <a style={{ textDecoration: 'none' }} href={`vlc://${fullLink}`}>
-                            <Button style={{ width: '100%' }} variant='outlined' color='primary' size='small'>
-                              VLC
-                            </Button>
-                          </a>
-                        )}
-                        {isMac && isIinaUsed && (
-                          <a style={{ textDecoration: 'none' }} href={iinaLink}>
-                            <Button style={{ width: '100%' }} variant='outlined' color='primary' size='small'>
-                              IINA
-                            </Button>
-                          </a>
-                        )}
-                        {playerSupported ? (
-                          <VideoPlayer
-                            title={title}
-                            videoSrc={player.src}
-                            downloadSrc={link}
-                            hls={player.hls}
-                            heartbeatSrc={player.heartbeatSrc}
-                            onNotSupported={() => markPlayerUnsupported(player.key)}
-                          />
-                        ) : (
-                          shouldShowOpenLink && (
-                            <a style={{ textDecoration: 'none' }} href={link} target='_blank' rel='noreferrer'>
-                              <Button style={{ width: '100%' }} variant='outlined' color='primary' size='small'>
-                                {t('OpenLink')}
-                              </Button>
-                            </a>
-                          )
-                        )}
-                        <CopyToClipboard text={fullLink.toString()}>
-                          <Button variant='outlined' color='primary' size='small'>
-                            {t('CopyLink')}
-                          </Button>
-                        </CopyToClipboard>
-                        {playerSupported && shouldShowOpenLink && (
-                          <a style={{ textDecoration: 'none' }} href={link} target='_blank' rel='noreferrer'>
-                            <Button style={{ width: '100%' }} variant='outlined' color='primary' size='small'>
-                              {t('OpenLink')}
-                            </Button>
-                          </a>
-                        )}
-                      </div>
+                      <FileRowActions
+                        preloadLabel={t('Preload')}
+                        onPreload={() => preloadBuffer(id)}
+                        playerSupported={playerSupported}
+                        playerTitle={title}
+                        playerSrc={player.src}
+                        downloadSrc={link}
+                        hls={player.hls}
+                        heartbeatSrc={player.heartbeatSrc}
+                        onPlayerNotSupported={() => markPlayerUnsupported(player.key)}
+                        openLinkHref={link}
+                        showOpenLink={shouldShowOpenLink}
+                        copyText={fullLink.toString()}
+                        externalPlayers={buildExternalPlayers(fullLink, infuseLink, senPlayerLink, iinaLink)}
+                      />
                     </td>
                   </tr>
                 )
@@ -237,66 +193,21 @@ const Table = memo(
                     </div>
                   </div>
                   <div className='short-table-buttons'>
-                    <Button onClick={() => preloadBuffer(id)} variant='outlined' color='primary' size='small'>
-                      {t('Preload')}
-                    </Button>
-
-                    {isApple && isInfuseUsed && (
-                      <a style={{ textDecoration: 'none' }} href={infuseLink}>
-                        <Button style={{ width: '100%' }} variant='outlined' color='primary' size='small'>
-                          {t('Infuse')}
-                        </Button>
-                      </a>
-                    )}
-
-                    {isApple && isSenPlayerUsed && (
-                      <a style={{ textDecoration: 'none' }} href={senPlayerLink}>
-                        <Button style={{ width: '100%' }} variant='outlined' color='primary' size='small'>
-                          {t('SenPlayer')}
-                        </Button>
-                      </a>
-                    )}
-
-                    {isVlcUsed && (
-                      <a style={{ textDecoration: 'none' }} href={`vlc://${fullLink}`}>
-                        <Button style={{ width: '100%' }} variant='outlined' color='primary' size='small'>
-                          VLC
-                        </Button>
-                      </a>
-                    )}
-
-                    {isMac && isIinaUsed && (
-                      <a style={{ textDecoration: 'none' }} href={iinaLink}>
-                        <Button style={{ width: '100%' }} variant='outlined' color='primary' size='small'>
-                          IINA
-                        </Button>
-                      </a>
-                    )}
-
-                    {player.hls && playerSupported && (
-                      <VideoPlayer
-                        title={title}
-                        videoSrc={player.src}
-                        downloadSrc={link}
-                        hls
-                        heartbeatSrc={player.heartbeatSrc}
-                        onNotSupported={() => markPlayerUnsupported(player.key)}
-                      />
-                    )}
-
-                    {shouldShowOpenLink && (
-                      <a style={{ textDecoration: 'none' }} href={link} target='_blank' rel='noreferrer'>
-                        <Button style={{ width: '100%' }} variant='outlined' color='primary' size='small'>
-                          {t('OpenLink')}
-                        </Button>
-                      </a>
-                    )}
-
-                    <CopyToClipboard text={fullLink.toString()}>
-                      <Button variant='outlined' color='primary' size='small'>
-                        {t('CopyLink')}
-                      </Button>
-                    </CopyToClipboard>
+                    <FileRowActions
+                      preloadLabel={t('Preload')}
+                      onPreload={() => preloadBuffer(id)}
+                      playerSupported={playerSupported}
+                      playerTitle={title}
+                      playerSrc={player.src}
+                      downloadSrc={link}
+                      hls={player.hls}
+                      heartbeatSrc={player.heartbeatSrc}
+                      onPlayerNotSupported={() => markPlayerUnsupported(player.key)}
+                      openLinkHref={link}
+                      showOpenLink={shouldShowOpenLink}
+                      copyText={fullLink.toString()}
+                      externalPlayers={buildExternalPlayers(fullLink, infuseLink, senPlayerLink, iinaLink)}
+                    />
                   </div>
                 </ShortTable>
               )

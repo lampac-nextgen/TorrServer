@@ -3,6 +3,8 @@ import { cacheHost, settingsHost } from 'utils/Hosts'
 import axios from 'axios'
 import type { BTSets, CacheMapItem, TorrentCache } from 'types/api'
 
+const CACHE_POLL_MS = 500
+
 export const useUpdateCache = (hash?: string) => {
   const [cache, setCache] = useState<TorrentCache>({})
   const componentIsMounted = useRef(true)
@@ -10,27 +12,40 @@ export const useUpdateCache = (hash?: string) => {
 
   useEffect(
     () => () => {
-      // this function is required to notify "updateCache" when NOT to make state update
       componentIsMounted.current = false
     },
     [],
   )
 
   useEffect(() => {
-    if (hash) {
-      timerID.current = setInterval(() => {
-        const updateCache = (newCache: TorrentCache) => componentIsMounted.current && setCache(newCache)
+    if (!hash) {
+      if (timerID.current) clearInterval(timerID.current)
+      return undefined
+    }
 
-        axios
-          .post(cacheHost(), { action: 'get', hash })
-          .then(({ data }) => updateCache(data))
-          // empty cache if error
-          .catch(() => updateCache({}))
-      }, 100)
-    } else if (timerID.current) clearInterval(timerID.current)
+    const fetchCache = () => {
+      if (document.hidden) return
+      axios
+        .post(cacheHost(), { action: 'get', hash })
+        .then(({ data }) => {
+          if (componentIsMounted.current) setCache(data)
+        })
+        .catch(() => {
+          if (componentIsMounted.current) setCache({})
+        })
+    }
+
+    fetchCache()
+    timerID.current = setInterval(fetchCache, CACHE_POLL_MS)
+
+    const onVisibility = () => {
+      if (!document.hidden) fetchCache()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
 
     return () => {
       if (timerID.current) clearInterval(timerID.current)
+      document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [hash])
 

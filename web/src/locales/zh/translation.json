@@ -254,7 +254,10 @@
     "SortDescending": "降序排序",
     "Test": "测试",
     "TorrentAddedSuccessfully": "种子添加成功",
-    "TorznabHostURL": "Torznab主机URL"
+    "TorznabHostURL": "Torznab主机URL",
+    "HostHint": "Jackett: …/indexers/all/results/torznab/ — Prowlarr: http://localhost:9696/1. TorrServer appends /api when needed.",
+    "NoIndexersConfigured": "Torznab is enabled but no indexers are configured. Add a Host URL and API key below.",
+    "NoSearchSources": "No search sources enabled. Turn on RuTor and/or Torznab in Settings → Search."
   },
   "GStreamer": {
     "Tab": "GStreamer",

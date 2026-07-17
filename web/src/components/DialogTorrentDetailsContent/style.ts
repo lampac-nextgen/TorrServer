@@ -83,10 +83,10 @@ export const MainSection = styled.section`
     },
   }) => css`
     grid-area: main;
-    padding: 40px;
+    padding: 24px;
     display: grid;
     grid-template-columns: min-content 1fr;
-    gap: 30px;
+    gap: 20px;
     background: linear-gradient(145deg, ${gradientStartColor}, ${gradientEndColor});
 
     @media (max-width: 840px) {
@@ -113,7 +113,7 @@ export const CacheSection = styled.section`
   }) => css`
     grid-area: cache;
     align-self: start;
-    padding: 40px;
+    padding: 24px;
     display: grid;
     align-content: start;
     grid-template-rows: min-content min-content min-content;
@@ -157,13 +157,14 @@ export const SectionSubName = styled.div<{ $mb?: number }>`
   }) => css`
     ${$mb && `margin-top: ${$mb / 3}px`};
     ${$mb && `margin-bottom: ${$mb}px`};
-    line-height: 1.2;
+    line-height: 1.35;
+    font-size: 14px;
     color: ${subNameFontColor};
 
     @media (max-width: 800px) {
       ${$mb && `margin-top: ${$mb / 4}px`};
       ${$mb && `margin-bottom: ${$mb / 2}px`};
-      font-size: 14px;
+      font-size: 13px;
     }
   `}
 `
@@ -177,15 +178,15 @@ export const SectionTitle = styled.div<{ $color?: string; $mb?: number }>`
     },
   }) => css`
     ${$mb && `margin-bottom: ${$mb}px`};
-    font-size: 34px;
+    font-size: 28px;
     font-weight: 300;
-    line-height: 1;
+    line-height: 1.15;
     word-break: break-word;
     color: ${$color || titleFontColor};
 
     @media (max-width: 800px) {
-      font-size: 24px;
-      line-height: 1.1;
+      font-size: 22px;
+      line-height: 1.15;
       ${$mb && `margin-bottom: ${$mb / 2}px`};
     }
   `}
@@ -232,8 +233,8 @@ export const WidgetWrapper = styled.div<{ $detailedView?: boolean }>`
 
 export const WidgetFieldWrapper = styled.div`
   display: grid;
-  grid-template-columns: 40px 1fr;
-  grid-template-rows: min-content 50px;
+  grid-template-columns: 36px 1fr;
+  grid-template-rows: min-content 40px;
   grid-template-areas:
     'title title'
     'icon value';
@@ -245,7 +246,7 @@ export const WidgetFieldWrapper = styled.div`
 
   @media (max-width: 800px) {
     grid-template-columns: 30px 1fr;
-    grid-template-rows: min-content 40px;
+    grid-template-rows: min-content 36px;
   }
 `
 export const WidgetFieldTitle = styled.div`
@@ -269,7 +270,7 @@ export const WidgetFieldIcon = styled.div<{ $bgColor?: string; $fontColor?: stri
     grid-area: icon;
     color: ${$fontColor || rgba('#fff', 0.8)};
     background: ${$bgColor};
-    border-radius: 5px 0 0 5px;
+    border-radius: 8px 0 0 8px;
 
     @media (max-width: 800px) {
       > svg {
@@ -287,16 +288,16 @@ export const WidgetFieldValue = styled.div<{ $bgColor?: string; $fontColor?: str
     },
   }) => css`
     grid-area: value;
-    font-size: 24px;
-    padding: 0 20px 0 0;
+    font-size: 20px;
+    padding: 0 16px 0 0;
     color: ${$fontColor || widgetFontColor};
     background: ${$bgColor};
-    border-radius: 0 5px 5px 0;
+    border-radius: 0 8px 8px 0;
     white-space: nowrap;
 
     @media (max-width: 800px) {
-      font-size: 18px;
-      padding: 0 16px 0 0;
+      font-size: 16px;
+      padding: 0 12px 0 0;
     }
   `}
 `
@@ -304,7 +305,6 @@ export const WidgetFieldValue = styled.div<{ $bgColor?: string; $fontColor?: str
 export const LoadingProgress = styled.div.attrs<{
   $value?: number
   $fullAmount?: number
-  $label?: string
 }>(
   ({
     $value = 0,
@@ -326,7 +326,6 @@ export const LoadingProgress = styled.div.attrs<{
     const isEmpty = value <= 0
 
     return {
-      // this block is here according to styled-components recomendation about fast changable components
       style: {
         background: isEmpty
           ? bufferEmptyTrackColor
@@ -337,29 +336,27 @@ export const LoadingProgress = styled.div.attrs<{
   },
 )`
   ${({
-    $label,
     theme: {
       dialogTorrentDetailsContent: { titleFontColor },
     },
   }) => css`
-    border: 1px solid;
-    padding: 10px 20px;
-    border-radius: 5px;
+    border: 2px solid;
+    padding: 10px 16px;
+    border-radius: 8px;
     color: ${titleFontColor};
-
-    :before {
-      content: '${$label || ''}';
-      display: grid;
-      place-items: center;
-      font-size: 20px;
-    }
+    display: grid;
+    place-items: center;
+    min-height: 44px;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
   `}
 `
 
 export const Divider = styled.div`
   height: 1px;
   background-color: rgba(0, 0, 0, 0.12);
-  margin: 30px 0;
+  margin: 20px 0;
 `
 
 export const DetailsScrollBody = styled.div`

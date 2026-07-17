@@ -20,15 +20,15 @@ export const themeColors = {
       posterBGColor: '#74c39c',
       gradientStartColor: '#e4f6ed',
       gradientEndColor: '#b5dec9',
-      cacheSectionBGColor: '#88cdaa',
+      cacheSectionBGColor: '#a8d4be',
       widgetFontColor: '#fff',
       titleFontColor: '#000',
       subNameFontColor: '#7c7b7c',
       torrentFilesSectionBGColor: '#f1eff3',
       bufferTrailStartColor: '#c5e6d4',
       bufferTrailEndColor: '#b5dec9',
-      bufferEmptyTrackColor: '#dff0e8',
-      bufferTrackBorderColor: '#4db380',
+      bufferEmptyTrackColor: '#e8f5ef',
+      bufferTrackBorderColor: '#337a57',
     },
     detailedView: {
       gradientStartColor: '#e4f6ed',
@@ -149,13 +149,13 @@ export const themeColors = {
 
 export const mainColors = {
   light: {
-    primary: '#00a572',
+    primary: '#00875a',
     secondary: '#00a572',
     labels: rgba('#000', 0.9),
   },
   dark: {
-    primary: '#323637',
-    secondary: '#dee3e5',
+    primary: '#4db380',
+    secondary: '#5ecf9a',
     labels: rgba('#fff', 0.9),
   },
 }

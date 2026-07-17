@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import TorrentCard from 'components/TorrentCard'
 import CircularProgress from '@mui/material/CircularProgress'
+import Typography from '@mui/material/Typography'
+import { useTranslation } from 'react-i18next'
 import { TorrentListWrapper, CenteredGrid } from 'components/App/style'
 import type { OfflineAwareProps, TorrentStat } from 'types/api'
 
@@ -14,6 +16,7 @@ interface TorrentListProps extends OfflineAwareProps {
 }
 
 export default function TorrentList({ isOffline, isLoading, sortABC, torrents, sortCategory }: TorrentListProps) {
+  const { t } = useTranslation()
   const sortedTorrents = useMemo(() => {
     if (!torrents) return []
     const filtered = torrents.filter(torrent => sortCategory === 'all' || torrent.category === sortCategory)
@@ -22,7 +25,6 @@ export default function TorrentList({ isOffline, isLoading, sortABC, torrents, s
       return [...filtered].sort((a, b) => (a.title || '').localeCompare(b.title || '') || a.hash.localeCompare(b.hash))
     }
 
-    // Default: keep API order but stabilize by hash to prevent jumping
     return [...filtered].sort((a, b) => {
       const tsA = a.timestamp || 0
       const tsB = b.timestamp || 0
@@ -41,6 +43,16 @@ export default function TorrentList({ isOffline, isLoading, sortABC, torrents, s
         ) : (
           !torrents?.length && <AddFirstTorrent />
         )}
+      </CenteredGrid>
+    )
+  }
+
+  if (!sortedTorrents.length) {
+    return (
+      <CenteredGrid>
+        <Typography color='text.secondary'>
+          {t('NoTorrentsInCategory', { defaultValue: 'No torrents in this category' })}
+        </Typography>
       </CenteredGrid>
     )
   }

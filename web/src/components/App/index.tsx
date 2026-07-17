@@ -1,6 +1,7 @@
 import CssBaseline from '@mui/material/CssBaseline'
-import { createContext, useEffect, useState } from 'react'
+import { createContext, lazy, Suspense, useEffect, useState } from 'react'
 import Typography from '@mui/material/Typography'
+import Tooltip from '@mui/material/Tooltip'
 import {
   Menu as MenuIcon,
   Close as CloseIcon,
@@ -16,24 +17,26 @@ import Div100vh from 'react-div-100vh'
 import axios from 'axios'
 import TorrentList from 'components/TorrentList'
 import DonateSnackbar from 'components/Donate'
-import DonateDialog from 'components/Donate/DonateDialog'
 import useChangeLanguage from 'utils/useChangeLanguage'
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles'
 import { ThemeProvider as StyledComponentsThemeProvider } from 'styled-components'
 import { useQuery } from '@tanstack/react-query'
 import { detectApplePlatform, getTorrents, isStandaloneApp } from 'utils/Utils'
 import GlobalStyle from 'style/GlobalStyle'
-import { /* lightTheme, */ THEME_MODES, useMaterialUITheme } from 'style/materialUISetup'
+import { THEME_MODES, useMaterialUITheme } from 'style/materialUISetup'
 import getStyledComponentsTheme from 'style/getStyledComponentsTheme'
-import SearchDialog from 'components/Search/SearchDialog'
-import AddDialog from 'components/Add/AddDialog'
-import MultiAddDialog from 'components/Add/MultiAddDialog'
 import useLaunchHandler from 'utils/useLaunchHandler'
+import { useTranslation } from 'react-i18next'
 
 import { AppWrapper, AppHeader, HeaderToggle, StyledIconButton, SidebarOverlay } from './style'
 import Sidebar from './Sidebar'
 import PWAFooter from './PWAFooter'
 import { PWAInstallationGuide } from './PWAInstallationGuide'
+
+const DonateDialog = lazy(() => import('components/Donate/DonateDialog'))
+const SearchDialog = lazy(() => import('components/Search/SearchDialog'))
+const AddDialog = lazy(() => import('components/Add/AddDialog'))
+const MultiAddDialog = lazy(() => import('components/Add/MultiAddDialog'))
 
 const snackbarIsClosed = JSON.parse(localStorage.getItem('snackbarIsClosed') || 'false') as boolean
 
@@ -44,10 +47,12 @@ interface DarkModeContextValue {
 export const DarkModeContext = createContext<DarkModeContextValue>({ isDarkMode: false })
 
 export default function App() {
+  const { t } = useTranslation()
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [isDonationDialogOpen, setIsDonationDialogOpen] = useState(false)
   const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false)
   const [torrServerVersion, setTorrServerVersion] = useState('')
+  const [listPollMs, setListPollMs] = useState(1000)
 
   const [isDarkMode, currentThemeMode, updateThemeMode, muiTheme] = useMaterialUITheme()
   const [currentLang, changeLang] = useChangeLanguage()
@@ -62,13 +67,21 @@ export default function App() {
     queryKey: ['torrents'],
     queryFn: getTorrents,
     retry: 1,
-    refetchInterval: 1000,
+    refetchInterval: listPollMs,
   })
 
   useEffect(() => {
     if (isError) setIsOffline(true)
     if (isSuccess) setIsOffline(false)
   }, [isError, isSuccess])
+
+  useEffect(() => {
+    const syncPoll = () => setListPollMs(document.hidden ? 5000 : 1000)
+    syncPoll()
+    document.addEventListener('visibilitychange', syncPoll)
+    return () => document.removeEventListener('visibilitychange', syncPoll)
+  }, [])
+
   const [sortABC, setSortABC] = useState(false)
   const handleClickSortABC = () => setSortABC(true)
   const handleClickSortDate = () => setSortABC(false)
@@ -90,13 +103,19 @@ export default function App() {
           >
             <CssBaseline />
 
-            {/* Div100vh - iOS WebKit fix  */}
             <Div100vh>
               <AppWrapper $isDrawerOpen={isDrawerOpen}>
                 <AppHeader>
-                  <StyledIconButton edge='start' color='inherit' onClick={() => setIsDrawerOpen(!isDrawerOpen)}>
-                    {isDrawerOpen ? <CloseIcon /> : <MenuIcon />}
-                  </StyledIconButton>
+                  <Tooltip title={t('Menu', { defaultValue: 'Menu' })}>
+                    <StyledIconButton
+                      edge='start'
+                      color='inherit'
+                      aria-label={t('Menu', { defaultValue: 'Menu' })}
+                      onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+                    >
+                      {isDrawerOpen ? <CloseIcon /> : <MenuIcon />}
+                    </StyledIconButton>
+                  </Tooltip>
 
                   <Typography variant='h6' noWrap>
                     TorrServer {torrServerVersion}
@@ -111,50 +130,80 @@ export default function App() {
                     }}
                   >
                     {isStandaloneApp && (
-                      <HeaderToggle onClick={() => setIsSearchDialogOpen(true)}>
-                        <SearchIcon />
-                      </HeaderToggle>
+                      <Tooltip title={t('Search')}>
+                        <HeaderToggle
+                          role='button'
+                          aria-label={t('Search')}
+                          onClick={() => setIsSearchDialogOpen(true)}
+                        >
+                          <SearchIcon />
+                        </HeaderToggle>
+                      </Tooltip>
                     )}
 
-                    <HeaderToggle onClick={() => (sortABC === true ? handleClickSortDate() : handleClickSortABC())}>
-                      {sortABC === true ? <SortByAlphaIcon /> : <SortIcon />}
-                    </HeaderToggle>
-
-                    <HeaderToggle
-                      onClick={() => {
-                        if (currentThemeMode === THEME_MODES.LIGHT) updateThemeMode(THEME_MODES.DARK)
-                        if (currentThemeMode === THEME_MODES.DARK) updateThemeMode(THEME_MODES.AUTO)
-                        if (currentThemeMode === THEME_MODES.AUTO) updateThemeMode(THEME_MODES.LIGHT)
-                      }}
-                    >
-                      {currentThemeMode === THEME_MODES.LIGHT ? (
-                        <Brightness5Icon />
-                      ) : currentThemeMode === THEME_MODES.DARK ? (
-                        <Brightness4Icon />
-                      ) : (
-                        <BrightnessAutoIcon />
-                      )}
-                    </HeaderToggle>
-
-                    <HeaderToggle
-                      onClick={() =>
-                        currentLang === 'en'
-                          ? changeLang('ru')
-                          : currentLang === 'ru'
-                            ? changeLang('ua')
-                            : currentLang === 'ua'
-                              ? changeLang('zh')
-                              : currentLang === 'zh'
-                                ? changeLang('bg')
-                                : currentLang === 'bg'
-                                  ? changeLang('fr')
-                                  : currentLang === 'fr'
-                                    ? changeLang('ro')
-                                    : changeLang('en')
+                    <Tooltip
+                      title={
+                        sortABC
+                          ? t('SortByDate', { defaultValue: 'Sort by date' })
+                          : t('SortByName', { defaultValue: 'Sort by name' })
                       }
                     >
-                      {currentLang.toUpperCase()}
-                    </HeaderToggle>
+                      <HeaderToggle
+                        role='button'
+                        aria-label={
+                          sortABC
+                            ? t('SortByDate', { defaultValue: 'Sort by date' })
+                            : t('SortByName', { defaultValue: 'Sort by name' })
+                        }
+                        onClick={() => (sortABC === true ? handleClickSortDate() : handleClickSortABC())}
+                      >
+                        {sortABC === true ? <SortByAlphaIcon /> : <SortIcon />}
+                      </HeaderToggle>
+                    </Tooltip>
+
+                    <Tooltip title={t('Theme', { defaultValue: 'Theme' })}>
+                      <HeaderToggle
+                        role='button'
+                        aria-label={t('Theme', { defaultValue: 'Theme' })}
+                        onClick={() => {
+                          if (currentThemeMode === THEME_MODES.LIGHT) updateThemeMode(THEME_MODES.DARK)
+                          if (currentThemeMode === THEME_MODES.DARK) updateThemeMode(THEME_MODES.AUTO)
+                          if (currentThemeMode === THEME_MODES.AUTO) updateThemeMode(THEME_MODES.LIGHT)
+                        }}
+                      >
+                        {currentThemeMode === THEME_MODES.LIGHT ? (
+                          <Brightness5Icon />
+                        ) : currentThemeMode === THEME_MODES.DARK ? (
+                          <Brightness4Icon />
+                        ) : (
+                          <BrightnessAutoIcon />
+                        )}
+                      </HeaderToggle>
+                    </Tooltip>
+
+                    <Tooltip title={t('Language', { defaultValue: 'Language' })}>
+                      <HeaderToggle
+                        role='button'
+                        aria-label={t('Language', { defaultValue: 'Language' })}
+                        onClick={() =>
+                          currentLang === 'en'
+                            ? changeLang('ru')
+                            : currentLang === 'ru'
+                              ? changeLang('ua')
+                              : currentLang === 'ua'
+                                ? changeLang('zh')
+                                : currentLang === 'zh'
+                                  ? changeLang('bg')
+                                  : currentLang === 'bg'
+                                    ? changeLang('fr')
+                                    : currentLang === 'fr'
+                                      ? changeLang('ro')
+                                      : changeLang('en')
+                        }
+                      >
+                        {currentLang.toUpperCase()}
+                      </HeaderToggle>
+                    </Tooltip>
                   </div>
                 </AppHeader>
 
@@ -182,15 +231,12 @@ export default function App() {
                   setIsDonationDialogOpen={setIsDonationDialogOpen}
                 />
 
-                {/* <MuiThemeProvider theme={lightTheme}> */}
-                {isDonationDialogOpen && <DonateDialog onClose={() => setIsDonationDialogOpen(false)} />}
-                {/* </MuiThemeProvider> */}
-
-                {isSearchDialogOpen && <SearchDialog handleClose={() => setIsSearchDialogOpen(false)} />}
-
-                {launchSource && <AddDialog hash={launchSource} handleClose={() => setLaunchSource(null)} />}
-
-                {launchFiles && <MultiAddDialog files={launchFiles} handleClose={() => setLaunchFiles(null)} />}
+                <Suspense fallback={null}>
+                  {isDonationDialogOpen && <DonateDialog onClose={() => setIsDonationDialogOpen(false)} />}
+                  {isSearchDialogOpen && <SearchDialog handleClose={() => setIsSearchDialogOpen(false)} />}
+                  {launchSource && <AddDialog hash={launchSource} handleClose={() => setLaunchSource(null)} />}
+                  {launchFiles && <MultiAddDialog files={launchFiles} handleClose={() => setLaunchFiles(null)} />}
+                </Suspense>
 
                 {snackbarIsClosed ? (
                   detectApplePlatform().isIOS && !isStandaloneApp && <PWAInstallationGuide />

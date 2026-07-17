@@ -69,8 +69,9 @@ export const TableStyle = styled.table`
 
     .button-cell {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
+      align-items: center;
 
       button,
       a,
@@ -80,6 +81,10 @@ export const TableStyle = styled.table`
 
       .MuiButton-outlined {
         border-color: rgba(0, 152, 121, 0.45);
+      }
+
+      .MuiIconButton-root {
+        justify-self: center;
       }
     }
 

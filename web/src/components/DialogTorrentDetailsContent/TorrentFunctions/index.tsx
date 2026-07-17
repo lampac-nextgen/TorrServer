@@ -68,10 +68,10 @@ const TorrentFunctions = memo(
         )}
         <SmallLabel $mb={10}>{t('TorrentState')}</SmallLabel>
         <MainSectionButtonGroup>
-          <Button onClick={() => removeTorrentViews()} variant='contained' color='primary' size='large'>
+          <Button onClick={() => removeTorrentViews()} variant='outlined' color='primary' size='large'>
             {t('RemoveViews')}
           </Button>
-          <Button onClick={() => dropTorrent()} variant='contained' color='primary' size='large'>
+          <Button onClick={() => dropTorrent()} variant='contained' color='error' size='large'>
             {t('DropTorrent')}
           </Button>
         </MainSectionButtonGroup>
@@ -93,7 +93,6 @@ const TorrentFunctions = memo(
       </>
     )
   },
-  () => true,
 )
 
 export default TorrentFunctions

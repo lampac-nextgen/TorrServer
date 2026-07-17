@@ -254,7 +254,10 @@
     "SortDescending": "Sortare descrescătoare",
     "Test": "Test",
     "TorrentAddedSuccessfully": "Torrent adăugat cu succes",
-    "TorznabHostURL": "URL-ul gazdei Torznab"
+    "TorznabHostURL": "URL-ul gazdei Torznab",
+    "HostHint": "Jackett: …/indexers/all/results/torznab/ — Prowlarr: http://localhost:9696/1. TorrServer appends /api when needed.",
+    "NoIndexersConfigured": "Torznab is enabled but no indexers are configured. Add a Host URL and API key below.",
+    "NoSearchSources": "No search sources enabled. Turn on RuTor and/or Torznab in Settings → Search."
   },
   "GStreamer": {
     "X264Ultrafast": "Use x264 ultrafast preset",

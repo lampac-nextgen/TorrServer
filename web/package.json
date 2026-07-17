@@ -13,7 +13,6 @@
     "@mui/material": "^6.4.8",
     "@tanstack/react-query": "^5.69.0",
     "axios": "^1.16.0",
-    "clsx": "^2.1.1",
     "hls.js": "1.6.16",
     "i18next": "^24.2.3",
     "i18next-browser-languagedetector": "^8.0.4",
@@ -28,8 +27,7 @@
     "react-dropzone": "^14.3.8",
     "react-i18next": "^15.4.1",
     "react-measure": "^2.5.2",
-    "styled-components": "^6.1.16",
-    "uuid": "^11.1.0"
+    "styled-components": "^6.1.16"
   },
   "scripts": {
     "start": "vite",

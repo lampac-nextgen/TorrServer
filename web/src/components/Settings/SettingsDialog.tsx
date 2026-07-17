@@ -1,7 +1,7 @@
 import axios from 'axios'
 import Button from '@mui/material/Button'
 import Switch from '@mui/material/Switch'
-import { FormControlLabel, useMediaQuery, useTheme } from '@mui/material'
+import { FormControlLabel, Snackbar, useMediaQuery, useTheme } from '@mui/material'
 import { settingsHost, gstSettingsHost } from 'utils/Hosts'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -46,6 +46,8 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
   )
   const [isIinaUsed, setIsIinaUsed] = useState(JSON.parse(localStorage.getItem('isIinaUsed') || 'false') as boolean)
   const [gstAvailable, setGstAvailable] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveMsg, setSaveMsg] = useState('')
 
   const tabMain = 0
   const tabAdditional = 1
@@ -69,19 +71,28 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
 
   const ref = useOnStandaloneAppOutsideClick(handleClose)
 
-  const handleSave = () => {
-    handleClose()
-    const sets = JSON.parse(JSON.stringify(settings))
-    sets.CacheSize = cacheSize * 1024 * 1024
-    sets.ReaderReadAHead = cachePercentage
-    sets.PreloadCache = preloadCachePercentage
-    axios.post(settingsHost(), { action: 'set', sets })
-    // Clear TMDB cache so fresh settings are fetched on next poster search
-    clearTMDBCache()
-    localStorage.setItem('isVlcUsed', String(isVlcUsed))
-    localStorage.setItem('isInfuseUsed', String(isInfuseUsed))
-    localStorage.setItem('isSenPlayerUsed', String(isSenPlayerUsed))
-    localStorage.setItem('isIinaUsed', String(isIinaUsed))
+  const handleSave = async () => {
+    if (!settings || saving) return
+    setSaving(true)
+    try {
+      const sets = JSON.parse(JSON.stringify(settings))
+      sets.CacheSize = cacheSize * 1024 * 1024
+      sets.ReaderReadAHead = cachePercentage
+      sets.PreloadCache = preloadCachePercentage
+      await axios.post(settingsHost(), { action: 'set', sets })
+      clearTMDBCache()
+      localStorage.setItem('isVlcUsed', String(isVlcUsed))
+      localStorage.setItem('isInfuseUsed', String(isInfuseUsed))
+      localStorage.setItem('isSenPlayerUsed', String(isSenPlayerUsed))
+      localStorage.setItem('isIinaUsed', String(isIinaUsed))
+      handleClose()
+    } catch (e) {
+      setSaveMsg(
+        (e as Error)?.message || t('SettingsDialog.SettingsSaveFailed', { defaultValue: 'Failed to save settings' }),
+      )
+    } finally {
+      setSaving(false)
+    }
   }
 
   const inputForm: import('types/api').SettingsInputHandler = ({ target: { type, value, checked, id } }) => {
@@ -263,10 +274,11 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
           {t('SettingsDialog.ResetToDefault')}
         </Button>
 
-        <Button variant='contained' onClick={handleSave} color='secondary'>
-          {t('Save')}
+        <Button variant='contained' onClick={handleSave} color='secondary' disabled={saving || !settings}>
+          {saving ? <CircularProgress size={22} color='inherit' /> : t('Save')}
         </Button>
       </FooterSection>
+      <Snackbar open={!!saveMsg} autoHideDuration={3000} onClose={() => setSaveMsg('')} message={saveMsg} />
     </StyledDialog>
   )
 }
