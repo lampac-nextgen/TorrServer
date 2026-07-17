@@ -13,9 +13,17 @@ export const THEME_MODES = {
 export type ThemePreference = (typeof THEME_MODES)[keyof typeof THEME_MODES]
 export type ResolvedThemeMode = typeof THEME_MODES.LIGHT | typeof THEME_MODES.DARK
 
-/** Shared layout breakpoint (matches MUI theme `md`). Use for shell drawer + fullscreen dialogs. */
+/** Shared layout breakpoint (matches MUI theme `md`). Shell drawer + single-column list. */
 export const LAYOUT_MOBILE_MAX = 930
 export const LAYOUT_MOBILE_MEDIA = `(max-width: ${LAYOUT_MOBILE_MAX}px)`
+
+/**
+ * Dialog fullscreen cutoff (Apple-first).
+ * Wider than shell mobile so iPad landscape (~1024–1100) gets fullscreen dialogs
+ * while the torrent list can stay 2-column above 930.
+ */
+export const LAYOUT_DIALOG_FULLSCREEN_MAX = 1100
+export const LAYOUT_DIALOG_FULLSCREEN_MEDIA = `(max-width: ${LAYOUT_DIALOG_FULLSCREEN_MAX}px)`
 
 const typography = {
   fontFamily: 'Open Sans, sans-serif',
@@ -128,7 +136,7 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
                   justifyContent: 'flex-start',
                   fontSize: '0.75rem',
                   fontWeight: 500,
-                  letterSpacing: '0.02em',
+                  letterSpacing: '0.01em',
                   padding: '0 10px',
                   boxShadow: 'none',
                   WebkitTapHighlightColor: 'transparent',
@@ -213,7 +221,7 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
             styleOverrides: {
               h6: {
                 fontSize: '1rem',
-                fontWeight: 600,
+                fontWeight: 500,
                 letterSpacing: 'normal',
               },
               body1: {

@@ -6,7 +6,7 @@ import Stack from '@mui/material/Stack'
 import { useMediaQuery } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { StyledDialog } from 'style/CustomMaterialUiStyles'
-import { LAYOUT_MOBILE_MEDIA } from 'style/materialUISetup'
+import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 
 interface DonateDialogProps {
@@ -16,7 +16,7 @@ interface DonateDialogProps {
 export default function DonateDialog({ onClose }: DonateDialogProps) {
   const { t } = useTranslation()
   const ref = useOnStandaloneAppOutsideClick(onClose)
-  const fullScreen = useMediaQuery(LAYOUT_MOBILE_MEDIA)
+  const fullScreen = useMediaQuery(LAYOUT_DIALOG_FULLSCREEN_MEDIA)
 
   return (
     <StyledDialog

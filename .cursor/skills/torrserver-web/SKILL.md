@@ -12,7 +12,7 @@ description: >-
 ## Before coding
 
 1. Read [web-upgrade-session.md](../../context/web-upgrade-session.md) for locked decisions and done/todo.
-2. Confirm Node 22+ (`web/.nvmrc`). Prefer `npm` scripts in `web/package.json`.
+2. Confirm Node 22+ (`web/.nvmrc`). Use **yarn** in `web/` — `gen_web.go` also runs `yarn` / `yarn run build`.
 
 ## Hard locks
 
@@ -24,15 +24,16 @@ description: >-
 - GStreamer: keep runtime React Query cache + probe cache in card; heartbeat `no-store`.
 - No lord-icon / Lottie for empty states — use `@mui/icons-material` + light CSS motion.
 - Relative asset base for Go embed (`./`). Do not break Basic Auth / API hosts in `utils/Hosts.ts`.
+- Shell / list single-column: **`LAYOUT_MOBILE_MAX = 930`**. Dialog fullscreen: **`LAYOUT_DIALOG_FULLSCREEN_MAX = 1100`** (iPad landscape). Do not conflate the two.
 
 ## Workflow after UI changes that ship in the binary
 
 ```bash
-cd web && npm run typecheck && npm run build
+cd web && yarn typecheck && yarn lint && yarn test && yarn build
 cd .. && go run gen_web.go --clean
 ```
 
-Remind user to restart server + hard refresh. Do not commit unless asked.
+Always use `--clean` so orphan hashed chunks are removed. Restart TorrServer + hard refresh (iOS PWA: remove/re-add Home Screen if UI looks stale). Do not commit unless asked.
 
 ## Patterns
 

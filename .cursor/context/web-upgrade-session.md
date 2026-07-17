@@ -67,20 +67,22 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 
 ## Responsive (mobile / tablet) — 2026-07-17
 
-- Shell drawer / overlay / single-column list aligned to **930px** (was 700) to match dialog fullscreen.
+- Shell drawer / overlay / single-column list: **930px** (`LAYOUT_MOBILE_MAX`).
+- Dialog fullscreen: **1100px** (`LAYOUT_DIALOG_FULLSCREEN_MAX`) so iPad landscape gets edge-to-edge dialogs while list can stay 2-col above 930.
+- Typography: MUI `h6` weight **500** (master parity); `cardAction` letter-spacing **0.01em**.
+- PWA chrome: footer content **56px** + safe-area; header **52px** + safe-area; Open Sans 400/600; `letter-spacing: normal`.
 - Header: `minmax(0,1fr)` title + ellipsis; denser toggles.
-- VideoPlayer: control row wraps; PiP hidden on mobile.
+- VideoPlayer: control row wraps; PiP hidden on mobile (`LAYOUT_MOBILE_MEDIA`).
 - Details: poster `object-fit: cover` + width 100%; widgets use `minmax(0,1fr)` + value ellipsis; seasons wrap.
-- DonateDialog: fullscreen ≤930 + stacked buttons.
 - Search toolbar always `flexWrap`.
-- Shared constants: `LAYOUT_MOBILE_MAX` / `LAYOUT_MOBILE_MEDIA` in `materialUISetup.ts`.
 
+### Still open (ask before doing)
 
 - Mobile sidebar as full MUI `Drawer` (custom slide + overlay still used)
 - Broader `Stack` migrations across dialogs
-- Full `DialogFooter` adoption everywhere Settings/Add/Search/delete
 - Settings/details skeletons beyond torrent list
 - Snake poll 100ms — only if still laggy after memo removal
+- Offline service worker
 
 ---
 
@@ -88,7 +90,7 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 
 | Area | Path |
 |------|------|
-| Theme | `web/src/style/materialUISetup.ts` |
+| Theme / layout tokens | `web/src/style/materialUISetup.ts` |
 | Toast | `web/src/components/Feedback/AppSnackbar.tsx` |
 | Cache poll / map | `web/src/components/DialogTorrentDetailsContent/customHooks.tsx` |
 | Snake canvas | `web/src/components/DialogTorrentDetailsContent/TorrentCache/` |
@@ -97,7 +99,7 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 | Empty state | `web/src/components/TorrentList/AddFirstTorrent.tsx` |
 | Offline | `web/src/components/TorrentList/NoServerConnection.tsx` |
 | Vite chunks | `web/vite.config.ts` |
-| Embed | `gen_web.go` |
+| Embed | `gen_web.go` (uses **yarn**) |
 
 ---
 
@@ -105,8 +107,8 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 
 - Prefer Russian replies when the user writes in Russian; keep code/comments English.
 - Do **not** commit unless the user explicitly asks.
-- After UI changes that must ship in the binary: `cd web && npm run typecheck && npm run build` then `go run gen_web.go --clean` from repo root.
-- Hard refresh / restart TorrServer after embed.
+- After UI changes that must ship in the binary: `cd web && yarn typecheck && yarn build` then `go run gen_web.go --clean` from repo root.
+- Hard refresh / restart TorrServer after embed; iOS PWA may need Home Screen re-add.
 - Avoid drive-by refactors outside the asked surface.
 
 ---

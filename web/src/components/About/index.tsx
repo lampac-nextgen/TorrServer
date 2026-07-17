@@ -9,7 +9,7 @@ import { useMediaQuery } from '@mui/material'
 import { echoHost } from 'utils/Hosts'
 import { publicUrl } from 'utils/publicUrl'
 import { StyledDialog, StyledMenuButtonWrapper } from 'style/CustomMaterialUiStyles'
-import { LAYOUT_MOBILE_MEDIA } from 'style/materialUISetup'
+import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
 import { isStandaloneApp } from 'utils/Utils'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 
@@ -20,7 +20,7 @@ export default function AboutDialog() {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [torrServerVersion, setTorrServerVersion] = useState('')
-  const fullScreen = useMediaQuery(LAYOUT_MOBILE_MEDIA)
+  const fullScreen = useMediaQuery(LAYOUT_DIALOG_FULLSCREEN_MEDIA)
   useEffect(() => {
     axios.get(echoHost()).then(({ data }) => setTorrServerVersion(data))
   }, [])

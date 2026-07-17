@@ -38,7 +38,7 @@ import axios from 'axios'
 import ptt from 'parse-torrent-title'
 import { useTranslation } from 'react-i18next'
 import { StyledDialog } from 'style/CustomMaterialUiStyles'
-import { LAYOUT_MOBILE_MEDIA } from 'style/materialUISetup'
+import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import { GETTING_INFO, IN_DB, CLOSED, PRELOAD, WORKING } from 'torrentStates'
 import { TORRENT_CATEGORIES } from 'components/categories'
@@ -217,7 +217,7 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
     [],
   )
 
-  const fullScreen = useMediaQuery(LAYOUT_MOBILE_MEDIA)
+  const fullScreen = useMediaQuery(LAYOUT_DIALOG_FULLSCREEN_MEDIA)
 
   const openDetailedInfo = () => setIsDetailedInfoOpened(true)
   const closeDetailedInfo = () => setIsDetailedInfoOpened(false)

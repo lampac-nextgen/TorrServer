@@ -5,7 +5,7 @@ export const Header = styled.div`
     background: ${primary};
     font-size: 18px;
     color: #fff;
-    font-weight: 600;
+    font-weight: 500;
     font-family: 'Open Sans', sans-serif;
     letter-spacing: normal;
     box-shadow:

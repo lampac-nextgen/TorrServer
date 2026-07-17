@@ -9,7 +9,7 @@ import { clearTMDBCache } from 'components/Add/helpers'
 import AppBar from '@mui/material/AppBar'
 import CircularProgress from '@mui/material/CircularProgress'
 import { StyledDialog } from 'style/CustomMaterialUiStyles'
-import { LAYOUT_MOBILE_MEDIA } from 'style/materialUISetup'
+import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import { readLocalBool, writeLocalJson } from 'utils/localPrefs'
 import { buttonLoadingIcon } from 'utils/buttonLoading'
@@ -34,7 +34,7 @@ interface SettingsDialogProps {
 export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
-  const fullScreen = useMediaQuery(LAYOUT_MOBILE_MEDIA)
+  const fullScreen = useMediaQuery(LAYOUT_DIALOG_FULLSCREEN_MEDIA)
   const { direction } = useTheme()
 
   const [settings, setSettings] = useState<BTSets | undefined>()

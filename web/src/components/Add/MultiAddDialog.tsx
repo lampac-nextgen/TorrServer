@@ -16,7 +16,7 @@ import {
 import { Delete as DeleteIcon } from '@mui/icons-material'
 import { DialogFooter } from 'style/DialogStyles'
 import { StyledDialog, StyledHeader } from 'style/CustomMaterialUiStyles'
-import { LAYOUT_MOBILE_MEDIA } from 'style/materialUISetup'
+import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import { TORRENT_CATEGORIES } from 'components/categories'
 import { NoImageIcon } from 'icons'
@@ -159,7 +159,7 @@ export interface MultiAddDialogProps {
 
 export default function MultiAddDialog({ files, handleClose }: MultiAddDialogProps) {
   const { t } = useTranslation()
-  const fullScreen = useMediaQuery(LAYOUT_MOBILE_MEDIA)
+  const fullScreen = useMediaQuery(LAYOUT_DIALOG_FULLSCREEN_MEDIA)
   const ref = useOnStandaloneAppOutsideClick(handleClose)
   const [isSaving, setIsSaving] = useState(false)
 

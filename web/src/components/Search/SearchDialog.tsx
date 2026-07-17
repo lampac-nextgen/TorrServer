@@ -23,7 +23,7 @@ import { CloudDownload as DownloadIcon, ArrowUpward, ArrowDownward } from '@mui/
 import { torznabSearchHost, torrentsHost, settingsHost, searchHost } from 'utils/Hosts'
 import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import { StyledDialog, StyledHeader } from 'style/CustomMaterialUiStyles'
-import { LAYOUT_MOBILE_MEDIA } from 'style/materialUISetup'
+import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
 import { parseSizeToBytes, formatSizeToClassicUnits } from 'utils/Utils'
 import { getMoviePosters, shortenTitleForPosterSearch } from 'components/Add/helpers'
 import { buttonLoadingIcon } from 'utils/buttonLoading'
@@ -104,7 +104,7 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
   const userSortedRef = useRef(false)
   const searchAbortRef = useRef<AbortController | null>(null)
   const searchGenRef = useRef(0)
-  const fullScreen = useMediaQuery(LAYOUT_MOBILE_MEDIA)
+  const fullScreen = useMediaQuery(LAYOUT_DIALOG_FULLSCREEN_MEDIA)
   const ref = useOnStandaloneAppOutsideClick(handleClose)
 
   const hasTorznab = enableTorznab && trackers.length > 0
