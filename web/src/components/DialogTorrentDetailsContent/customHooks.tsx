@@ -69,11 +69,17 @@ export const useCreateCacheMap = (cache: TorrentCache) => {
   return cacheMap
 }
 
-export const useGetSettings = (cache: TorrentCache) => {
+export const useGetSettings = () => {
   const [settings, setSettings] = useState<BTSets | undefined>()
   useEffect(() => {
-    axios.post(settingsHost(), { action: 'get' }).then(({ data }) => setSettings(data))
-  }, [cache])
+    let cancelled = false
+    axios.post(settingsHost(), { action: 'get' }).then(({ data }) => {
+      if (!cancelled) setSettings(data)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   return settings
 }

@@ -9,7 +9,7 @@ export interface TorrentFileStat {
   length?: number
 }
 
-/** List/status payload from POST /torrents (API uses snake_case in the web UI) */
+/** List/status payload from POST /torrents (API uses snake_case) */
 export interface TorrentStat {
   hash: string
   title?: string
@@ -26,21 +26,6 @@ export interface TorrentStat {
   stat?: number
   data?: string
   file_stats?: TorrentFileStat[]
-  Hash?: string
-  Name?: string
-  Title?: string
-  Category?: TorrentCategory
-  Poster?: string
-  Size?: number
-  TorrentSize?: number
-  LoadedSize?: number
-  DownloadSpeed?: number
-  UploadSpeed?: number
-  TotalPeers?: number
-  ActivePeers?: number
-  Status?: number
-  FileStats?: TorrentFileStat[]
-  [key: string]: unknown
 }
 
 export interface TorznabUrl {

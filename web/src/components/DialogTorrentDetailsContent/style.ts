@@ -108,7 +108,7 @@ export const MainSection = styled.section`
 export const CacheSection = styled.section`
   ${({
     theme: {
-      dialogTorrentDetailsContent: { chacheSectionBGColor },
+      dialogTorrentDetailsContent: { cacheSectionBGColor },
     },
   }) => css`
     grid-area: cache;
@@ -117,7 +117,7 @@ export const CacheSection = styled.section`
     display: grid;
     align-content: start;
     grid-template-rows: min-content min-content min-content;
-    background: ${chacheSectionBGColor};
+    background: ${cacheSectionBGColor};
     min-width: 0;
 
     @media (max-width: 800px) {
@@ -321,8 +321,9 @@ export const LoadingProgress = styled.div.attrs<{
     },
   }) => {
     const amount = ($fullAmount as number) || 1
-    const percentage = Math.min(100, Math.max(0, (($value as number) * 100) / amount))
-    const isEmpty = percentage < 0.5
+    const value = ($value as number) || 0
+    const percentage = Math.min(100, Math.max(0, (value * 100) / amount))
+    const isEmpty = value <= 0
 
     return {
       // this block is here according to styled-components recomendation about fast changable components

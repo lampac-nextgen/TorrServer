@@ -678,6 +678,10 @@ export default memo(Torrent, (prev, next) => {
     p.stat === n.stat &&
     p.torrent_size === n.torrent_size &&
     p.download_speed === n.download_speed &&
+    p.upload_speed === n.upload_speed &&
+    p.active_peers === n.active_peers &&
+    p.total_peers === n.total_peers &&
+    p.connected_seeders === n.connected_seeders &&
     p.data === n.data &&
     sameFileList(p.file_stats, n.file_stats)
   )

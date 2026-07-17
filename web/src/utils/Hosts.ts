@@ -11,8 +11,8 @@ export const streamHost = () => `${torrserverHost}/stream`
 export const shutdownHost = () => `${torrserverHost}/shutdown`
 export const echoHost = () => `${torrserverHost}/echo`
 export const playlistTorrHost = () => `${torrserverHost}/stream`
-export const torznabSearchHost = () => `${torrserverHost}/torznab/search`
-export const searchHost = () => `${torrserverHost}/search`
+export const torznabSearchHost = () => `${torrserverHost}/torznab/search/`
+export const searchHost = () => `${torrserverHost}/search/`
 export const torznabTestHost = () => `${torrserverHost}/torznab/test`
 export const tmdbSettingsHost = () => `${torrserverHost}/tmdb/settings`
 export const gstSettingsHost = () => `${torrserverHost}/gst/settings`

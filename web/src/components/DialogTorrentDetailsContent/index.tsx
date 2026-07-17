@@ -81,7 +81,7 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
   } = torrent
 
   const cache = useUpdateCache(hash)
-  const settings = useGetSettings(cache)
+  const settings = useGetSettings()
 
   const { Capacity, PiecesCount, PiecesLength, Filled } = cache
 
@@ -230,7 +230,7 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
                   $value={Filled}
                   style={{ marginTop: '5px' }}
                   $fullAmount={bufferSize}
-                  $label={`${humanizeSize(bufferSize)} / ${humanizeSize(Filled || 0) || `0 ${t('B')}`}`}
+                  $label={`${humanizeSize(Filled || 0)} / ${humanizeSize(bufferSize)}`}
                 />
               </SectionHeader>
 
