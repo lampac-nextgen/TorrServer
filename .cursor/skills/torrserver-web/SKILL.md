@@ -20,7 +20,7 @@ description: >-
 - Stay on MUI 6 — no MUI 7 unless asked.
 - Keep dual styling: MUI for buttons/dialogs/feedback; styled-components for shells/canvas/PWA.
 - File row: **all** player/copy/preload actions visible as equal outlined buttons — never a «⋯» menu.
-- Snake: poll `/cache` at **100ms** (master); skip unchanged cache state; keep `memo` on Pieces/Readers; sparse build + downsample ≤4000 cells — do not revert to full PiecesCount canvas loops.
+- Snake: poll `/cache` at **100ms**; skip unchanged; `memo`; **full-torrent** LOD (byte buckets), never crop to reader-only window; HiDPI bottom-up paint.
 - GStreamer: keep runtime React Query cache + probe cache in card; heartbeat `no-store`.
 - No lord-icon / Lottie for empty states — use `@mui/icons-material` + light CSS motion.
 - Relative asset base for Go embed (`./`). Do not break Basic Auth / API hosts in `utils/Hosts.ts`.
@@ -49,7 +49,7 @@ Remind user to restart server + hard refresh. Do not commit unless asked.
 ## Snake vs “cache”
 
 - Server torrent piece buffer UI = snake (`useUpdateCache` → `TorrentCache`).
-- Snake: poll already live; use sparse+downsample map (`buildCacheDrawMap`); keep fetch-level equal skip + component `memo` like master — never loop full `PiecesCount` for canvas on huge torrents.
+- Snake: full-torrent map + viewport LOD (`buildCacheDrawModel`); fetch equal-skip + `memo`; HiDPI bottom-up fill with reader/range priority.
 
 ## Prompt for new chats
 

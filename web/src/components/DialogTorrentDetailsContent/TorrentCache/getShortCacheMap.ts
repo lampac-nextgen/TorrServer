@@ -28,8 +28,15 @@ export default ({ cacheMap, preloadPiecesAmount, piecesInOneRow }: GetShortCache
   )
 
   const extraBlocksAmount = finalAmountOfBlocksToRenderInShortView - cacheMapWithoutEmptyBlocks.length + 1
-  const extraEmptyBlocksForFillingLine =
-    extraBlocksAmount > 0 ? (new Array(extraBlocksAmount).fill({}) as CacheMapItem[]) : []
+  const extraEmptyBlocksForFillingLine: CacheMapItem[] =
+    extraBlocksAmount > 0
+      ? Array.from({ length: extraBlocksAmount }, () => ({
+          percentage: 0,
+          priority: 0,
+          isReader: false,
+          isReaderRange: false,
+        }))
+      : []
 
   return [...cacheMapWithoutEmptyBlocks, ...extraEmptyBlocksForFillingLine]
 }

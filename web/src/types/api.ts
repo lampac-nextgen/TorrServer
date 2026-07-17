@@ -126,6 +126,7 @@ export interface TorrentCache {
 export interface CacheMapItem {
   percentage: number
   priority: number
+  completed?: boolean
   isReader?: boolean
   isReaderRange?: boolean
 }

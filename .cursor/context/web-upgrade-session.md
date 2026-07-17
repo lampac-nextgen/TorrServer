@@ -31,7 +31,7 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 5. **No React Router** (still SPA without client routes).
 6. **No Jackett/Prowlarr 1-click sync** in web polish scope.
 7. **File row actions:** all visible equal outlined buttons — **no «⋯» overflow menu** (Infuse / SenPlayer / IINA / Copy / Play / Preload).
-8. **Snake (cache map):** poll **100ms** (as master); skip `setCache` when Pieces/Readers unchanged; restore `memo` like master; **sparse** piece walk + **downsample** to ≤4000 cells (detailed) / ≤1200 (mini) so huge torrents don’t freeze the cache dialog; draw via `requestAnimationFrame`.
+8. **Snake:** full-torrent map (no crop); viewport LOD + byte-accurate buckets; HiDPI bottom-up fill; reader/range on top; poll 100ms + memo + skip unchanged.
 9. **GStreamer:** keep React Query runtime cache (60s, invalidate on Settings save); keep in-card `audioTracksByFile` probe cache; heartbeat `cache: 'no-store'`.
 10. **Empty / offline UI:** MUI icons only — **no lord-icon** (removed script + base64).
 
