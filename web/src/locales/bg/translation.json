@@ -339,5 +339,10 @@
   "NoPlayableFiles": "Няма възпроизводими файлове в този торент",
   "PlaybackError": "Грешка при възпроизвеждане",
   "ConfirmDropTorrent": "Да се изчисти този торент от паметта?",
-  "ConfirmRemoveViews": "Изчистване на всички маркери за преглед?"
+  "ConfirmRemoveViews": "Изчистване на всички маркери за преглед?",
+  "SnakeBucket": "1 клетка ≈ {{count}} блока",
+  "SnakeFocus": "Прозорец на reader",
+  "SnakeFocusRange": "блокове {{start}}–{{end}}",
+  "SnakeTooltipBucket": "блокове {{start}}–{{end}} · {{fill}}%",
+  "SnakeTooltipPiece": "блок #{{id}} · {{fill}}%"
 }

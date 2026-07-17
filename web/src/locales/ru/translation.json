@@ -339,5 +339,10 @@
   "NoPlayableFiles": "Нет воспроизводимых файлов в торренте",
   "PlaybackError": "Ошибка воспроизведения",
   "ConfirmDropTorrent": "Сбросить этот торрент из памяти?",
-  "ConfirmRemoveViews": "Очистить все отметки просмотра для этого торрента?"
+  "ConfirmRemoveViews": "Очистить все отметки просмотра для этого торрента?",
+  "SnakeBucket": "1 клетка ≈ {{count}} блоков",
+  "SnakeFocus": "Окно reader",
+  "SnakeFocusRange": "блоки {{start}}–{{end}}",
+  "SnakeTooltipBucket": "блоки {{start}}–{{end}} · {{fill}}%",
+  "SnakeTooltipPiece": "блок #{{id}} · {{fill}}%"
 }

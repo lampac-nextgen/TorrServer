@@ -39,9 +39,10 @@ const fillProgress = (
     return
   }
 
-  const filledH = Math.max(1, Math.round(size * ratio))
+  // At least 2px so early fill in large LOD buckets stays noticeable.
+  const filledH = Math.max(2, Math.round(size * ratio))
   ctx.fillStyle = fillColor
-  ctx.fillRect(0, size - filledH, size, filledH)
+  ctx.fillRect(0, size - filledH, size, Math.min(filledH, size))
 }
 
 /**
@@ -170,4 +171,30 @@ export const setupHiDpiCanvas = (
   if (!ctx) return null
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   return ctx
+}
+
+export interface HitTestArgs {
+  piecesInOneRow: number
+  pieceSize: number
+  gap: number
+  startingX: number
+  cellCount: number
+}
+
+/** CSS-pixel hit test → cell index, or -1. */
+export const hitTestSnakeCell = (x: number, y: number, args: HitTestArgs): number => {
+  const { piecesInOneRow, pieceSize, gap, startingX, cellCount } = args
+  if (piecesInOneRow < 1 || cellCount < 1 || pieceSize <= 0) return -1
+  const stride = pieceSize + gap
+  const localX = x - startingX
+  if (localX < 0 || y < 0) return -1
+  const col = Math.floor(localX / stride)
+  const row = Math.floor(y / stride)
+  if (col < 0 || col >= piecesInOneRow) return -1
+  const inCellX = localX - col * stride
+  const inCellY = y - row * stride
+  if (inCellX > pieceSize || inCellY > pieceSize) return -1
+  const index = row * piecesInOneRow + col
+  if (index < 0 || index >= cellCount) return -1
+  return index
 }

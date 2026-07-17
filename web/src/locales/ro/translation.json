@@ -345,5 +345,10 @@
   "NoPlayableFiles": "Nu există fișiere redabile în acest torrent",
   "PlaybackError": "Redarea a eșuat",
   "ConfirmDropTorrent": "Eliminați acest torrent din memorie?",
-  "ConfirmRemoveViews": "Ștergeți toate marcajele vizionate?"
+  "ConfirmRemoveViews": "Ștergeți toate marcajele vizionate?",
+  "SnakeBucket": "1 celulă ≈ {{count}} piese",
+  "SnakeFocus": "Fereastră reader",
+  "SnakeFocusRange": "piese {{start}}–{{end}}",
+  "SnakeTooltipBucket": "piese {{start}}–{{end}} · {{fill}}%",
+  "SnakeTooltipPiece": "piesă #{{id}} · {{fill}}%"
 }

@@ -31,6 +31,10 @@ type Cache struct {
 
 	pieces map[int]*Piece
 
+	// activePieces tracks ids with Size > 0 for O(active) GetState (not O(pieceCount)).
+	activePieces map[int]struct{}
+	muActive     sync.Mutex
+
 	readers   map[*Reader]struct{}
 	muReaders sync.Mutex
 
@@ -42,11 +46,12 @@ type Cache struct {
 
 func NewCache(capacity int64, storage *Storage) *Cache {
 	ret := &Cache{
-		capacity: capacity,
-		filled:   0,
-		pieces:   make(map[int]*Piece),
-		storage:  storage,
-		readers:  make(map[*Reader]struct{}),
+		capacity:     capacity,
+		filled:       0,
+		pieces:       make(map[int]*Piece),
+		activePieces: make(map[int]struct{}),
+		storage:      storage,
+		readers:      make(map[*Reader]struct{}),
 	}
 
 	return ret
@@ -113,6 +118,10 @@ func (c *Cache) Close() error {
 	c.pieces = nil
 	c.muReaders.Unlock()
 
+	c.muActive.Lock()
+	c.activePieces = nil
+	c.muActive.Unlock()
+
 	utils.FreeOSMemGC()
 	return nil
 }
@@ -136,28 +145,29 @@ func (c *Cache) AdjustRA(readahead int64) {
 	}
 }
 
+func (c *Cache) notePieceFilled(id int) {
+	c.muActive.Lock()
+	if c.activePieces == nil {
+		c.activePieces = make(map[int]struct{})
+	}
+	c.activePieces[id] = struct{}{}
+	c.muActive.Unlock()
+}
+
+func (c *Cache) notePieceEmpty(id int) {
+	c.muActive.Lock()
+	delete(c.activePieces, id)
+	c.muActive.Unlock()
+}
+
 func (c *Cache) GetState() *state.CacheState {
 	cState := new(state.CacheState)
 
-	piecesState := make(map[int]state.ItemState, 0)
-	var fill int64 = 0
-
-	if len(c.pieces) > 0 {
-		for _, p := range c.pieces {
-			if p.Size > 0 {
-				fill += p.Size
-				piecesState[p.Id] = state.ItemState{
-					Id:        p.Id,
-					Size:      p.Size,
-					Length:    c.pieceLength,
-					Completed: p.Complete,
-					Priority:  int(c.torrent.PieceState(p.Id).Priority),
-				}
-			}
-		}
-	}
+	piecesState := make(map[int]state.ItemState)
+	var fill int64
 
 	readersState := make([]*state.ReaderState, 0)
+	priorityWindow := make(map[int]struct{})
 
 	if c.Readers() > 0 {
 		c.muReaders.Lock()
@@ -169,8 +179,74 @@ func (c *Cache) GetState() *state.CacheState {
 				End:    rng.End,
 				Reader: pc,
 			})
+			// Inclusive End (matches inRanges). Small margin so debug labels appear
+			// on neighbouring queued pieces just outside the strict reader window.
+			const margin = 5
+			start := rng.Start - margin
+			if start < 0 {
+				start = 0
+			}
+			end := rng.End + margin
+			if end >= c.pieceCount {
+				end = c.pieceCount - 1
+			}
+			for id := start; id <= end; id++ {
+				priorityWindow[id] = struct{}{}
+			}
 		}
 		c.muReaders.Unlock()
+	}
+
+	c.muActive.Lock()
+	activeIDs := make([]int, 0, len(c.activePieces))
+	for id := range c.activePieces {
+		activeIDs = append(activeIDs, id)
+	}
+	c.muActive.Unlock()
+
+	stale := make([]int, 0)
+	for _, id := range activeIDs {
+		p, ok := c.pieces[id]
+		if !ok || p == nil || p.Size <= 0 {
+			stale = append(stale, id)
+			continue
+		}
+		fill += p.Size
+		priority := 0
+		if c.torrent != nil {
+			priority = int(c.torrent.PieceState(p.Id).Priority)
+		}
+		piecesState[p.Id] = state.ItemState{
+			Id:        p.Id,
+			Size:      p.Size,
+			Length:    c.pieceLength,
+			Completed: p.Complete,
+			Priority:  priority,
+		}
+	}
+	for _, id := range stale {
+		c.notePieceEmpty(id)
+	}
+
+	// Emit Size==0 pieces inside the reader priority window so the web snake
+	// can show H/R/N/A labels before bytes arrive.
+	if c.torrent != nil {
+		for id := range priorityWindow {
+			if _, exists := piecesState[id]; exists {
+				continue
+			}
+			p, ok := c.pieces[id]
+			if !ok || p == nil {
+				continue
+			}
+			piecesState[id] = state.ItemState{
+				Id:        id,
+				Size:      p.Size,
+				Length:    c.pieceLength,
+				Completed: p.Complete,
+				Priority:  int(c.torrent.PieceState(id).Priority),
+			}
+		}
 	}
 
 	c.filled = fill

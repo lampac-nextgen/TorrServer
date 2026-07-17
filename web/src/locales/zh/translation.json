@@ -339,5 +339,10 @@
   "NoPlayableFiles": "此种子中没有可播放的文件",
   "PlaybackError": "播放失败",
   "ConfirmDropTorrent": "从内存中重置此种子？",
-  "ConfirmRemoveViews": "清除此种子的所有已观看标记？"
+  "ConfirmRemoveViews": "清除此种子的所有已观看标记？",
+  "SnakeBucket": "1 格 ≈ {{count}} 块",
+  "SnakeFocus": "读取窗口",
+  "SnakeFocusRange": "块 {{start}}–{{end}}",
+  "SnakeTooltipBucket": "块 {{start}}–{{end}} · {{fill}}%",
+  "SnakeTooltipPiece": "块 #{{id}} · {{fill}}%"
 }

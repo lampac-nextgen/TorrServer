@@ -129,6 +129,9 @@ export interface CacheMapItem {
   completed?: boolean
   isReader?: boolean
   isReaderRange?: boolean
+  /** Inclusive piece index range represented by this cell (LOD or 1:1). */
+  pieceStart?: number
+  pieceEnd?: number
 }
 
 export interface OfflineAwareProps {

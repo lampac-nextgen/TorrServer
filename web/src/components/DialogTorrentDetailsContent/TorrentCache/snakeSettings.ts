@@ -22,8 +22,8 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
   dark: {
     default: {
       borderWidth: 1,
-      pieceSize: 14,
-      gapBetweenPieces: 3,
+      pieceSize: 20,
+      gapBetweenPieces: 4,
       borderColor: rgba('#fff', 0.28),
       completeColor: mainColors.dark.primary,
       backgroundColor: '#2f3538',
@@ -35,8 +35,8 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
     mini: {
       cacheMaxHeight: 360,
       borderWidth: 2,
-      pieceSize: 22,
-      gapBetweenPieces: 5,
+      pieceSize: 23,
+      gapBetweenPieces: 6,
       borderColor: '#5c6469',
       completeColor: mainColors.dark.primary,
       backgroundColor: '#3d4448',
@@ -49,8 +49,8 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
   light: {
     default: {
       borderWidth: 1,
-      pieceSize: 14,
-      gapBetweenPieces: 3,
+      pieceSize: 20,
+      gapBetweenPieces: 4,
       borderColor: '#9fcbb8',
       completeColor: mainColors.light.primary,
       backgroundColor: '#eef5f1',
@@ -62,8 +62,8 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
     mini: {
       cacheMaxHeight: 360,
       borderWidth: 2,
-      pieceSize: 22,
-      gapBetweenPieces: 5,
+      pieceSize: 23,
+      gapBetweenPieces: 6,
       borderColor: '#4db380',
       completeColor: mainColors.light.primary,
       backgroundColor: '#ffffff',
@@ -76,7 +76,7 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
 }
 
 /**
- * Keep cells readable. Detailed view uses classic ~14px pieces; LOD merges pieces instead of shrinking.
+ * Keep cells readable. Detailed view uses ~20px pieces; LOD merges pieces instead of shrinking.
  */
 export const resolvePieceMetrics = (
   settings: SnakePieceSettings,
@@ -97,6 +97,6 @@ export const resolvePieceMetrics = (
     return { pieceSize, gap: Math.max(4, Math.min(baseGap, Math.round(pieceSize * 0.22))) }
   }
 
-  // Detailed: fixed classic size — never shrink below 12px (tiny grids are unreadable).
-  return { pieceSize: Math.max(12, basePiece), gap: Math.max(3, baseGap) }
+  // Detailed: fixed readable size — never shrink (tiny grids are unreadable).
+  return { pieceSize: Math.max(18, basePiece), gap: Math.max(4, baseGap) }
 }
