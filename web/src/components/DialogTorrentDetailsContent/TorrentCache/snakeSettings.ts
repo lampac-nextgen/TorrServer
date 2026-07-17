@@ -24,13 +24,13 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       borderWidth: 1,
       pieceSize: 20,
       gapBetweenPieces: 4,
-      borderColor: rgba('#fff', 0.28),
+      borderColor: rgba('#fff', 0.22),
       completeColor: mainColors.dark.primary,
-      backgroundColor: '#2f3538',
+      backgroundColor: '#2a3033',
       progressColor: rgba('#fff', 0.15),
-      readerColor: '#ff4d4f',
-      readerFillColor: rgba('#ff4d4f', 0.55),
-      rangeColor: '#e6b089',
+      readerColor: '#ff5252',
+      readerFillColor: rgba('#ff5252', 0.65),
+      rangeColor: '#f0b48a',
     },
     mini: {
       cacheMaxHeight: 360,
@@ -42,8 +42,8 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       backgroundColor: '#3d4448',
       progressColor: '#5c6469',
       readerColor: '#ff6b6b',
-      readerFillColor: rgba('#ff6b6b', 0.5),
-      rangeColor: '#e6b089',
+      readerFillColor: rgba('#ff6b6b', 0.55),
+      rangeColor: '#f0b48a',
     },
   },
   light: {
@@ -51,13 +51,13 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       borderWidth: 1,
       pieceSize: 20,
       gapBetweenPieces: 4,
-      borderColor: '#9fcbb8',
+      borderColor: '#8fbfa8',
       completeColor: mainColors.light.primary,
-      backgroundColor: '#eef5f1',
+      backgroundColor: '#e8f2ec',
       progressColor: '#b3dfc9',
-      readerColor: '#c62828',
-      readerFillColor: rgba('#c62828', 0.45),
-      rangeColor: '#7e6bc4',
+      readerColor: '#b71c1c',
+      readerFillColor: rgba('#c62828', 0.5),
+      rangeColor: '#6a5acd',
     },
     mini: {
       cacheMaxHeight: 360,
@@ -69,14 +69,14 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       backgroundColor: '#ffffff',
       progressColor: '#c8e6d7',
       readerColor: '#b71c1c',
-      readerFillColor: rgba('#b71c1c', 0.4),
-      rangeColor: '#7e6bc4',
+      readerFillColor: rgba('#b71c1c', 0.45),
+      rangeColor: '#6a5acd',
     },
   },
 }
 
 /**
- * Keep cells readable. Detailed view uses ~20px pieces; LOD merges pieces instead of shrinking.
+ * Keep cells readable. Detailed view uses fixed ~20px pieces (1:1 window, no shrink).
  */
 export const resolvePieceMetrics = (
   settings: SnakePieceSettings,
@@ -97,6 +97,5 @@ export const resolvePieceMetrics = (
     return { pieceSize, gap: Math.max(4, Math.min(baseGap, Math.round(pieceSize * 0.22))) }
   }
 
-  // Detailed: fixed readable size — never shrink (tiny grids are unreadable).
   return { pieceSize: Math.max(18, basePiece), gap: Math.max(4, baseGap) }
 }

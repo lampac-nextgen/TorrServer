@@ -39,14 +39,15 @@ const fillProgress = (
     return
   }
 
-  // At least 2px so early fill in large LOD buckets stays noticeable.
+  // At least 2px so early fill stays noticeable.
   const filledH = Math.max(2, Math.round(size * ratio))
   ctx.fillStyle = fillColor
   ctx.fillRect(0, size - filledH, size, Math.min(filledH, size))
 }
 
 /**
- * Crisp HiDPI snake render: empty → fill → range → reader (reader always on top).
+ * Crisp HiDPI snake render with strong reader / range highlighting.
+ * Layers: empty → fill → range tint → border (reader > range > progress) → debug labels.
  */
 export const drawSnake = ({
   ctx,
@@ -76,9 +77,8 @@ export const drawSnake = ({
   ctx.clearRect(0, 0, canvasWidth, canvasHeight)
   ctx.imageSmoothingEnabled = false
 
-  const inset = borderWidth / 2
-  // Align strokes to device pixels for sharp 1px borders.
   const pixelAlign = borderWidth % 2 === 1 ? 0.5 : 0
+  const isDark = theme === 'dark'
 
   for (let i = 0; i < cells.length; i++) {
     const cell = cells[i] || { percentage: 0, priority: 0 }
@@ -96,11 +96,31 @@ export const drawSnake = ({
     ctx.save()
     ctx.translate(x, y)
 
-    // Body
+    // Empty base: range cells get a tinted idle background so the window stands out.
+    const emptyBase =
+      isReaderRange && !isReader && !inProgress && !isCompleted
+        ? rangeColor
+        : backgroundColor
+
     if (isReader && readerFillColor) {
-      fillProgress(ctx, pieceSize, Math.max(percentage, 8), backgroundColor, completeColor)
+      fillProgress(ctx, pieceSize, Math.max(percentage, 12), backgroundColor, completeColor)
+      // Top reader marker band
       ctx.fillStyle = readerFillColor
-      ctx.fillRect(0, 0, pieceSize, Math.max(2, Math.round(pieceSize * 0.18)))
+      ctx.fillRect(0, 0, pieceSize, Math.max(3, Math.round(pieceSize * 0.22)))
+    } else if (isReaderRange && !isReader) {
+      // Range: tinted empty + progress fill on top
+      fillProgress(
+        ctx,
+        pieceSize,
+        isCompleted ? 100 : percentage,
+        isDark ? 'rgba(230, 176, 137, 0.35)' : 'rgba(126, 107, 196, 0.22)',
+        inProgress || isCompleted ? completeColor : emptyBase,
+      )
+      // Soft overlay so range is obvious even when filled
+      ctx.fillStyle = rangeColor
+      ctx.globalAlpha = isDark ? 0.18 : 0.14
+      ctx.fillRect(0, 0, pieceSize, pieceSize)
+      ctx.globalAlpha = 1
     } else {
       fillProgress(
         ctx,
@@ -111,31 +131,32 @@ export const drawSnake = ({
       )
     }
 
-    // Range wash (under border, over fill) — subtle so progress stays readable
-    if (isReaderRange && !isReader) {
-      ctx.fillStyle = rangeColor
-      ctx.globalAlpha = theme === 'dark' ? 0.28 : 0.22
-      ctx.fillRect(inset, inset, pieceSize - borderWidth, pieceSize - borderWidth)
-      ctx.globalAlpha = 1
-    }
-
     // Border priority: reader > range > complete/progress > idle
     let stroke = borderColor
     let line = borderWidth
     if (isReader) {
       stroke = readerColor
-      line = Math.max(borderWidth + 1, isMini ? 3 : 2)
+      line = isMini ? 3 : 3
     } else if (isReaderRange) {
       stroke = rangeColor
-      line = Math.max(borderWidth, 2)
+      line = Math.max(borderWidth + 1, 2)
     } else if (inProgress || isCompleted) {
       stroke = completeColor
+      line = Math.max(borderWidth, 2)
     }
 
     const strokeInset = line / 2
     ctx.lineWidth = line
     ctx.strokeStyle = stroke
     ctx.strokeRect(strokeInset, strokeInset, pieceSize - line, pieceSize - line)
+
+    // Reader: inner accent frame so it pops against dense grids
+    if (isReader) {
+      const inner = line + 1.5
+      ctx.lineWidth = 1
+      ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.55)'
+      ctx.strokeRect(inner, inner, pieceSize - inner * 2, pieceSize - inner * 2)
+    }
 
     if (isSnakeDebugMode && (cell.priority || 0) > 0) {
       let info = ''
@@ -145,10 +166,14 @@ export const drawSnake = ({
       else if (priority === 4) info = 'N'
       else if (priority === 5) info = 'A'
       if (info) {
-        ctx.font = `${isMini ? 12 : 9}px ui-monospace, SFMono-Regular, Menlo, monospace`
+        ctx.font = `bold ${isMini ? 12 : 10}px ui-monospace, SFMono-Regular, Menlo, monospace`
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
-        ctx.fillStyle = theme === 'dark' ? '#fff' : '#111'
+        // Halo for readability on green fill
+        ctx.lineWidth = 3
+        ctx.strokeStyle = isDark ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.9)'
+        ctx.strokeText(info, pieceSize / 2, pieceSize / 2)
+        ctx.fillStyle = isDark ? '#fff' : '#111'
         ctx.fillText(info, pieceSize / 2, pieceSize / 2)
       }
     }

@@ -45,7 +45,7 @@ export const SnakeWrapper = styled.div<{
         `
       : $isFocus
         ? css`
-            max-height: min(40vh, 360px);
+            max-height: min(70vh, 640px);
           `
         : css`
             max-height: min(70vh, 640px);

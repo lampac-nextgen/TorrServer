@@ -81,16 +81,8 @@ export default function DetailedView({
           </div>
         </SectionTitle>
 
-        <TorrentCacheView cache={cache} mode='overview' isSnakeDebugMode={isSnakeDebugMode} />
-
-        {isSnakeDebugMode && (
-          <>
-            <SectionTitle $mb={12} style={{ marginTop: 24 }}>
-              {t('SnakeFocus')}
-            </SectionTitle>
-            <TorrentCacheView cache={cache} mode='focus' isSnakeDebugMode />
-          </>
-        )}
+        {/* Single 1:1 reader window — no LOD merge, no dual panel. */}
+        <TorrentCacheView cache={cache} mode='detailed' isSnakeDebugMode={isSnakeDebugMode} />
       </DetailedViewCacheSection>
     </>
   )

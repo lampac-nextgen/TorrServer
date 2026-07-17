@@ -4,8 +4,8 @@ import type { CacheMapItem, CachePiece, TorrentCache } from 'types/api'
 export const SNAKE_MAX_CELLS_DETAILED = 6000
 export const SNAKE_MAX_CELLS_MINI = 900
 
-/** Focus strip target rows around the reader (debug / priority labels). */
-export const SNAKE_FOCUS_TARGET_ROWS = 10
+/** Focus / detailed strip target rows around the reader (1:1, no LOD). */
+export const SNAKE_FOCUS_TARGET_ROWS = 28
 
 export interface CacheDrawModel {
   cells: CacheMapItem[]
@@ -183,8 +183,8 @@ export interface FocusWindow {
 }
 
 /**
- * Sliding 1:1 window around the primary reader (Telegram-style focus for debug).
- * `visibleCells` ≈ cols × focusRows — how many piece cells fit on screen.
+ * Sliding 1:1 window around the primary reader.
+ * `visibleCells` ≈ cols × focusRows — how many piece cells fit in the view.
  */
 export const resolveFocusWindow = (cache: TorrentCache, visibleCells: number): FocusWindow | null => {
   const piecesCount = cache.PiecesCount ?? 0
@@ -206,10 +206,12 @@ export const resolveFocusWindow = (cache: TorrentCache, visibleCells: number): F
   const capacityPieces =
     pieceLength > 0 ? Math.max(1, Math.round((cache.Capacity || 0) / pieceLength)) : visibleCells
 
-  let windowSize = Math.max(visibleCells, Math.min(capacityPieces, piecesCount))
+  // Prefer cache-capacity window, but never smaller than what fits on screen.
+  let windowSize = Math.max(visibleCells, Math.min(capacityPieces * 2, piecesCount))
   windowSize = Math.min(piecesCount, Math.max(1, windowSize))
 
-  let start = readerPiece - Math.floor(windowSize / 5)
+  // Center on reader so fill ahead/behind is equally visible.
+  let start = readerPiece - Math.floor(windowSize / 2)
   if (start < 0) start = 0
   let end = start + windowSize - 1
   if (end >= piecesCount) {

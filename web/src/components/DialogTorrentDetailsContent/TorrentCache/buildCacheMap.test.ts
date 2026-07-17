@@ -101,7 +101,7 @@ describe('buildCacheDrawModel', () => {
 })
 
 describe('resolveFocusWindow / buildFocusModel', () => {
-  it('clamps window to torrent bounds around reader', () => {
+  it('centers window on reader and stays in bounds', () => {
     const cache: TorrentCache = {
       PiecesCount: 100,
       PiecesLength: 1024,
@@ -114,6 +114,9 @@ describe('resolveFocusWindow / buildFocusModel', () => {
     expect(window!.end).toBeLessThan(100)
     expect(window!.readerPiece).toBe(50)
     expect(window!.end - window!.start + 1).toBeGreaterThanOrEqual(20)
+    // Reader should sit near the middle of the window
+    const mid = (window!.start + window!.end) / 2
+    expect(Math.abs(mid - 50)).toBeLessThanOrEqual(2)
   })
 
   it('builds 1:1 cells with priorities including empty Size=0 entries', () => {
