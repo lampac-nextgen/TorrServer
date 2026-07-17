@@ -1,8 +1,8 @@
 import type { CacheMapItem, CachePiece, TorrentCache } from 'types/api'
 
-/** Soft caps — real budget is chosen from viewport density in the component. */
-export const SNAKE_MAX_CELLS_DETAILED = 12000
-export const SNAKE_MAX_CELLS_MINI = 1600
+/** Soft caps — real budget is chosen for readable cell size, not max density. */
+export const SNAKE_MAX_CELLS_DETAILED = 2800
+export const SNAKE_MAX_CELLS_MINI = 900
 
 export interface CacheDrawModel {
   cells: CacheMapItem[]
@@ -103,14 +103,15 @@ export const buildCacheDrawModel = (cache: TorrentCache, maxCells: number): Cach
   return { cells, piecesCount, bucketSize }
 }
 
-/** How many cells we can paint for the current width without freezing the UI. */
+/** How many cells fit while keeping readable piece size (classic ~14px). */
 export const resolveCellBudget = (containerWidth: number, isMini: boolean): number => {
   if (isMini) return SNAKE_MAX_CELLS_MINI
-  if (!containerWidth || containerWidth <= 0) return 6000
+  if (!containerWidth || containerWidth <= 0) return 1800
 
-  const minPiece = 7
-  const gap = 2
-  const cols = Math.max(1, Math.floor(containerWidth / (minPiece + gap)))
-  // ~100 rows of detail is enough for overview + scroll; hard cap for main-thread budget.
-  return Math.min(SNAKE_MAX_CELLS_DETAILED, Math.max(cols * 48, cols * 100))
+  // Never go below readable cell footprint (piece + gap ≈ classic TorrServer).
+  const cellFootprint = 14 + 3
+  const cols = Math.max(1, Math.floor(containerWidth / cellFootprint))
+  // Prefer ~35–45 rows of distinct cells; more → scroll, not tinier squares.
+  const targetRows = 40
+  return Math.min(SNAKE_MAX_CELLS_DETAILED, Math.max(cols * 24, cols * targetRows))
 }

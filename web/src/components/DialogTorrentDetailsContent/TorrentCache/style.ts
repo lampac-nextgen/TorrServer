@@ -14,17 +14,20 @@ export const ScrollNotification = styled.div<{ $themeType?: SnakeThemeMode }>`
 export const SnakeWrapper = styled.div<{ $isMini?: boolean; $themeType?: SnakeThemeMode }>`
   width: 100%;
   min-width: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 
   ${({ $isMini, $themeType }) =>
-    $isMini &&
-    css`
-      display: grid;
-      justify-content: center;
-      max-height: ${snakeSettings[$themeType ?? 'light'].mini.cacheMaxHeight}px;
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-    `}
+    $isMini
+      ? css`
+          display: grid;
+          justify-content: center;
+          max-height: ${snakeSettings[$themeType ?? 'light'].mini.cacheMaxHeight}px;
+        `
+      : css`
+          max-height: min(70vh, 640px);
+        `}
 
   canvas {
     display: block;

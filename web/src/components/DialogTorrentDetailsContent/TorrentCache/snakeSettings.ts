@@ -24,9 +24,9 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       borderWidth: 1,
       pieceSize: 14,
       gapBetweenPieces: 3,
-      borderColor: rgba('#fff', 0.18),
+      borderColor: rgba('#fff', 0.28),
       completeColor: mainColors.dark.primary,
-      backgroundColor: '#3d4448',
+      backgroundColor: '#2f3538',
       progressColor: rgba('#fff', 0.15),
       readerColor: '#ff4d4f',
       readerFillColor: rgba('#ff4d4f', 0.55),
@@ -51,9 +51,9 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       borderWidth: 1,
       pieceSize: 14,
       gapBetweenPieces: 3,
-      borderColor: '#cfe8dc',
+      borderColor: '#9fcbb8',
       completeColor: mainColors.light.primary,
-      backgroundColor: '#f4f7f6',
+      backgroundColor: '#eef5f1',
       progressColor: '#b3dfc9',
       readerColor: '#c62828',
       readerFillColor: rgba('#c62828', 0.45),
@@ -76,13 +76,13 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
 }
 
 /**
- * Fit `cellCount` into the container: denser grid for huge torrents, larger cells when few.
+ * Keep cells readable. Detailed view uses classic ~14px pieces; LOD merges pieces instead of shrinking.
  */
 export const resolvePieceMetrics = (
   settings: SnakePieceSettings,
   containerWidth: number,
   isMini: boolean,
-  cellCount = 0,
+  _cellCount = 0,
 ): { pieceSize: number; gap: number } => {
   const basePiece = settings.pieceSize
   const baseGap = settings.gapBetweenPieces
@@ -93,18 +93,10 @@ export const resolvePieceMetrics = (
 
   if (isMini) {
     const targetCells = containerWidth < 400 ? 10 : containerWidth < 600 ? 12 : 14
-    const pieceSize = Math.max(14, Math.min(basePiece, Math.floor((containerWidth - 8) / targetCells) - baseGap))
-    return { pieceSize, gap: Math.max(3, Math.min(baseGap, Math.round(pieceSize * 0.22))) }
+    const pieceSize = Math.max(16, Math.min(basePiece, Math.floor((containerWidth - 8) / targetCells) - baseGap))
+    return { pieceSize, gap: Math.max(4, Math.min(baseGap, Math.round(pieceSize * 0.22))) }
   }
 
-  // Detailed: adapt to cell count so the full map stays readable and scrollable.
-  const gap = cellCount > 8000 ? 1 : cellCount > 4000 ? 2 : baseGap
-  const minPiece = cellCount > 8000 ? 6 : cellCount > 4000 ? 7 : 8
-  const maxPiece = basePiece
-  const targetCols = Math.max(1, Math.floor(containerWidth / (minPiece + gap)))
-  const pieceSize = Math.max(
-    minPiece,
-    Math.min(maxPiece, Math.floor((containerWidth - targetCols * gap) / targetCols)),
-  )
-  return { pieceSize, gap }
+  // Detailed: fixed classic size — never shrink below 12px (tiny grids are unreadable).
+  return { pieceSize: Math.max(12, basePiece), gap: Math.max(3, baseGap) }
 }
