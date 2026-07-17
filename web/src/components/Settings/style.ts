@@ -102,11 +102,11 @@ export const Content = styled.div<{ $isLoading?: boolean }>`
 export const CacheLegendGrid = styled.div`
   display: grid;
   grid-template-columns: auto max-content minmax(0, 1fr);
-  column-gap: 14px;
-  row-gap: 10px;
+  column-gap: 12px;
+  row-gap: 8px;
   align-items: start;
-  margin-bottom: 4px;
-  font-size: 13px;
+  margin: 0 0 16px;
+  font-size: 12px;
 
   .cache-legend-value {
     white-space: nowrap;
@@ -440,7 +440,6 @@ export const GstSubsectionLabel = styled(SettingSectionLabel)`
 
 export const PreloadCachePercentage = styled.div.attrs<{
   $value?: number
-  $preloadCachePercentage?: number
   $beforeColor?: string
   $afterColor?: string
 }>(({ $value, $beforeColor, $afterColor }) => ({
@@ -450,13 +449,12 @@ export const PreloadCachePercentage = styled.div.attrs<{
   },
 }))`
   ${({
-    $preloadCachePercentage,
     theme: {
       settingsDialog: { preloadCacheBorderColor, preloadCacheFontColor },
     },
   }) => css`
     border: 1px solid ${preloadCacheBorderColor};
-    padding: 8px 16px;
+    padding: 10px 16px;
     border-radius: 5px;
     color: ${preloadCacheFontColor};
     margin-bottom: 10px;
@@ -468,24 +466,11 @@ export const PreloadCachePercentage = styled.div.attrs<{
     font-variant-numeric: tabular-nums;
     overflow: hidden;
     text-shadow: none;
+    user-select: none;
 
     > * {
       position: relative;
       z-index: 1;
-      background: transparent;
-    }
-
-    /* Preload share as a thin bottom strip — does not darken the label */
-    :after {
-      content: '';
-      width: ${$preloadCachePercentage}%;
-      height: 3px;
-      background: ${preloadCacheBorderColor};
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      opacity: 0.45;
-      pointer-events: none;
     }
   `}
 `

@@ -13,13 +13,17 @@ interface SliderInputProps {
   inputMax: number
   step?: number
   unit?: string
-  /** Derived label shown next to the value, e.g. preload size in MB. */
+  /** Derived label in a fixed side column, e.g. preload size in MB. */
   valueHint?: string
   onBlurCallback?: (value: string) => void
 }
 
+/** Fixed value column so all rows share the same right edge. */
+const VALUE_COL = '7.5rem'
+const HINT_COL = '4.75rem'
+
 const SliderBlock = styled.div`
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 
   &:last-child {
     margin-bottom: 0;
@@ -35,8 +39,8 @@ const SliderTitle = styled.div`
 
 const SliderRow = styled.div`
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) ${VALUE_COL} ${HINT_COL};
+  column-gap: 10px;
   align-items: center;
 `
 
@@ -44,8 +48,15 @@ const ValueBox = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
-  min-width: 108px;
+  width: 100%;
+  min-width: 0;
+`
+
+const HintBox = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
 `
 
 const ValueText = styled.span`
@@ -54,7 +65,7 @@ const ValueText = styled.span`
   text-align: right;
   font-size: 13px;
   line-height: 1.2;
-  opacity: 0.85;
+  opacity: 0.9;
 `
 
 const HintText = styled.span`
@@ -62,7 +73,7 @@ const HintText = styled.span`
   white-space: nowrap;
   font-size: 12px;
   line-height: 1.2;
-  opacity: 0.65;
+  opacity: 0.6;
 `
 
 export default function SliderInput({
@@ -122,8 +133,8 @@ export default function SliderInput({
               size='small'
               onChange={onInputChange}
               onBlur={onBlur}
+              fullWidth
               sx={{
-                width: unit ? 118 : 96,
                 '& .MuiOutlinedInput-input': {
                   py: '6px',
                   px: '8px',
@@ -142,8 +153,9 @@ export default function SliderInput({
           ) : (
             <ValueText>{readOnlyLabel}</ValueText>
           )}
-          {valueHint ? <HintText aria-hidden={false}>{valueHint}</HintText> : null}
         </ValueBox>
+
+        <HintBox>{valueHint ? <HintText>{valueHint}</HintText> : null}</HintBox>
       </SliderRow>
     </SliderBlock>
   )

@@ -70,7 +70,6 @@ export default function PrimarySettingsComponent({
 
         <PreloadCachePercentage
           $value={100 - cachePercentage}
-          $preloadCachePercentage={preloadCachePercentage}
           $beforeColor={cacheBeforeReaderColor}
           $afterColor={cacheAfterReaderColor}
         >
@@ -92,8 +91,6 @@ export default function PrimarySettingsComponent({
           </div>
           <div className='cache-legend-desc'>{t('SettingsDialog.CacheAfterReaderDesc')}</div>
         </CacheLegendGrid>
-
-        <br />
 
         <SliderInput
           isProMode={isProMode}
