@@ -327,11 +327,13 @@ cd server && go run ./cmd
 
 ### Web development
 
-```bash
-cd web && yarn start
-```
+React 19 + Vite 8 + HeroUI v3 UI. See **[web/README.md](web/README.md)** for stack, scripts, and env setup.
 
-More info at <https://github.com/YouROK/TorrServer/tree/master/web#readme>
+```bash
+cd web && yarn && yarn start
+# ship into binary:
+cd web && yarn build && cd .. && make webgen-clean
+```
 
 ### Build
 
@@ -382,8 +384,8 @@ See [docs/BUILD.md](docs/BUILD.md) for cross-compilation, Docker builder mode (`
 #### Web
 
 - Install **Node.js 22+** and **yarn**
-- Go to the web directory
-- Run `make web-build` or `yarn build`
+- Go to the web directory, run `yarn build`
+- From the repo root, embed with `make webgen-clean` (or `go run gen_web.go --clean`)
 
 #### Android
 

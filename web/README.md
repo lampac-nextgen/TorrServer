@@ -1,34 +1,62 @@
 # TorrServer web client
 
-### Prerequisites
+Modern web UI for the TorrServer API.
+
+**Stack:** React 19, Vite 8, TypeScript 6, HeroUI v3, Tailwind CSS v4, GSAP, TanStack Query, lucide-react, sonner.
+
+## Layout
+
+```
+src/app/        # App shell, navigation, error boundary
+src/features/   # torrents, add, search, settings, details, player, …
+src/shared/     # api, hooks, theme, cache, lib, ui, i18n, torrent
+src/locales/    # i18n JSON (en, ru, ua, zh, bg, fr, ro)
+```
+
+## Prerequisites
 
 - Node.js **22+** (see `.nvmrc`)
 - Yarn Classic
 
-### How to start project
+## How to start
 
-0. Ignore the first two steps if the server is on `localhost` (Vite proxies API calls).
-1. Duplicate `.env_example` and rename it to `.env`
-2. In `.env` set `VITE_SERVER_HOST` (without a trailing `/`)
-> `http://192.168.78.4:8090` — correct
->
-> `http://192.168.78.4:8090/` — wrong
+0. Skip the env steps if the API is on `localhost` (Vite proxies API calls).
+1. Copy `.env_example` to `.env`
+2. Set `VITE_SERVER_HOST` (no trailing `/`)
+
+   > `http://192.168.78.4:8090` — correct  
+   > `http://192.168.78.4:8090/` — wrong
+
 3. Optionally set `VITE_TMDB_API_KEY`
 4. `yarn` then `yarn start` (or `yarn dev`)
 
-### Build
+## Scripts
+
+| Command | Purpose |
+|---------|---------|
+| `yarn` | Install dependencies |
+| `yarn start` / `yarn dev` | Vite dev server |
+| `yarn typecheck` | TypeScript (`tsc --noEmit`) |
+| `yarn lint` / `yarn fix` | ESLint / autofix |
+| `yarn test` | Vitest |
+| `yarn build` | Production bundle → `build/` |
+| `yarn i18n:check` | Locale key consistency |
+
+## Embed into Go
+
+`yarn build` writes relative-path assets to `web/build/`. From the repo root, refresh the embedded UI:
 
 ```sh
-yarn build
+make webgen-clean
+# or: go run gen_web.go --clean
 ```
 
-Output goes to `web/build/` (relative asset paths for Go embed). Refresh the embedded UI with `make webgen-clean` from the repo root.
+Restart TorrServer and hard-refresh the browser.
 
-### Eslint
+## PWA icons
 
-- `yarn lint` — find lint problems
-- `yarn fix` — autofix
+How images were generated:
 
-### How images were generated
-
-`npx pwa-asset-generator public/logo.png public -m public/site.webmanifest -p "calc(50vh - 25%) calc(50vw - 25%)" -b "linear-gradient(135deg, rgb(50,54,55), rgb(84,90,94))" -q 100 -i index.html -f`
+```sh
+npx pwa-asset-generator public/logo.png public -m public/site.webmanifest -p "calc(50vh - 25%) calc(50vw - 25%)" -b "linear-gradient(135deg, rgb(50,54,55), rgb(84,90,94))" -q 100 -i index.html -f
+```
