@@ -1,3 +1,4 @@
+import { type ReactNode } from 'react'
 import { useMediaQuery } from '@heroui/react'
 import { Toaster } from 'sonner'
 
@@ -6,9 +7,10 @@ import { queryMax } from 'shared/theme/breakpoints'
 import { useThemePreference } from 'shared/theme/useThemePreference'
 import { ModalOpenProvider } from 'shared/ui/ModalOpenContext'
 import { AppSnackbarProvider } from 'shared/ui/Toast'
+import AuthGate from 'features/auth/AuthGate'
+import PwaUpdateToast from 'features/pwa/PwaUpdateToast'
 
 import Shell from './Shell'
-import PwaUpdateToast from 'features/pwa/PwaUpdateToast'
 
 /** Keep SETTINGS_QUERY_KEY warm so play/resume can read TrackTimecode without opening Settings. */
 function SettingsQueryBootstrap() {
@@ -22,20 +24,31 @@ function ThemeBootstrap() {
   return null
 }
 
+function AuthedApp({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <SettingsQueryBootstrap />
+      {children}
+    </>
+  )
+}
+
 /**
- * Root providers: modal-open chrome, snackbars, settings cache bootstrap, Shell.
+ * Root providers: modal-open chrome, snackbars, auth gate, settings cache bootstrap, Shell.
  * Toaster offset clears the mobile BottomNav when present.
  */
 export default function App() {
-  // Shell only renders its fixed BottomNav below this breakpoint — toasts must clear it, not sit under it.
   const hasBottomNav = useMediaQuery(queryMax('mobile'))
 
   return (
     <ModalOpenProvider>
       <AppSnackbarProvider>
         <ThemeBootstrap />
-        <SettingsQueryBootstrap />
-        <Shell />
+        <AuthGate>
+          <AuthedApp>
+            <Shell />
+          </AuthedApp>
+        </AuthGate>
         <PwaUpdateToast />
         <Toaster
           richColors

@@ -13,4 +13,6 @@ export interface ShellNavProps extends OfflineAwareProps {
   onServerStatus: () => void
   onCloseServer: () => void
   onRemoveAll: () => void
+  /** Present when the session used the web Basic login form. */
+  onLogout?: () => void
 }

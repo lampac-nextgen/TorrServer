@@ -1,6 +1,8 @@
 import { useEffect, useRef, type RefObject } from 'react'
 import Hls from 'hls.js'
 
+import { getAuthorizationHeader, withAuthMediaUrl } from 'shared/api/authCredentials'
+
 export interface SubtitleTrackInfo {
   id: number
   name?: string
@@ -80,7 +82,12 @@ export function useHlsAttach({
     }
 
     if (Hls.isSupported()) {
-      hlsPlayer = new Hls()
+      const authHeader = getAuthorizationHeader()
+      hlsPlayer = new Hls({
+        xhrSetup: xhr => {
+          if (authHeader) xhr.setRequestHeader('Authorization', authHeader)
+        },
+      })
       hlsRef.current = hlsPlayer
 
       hlsPlayer.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -112,7 +119,7 @@ export function useHlsAttach({
       hlsPlayer.attachMedia(video)
     } else if (supportsNativeHls(video)) {
       usingNativeHls = true
-      video.src = src
+      video.src = withAuthMediaUrl(src)
       video.load()
       video.playbackRate = playbackRate
       video.play().catch(() => {})

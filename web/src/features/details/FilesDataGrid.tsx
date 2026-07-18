@@ -4,6 +4,7 @@ import ptt from 'parse-torrent-title'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { streamHost } from 'shared/api/hosts'
+import { authFetch } from 'shared/api/authCredentials'
 import type { PlayableFile, TorrentFileStat } from 'shared/api/types'
 import { remViewedFile, VIEWED_QUERY_KEY } from 'shared/api/viewed'
 import { shouldUseGStreamerPlayer, useGStreamerRuntime } from 'shared/lib/gstreamer'
@@ -173,7 +174,7 @@ const FilesDataGrid = memo(
       }
     }
 
-    const preloadBuffer = (fileId: number) => void fetch(`${streamHost()}?link=${hash}&index=${fileId}&preload`)
+    const preloadBuffer = (fileId: number) => void authFetch(`${streamHost()}?link=${hash}&index=${fileId}&preload`)
 
     const buildFileLink = (path: string, id: number) => {
       const fileName = path.split('\\').pop()!.split('/').pop()!

@@ -1,5 +1,6 @@
 import axios from 'axios'
 
+import { authFetch } from 'shared/api/authCredentials'
 import { downloadTestHost, ffpHost, playlistAllHost } from 'shared/api/hosts'
 
 /**
@@ -83,7 +84,7 @@ export const runSpeedTest = async (
   signal?: AbortSignal,
 ): Promise<{ bytes: number; elapsedMs: number; mbps: number }> => {
   const started = performance.now()
-  const response = await fetch(downloadTestHost(sizeMb), { signal, cache: 'no-store' })
+  const response = await authFetch(downloadTestHost(sizeMb), { signal, cache: 'no-store' })
   if (!response.ok) throw new Error(`Speed test failed (${response.status})`)
   const buffer = await response.arrayBuffer()
   const elapsedMs = Math.max(1, performance.now() - started)

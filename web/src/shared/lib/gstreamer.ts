@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import type { GStreamerRuntime } from 'shared/api/types'
+import { authFetch } from 'shared/api/authCredentials'
 import { getTorrServerHost, gstSettingsHost } from 'shared/api/hosts'
 
 export const GST_RUNTIME_QUERY_KEY = 'gstreamer-runtime-settings'
@@ -8,7 +9,7 @@ export const GST_RUNTIME_QUERY_KEY = 'gstreamer-runtime-settings'
 const unavailableRuntime: GStreamerRuntime = { built_in: false }
 
 const loadGStreamerRuntime = async (): Promise<GStreamerRuntime> => {
-  const response = await fetch(gstSettingsHost())
+  const response = await authFetch(gstSettingsHost())
   if (!response.ok) return unavailableRuntime
   return response.json()
 }

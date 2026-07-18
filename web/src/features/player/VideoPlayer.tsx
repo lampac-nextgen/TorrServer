@@ -16,6 +16,7 @@ import { extractAudioTracks, formatAudioTrackDisplay, type ProbeTrack } from './
 import PlayerChrome from './PlayerChrome'
 import { useHlsAttach, type SubtitleTrackInfo } from './useHlsAttach'
 import { useTimecodePersist } from './useTimecodePersist'
+import { authFetch, withAuthMediaUrl } from 'shared/api/authCredentials'
 
 export interface VideoPlayerProps {
   videoSrc: string
@@ -214,7 +215,7 @@ export default function VideoPlayer({
     const videoElement = videoRef.current
     if (!open || hls || !videoElement) return undefined
     setLoading(true)
-    videoElement.src = playbackSrc
+    videoElement.src = withAuthMediaUrl(playbackSrc)
     videoElement.load()
     videoElement.play().catch(() => {})
     return () => {
@@ -227,7 +228,7 @@ export default function VideoPlayer({
   useEffect(() => {
     if (!open || !heartbeatSrc) return undefined
     const timer = window.setInterval(() => {
-      fetch(heartbeatSrc, { cache: 'no-store' }).catch(() => {})
+      authFetch(heartbeatSrc, { cache: 'no-store' }).catch(() => {})
     }, HEARTBEAT_INTERVAL_MS)
     return () => window.clearInterval(timer)
   }, [heartbeatSrc, open])

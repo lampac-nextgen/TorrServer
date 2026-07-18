@@ -18,6 +18,7 @@ import { iconBtn } from 'shared/ui/controlClasses'
 import { iconEmpty, iconEmptyLg, iconMenu, iconNav } from 'shared/ui/iconProps'
 import DialogErrorBoundary from 'shared/ui/DialogErrorBoundary'
 import { useOptionalAppToast } from 'shared/ui/Toast'
+import { logoutBasicAuth } from 'shared/api/authCredentials'
 
 import TorrentCard from './TorrentCard'
 
@@ -320,9 +321,16 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
             {unauthorized ? t('AuthRequiredTitle') : t('NoServerConnection')}
           </p>
           {unauthorized ? <p className='max-w-md text-sm text-muted'>{t('AuthRequiredHint')}</p> : null}
-          <Button variant='primary' onPress={() => void refetch()}>
-            {t('Retry')}
-          </Button>
+          <div className='flex flex-wrap items-center justify-center gap-2'>
+            {unauthorized ? (
+              <Button variant='primary' onPress={() => logoutBasicAuth()}>
+                {t('SignIn')}
+              </Button>
+            ) : null}
+            <Button variant={unauthorized ? 'secondary' : 'primary'} onPress={() => void refetch()}>
+              {t('Retry')}
+            </Button>
+          </div>
         </div>
       </div>
     )

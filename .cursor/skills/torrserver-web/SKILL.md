@@ -24,6 +24,7 @@ description: >-
 - Prefer `shared/api/*` + React Query hooks.
 - Brand accent OK; streaming poster library; Safari **17+**.
 - Donate restored (dialog + snackbar + nav). Adaptive shell + `ModalOpenProvider`.
+- Web Basic login (AuthGate + LoginScreen); SPA public; third-party API/stream keep sending Authorization.
 - Snake/GStreamer contracts unchanged. File row: primary actions reachable.
 
 ## Layout

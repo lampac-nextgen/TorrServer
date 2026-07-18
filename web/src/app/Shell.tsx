@@ -11,6 +11,7 @@ import { detectApplePlatform, isStandaloneApp } from 'shared/lib/platform'
 import { useLocalJsonPref } from 'shared/hooks/useLocalPref'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
 import { OPEN_SETTINGS_EVENT, type SettingsDeepLinkTab } from 'shared/lib/settingsEvents'
+import { getStoredCredentials, logoutBasicAuth } from 'shared/api/authCredentials'
 import { MEDIA_SHORT_VIEWPORT, queryMax } from 'shared/theme/breakpoints'
 import { THEME_PALETTE_SWATCHES } from 'shared/theme/paletteSwatches'
 import { THEME_MODES, THEME_PALETTE_IDS, useThemePreference, type ThemePalette } from 'shared/theme/useThemePreference'
@@ -164,6 +165,7 @@ export default function Shell() {
     onServerStatus: () => setServerStatusOpen(true),
     onCloseServer: () => setCloseServerOpen(true),
     onRemoveAll: () => setRemoveAllOpen(true),
+    ...(getStoredCredentials() ? { onLogout: () => logoutBasicAuth() } : {}),
   }
 
   const ThemeIcon =

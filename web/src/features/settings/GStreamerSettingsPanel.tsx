@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { gstEchoHost } from 'shared/api/hosts'
+import { authFetch } from 'shared/api/authCredentials'
 
 import { SettingSwitch } from './SettingSwitch'
 
@@ -83,7 +84,7 @@ export default function GStreamerSettingsPanel({ config, onChange }: GStreamerSe
 
   useEffect(() => {
     let cancelled = false
-    fetch(gstEchoHost())
+    authFetch(gstEchoHost())
       .then(r => (r.ok ? r.json() : null))
       .then(data => {
         if (!cancelled && data) setEcho(data)

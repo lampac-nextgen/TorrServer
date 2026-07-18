@@ -1,6 +1,18 @@
 import { type ReactNode } from 'react'
 import { Button, Modal, useOverlayState } from '@heroui/react'
-import { Activity, CreditCard, Ellipsis, FolderPlus, Info, Layers, Power, Search, Settings, Trash2 } from 'lucide-react'
+import {
+  Activity,
+  CreditCard,
+  Ellipsis,
+  FolderPlus,
+  Info,
+  Layers,
+  LogOut,
+  Power,
+  Search,
+  Settings,
+  Trash2,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { iconNav, iconNavMobile } from 'shared/ui/iconProps'
@@ -21,6 +33,7 @@ export default function BottomNav({
   onServerStatus,
   onCloseServer,
   onRemoveAll,
+  onLogout,
 }: ShellNavProps) {
   const { t } = useTranslation()
   const disabled = isOffline || isLoading
@@ -86,6 +99,7 @@ export default function BottomNav({
                 {sheetAction(t('nav.Settings'), <Settings {...iconNav} />, onSettings, disabled)}
                 {sheetAction(t('About'), <Info {...iconNav} />, onAbout)}
                 {sheetAction(t('Donate'), <CreditCard {...iconNav} />, onDonate)}
+                {onLogout ? sheetAction(t('Logout'), <LogOut {...iconNav} />, onLogout) : null}
                 {sheetAction(t('CloseServer'), <Power {...iconNav} />, onCloseServer, disabled, true)}
               </Modal.Body>
             </Modal.Dialog>

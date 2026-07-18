@@ -4,6 +4,7 @@ import { iconAction, iconMenu } from 'shared/ui/iconProps'
 import { useTranslation } from 'react-i18next'
 
 import { shutdownHost } from 'shared/api/hosts'
+import { authFetch } from 'shared/api/authCredentials'
 import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import AppDialog from 'shared/ui/AppDialog'
 import UnsafeButton from 'shared/ui/UnsafeButton'
@@ -35,7 +36,7 @@ export default function CloseServerDialog({ open, onClose }: CloseServerDialogPr
         <UnsafeButton
           variant='danger'
           onPress={() => {
-            void fetch(shutdownHost())
+            void authFetch(shutdownHost())
             onClose()
           }}
         >

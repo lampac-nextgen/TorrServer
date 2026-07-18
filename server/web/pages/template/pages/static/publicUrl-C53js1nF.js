@@ -1,1 +1,0 @@
-function e(e){return`./${e.replace(/^\//,``)}`}export{e as t};
