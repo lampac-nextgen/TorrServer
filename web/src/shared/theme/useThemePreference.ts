@@ -16,6 +16,10 @@ export const THEME_PALETTES = {
   EMBER: 'ember',
   ARCTIC: 'arctic',
   ROSE: 'rose',
+  MEADOW: 'meadow',
+  FOG: 'fog',
+  COPPER: 'copper',
+  CITRUS: 'citrus',
 } as const
 
 export type ThemePalette = (typeof THEME_PALETTES)[keyof typeof THEME_PALETTES]
@@ -67,7 +71,7 @@ export interface ThemePreferenceState {
 
 /**
  * Applies `dark` class + `data-palette` on html and persists both axes in localStorage.
- * Brightness: light / dark / system. Palette: forest / ocean / slate / ember / arctic / rose.
+ * Brightness: light / dark / system. Palette: forest … citrus (see THEME_PALETTES).
  */
 export function useThemePreference(): ThemePreferenceState {
   const [preference, setPreferenceState] = useState<ThemePreference>(() => readStoredPreference())

@@ -230,6 +230,10 @@ export default function Shell() {
             [THEME_PALETTES.EMBER]: t('ThemePaletteEmber'),
             [THEME_PALETTES.ARCTIC]: t('ThemePaletteArctic'),
             [THEME_PALETTES.ROSE]: t('ThemePaletteRose'),
+            [THEME_PALETTES.MEADOW]: t('ThemePaletteMeadow'),
+            [THEME_PALETTES.FOG]: t('ThemePaletteFog'),
+            [THEME_PALETTES.COPPER]: t('ThemePaletteCopper'),
+            [THEME_PALETTES.CITRUS]: t('ThemePaletteCitrus'),
           }}
         />
 

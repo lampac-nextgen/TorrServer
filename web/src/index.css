@@ -12,7 +12,7 @@
  *
  * Axes:
  * - Brightness: `:root` vs `.dark`
- * - Palette: `data-palette` on `<html>` (`forest` / `ocean` / `slate` / `ember` / `arctic` / `rose`)
+ * - Palette: `data-palette` on `<html>` (forest, ocean, slate, ember, arctic, rose, meadow, fog, copper, citrus)
  */
 :root,
 :root[data-palette='forest'] {
@@ -307,6 +307,202 @@
   --app-header: #140f12;
   --app-header-foreground: #f0e6ea;
   --app-rail: #090607;
+  --app-rail-foreground: rgba(255, 255, 255, 0.9);
+}
+
+/* Meadow — fresh lime chartreuse (distinct from forest). */
+:root[data-palette='meadow'] {
+  --background: #f5faf2;
+  --foreground: #142016;
+
+  --surface: #ffffff;
+  --surface-secondary: #eef6e8;
+  --surface-tertiary: #e2efd8;
+
+  --muted: #5d7358;
+  --border: #d4e4c8;
+  --separator: #e2efd8;
+
+  --accent: #6ba32a;
+  --accent-foreground: #ffffff;
+
+  --danger: #e05555;
+  --warning: #d99a2b;
+
+  --app-header: #3d5c28;
+  --app-header-foreground: #ffffff;
+  --app-rail: #162014;
+  --app-rail-foreground: rgba(255, 255, 255, 0.92);
+}
+
+.dark[data-palette='meadow'] {
+  --background: #0a0e09;
+  --foreground: #e8f2e2;
+
+  --surface: #121812;
+  --surface-secondary: #161e15;
+  --surface-tertiary: #1c261a;
+
+  --muted: #9bb892;
+  --border: #2e3c2a;
+  --separator: #1c261a;
+
+  --accent: #a8d96a;
+  --accent-foreground: #101808;
+
+  --danger: #e2707a;
+  --warning: #e0a040;
+
+  --app-header: #101610;
+  --app-header-foreground: #e8f2e2;
+  --app-rail: #070a06;
+  --app-rail-foreground: rgba(255, 255, 255, 0.9);
+}
+
+/* Fog — soft desaturated blue-gray. */
+:root[data-palette='fog'] {
+  --background: #f4f5f7;
+  --foreground: #16181c;
+
+  --surface: #ffffff;
+  --surface-secondary: #eceef1;
+  --surface-tertiary: #e2e5ea;
+
+  --muted: #636b78;
+  --border: #d5d9e0;
+  --separator: #e2e5ea;
+
+  --accent: #5b6b85;
+  --accent-foreground: #ffffff;
+
+  --danger: #e05555;
+  --warning: #d99a2b;
+
+  --app-header: #3e4654;
+  --app-header-foreground: #ffffff;
+  --app-rail: #181b21;
+  --app-rail-foreground: rgba(255, 255, 255, 0.92);
+}
+
+.dark[data-palette='fog'] {
+  --background: #0b0c0e;
+  --foreground: #e6e8ec;
+
+  --surface: #13151a;
+  --surface-secondary: #171a20;
+  --surface-tertiary: #1d2128;
+
+  --muted: #9aa1ae;
+  --border: #2e333c;
+  --separator: #1d2128;
+
+  --accent: #9aabc4;
+  --accent-foreground: #0c1016;
+
+  --danger: #e2707a;
+  --warning: #e0a040;
+
+  --app-header: #12151a;
+  --app-header-foreground: #e6e8ec;
+  --app-rail: #08090b;
+  --app-rail-foreground: rgba(255, 255, 255, 0.9);
+}
+
+/* Copper — metallic bronze (warmer metal than ember orange). */
+:root[data-palette='copper'] {
+  --background: #f6f3ef;
+  --foreground: #1a1510;
+
+  --surface: #ffffff;
+  --surface-secondary: #efeae3;
+  --surface-tertiary: #e5ddd3;
+
+  --muted: #6b6156;
+  --border: #dbd2c6;
+  --separator: #e5ddd3;
+
+  --accent: #b87333;
+  --accent-foreground: #ffffff;
+
+  --danger: #e05555;
+  --warning: #d99a2b;
+
+  --app-header: #4a3a2c;
+  --app-header-foreground: #ffffff;
+  --app-rail: #1a1510;
+  --app-rail-foreground: rgba(255, 255, 255, 0.92);
+}
+
+.dark[data-palette='copper'] {
+  --background: #0d0b09;
+  --foreground: #efe8de;
+
+  --surface: #161310;
+  --surface-secondary: #1b1713;
+  --surface-tertiary: #221d18;
+
+  --muted: #b0a394;
+  --border: #3a322a;
+  --separator: #221d18;
+
+  --accent: #d4a574;
+  --accent-foreground: #1a1208;
+
+  --danger: #e2707a;
+  --warning: #e0a040;
+
+  --app-header: #13100d;
+  --app-header-foreground: #efe8de;
+  --app-rail: #080706;
+  --app-rail-foreground: rgba(255, 255, 255, 0.9);
+}
+
+/* Citrus — bright gold-yellow accent. */
+:root[data-palette='citrus'] {
+  --background: #faf8f0;
+  --foreground: #1a180e;
+
+  --surface: #ffffff;
+  --surface-secondary: #f4f0e2;
+  --surface-tertiary: #ebe5d2;
+
+  --muted: #6e684e;
+  --border: #ddd6be;
+  --separator: #ebe5d2;
+
+  --accent: #c9a227;
+  --accent-foreground: #1a1608;
+
+  --danger: #e05555;
+  --warning: #d99a2b;
+
+  --app-header: #4a4218;
+  --app-header-foreground: #ffffff;
+  --app-rail: #1a180e;
+  --app-rail-foreground: rgba(255, 255, 255, 0.92);
+}
+
+.dark[data-palette='citrus'] {
+  --background: #0e0d08;
+  --foreground: #f2edd8;
+
+  --surface: #16150f;
+  --surface-secondary: #1b1a12;
+  --surface-tertiary: #222018;
+
+  --muted: #b0a878;
+  --border: #3a3628;
+  --separator: #222018;
+
+  --accent: #e8c84a;
+  --accent-foreground: #1a1608;
+
+  --danger: #e2707a;
+  --warning: #e0a040;
+
+  --app-header: #12110c;
+  --app-header-foreground: #f2edd8;
+  --app-rail: #080706;
   --app-rail-foreground: rgba(255, 255, 255, 0.9);
 }
 
