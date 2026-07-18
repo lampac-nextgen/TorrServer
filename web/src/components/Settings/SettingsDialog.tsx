@@ -10,7 +10,6 @@ import AppBar from '@mui/material/AppBar'
 import CircularProgress from '@mui/material/CircularProgress'
 import { StyledDialog, dialogPaperSx } from 'style/CustomMaterialUiStyles'
 import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
-import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import { readLocalBool, writeLocalJson } from 'utils/localPrefs'
 import { buttonLoadingIcon } from 'utils/buttonLoading'
 import { useOptionalAppToast } from 'components/Feedback/AppSnackbar'
@@ -79,8 +78,6 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
       .catch(() => {})
     return () => ac.abort()
   }, [])
-
-  const ref = useOnStandaloneAppOutsideClick(handleClose)
 
   const handleSave = async () => {
     if (saving) return
@@ -187,7 +184,7 @@ export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
       fullScreen={fullScreen}
       fullWidth
       maxWidth='md'
-      slotProps={{ paper: { ref, sx: dialogPaperSx } }}
+      slotProps={{ paper: { sx: dialogPaperSx } }}
     >
       <SettingsHeader>
         <div>{t('SettingsDialog.Settings')}</div>

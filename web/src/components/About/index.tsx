@@ -10,8 +10,6 @@ import { echoHost } from 'utils/Hosts'
 import { publicUrl } from 'utils/publicUrl'
 import { StyledDialog, StyledMenuButtonWrapper, dialogPaperSx } from 'style/CustomMaterialUiStyles'
 import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
-import { isStandaloneApp } from 'utils/Utils'
-import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 
 import LinkComponent from './LinkComponent'
 import { DialogWrapper, HeaderSection, ThanksSection, Section, FooterSection } from './style'
@@ -26,25 +24,14 @@ export default function AboutDialog() {
   }, [])
 
   const onClose = () => setOpen(false)
-  const ref = useOnStandaloneAppOutsideClick(onClose)
 
   return (
     <>
-      <StyledMenuButtonWrapper key='Settings' onClick={() => setOpen(true)}>
-        {isStandaloneApp ? (
-          <>
-            <InfoIcon />
-            <div>{t('Details')}</div>
-          </>
-        ) : (
-          <>
-            <ListItemIcon>
-              <InfoIcon />
-            </ListItemIcon>
-
-            <ListItemText primary={t('About')} />
-          </>
-        )}
+      <StyledMenuButtonWrapper onClick={() => setOpen(true)}>
+        <ListItemIcon>
+          <InfoIcon />
+        </ListItemIcon>
+        <ListItemText primary={t('About')} />
       </StyledMenuButtonWrapper>
 
       <StyledDialog
@@ -53,7 +40,7 @@ export default function AboutDialog() {
         aria-labelledby='form-dialog-title'
         fullScreen={fullScreen}
         maxWidth='xl'
-        slotProps={{ paper: { ref, sx: dialogPaperSx } }}
+        slotProps={{ paper: { sx: dialogPaperSx } }}
       >
         <DialogWrapper>
           <HeaderSection>

@@ -4,8 +4,6 @@ import { StyledDialog, StyledMenuButtonWrapper } from 'style/CustomMaterialUiSty
 import { PowerSettingsNew as PowerSettingsNewIcon, PowerOff as PowerOffIcon } from '@mui/icons-material'
 import { shutdownHost } from 'utils/Hosts'
 import { useTranslation } from 'react-i18next'
-import { isStandaloneApp } from 'utils/Utils'
-import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import type { OfflineAwareProps } from 'types/api'
 
 import UnsafeButton from './UnsafeButton'
@@ -16,28 +14,16 @@ export default function CloseServer({ isOffline, isLoading }: OfflineAwareProps)
   const closeDialog = () => setOpen(false)
   const openDialog = () => setOpen(true)
 
-  const ref = useOnStandaloneAppOutsideClick(closeDialog)
-
   return (
     <>
-      <StyledMenuButtonWrapper disabled={isOffline || isLoading} key={t('CloseServer')} onClick={openDialog}>
-        {isStandaloneApp ? (
-          <>
-            <PowerSettingsNewIcon />
-            <div>{t('TurnOff')}</div>
-          </>
-        ) : (
-          <>
-            <ListItemIcon>
-              <PowerSettingsNewIcon />
-            </ListItemIcon>
-
-            <ListItemText primary={t('CloseServer')} />
-          </>
-        )}
+      <StyledMenuButtonWrapper disabled={isOffline || isLoading} onClick={openDialog}>
+        <ListItemIcon>
+          <PowerSettingsNewIcon />
+        </ListItemIcon>
+        <ListItemText primary={t('CloseServer')} />
       </StyledMenuButtonWrapper>
 
-      <StyledDialog open={open} onClose={closeDialog} slotProps={{ paper: { ref } }}>
+      <StyledDialog open={open} onClose={closeDialog}>
         <DialogTitle>{t('CloseServer?')}</DialogTitle>
         <DialogActions>
           <Button variant='outlined' onClick={closeDialog} color='secondary'>

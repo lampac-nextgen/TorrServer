@@ -11,7 +11,8 @@ export const DialogContentGrid = styled.div`
     'file-list file-list';
   min-width: 0;
 
-  ${mediaMax('detailsStack')} {
+  /* Stack main|cache when dialog is in the fullscreen band (≤960) */
+  ${mediaMax('dialog')} {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: repeat(3, min-content);
     grid-template-areas:

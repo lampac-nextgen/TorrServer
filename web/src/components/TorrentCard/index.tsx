@@ -37,7 +37,6 @@ import ptt from 'parse-torrent-title'
 import { useTranslation } from 'react-i18next'
 import { StyledDialog, dialogPaperSx } from 'style/CustomMaterialUiStyles'
 import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
-import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import { GETTING_INFO, IN_DB, CLOSED, PRELOAD, WORKING } from 'torrentStates'
 import { TORRENT_CATEGORIES } from 'components/categories'
 import VideoPlayer from 'components/VideoPlayer'
@@ -261,7 +260,6 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
 
   const fullPlaylistLink = `${playlistTorrHost()}/${encodeURIComponent(parsedTitle || 'file')}.m3u?link=${hash}&m3u`
 
-  const detailedInfoDialogRef = useOnStandaloneAppOutsideClick(closeDetailedInfo)
   // main categories
   const catIndex = TORRENT_CATEGORIES.findIndex(e => e.key === category)
   const catArray = TORRENT_CATEGORIES.find(e => e.key === category)
@@ -453,7 +451,7 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
                   slotProps={{
                     paper: {
                       style: {
-                        maxHeight: 'min(65dvh, calc(100dvh - 160px))',
+                        maxHeight: 'min(65dvh, calc(100dvh - var(--app-chrome-top) - var(--app-chrome-bottom)))',
                         width: 420,
                         maxWidth: 'min(420px, calc(100% - 32px))',
                       },
@@ -505,7 +503,7 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
                 slotProps={{
                   paper: {
                     style: {
-                      maxHeight: 'min(65dvh, calc(100dvh - 160px))',
+                      maxHeight: 'min(65dvh, calc(100dvh - var(--app-chrome-top) - var(--app-chrome-bottom)))',
                       width: 420,
                       maxWidth: 'min(420px, calc(100% - 32px))',
                     },
@@ -615,7 +613,7 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
         fullWidth
         maxWidth='xl'
         slots={{ transition: Transition }}
-        slotProps={{ paper: { ref: detailedInfoDialogRef, sx: dialogPaperSx } }}
+        slotProps={{ paper: { sx: dialogPaperSx } }}
       >
         <Suspense fallback={null}>
           <DialogTorrentDetailsContent closeDialog={closeDetailedInfo} torrent={torrent} />

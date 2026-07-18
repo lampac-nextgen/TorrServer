@@ -22,7 +22,6 @@ import {
 } from '@mui/material'
 import { CloudDownload as DownloadIcon, ArrowUpward, ArrowDownward } from '@mui/icons-material'
 import { torznabSearchHost, torrentsHost, settingsHost, searchHost } from 'utils/Hosts'
-import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import { StyledDialog, StyledHeader, dialogPaperSx } from 'style/CustomMaterialUiStyles'
 import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
 import { parseSizeToBytes, formatSizeToClassicUnits } from 'utils/Utils'
@@ -108,7 +107,6 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
   const fullScreen = useMediaQuery(LAYOUT_DIALOG_FULLSCREEN_MEDIA)
   const theme = useTheme()
   const isDark = theme.palette.mode === 'dark'
-  const ref = useOnStandaloneAppOutsideClick(handleClose)
 
   const hasTorznab = enableTorznab && trackers.length > 0
   const hasRutor = enableRutor
@@ -345,7 +343,7 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
       fullScreen={fullScreen}
       fullWidth
       maxWidth='md'
-      slotProps={{ paper: { ref, sx: dialogPaperSx } }}
+      slotProps={{ paper: { sx: dialogPaperSx } }}
     >
       <StyledHeader>{t('Torznab.SearchTorrents')}</StyledHeader>
       <Content>

@@ -15,7 +15,6 @@ import ptt from 'parse-torrent-title'
 import { DialogFooter } from 'style/DialogStyles'
 import { StyledDialog, StyledHeader, dialogPaperSx } from 'style/CustomMaterialUiStyles'
 import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
-import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
 import { buttonLoadingIcon } from 'utils/buttonLoading'
 
 import {
@@ -71,8 +70,6 @@ export default function AddDialog({
 
   // When files are dropped/selected, switch to MultiAddDialog
   const [multiFiles, setMultiFiles] = useState<File[] | null>(null)
-
-  const ref = useOnStandaloneAppOutsideClick(handleClose)
 
   const { data: torrents } = useQuery({
     queryKey: ['torrents'],
@@ -305,7 +302,7 @@ export default function AddDialog({
       fullScreen={fullScreen}
       fullWidth
       maxWidth='md'
-      slotProps={{ paper: { ref, sx: dialogPaperSx } }}
+      slotProps={{ paper: { sx: dialogPaperSx } }}
     >
       <StyledHeader>{t(isEditMode ? 'EditTorrent' : 'AddNewTorrent')}</StyledHeader>
 

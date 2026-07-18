@@ -1,9 +1,7 @@
 import { AppBar, IconButton, Toolbar, Typography } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { ArrowBack } from '@mui/icons-material'
-import { DIALOG_SAFE_TOP } from 'components/App/PWAFooter/style'
-import { standaloneMedia } from 'style/standaloneMedia'
-import styled, { css } from 'styled-components'
+import styled from 'styled-components'
 import { useTranslation } from 'react-i18next'
 
 interface DialogHeaderProps {
@@ -12,25 +10,19 @@ interface DialogHeaderProps {
   onBack?: () => void
 }
 
-const StandaloneAppBar = styled(AppBar)`
+const SafeAppBar = styled(AppBar)`
   && {
     position: relative;
+    padding-top: var(--safe-top);
   }
-
-  ${standaloneMedia(css`
-    && {
-      /* CSS path — do not rely on JS isStandaloneApp for notch pad */
-      padding-top: ${DIALOG_SAFE_TOP};
-    }
-  `)}
 `
 
-/** Relative AppBar + standalone top pad via CSS (matches footer detection). */
+/** Relative AppBar + safe-area top (all surfaces). */
 export default function DialogHeader({ title, onClose, onBack }: DialogHeaderProps) {
   const { t } = useTranslation()
 
   return (
-    <StandaloneAppBar>
+    <SafeAppBar>
       <Toolbar>
         {onBack && (
           <IconButton edge='start' color='inherit' onClick={onBack} aria-label={t('Back', { defaultValue: 'Back' })}>
@@ -51,6 +43,6 @@ export default function DialogHeader({ title, onClose, onBack }: DialogHeaderPro
           <CloseIcon />
         </IconButton>
       </Toolbar>
-    </StandaloneAppBar>
+    </SafeAppBar>
   )
 }

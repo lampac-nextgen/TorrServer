@@ -16,7 +16,6 @@ import {
 import { mediaMax, queryMax } from 'style/breakpoints'
 import { keyframes, styled } from '@mui/material/styles'
 import styledSC, { css } from 'styled-components'
-import { standaloneMedia } from 'style/standaloneMedia'
 import CloseIcon from '@mui/icons-material/Close'
 import Forward10Icon from '@mui/icons-material/Forward10'
 import FullscreenIcon from '@mui/icons-material/Fullscreen'
@@ -32,10 +31,7 @@ import VolumeOffIcon from '@mui/icons-material/VolumeOff'
 import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import Hls from 'hls.js'
 import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
-import { StyledDialog, dialogPaperSx } from 'style/CustomMaterialUiStyles'
-import { DIALOG_SAFE_TOP } from 'components/App/PWAFooter/style'
-import { isStandaloneApp } from 'utils/Utils'
-import useOnStandaloneAppOutsideClick from 'utils/useOnStandaloneAppOutsideClick'
+import { StyledDialog } from 'style/CustomMaterialUiStyles'
 import { useTranslation } from 'react-i18next'
 
 export interface VideoPlayerProps {
@@ -135,16 +131,11 @@ const PlayerHeader = styledSC(DialogTitle)`
       background-color: ${theme.primary};
       color: #fff;
       padding: 8px 16px;
+      padding-top: max(8px, var(--safe-top));
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-
-    ${standaloneMedia(css`
-      && {
-        padding-top: calc(8px + ${DIALOG_SAFE_TOP});
-      }
-    `)}
   `}
 `
 
@@ -502,7 +493,6 @@ const VideoPlayer = ({
     setMediaError(false)
     onClose?.()
   }
-  const playerPaperRef = useOnStandaloneAppOutsideClick(closePlayer)
 
   const handleKey = useCallback(
     (e: globalThis.KeyboardEvent) => {
@@ -567,13 +557,18 @@ const VideoPlayer = ({
         maxWidth='lg'
         fullWidth
         fullScreen={isMobile}
-        className={isStandaloneApp ? 'ts-immersive' : undefined}
-        slotProps={{ paper: { ref: playerPaperRef, sx: dialogPaperSx } }}
-        PaperProps={{
-          sx: theme => ({
-            backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#fff',
-            borderRadius: isMobile ? 0 : theme.spacing(1),
-          }),
+        className={isMobile ? 'ts-immersive' : undefined}
+        slotProps={{
+          paper: {
+            sx: theme => ({
+              display: 'flex',
+              flexDirection: 'column',
+              maxHeight: 'calc(100dvh - var(--app-chrome-top) - var(--app-chrome-bottom))',
+              overflow: 'hidden',
+              backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#fff',
+              borderRadius: isMobile ? 0 : theme.spacing(1),
+            }),
+          },
         }}
       >
         <PlayerHeader>

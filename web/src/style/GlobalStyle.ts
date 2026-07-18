@@ -1,34 +1,64 @@
-import { createGlobalStyle, css } from 'styled-components'
+import { createGlobalStyle } from 'styled-components'
 
-import { standaloneMedia } from './standaloneMedia'
+import { mediaMax } from './breakpoints'
+import { MOBILE_BOTTOM_NAV_PX, MOBILE_HEADER_PX } from './chrome'
 
-/** Master typography baseline — letter-spacing -0.1px (do not invent “normal”). */
+/**
+ * Master typography + adaptive chrome tokens.
+ * Bottom nav height matches upstream PWA footer (90px); safe-area added separately.
+ */
 export default createGlobalStyle`
+  :root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --app-header-h: ${MOBILE_HEADER_PX}px;
+    --app-bottom-nav-h: 0px;
+    --app-chrome-top: calc(var(--app-header-h) + var(--safe-top));
+    --app-chrome-bottom: calc(var(--app-bottom-nav-h) + var(--safe-bottom));
+  }
+
+  ${mediaMax('mobile')} {
+    :root {
+      --app-bottom-nav-h: ${MOBILE_BOTTOM_NAV_PX}px;
+    }
+  }
+
+  html {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Open Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   *,
   *::before,
-  *::after {  
+  *::after {
     margin: 0;
     padding: 0;
     box-sizing: inherit;
   }
 
-  body {  
-    font-family: "Open Sans", sans-serif;
+  body {
+    height: 100%;
+    overflow: hidden;
+    font-family: inherit;
     box-sizing: border-box;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     letter-spacing: -0.1px;
     -webkit-tap-highlight-color: transparent;
-
-    ${standaloneMedia(css`
-      /* Master: height only. Safe-area/chrome live in App shell — not body paint. */
-      height: 100%;
-      min-height: 100dvh;
-    `)}
   }
 
-  button {
-    font-family: "Open Sans", sans-serif;
+  #root {
+    height: 100%;
+    overflow: hidden;
+    font-family: inherit;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font-family: inherit;
     letter-spacing: -0.1px;
   }
 `

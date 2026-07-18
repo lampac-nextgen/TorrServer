@@ -5,7 +5,6 @@ import ListItemText from '@mui/material/ListItemText'
 import CircularProgress from '@mui/material/CircularProgress'
 import { useTranslation } from 'react-i18next'
 import { StyledMenuButtonWrapper } from 'style/CustomMaterialUiStyles'
-import { isStandaloneApp } from 'utils/Utils'
 import type { OfflineAwareProps } from 'types/api'
 
 import { StyledPWAAddButton } from './style'
@@ -21,17 +20,16 @@ export default function AddDialogButton({ isOffline, isLoading }: OfflineAwarePr
   return (
     <>
       <StyledMenuButtonWrapper disabled={isOffline || isLoading} onClick={handleClickOpen}>
-        {isStandaloneApp ? (
+        <span className='ts-nav-tab-only'>
           <StyledPWAAddButton />
-        ) : (
-          <>
-            <ListItemIcon>
-              <LibraryAddIcon />
-            </ListItemIcon>
-
-            <ListItemText primary={t('AddFromLink')} />
-          </>
-        )}
+          <span className='ts-nav-tab-label'>{t('Add', { defaultValue: 'Add' })}</span>
+        </span>
+        <span className='ts-nav-list-only'>
+          <ListItemIcon>
+            <LibraryAddIcon />
+          </ListItemIcon>
+          <ListItemText primary={t('AddFromLink')} />
+        </span>
       </StyledMenuButtonWrapper>
 
       {isDialogOpen && (

@@ -65,21 +65,19 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 
 ---
 
-## Responsive (mobile / tablet) — 2026-07-18
+## Responsive — adaptive universal shell (done)
 
 - Canonical breakpoints: `web/src/style/breakpoints.ts` (`BP` + `mediaMax` / `queryMax`).
-- Shell / list 1-column: **`mobile` (700)**. Dialog fullscreen: **`dialog` (960)**.
-- List columns: 3 @ `list3` (1260), 2 @ `list2` (1100), 1 @ `mobile` (700). Card compact starts at `list3` (covers list2).
-- Typography: Open Sans via **Google Fonts CDN** (`index.html` 400/600) — one stack for desktop/mobile/PWA; **no** self-hosted woff2.
-- Floor: **≥12px** on cards / cardAction / PWA tabs.
-- PWA chrome: 90px + `env(safe-area-inset-*)`; list uses grid `1fr` (no double-subtract); unified `DIALOG_SAFE_TOP`.
-- Layers: Universal · Mobile (width) · PWA (`standaloneMedia` chrome only).
-- Donate button/dialog removed.
-- Status on card: 8px colored dot next to Size (not Chip).
+- **One shell:** width + CSS chrome tokens (`--app-chrome-*`, safe-area). Removed `standaloneMedia`, `PWAFooter`, outside-click helper.
+- ≤700: `MobileBottomNav` (Add / Search / Categories / More) + feature parity sheets. >700: sidebar.
+- Dialog fullscreen: **`dialog` (960)**; details main|cache stacks there. Card actions 2-col @ `cardDense`.
+- Typography: CDN Open Sans 300/400/600, letter-spacing `-0.1px`. Visual tokens = master colors.
+- Feature parity everywhere (Categories, Remove All via sheets on mobile).
+- Donate removed. Status: 8px dot next to Size.
+- `detectStandaloneApp` / `isStandaloneApp` — install guide / launch only.
 
 ### Still open (ask before doing)
 
-- Mobile sidebar as full MUI `Drawer` (custom slide + overlay still used)
 - Broader `Stack` migrations across dialogs
 - Settings/details skeletons beyond torrent list
 - Offline service worker

@@ -10,7 +10,7 @@ export const Content = styled.div<{ $isEditMode?: boolean }>`
     },
   }) => css`
     height: 550px;
-    max-height: min(550px, calc(100dvh - 160px));
+    max-height: min(550px, calc(100dvh - var(--app-chrome-top) - var(--app-chrome-bottom)));
     background: linear-gradient(145deg, ${gradientStartColor}, ${gradientEndColor});
     flex: 1;
     display: grid;
@@ -56,7 +56,7 @@ export const RightSideContainer = styled.div<{
     },
   }) => css`
     height: 530px;
-    max-height: min(530px, calc(100dvh - 180px));
+    max-height: min(530px, calc(100dvh - var(--app-chrome-top) - var(--app-chrome-bottom) - 20px));
     min-width: 0;
 
     ${mediaMax('dialog')} {

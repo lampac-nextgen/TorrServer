@@ -2,7 +2,7 @@
  * Canonical layout scale for TorrServer web.
  * Use `mediaMax` / `queryMax` everywhere — do not hardcode px in @media rules.
  *
- * Values follow master adaptive cuts (700 / 840 / 970 / 1100 / 1260 / 1450).
+ * Values follow master adaptive cuts (700 / 840 / 970 / 1100 / 1260).
  */
 export const BP = {
   /** Master: densest card button gap */
@@ -29,8 +29,6 @@ export const BP = {
   list3: 1260,
   /** Large desktop nudge (poster align) */
   desktop: 1280,
-  /** Details main|cache → single column (master 1450) */
-  detailsStack: 1450,
 } as const
 
 export type Breakpoint = keyof typeof BP

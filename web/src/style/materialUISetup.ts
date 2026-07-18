@@ -33,7 +33,7 @@ export const LAYOUT_LIST_3COL_MAX = BP.list3
 export const LAYOUT_LIST_3COL_MEDIA = queryMax('list3')
 
 const typography = {
-  fontFamily: 'Open Sans, sans-serif',
+  fontFamily: `'Open Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif`,
 }
 
 export const darkTheme = createTheme({

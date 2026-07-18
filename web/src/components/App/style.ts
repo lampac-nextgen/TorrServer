@@ -1,10 +1,7 @@
 import { IconButton } from '@mui/material'
 import { rgba } from 'polished'
-import { mediaMax, MEDIA_SHORT_VIEWPORT } from 'style/breakpoints'
-import { standaloneMedia } from 'style/standaloneMedia'
+import { mediaMax } from 'style/breakpoints'
 import styled, { css } from 'styled-components'
-
-import { pwaFooterChrome, pwaHeaderChrome } from './PWAFooter/style'
 
 export const AppWrapper = styled.div<{ $isDrawerOpen?: boolean }>`
   ${({
@@ -14,11 +11,12 @@ export const AppWrapper = styled.div<{ $isDrawerOpen?: boolean }>`
     },
   }) => css`
     height: 100%;
-    min-height: 100dvh;
+    max-height: 100dvh;
     background: ${rgba(appSecondaryColor, 0.8)};
     display: grid;
     grid-template-columns: ${$isDrawerOpen ? '240px' : '60px'} 1fr;
-    grid-template-rows: 60px 1fr;
+    /* Desktop: header + content only. Bottom nav row only on mobile. */
+    grid-template-rows: var(--app-chrome-top) minmax(0, 1fr);
     grid-template-areas:
       'head head'
       'side content';
@@ -27,27 +25,25 @@ export const AppWrapper = styled.div<{ $isDrawerOpen?: boolean }>`
 
     ${mediaMax('mobile')} {
       grid-template-columns: 0 1fr;
+      /* Spacer row = 90px + safe-area (matches fixed footer) */
+      grid-template-rows: var(--app-chrome-top) minmax(0, 1fr) var(--app-chrome-bottom);
+      grid-template-areas:
+        'head head'
+        'content content'
+        'nav nav';
     }
-
-    ${standaloneMedia(css`
-      grid-template-columns: 0 1fr;
-      grid-template-rows: ${pwaHeaderChrome} 1fr ${pwaFooterChrome};
-      height: 100dvh;
-      min-height: 100dvh;
-      background: ${rgba(appSecondaryColor, 0.8)};
-    `)}
   `}
 `
 
 export const CenteredGrid = styled.div`
+  grid-area: content;
   display: grid;
   place-items: center;
   min-width: 0;
+  min-height: 0;
   width: 100%;
-
-  ${standaloneMedia(css`
-    min-height: 100%;
-  `)}
+  height: 100%;
+  overflow: auto;
 `
 
 export const AppHeader = styled.div`
@@ -57,7 +53,7 @@ export const AppHeader = styled.div`
     grid-area: head;
     display: grid;
     grid-auto-flow: column;
-    align-items: center;
+    align-items: end;
     grid-template-columns: max-content minmax(0, 1fr) max-content;
     gap: 8px;
     box-shadow:
@@ -65,32 +61,26 @@ export const AppHeader = styled.div`
       0px 4px 5px 0px rgb(0 0 0 / 14%),
       0px 1px 10px 0px rgb(0 0 0 / 12%);
     padding: 0 16px;
+    padding-top: var(--safe-top);
+    padding-bottom: 8px;
+    box-sizing: border-box;
+    height: var(--app-chrome-top);
     z-index: 3;
     min-width: 0;
 
     ${mediaMax('mobile')} {
-      height: 60px;
-      box-sizing: border-box;
-    }
+      grid-template-columns: minmax(0, 1fr) max-content;
 
-    ${standaloneMedia(css`
-      grid-template-columns: max-content 1fr;
-      align-items: end;
-      padding: 7px 16px;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: ${pwaHeaderChrome};
-      box-sizing: border-box;
-      z-index: 3;
-    `)}
+      /* Menu toggle hidden — bottom nav is primary chrome */
+      > :first-child {
+        display: none;
+      }
+    }
   `}
 `
 
 export const AppSidebarStyle = styled.div<{ $isDrawerOpen?: boolean }>`
   ${({
-    $isDrawerOpen,
     theme: {
       app: { appSecondaryColor, sidebarBGColor, sidebarFillColor },
     },
@@ -116,19 +106,8 @@ export const AppSidebarStyle = styled.div<{ $isDrawerOpen?: boolean }>`
     }
 
     ${mediaMax('mobile')} {
-      position: fixed;
-      top: 60px;
-      left: 0;
-      bottom: 0;
-      width: 240px;
-      transform: translateX(${$isDrawerOpen ? '0' : '-100%'});
-      transition: transform 195ms cubic-bezier(0.4, 0, 0.6, 1) 0ms;
-      box-shadow: ${$isDrawerOpen ? '2px 0 8px rgba(0,0,0,0.3)' : 'none'};
-    }
-
-    ${standaloneMedia(css`
       display: none;
-    `)}
+    }
   `}
 `
 
@@ -138,6 +117,7 @@ export const TorrentListWrapper = styled.div`
   overflow: auto;
   min-height: 0;
   min-width: 0;
+  height: 100%;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 
@@ -146,7 +126,7 @@ export const TorrentListWrapper = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 450px), 570px));
   gap: 20px;
 
-  ${mediaMax('list3')}, ${MEDIA_SHORT_VIEWPORT} {
+  ${mediaMax('list3')} {
     padding: 10px;
     gap: 15px;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -158,13 +138,11 @@ export const TorrentListWrapper = styled.div`
 
   ${mediaMax('mobile')} {
     grid-template-columns: minmax(0, 1fr);
+    padding: 10px;
+    gap: 12px;
+    /* Master PWA: extra clearance above fixed footer */
+    padding-bottom: 16px;
   }
-
-  ${standaloneMedia(css`
-    /* Grid row is already 1fr between header/footer — do not re-subtract chrome. */
-    height: auto;
-    padding-bottom: 15px;
-  `)}
 `
 
 export const HeaderToggle = styled(IconButton)`
@@ -201,23 +179,12 @@ export const HeaderToggle = styled(IconButton)`
 
 export const SidebarOverlay = styled.div<{ $isDrawerOpen?: boolean }>`
   display: none;
-
-  ${mediaMax('mobile')} {
-    display: ${({ $isDrawerOpen }) => ($isDrawerOpen ? 'block' : 'none')};
-    position: fixed;
-    top: 60px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1;
-  }
 `
 
 export const StyledIconButton = styled(IconButton)`
   margin-right: 6px;
 
-  ${standaloneMedia(css`
+  ${mediaMax('mobile')} {
     display: none;
-  `)}
+  }
 `

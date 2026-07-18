@@ -14,7 +14,7 @@ export const Content = styled.div`
     display: flex;
     flex-direction: column;
     min-height: 0;
-    max-height: calc(100dvh - 160px);
+    max-height: calc(100dvh - var(--app-chrome-top) - var(--app-chrome-bottom));
 
     ${mediaMax('mobile')} {
       max-height: none;

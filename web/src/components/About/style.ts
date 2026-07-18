@@ -1,7 +1,5 @@
 import styled, { css } from 'styled-components'
-import { standaloneMedia } from 'style/standaloneMedia'
 import { mediaMax } from 'style/breakpoints'
-import { DIALOG_SAFE_TOP } from 'components/App/PWAFooter/style'
 
 export const DialogWrapper = styled.div`
   height: 100%;
@@ -17,6 +15,7 @@ export const HeaderSection = styled.section`
   font-size: 22px;
   font-weight: 400;
   padding: 16px 20px;
+  padding-top: max(16px, var(--safe-top));
 
   img {
     width: 48px;
@@ -25,15 +24,12 @@ export const HeaderSection = styled.section`
   ${mediaMax('mobile')} {
     font-size: 18px;
     padding: 10px 16px;
+    padding-top: max(10px, var(--safe-top));
 
     img {
       width: 40px;
     }
   }
-
-  ${standaloneMedia(css`
-    padding-top: ${DIALOG_SAFE_TOP};
-  `)}
 `
 
 export const ThanksSection = styled.section`
