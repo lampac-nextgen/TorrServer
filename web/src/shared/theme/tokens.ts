@@ -1,13 +1,12 @@
 /**
- * Design-system SSOT for TorrServer web (Wave 1 — MatriX green on MUI 6).
+ * Design-system SSOT for TorrServer web (MatriX greenfield).
  * Prefer these constants / CSS vars over one-off rem/px in components.
  */
 
 export const FONT_STACK =
-  "'Open Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+  "'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
 
-/** Letter-spacing brand default (master). */
-export const LETTER_SPACING = '-0.1px'
+export const LETTER_SPACING = '-0.01em'
 
 export const typography = {
   /** Card / dialog section labels (UPPERCASE meta) */

@@ -46,7 +46,6 @@ export interface TorrentCardActionsProps {
 }
 
 type ConfirmKind = 'drop' | 'delete' | null
-
 type ProbeTrack = Record<string, unknown>
 
 const toPlayable = (file: TorrentFileStat): PlayableFile => ({
@@ -73,6 +72,17 @@ const audioTrackLabel = (track: ProbeTrack, index: number) => {
   const parts = [`#${index}`, lang, codec, title].filter(Boolean)
   return parts.join(' · ') || `Audio ${index}`
 }
+
+const railBtnSx = {
+  width: 36,
+  height: 36,
+  borderRadius: 1.5,
+  color: 'text.secondary',
+  '&:hover': {
+    color: 'text.primary',
+    bgcolor: 'action.hover',
+  },
+} as const
 
 export default function TorrentCardActions({ torrent, onDetails, onEdit }: TorrentCardActionsProps) {
   const { t } = useTranslation()
@@ -213,53 +223,55 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
   return (
     <>
       <Stack
-        direction='row'
-        spacing={0.5}
-        useFlexGap
+        spacing={0.25}
         sx={{
-          width: '100%',
-          flexWrap: 'wrap',
+          height: '100%',
+          justifyContent: 'center',
           alignItems: 'center',
-          justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+          px: 0.5,
+          py: 0.75,
+          borderLeft: 1,
+          borderColor: 'divider',
+          bgcolor: 'action.hover',
         }}
       >
-        <Button
-          variant='contained'
-          size='small'
-          startIcon={resolvingAudio ? <CircularProgress size={14} color='inherit' /> : <PlayArrowIcon />}
-          onClick={e => void handlePlayClick(e)}
-          disabled={resolvingAudio}
-          sx={{ minWidth: 96 }}
-        >
-          {t('Play')}
-        </Button>
+        <Tooltip title={t('Play')} placement='left'>
+          <IconButton
+            size='small'
+            aria-label={t('Play')}
+            onClick={e => void handlePlayClick(e)}
+            disabled={resolvingAudio}
+            sx={{
+              ...railBtnSx,
+              color: 'primary.contrastText',
+              bgcolor: 'primary.main',
+              '&:hover': { bgcolor: 'primary.dark', color: 'primary.contrastText' },
+              '&.Mui-disabled': { bgcolor: 'action.disabledBackground', color: 'action.disabled' },
+            }}
+          >
+            {resolvingAudio ? <CircularProgress size={16} color='inherit' /> : <PlayArrowIcon fontSize='small' />}
+          </IconButton>
+        </Tooltip>
 
-        <Tooltip title={t('Details')}>
-          <IconButton size='small' aria-label={t('Details')} onClick={onDetails}>
+        <Tooltip title={t('Details')} placement='left'>
+          <IconButton size='small' aria-label={t('Details')} onClick={onDetails} sx={railBtnSx}>
             <InfoOutlinedIcon fontSize='small' />
           </IconButton>
         </Tooltip>
 
-        {onEdit ? (
-          <Tooltip title={t('EditTorrent')}>
-            <IconButton size='small' aria-label={t('EditTorrent')} onClick={onEdit}>
-              <EditIcon fontSize='small' />
-            </IconButton>
-          </Tooltip>
-        ) : null}
-
-        <Tooltip title={t('DownloadPlaylist')}>
-          <IconButton size='small' aria-label={t('DownloadPlaylist')} component='a' href={playlistLink}>
+        <Tooltip title={t('DownloadPlaylist')} placement='left'>
+          <IconButton size='small' aria-label={t('DownloadPlaylist')} component='a' href={playlistLink} sx={railBtnSx}>
             <PlaylistPlayIcon fontSize='small' />
           </IconButton>
         </Tooltip>
 
-        <Tooltip title={t('Actions')}>
+        <Tooltip title={t('Actions')} placement='left'>
           <IconButton
             size='small'
             aria-label={t('Actions')}
             aria-haspopup='menu'
             onClick={e => setMoreAnchor(e.currentTarget)}
+            sx={railBtnSx}
           >
             <MoreVertIcon fontSize='small' />
           </IconButton>
@@ -273,6 +285,19 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
+        {onEdit ? (
+          <MenuItem
+            onClick={() => {
+              closeMore()
+              onEdit()
+            }}
+          >
+            <ListItemIcon>
+              <EditIcon fontSize='small' />
+            </ListItemIcon>
+            <ListItemText>{t('EditTorrent')}</ListItemText>
+          </MenuItem>
+        ) : null}
         <MenuItem
           onClick={() => {
             closeMore()
@@ -345,7 +370,9 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
       <Dialog open={confirm != null} onClose={() => setConfirm(null)}>
         <DialogTitle>{confirm === 'delete' ? t('Delete') : t('DropTorrent')}</DialogTitle>
         <DialogContent>
-          <DialogContentText>{confirm === 'delete' ? t('DeleteTorrents?') : t('ConfirmDropTorrent')}</DialogContentText>
+          <DialogContentText>
+            {confirm === 'delete' ? t('DeleteTorrents?') : t('ConfirmDropTorrent')}
+          </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button autoFocus onClick={() => setConfirm(null)} variant='outlined'>

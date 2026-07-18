@@ -3,7 +3,6 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import ButtonBase from '@mui/material/ButtonBase'
 import Skeleton from '@mui/material/Skeleton'
-import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import CloudOffIcon from '@mui/icons-material/CloudOff'
 import CreateNewFolderOutlinedIcon from '@mui/icons-material/CreateNewFolderOutlined'
@@ -37,6 +36,21 @@ function sortTorrents(torrents: TorrentStat[], sortABC: boolean, sortCategory: s
   })
 }
 
+const gridSx = {
+  display: 'grid',
+  gridTemplateColumns: {
+    xs: '1fr',
+    sm: 'repeat(2, minmax(0, 1fr))',
+    lg: 'repeat(3, minmax(0, 1fr))',
+  },
+  gap: { xs: 1, sm: 1.25, md: 1.5 },
+  p: { xs: 1, sm: 1.25, md: 1.75 },
+  pb: 2.5,
+  alignContent: 'start',
+  minHeight: '100%',
+  bgcolor: 'background.default',
+} as const
+
 export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsPageProps) {
   const { t } = useTranslation()
   const [selected, setSelected] = useState<TorrentStat | null>(null)
@@ -51,9 +65,9 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsP
 
   if (isLoading) {
     return (
-      <Box sx={{ p: 2 }}>
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} variant='rounded' height={160} sx={{ mb: 2 }} />
+      <Box sx={gridSx}>
+        {Array.from({ length: 9 }).map((_, i) => (
+          <Skeleton key={i} variant='rounded' height={132} sx={{ borderRadius: 2.5 }} />
         ))}
       </Box>
     )
@@ -99,12 +113,13 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsP
             placeItems: 'center',
             gap: 1.5,
             p: 3,
-            borderRadius: 2,
+            borderRadius: 3,
             border: 1,
             borderColor: 'divider',
             borderStyle: 'dashed',
-            minWidth: 240,
-            minHeight: 160,
+            minWidth: 260,
+            minHeight: 180,
+            bgcolor: 'background.paper',
           }}
         >
           <CreateNewFolderOutlinedIcon sx={{ fontSize: 48, opacity: 0.7 }} color='primary' />
@@ -129,16 +144,11 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsP
 
   return (
     <>
-      <Stack spacing={1} sx={{ p: { xs: 1, sm: 1.5, md: 2 }, pb: 2, bgcolor: 'background.default', minHeight: '100%' }}>
+      <Box sx={gridSx}>
         {sorted.map(torrent => (
-          <TorrentCard
-            key={torrent.hash}
-            torrent={torrent}
-            onSelect={setSelected}
-            onEdit={setEditing}
-          />
+          <TorrentCard key={torrent.hash} torrent={torrent} onSelect={setSelected} onEdit={setEditing} />
         ))}
-      </Stack>
+      </Box>
 
       {selected ? (
         <Suspense fallback={null}>

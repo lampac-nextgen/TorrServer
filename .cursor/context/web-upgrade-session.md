@@ -36,18 +36,17 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue.
 
 ## Audit backlog (in progress)
 
-- P0: Edit torrent metadata (`action: set`) + storage backends `/storage/settings`
-- P1: Add hash dedup + auto title/posters; Search TMDB poster fallback
-- P1: GStreamer audio tracks; HLS subtitles in VideoPlayer
-- Hygiene: no ghost `style/`
+- Visual polish pass: Shell / Sidebar / Details / Settings to match new media-grid language
+- Hygiene: keep ghost `components/` / `style/` deleted if they reappear
 
 ---
 
 ## Done (recent)
 
-- Cards + cardAction rail; collapsible sidebar; details seasons/files polish
-- SettingSwitch ListItem pattern; MatriX theme rewrite (green-ink dark)
-- Shared API torrents/settings/viewed/search/gst; RQ hooks for torrents/detail
+- **Media library rewrite:** CSS grid (1/2/3 cols), dense poster cards, icon action rail (Play primary), no legacy green slabs / cardAction
+- Font: Plus Jakarta Sans; AppBar ink surface; Settings on paper
+- Feature contract: edit torrent, storage backends, add dedup/posters, GStreamer audio, HLS subs
+- Shared API torrents/settings/viewed/search/gst; RQ hooks
 
 ---
 
@@ -55,3 +54,4 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue.
 
 - Russian replies when user writes Russian; code English.
 - No commit unless asked.
+- Never port legacy MatriX card/chrome styles — layout density OK, look must be modern.
