@@ -63,12 +63,16 @@ func writeWithCache(c *gin.Context, path string, data []byte, contentType string
 	c.Data(200, contentType, data)
 }
 
-// index.html / manifest must revalidate so releases are not stuck behind year-long caches.
+// index.html / SW / manifest must revalidate so releases are not stuck behind caches.
 // Hashed Vite assets under /static/ can be immutable.
 func cacheControlFor(path string) string {
 	base := filepath.Base(path)
 	ext := strings.ToLower(filepath.Ext(path))
 	if base == "index.html" || ext == ".webmanifest" || base == "site.webmanifest" {
+		return "no-cache, must-revalidate"
+	}
+	// Service worker scripts must never be long-cached — stale SW precaches 404 after deploys.
+	if base == "sw.js" || strings.HasPrefix(base, "workbox-") {
 		return "no-cache, must-revalidate"
 	}
 	if strings.Contains(path, "/static/") || strings.HasPrefix(path, "pages/static/") {

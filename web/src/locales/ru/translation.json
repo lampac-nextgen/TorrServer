@@ -585,5 +585,6 @@
   "ServerStatusSeeders": "Сиды",
   "ServerStatusLoaded": "Загружено",
   "ServerStatusRaw": "Сырой /stat",
-  "Refresh": "Обновить"
+  "Refresh": "Обновить",
+  "PwaUpdateFailed": "Не удалось обновить офлайн-кэш. Сделайте hard-reload или очистите данные сайта, если интерфейс «залип»."
 }

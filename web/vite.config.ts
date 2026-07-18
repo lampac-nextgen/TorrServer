@@ -34,13 +34,16 @@ export default defineConfig(({ mode }) => {
         globals: { Buffer: true, global: true, process: true },
       }),
       VitePWA({
-        registerType: 'prompt',
+        registerType: 'autoUpdate',
         strategies: 'generateSW',
         injectRegister: false,
         manifest: false,
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,woff2}'],
           navigateFallback: 'index.html',
+          cleanupOutdatedCaches: true,
+          clientsClaim: true,
+          skipWaiting: true,
         },
       }),
     ],

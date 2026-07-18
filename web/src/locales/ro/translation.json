@@ -585,5 +585,6 @@
   "ServerStatusSeeders": "Seeders",
   "ServerStatusLoaded": "Loaded",
   "ServerStatusRaw": "Raw /stat",
-  "Refresh": "Refresh"
+  "Refresh": "Refresh",
+  "PwaUpdateFailed": "Nu s-a putut actualiza cache-ul offline. Faceți hard-reload sau ștergeți datele site-ului dacă UI-ul pare blocat."
 }

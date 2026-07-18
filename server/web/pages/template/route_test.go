@@ -29,3 +29,25 @@ func TestIndexHTMLRoutes(t *testing.T) {
 		}
 	}
 }
+
+func TestCacheControlFor(t *testing.T) {
+	wantNoCache := "no-cache, must-revalidate"
+	wantImmutable := "public, max-age=31536000, immutable"
+
+	cases := []struct {
+		path string
+		want string
+	}{
+		{"pages/index.html", wantNoCache},
+		{"pages/sw.js", wantNoCache},
+		{"pages/workbox-abc123.js", wantNoCache},
+		{"pages/site.webmanifest", wantNoCache},
+		{"pages/static/useTranslation-BnNnnMzO.js", wantImmutable},
+		{"pages/favicon.ico", "public, max-age=3600"},
+	}
+	for _, tc := range cases {
+		if got := cacheControlFor(tc.path); got != tc.want {
+			t.Errorf("cacheControlFor(%q)=%q, want %q", tc.path, got, tc.want)
+		}
+	}
+}

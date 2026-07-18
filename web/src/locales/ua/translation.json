@@ -585,5 +585,6 @@
   "ServerStatusSeeders": "Seeders",
   "ServerStatusLoaded": "Loaded",
   "ServerStatusRaw": "Raw /stat",
-  "Refresh": "Refresh"
+  "Refresh": "Refresh",
+  "PwaUpdateFailed": "Не вдалося оновити офлайн-кеш. Зробіть hard-reload або очистіть дані сайту, якщо інтерфейс «завис»."
 }
