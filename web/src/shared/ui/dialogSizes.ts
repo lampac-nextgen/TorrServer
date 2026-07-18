@@ -31,6 +31,16 @@ export const PLAYER_DIALOG_EXPANDED: CSSProperties = {
   width: 'min(96vw, 80rem)',
 }
 
+/** Mobile immersive player — edge-to-edge viewport, no letterbox chrome. */
+export const PLAYER_DIALOG_MOBILE: CSSProperties = {
+  width: '100%',
+  maxWidth: '100%',
+  minWidth: '100%',
+  height: '100dvh',
+  maxHeight: '100dvh',
+  borderRadius: 0,
+}
+
 /** Sheet L + stable height so short tabs (Storage) don't collapse the window. */
 export const DIALOG_SETTINGS: CSSProperties = {
   ...DIALOG_SHEET_L,

@@ -191,6 +191,7 @@
     "SaveStorageSettings": "Збереження налаштувань збереження",
     "Saving": "Збереження...",
     "Settings": "Налаштування",
+    "SectionPicker": "Розділ",
     "SettingsStorage": "Збереження налаштувань:",
     "SettingsStorageHint": "JSON легше редагувати/резервувати, BBolt більш надійний.",
     "ShowFSActiveTorr": "Показувати у файловій системі лише активні торенти",

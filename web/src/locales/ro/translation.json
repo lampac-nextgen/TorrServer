@@ -191,6 +191,7 @@
     "SaveStorageSettings": "Salvați setările de stocare",
     "Saving": "Salvare...",
     "Settings": "Setări",
+    "SectionPicker": "Secțiune",
     "SettingsStorage": "Setări Stocare:",
     "SettingsStorageHint": "JSON este mai ușor de editat/copiat, BBolt este mai robust.",
     "ShowFSActiveTorr": "Afișează numai torrentele active din sistemul de fișiere",

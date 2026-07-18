@@ -191,6 +191,7 @@
     "SaveStorageSettings": "Сохранить настройки хранилища",
     "Saving": "Сохранение…",
     "Settings": "Настройки",
+    "SectionPicker": "Раздел",
     "SettingsStorage": "Хранилище настроек:",
     "SettingsStorageHint": "JSON проще редактировать/резервировать, BBolt более надежен.",
     "ShowFSActiveTorr": "Отображать в файловой системе только активные торренты",

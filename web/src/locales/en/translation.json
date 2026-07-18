@@ -191,6 +191,7 @@
     "SaveStorageSettings": "Save Storage Settings",
     "Saving": "Saving...",
     "Settings": "Settings",
+    "SectionPicker": "Section",
     "SettingsStorage": "Settings Storage:",
     "SettingsStorageHint": "JSON is easier to edit/backup, BBolt is more robust.",
     "ShowFSActiveTorr": "Show only active torrents in the file system",

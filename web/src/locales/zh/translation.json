@@ -191,6 +191,7 @@
     "SaveStorageSettings": "保存存储设置",
     "Saving": "保存中...",
     "Settings": "设置",
+    "SectionPicker": "分区",
     "SettingsStorage": "设置存储：",
     "SettingsStorageHint": "JSON更易于编辑/备份，BBolt更稳健。",
     "ShowFSActiveTorr": "仅在文件系统中显示活动种子",

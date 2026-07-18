@@ -37,7 +37,7 @@ import { gstreamerMasterUrl, gstreamerProbeUrl } from 'shared/lib/gstreamer'
 import { queryMax } from 'shared/theme/breakpoints'
 import { useModalOpen, useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { iconBtn } from 'shared/ui/controlClasses'
-import { PLAYER_DIALOG_EXPANDED, PLAYER_DIALOG_NORMAL } from 'shared/ui/dialogSizes'
+import { PLAYER_DIALOG_EXPANDED, PLAYER_DIALOG_MOBILE, PLAYER_DIALOG_NORMAL } from 'shared/ui/dialogSizes'
 
 import { extractAudioTracks, formatAudioTrackDisplay, type ProbeTrack } from './audioTrackLabel'
 
@@ -193,13 +193,13 @@ export default function VideoPlayer({
   const showPip = supportsPiP()
 
   const dialogStyle: CSSProperties | undefined = isMobile
-    ? undefined
+    ? PLAYER_DIALOG_MOBILE
     : expanded
       ? PLAYER_DIALOG_EXPANDED
       : PLAYER_DIALOG_NORMAL
 
   const videoMaxHeight = isMobile
-    ? 'calc(100dvh - 2rem)'
+    ? undefined
     : expanded
       ? 'min(82dvh, calc(100dvh - 5rem))'
       : 'min(62dvh, 36rem)'
@@ -682,8 +682,9 @@ export default function VideoPlayer({
     revealChrome()
   }
 
-  const chromeIconBtn =
-    `${iconBtn} size-9 min-h-9 min-w-9 rounded-full text-white/90 hover-fine:bg-white/12 hover-fine:text-white`
+  const chromeIconBtn = isMobile
+    ? `${iconBtn} size-11 min-h-11 min-w-11 rounded-full text-white/90 hover-fine:bg-white/12 hover-fine:text-white`
+    : `${iconBtn} size-9 min-h-9 min-w-9 rounded-full text-white/90 hover-fine:bg-white/12 hover-fine:text-white`
   const showChrome = chromeVisible || !playing || mediaError
   const bufferedPct = duration > 0 ? Math.min(100, (buffered / duration) * 100) : 0
   const playedPct = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0
@@ -710,49 +711,77 @@ export default function VideoPlayer({
 
       <Modal state={overlayState}>
         <Modal.Backdrop isDismissable={!fullscreen} className='bg-black/70 backdrop-blur-sm'>
-          <Modal.Container size={isMobile ? 'full' : 'lg'} scroll='inside' className={isMobile ? undefined : 'p-5 sm:p-6'}>
+          <Modal.Container
+            size={isMobile ? 'full' : 'lg'}
+            scroll='inside'
+            className={isMobile ? 'h-dvh p-0' : 'p-5 sm:p-6'}
+          >
             <Modal.Dialog
-              className='overflow-hidden border border-white/10 bg-[#0a0e0c] text-white shadow-2xl shadow-black/50'
+              className={
+                isMobile
+                  ? 'h-dvh max-h-dvh overflow-hidden rounded-none border-0 bg-black text-white shadow-none'
+                  : 'overflow-hidden border border-white/10 bg-[#0a0e0c] text-white shadow-2xl shadow-black/50'
+              }
               style={dialogStyle}
             >
-              <Modal.Body className='gap-0 p-0'>
+              <Modal.Body className={isMobile ? 'flex h-full min-h-0 flex-col gap-0 p-0' : 'gap-0 p-0'}>
                 <div
                   ref={shellRef}
-                  className='relative w-full overflow-hidden bg-black'
+                  className={
+                    isMobile
+                      ? 'relative flex min-h-0 flex-1 flex-col overflow-hidden bg-black'
+                      : 'relative w-full overflow-hidden bg-black'
+                  }
                   onPointerMove={onShellPointerMove}
                   onPointerDown={revealChrome}
                   onDoubleClick={handleVideoDoubleClick}
                 >
-                  <video
-                    autoPlay
-                    ref={attachVideoNode}
-                    src={hls ? undefined : playbackSrc}
-                    onTimeUpdate={handleTimeUpdate}
-                    onProgress={handleProgress}
-                    onLoadedMetadata={handleLoadedMetadata}
-                    onDurationChange={handleDurationChange}
-                    onWaiting={() => setLoading(true)}
-                    onCanPlay={() => {
-                      setLoading(false)
-                      setMediaError(false)
-                      syncDuration(videoRef.current)
-                    }}
-                    onPlaying={() => {
-                      setLoading(false)
-                      setPlaying(true)
-                    }}
-                    onPlay={() => setPlaying(true)}
-                    onPause={handlePause}
-                    onClick={togglePlayPause}
-                    onError={() => {
-                      setLoading(false)
-                      setMediaError(true)
-                    }}
-                    className='block h-auto w-full cursor-pointer bg-black object-contain'
-                    style={{ maxHeight: videoMaxHeight, minHeight: isMobile ? 220 : 280 }}
+                  <div
+                    className={
+                      isMobile
+                        ? 'relative flex min-h-0 flex-1 items-center justify-center'
+                        : undefined
+                    }
                   >
-                    {!hls && captionSrc ? <track kind='captions' src={captionSrc} default /> : null}
-                  </video>
+                    <video
+                      autoPlay
+                      ref={attachVideoNode}
+                      src={hls ? undefined : playbackSrc}
+                      onTimeUpdate={handleTimeUpdate}
+                      onProgress={handleProgress}
+                      onLoadedMetadata={handleLoadedMetadata}
+                      onDurationChange={handleDurationChange}
+                      onWaiting={() => setLoading(true)}
+                      onCanPlay={() => {
+                        setLoading(false)
+                        setMediaError(false)
+                        syncDuration(videoRef.current)
+                      }}
+                      onPlaying={() => {
+                        setLoading(false)
+                        setPlaying(true)
+                      }}
+                      onPlay={() => setPlaying(true)}
+                      onPause={handlePause}
+                      onClick={togglePlayPause}
+                      onError={() => {
+                        setLoading(false)
+                        setMediaError(true)
+                      }}
+                      className={
+                        isMobile
+                          ? 'max-h-full max-w-full cursor-pointer bg-black object-contain'
+                          : 'block h-auto w-full cursor-pointer bg-black object-contain'
+                      }
+                      style={
+                        isMobile
+                          ? undefined
+                          : { maxHeight: videoMaxHeight, minHeight: 280 }
+                      }
+                    >
+                      {!hls && captionSrc ? <track kind='captions' src={captionSrc} default /> : null}
+                    </video>
+                  </div>
 
                   {loading ? (
                     <div className='pointer-events-none absolute inset-0 grid place-items-center bg-black/50'>
@@ -796,7 +825,7 @@ export default function VideoPlayer({
                   ) : null}
 
                   <div
-                    className={`pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-black/75 via-black/20 to-transparent px-4 pb-16 pt-3.5 transition-opacity duration-300 ${
+                    className={`pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-black/75 via-black/20 to-transparent px-4 pb-16 pt-[max(0.875rem,env(safe-area-inset-top))] transition-opacity duration-300 ${
                       showChrome ? 'opacity-100' : 'opacity-0'
                     }`}
                   >
@@ -817,13 +846,23 @@ export default function VideoPlayer({
                   </div>
 
                   <div
-                    className={`absolute inset-x-0 bottom-0 z-10 px-3 pb-3 pt-20 transition-opacity duration-300 ${
+                    className={`absolute inset-x-0 bottom-0 z-10 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-20 transition-opacity duration-300 ${
                       showChrome ? 'opacity-100' : 'pointer-events-none opacity-0'
                     }`}
                   >
-                    <div className='rounded-2xl border border-white/10 bg-black/55 px-3 py-2.5 shadow-2xl shadow-black/40 backdrop-blur-xl'>
+                    <div
+                      className={
+                        isMobile
+                          ? 'rounded-2xl border border-white/10 bg-black/55 px-3 py-3 shadow-2xl shadow-black/40 backdrop-blur-xl'
+                          : 'rounded-2xl border border-white/10 bg-black/55 px-3 py-2.5 shadow-2xl shadow-black/40 backdrop-blur-xl'
+                      }
+                    >
                       <div
-                        className='group relative mb-2.5 px-0.5'
+                        className={
+                          isMobile
+                            ? 'group relative mb-3 px-0.5 py-1.5'
+                            : 'group relative mb-2.5 px-0.5'
+                        }
                         onPointerMove={event => updateScrubPreview(event.clientX, event.currentTarget)}
                         onPointerLeave={() => setScrubPreview(null)}
                       >
@@ -835,7 +874,13 @@ export default function VideoPlayer({
                             {formatDuration(scrubPreview.time)}
                           </div>
                         ) : null}
-                        <div className='pointer-events-none absolute inset-y-[7px] left-0 right-0 h-1 overflow-hidden rounded-full bg-white/15 group-hover:inset-y-[6px] group-hover:h-1.5'>
+                        <div
+                          className={
+                            isMobile
+                              ? 'pointer-events-none absolute inset-y-[10px] left-0 right-0 h-2 overflow-hidden rounded-full bg-white/15'
+                              : 'pointer-events-none absolute inset-y-[7px] left-0 right-0 h-1 overflow-hidden rounded-full bg-white/15 group-hover:inset-y-[6px] group-hover:h-1.5'
+                          }
+                        >
                           <div className='absolute inset-y-0 left-0 bg-white/30' style={{ width: `${bufferedPct}%` }} />
                           <div className='absolute inset-y-0 left-0 bg-accent' style={{ width: `${playedPct}%` }} />
                         </div>
@@ -846,63 +891,136 @@ export default function VideoPlayer({
                           aria-label={t('Seconds')}
                           className='relative'
                         >
-                          <Slider.Track className='h-1 bg-transparent group-hover:h-1.5'>
+                          <Slider.Track
+                            className={
+                              isMobile
+                                ? 'h-2 bg-transparent'
+                                : 'h-1 bg-transparent group-hover:h-1.5'
+                            }
+                          >
                             <Slider.Fill className='bg-transparent' />
-                            <Slider.Thumb className='size-3 border-0 bg-white shadow-md after:hidden' />
+                            <Slider.Thumb
+                              className={
+                                isMobile
+                                  ? 'size-4 border-0 bg-white shadow-md after:hidden'
+                                  : 'size-3 border-0 bg-white shadow-md after:hidden'
+                              }
+                            />
                           </Slider.Track>
                         </Slider>
                       </div>
 
-                      <div className='flex flex-wrap items-center gap-x-2 gap-y-1.5'>
+                      <div
+                        className={
+                          isMobile
+                            ? 'flex flex-col gap-2.5'
+                            : 'flex flex-wrap items-center gap-x-2 gap-y-1.5'
+                        }
+                      >
                         <div className='flex items-center gap-0.5'>
-                          <Tooltip>
-                            <Tooltip.Trigger>
-                              <Button
-                                isIconOnly
-                                variant='ghost'
-                                className={chromeIconBtn}
-                                aria-label={playing ? t('Pause') : t('Play')}
-                                onPress={togglePlayPause}
-                              >
-                                {playing ? <Pause aria-hidden /> : <Play fill='currentColor' aria-hidden />}
-                              </Button>
-                            </Tooltip.Trigger>
-                            <Tooltip.Content>{playing ? t('Pause') : t('Play')}</Tooltip.Content>
-                          </Tooltip>
+                          {isMobile ? (
+                            <>
+                              <Tooltip>
+                                <Tooltip.Trigger>
+                                  <Button
+                                    isIconOnly
+                                    variant='ghost'
+                                    className={chromeIconBtn}
+                                    aria-label={t('Rewind-10-Sec')}
+                                    onPress={() => seekRelative(-SEEK_STEP_SEC)}
+                                  >
+                                    <RotateCcw aria-hidden />
+                                  </Button>
+                                </Tooltip.Trigger>
+                                <Tooltip.Content>{t('Rewind-10-Sec')}</Tooltip.Content>
+                              </Tooltip>
 
-                          <Tooltip>
-                            <Tooltip.Trigger>
-                              <Button
-                                isIconOnly
-                                variant='ghost'
-                                className={chromeIconBtn}
-                                aria-label={t('Rewind-10-Sec')}
-                                onPress={() => seekRelative(-SEEK_STEP_SEC)}
-                              >
-                                <RotateCcw aria-hidden />
-                              </Button>
-                            </Tooltip.Trigger>
-                            <Tooltip.Content>{t('Rewind-10-Sec')}</Tooltip.Content>
-                          </Tooltip>
+                              <Tooltip>
+                                <Tooltip.Trigger>
+                                  <Button
+                                    isIconOnly
+                                    variant='ghost'
+                                    className={`${chromeIconBtn} size-12 min-h-12 min-w-12`}
+                                    aria-label={playing ? t('Pause') : t('Play')}
+                                    onPress={togglePlayPause}
+                                  >
+                                    {playing ? <Pause aria-hidden /> : <Play fill='currentColor' aria-hidden />}
+                                  </Button>
+                                </Tooltip.Trigger>
+                                <Tooltip.Content>{playing ? t('Pause') : t('Play')}</Tooltip.Content>
+                              </Tooltip>
 
-                          <Tooltip>
-                            <Tooltip.Trigger>
-                              <Button
-                                isIconOnly
-                                variant='ghost'
-                                className={chromeIconBtn}
-                                aria-label={t('Forward-10-Sec')}
-                                onPress={() => seekRelative(SEEK_STEP_SEC)}
-                              >
-                                <RotateCw aria-hidden />
-                              </Button>
-                            </Tooltip.Trigger>
-                            <Tooltip.Content>{t('Forward-10-Sec')}</Tooltip.Content>
-                          </Tooltip>
+                              <Tooltip>
+                                <Tooltip.Trigger>
+                                  <Button
+                                    isIconOnly
+                                    variant='ghost'
+                                    className={chromeIconBtn}
+                                    aria-label={t('Forward-10-Sec')}
+                                    onPress={() => seekRelative(SEEK_STEP_SEC)}
+                                  >
+                                    <RotateCw aria-hidden />
+                                  </Button>
+                                </Tooltip.Trigger>
+                                <Tooltip.Content>{t('Forward-10-Sec')}</Tooltip.Content>
+                              </Tooltip>
+                            </>
+                          ) : (
+                            <>
+                              <Tooltip>
+                                <Tooltip.Trigger>
+                                  <Button
+                                    isIconOnly
+                                    variant='ghost'
+                                    className={chromeIconBtn}
+                                    aria-label={playing ? t('Pause') : t('Play')}
+                                    onPress={togglePlayPause}
+                                  >
+                                    {playing ? <Pause aria-hidden /> : <Play fill='currentColor' aria-hidden />}
+                                  </Button>
+                                </Tooltip.Trigger>
+                                <Tooltip.Content>{playing ? t('Pause') : t('Play')}</Tooltip.Content>
+                              </Tooltip>
+
+                              <Tooltip>
+                                <Tooltip.Trigger>
+                                  <Button
+                                    isIconOnly
+                                    variant='ghost'
+                                    className={chromeIconBtn}
+                                    aria-label={t('Rewind-10-Sec')}
+                                    onPress={() => seekRelative(-SEEK_STEP_SEC)}
+                                  >
+                                    <RotateCcw aria-hidden />
+                                  </Button>
+                                </Tooltip.Trigger>
+                                <Tooltip.Content>{t('Rewind-10-Sec')}</Tooltip.Content>
+                              </Tooltip>
+
+                              <Tooltip>
+                                <Tooltip.Trigger>
+                                  <Button
+                                    isIconOnly
+                                    variant='ghost'
+                                    className={chromeIconBtn}
+                                    aria-label={t('Forward-10-Sec')}
+                                    onPress={() => seekRelative(SEEK_STEP_SEC)}
+                                  >
+                                    <RotateCw aria-hidden />
+                                  </Button>
+                                </Tooltip.Trigger>
+                                <Tooltip.Content>{t('Forward-10-Sec')}</Tooltip.Content>
+                              </Tooltip>
+                            </>
+                          )}
 
                           <button
                             type='button'
-                            className='ml-1 min-w-[7.5rem] rounded-md px-1 text-left text-xs tabular-nums tracking-wide text-white/75 hover-fine:bg-white/10 hover-fine:text-white'
+                            className={
+                              isMobile
+                                ? 'ml-1 min-h-11 min-w-[7.5rem] rounded-md px-1 text-left text-sm tabular-nums tracking-wide text-white/75'
+                                : 'ml-1 min-w-[7.5rem] rounded-md px-1 text-left text-xs tabular-nums tracking-wide text-white/75 hover-fine:bg-white/10 hover-fine:text-white'
+                            }
                             title={t('ToggleTimeDisplay')}
                             onClick={() => setShowRemaining(prev => !prev)}
                           >
@@ -916,7 +1034,7 @@ export default function VideoPlayer({
 
                         <div className='mx-1 hidden h-4 w-px bg-white/15 sm:block' />
 
-                        <div className='flex items-center gap-0.5'>
+                        <div className={`flex items-center gap-0.5 ${isMobile ? 'flex-wrap' : ''}`}>
                           <Tooltip>
                             <Tooltip.Trigger>
                               <Button
@@ -932,18 +1050,20 @@ export default function VideoPlayer({
                             <Tooltip.Content>{muted ? t('Unmute') : t('Mute')}</Tooltip.Content>
                           </Tooltip>
 
-                          <Slider
-                            value={volume * 100}
-                            maxValue={100}
-                            onChange={handleVolumeChange}
-                            className='hidden w-24 sm:flex'
-                            aria-label={t('Volume')}
-                          >
-                            <Slider.Track className='h-1 bg-white/15'>
-                              <Slider.Fill className='bg-accent' />
-                              <Slider.Thumb className='size-3 border-0 bg-white after:hidden' />
-                            </Slider.Track>
-                          </Slider>
+                          {!isMobile ? (
+                            <Slider
+                              value={volume * 100}
+                              maxValue={100}
+                              onChange={handleVolumeChange}
+                              className='hidden w-24 sm:flex'
+                              aria-label={t('Volume')}
+                            >
+                              <Slider.Track className='h-1 bg-white/15'>
+                                <Slider.Fill className='bg-accent' />
+                                <Slider.Thumb className='size-3 border-0 bg-white after:hidden' />
+                              </Slider.Track>
+                            </Slider>
+                          ) : null}
 
                           {canSwitchAudio ? (
                             <Popover isOpen={audioMenuOpen} onOpenChange={setAudioMenuOpen}>
@@ -1038,7 +1158,7 @@ export default function VideoPlayer({
                           </Popover>
                         </div>
 
-                        <div className='ml-auto flex items-center gap-0.5'>
+                        <div className={`flex items-center gap-0.5 ${isMobile ? 'w-full flex-wrap justify-between' : 'ml-auto'}`}>
                           {showPip ? (
                             <Tooltip>
                               <Tooltip.Trigger>
