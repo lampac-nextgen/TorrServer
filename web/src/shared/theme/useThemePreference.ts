@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useSyncExternalStore } from 'react'
 
 export const THEME_MODES = {
   LIGHT: 'light',
@@ -95,6 +95,107 @@ function applyThemeToDocument(isDark: boolean, palette: ThemePalette) {
   root.dataset.palette = palette
 }
 
+function readSystemDark(): boolean {
+  if (typeof window === 'undefined') return false
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+}
+
+interface ThemeStoreSnapshot {
+  preference: ThemePreference
+  palette: ThemePalette
+  systemDark: boolean
+  isDark: boolean
+}
+
+const listeners = new Set<() => void>()
+
+let snapshot: ThemeStoreSnapshot = (() => {
+  const preference = typeof window === 'undefined' ? THEME_MODES.AUTO : readStoredPreference()
+  const palette = typeof window === 'undefined' ? THEME_PALETTES.FOREST : readStoredPalette()
+  const systemDark = readSystemDark()
+  return {
+    preference,
+    palette,
+    systemDark,
+    isDark: resolveDark(preference, systemDark),
+  }
+})()
+
+function emit() {
+  for (const listener of listeners) listener()
+}
+
+function persistAndApply(next: ThemeStoreSnapshot) {
+  snapshot = next
+  if (typeof document !== 'undefined') {
+    applyThemeToDocument(next.isDark, next.palette)
+  }
+  try {
+    localStorage.setItem(STORAGE_KEY, next.preference)
+    localStorage.setItem(STORAGE_KEY_PALETTE, next.palette)
+  } catch {
+    /* ignore */
+  }
+  emit()
+}
+
+function setPreference(mode: ThemePreference) {
+  persistAndApply({
+    ...snapshot,
+    preference: mode,
+    isDark: resolveDark(mode, snapshot.systemDark),
+  })
+}
+
+function setPalette(palette: ThemePalette) {
+  persistAndApply({
+    ...snapshot,
+    palette,
+  })
+}
+
+function setSystemDark(systemDark: boolean) {
+  if (snapshot.systemDark === systemDark) return
+  persistAndApply({
+    ...snapshot,
+    systemDark,
+    isDark: resolveDark(snapshot.preference, systemDark),
+  })
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener)
+  return () => listeners.delete(listener)
+}
+
+function getSnapshot(): ThemeStoreSnapshot {
+  return snapshot
+}
+
+function getServerSnapshot(): ThemeStoreSnapshot {
+  return {
+    preference: THEME_MODES.AUTO,
+    palette: THEME_PALETTES.FOREST,
+    systemDark: false,
+    isDark: false,
+  }
+}
+
+let mediaQueryBound = false
+
+function ensureSystemDarkListener() {
+  if (mediaQueryBound || typeof window === 'undefined') return
+  mediaQueryBound = true
+  const mq = window.matchMedia('(prefers-color-scheme: dark)')
+  mq.addEventListener('change', event => setSystemDark(event.matches))
+}
+
+// Apply stored theme as soon as this module loads in the browser.
+if (typeof document !== 'undefined') {
+  applyThemeToDocument(snapshot.isDark, snapshot.palette)
+  ensureSystemDarkListener()
+}
+
 export interface ThemePreferenceState {
   isDark: boolean
   preference: ThemePreference
@@ -104,42 +205,26 @@ export interface ThemePreferenceState {
 }
 
 /**
- * Applies `dark` class + `data-palette` on html and persists both axes in localStorage.
- * Brightness: light / dark / system. Palette: see THEME_PALETTES.
+ * Shared brightness + palette preference (localStorage). Safe to call from many components —
+ * one module store keeps document/`dark`/`data-palette` in sync.
  */
 export function useThemePreference(): ThemePreferenceState {
-  const [preference, setPreferenceState] = useState<ThemePreference>(() => readStoredPreference())
-  const [palette, setPaletteState] = useState<ThemePalette>(() => readStoredPalette())
-  const [systemDark, setSystemDark] = useState(() =>
-    typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)').matches : false,
-  )
+  ensureSystemDarkListener()
+  const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-color-scheme: dark)')
-    const handler = (event: MediaQueryListEvent) => setSystemDark(event.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
+  const setPreferenceCb = useCallback((mode: ThemePreference) => {
+    setPreference(mode)
   }, [])
 
-  const isDark = resolveDark(preference, systemDark)
-
-  useEffect(() => {
-    applyThemeToDocument(isDark, palette)
-    try {
-      localStorage.setItem(STORAGE_KEY, preference)
-      localStorage.setItem(STORAGE_KEY_PALETTE, palette)
-    } catch {
-      /* ignore */
-    }
-  }, [preference, isDark, palette])
-
-  const setPreference = useCallback((next: ThemePreference) => {
-    setPreferenceState(next)
+  const setPaletteCb = useCallback((palette: ThemePalette) => {
+    setPalette(palette)
   }, [])
 
-  const setPalette = useCallback((next: ThemePalette) => {
-    setPaletteState(next)
-  }, [])
-
-  return { isDark, preference, setPreference, palette, setPalette }
+  return {
+    isDark: state.isDark,
+    preference: state.preference,
+    setPreference: setPreferenceCb,
+    palette: state.palette,
+    setPalette: setPaletteCb,
+  }
 }

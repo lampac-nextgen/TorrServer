@@ -3,6 +3,7 @@ import { Toaster } from 'sonner'
 
 import { useSettingsQuery } from 'shared/hooks/useSettingsQuery'
 import { queryMax } from 'shared/theme/breakpoints'
+import { useThemePreference } from 'shared/theme/useThemePreference'
 import { ModalOpenProvider } from 'shared/ui/ModalOpenContext'
 import { AppSnackbarProvider } from 'shared/ui/Toast'
 
@@ -12,6 +13,12 @@ import PwaUpdateToast from 'features/pwa/PwaUpdateToast'
 /** Keep SETTINGS_QUERY_KEY warm so play/resume can read TrackTimecode without opening Settings. */
 function SettingsQueryBootstrap() {
   useSettingsQuery()
+  return null
+}
+
+/** Apply `dark` / `data-palette` on `<html>` for the whole session (prefs live in localStorage). */
+function ThemeBootstrap() {
+  useThemePreference()
   return null
 }
 
@@ -26,6 +33,7 @@ export default function App() {
   return (
     <ModalOpenProvider>
       <AppSnackbarProvider>
+        <ThemeBootstrap />
         <SettingsQueryBootstrap />
         <Shell />
         <PwaUpdateToast />

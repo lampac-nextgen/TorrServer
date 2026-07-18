@@ -24,6 +24,7 @@ import AppDialog from 'shared/ui/AppDialog'
 import { DIALOG_SETTINGS } from 'shared/ui/dialogSizes'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
+import AppearanceSettingsPanel from './AppearanceSettingsPanel'
 import FeaturesSettingsPanel from './FeaturesSettingsPanel'
 import GStreamerSettingsPanel, { emptyGstConfig, type GStreamerConfig } from './GStreamerSettingsPanel'
 import MobilePlayersSection from './MobilePlayersSection'
@@ -332,6 +333,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
           <>
             <Description className='mb-4'>{t('SettingsDialog.AppTabHint')}</Description>
             <div className='space-y-6'>
+              <AppearanceSettingsPanel />
               <TMDBSettingsSection settings={settings} updateSettings={updateSettingsPartial} />
               <MobilePlayersSection />
             </div>

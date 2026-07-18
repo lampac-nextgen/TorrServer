@@ -231,7 +231,7 @@
     "ViewedHistoryStorage": "Stockage de l'historique des vues :",
     "ViewedStorageHint": "Choisissez où stocker l'historique des vues",
     "SettingsSaveFailed": "Échec de l'enregistrement des paramètres",
-    "AppTabHint": "Les paramètres TMDB s'appliquent après Enregistrer (redémarrage possible). Les boutons lecteurs s'enregistrent immédiatement dans ce navigateur.",
+    "AppTabHint": "Apparence et boutons lecteurs s’enregistrent immédiatement dans ce navigateur. Les paramètres TMDB s’appliquent après Enregistrer (redémarrage possible).",
     "MobileAppInstantHint": "Ces options s'enregistrent immédiatement dans ce navigateur — Enregistrer n'est pas nécessaire.",
     "UseDisk": "Utiliser le cache disque",
     "StorageSettings": "Stockage",
@@ -249,7 +249,11 @@
     "SectionDisplayPerformance": "Affichage et performance",
     "SectionSslTls": "SSL/TLS",
     "TrackTimecode": "Mémoriser la position de lecture",
-    "TrackTimecodeHint": "Enregistrer le timecode dans l'historique de visionnage."
+    "TrackTimecodeHint": "Enregistrer le timecode dans l'historique de visionnage.",
+    "SectionAppearance": "Apparence",
+    "AppearanceInstantHint": "Le thème et la palette s’appliquent immédiatement dans ce navigateur — Enregistrer n’est pas nécessaire.",
+    "ThemePaletteSearch": "Rechercher des palettes…",
+    "ThemePaletteEmpty": "Aucune palette ne correspond."
   },
   "Size": "Taille",
   "SpecialThanks": "Remerciements spéciaux",

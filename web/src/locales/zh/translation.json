@@ -231,7 +231,7 @@
     "ViewedHistoryStorage": "查看历史存储：",
     "ViewedStorageHint": "存储查看历史记录的位置",
     "SettingsSaveFailed": "保存设置失败",
-    "AppTabHint": "TMDB 设置在保存后生效（可能重启服务器）。播放器按钮会立即保存在本浏览器中。",
+    "AppTabHint": "外观和播放器按钮会立即保存在本浏览器中。TMDB 设置在保存后生效（可能重启服务器）。",
     "MobileAppInstantHint": "这些开关会立即保存在本浏览器中，无需点击保存。",
     "UseDisk": "使用磁盘缓存",
     "StorageSettings": "存储",
@@ -249,7 +249,11 @@
     "SectionDisplayPerformance": "显示与性能",
     "SectionSslTls": "SSL/TLS",
     "TrackTimecode": "记住播放位置",
-    "TrackTimecodeHint": "将断点续播时间保存到观看历史。"
+    "TrackTimecodeHint": "将断点续播时间保存到观看历史。",
+    "SectionAppearance": "外观",
+    "AppearanceInstantHint": "主题和色板会立即在本浏览器中生效，无需点保存。",
+    "ThemePaletteSearch": "搜索色板…",
+    "ThemePaletteEmpty": "没有匹配的色板。"
   },
   "Size": "大小",
   "SpecialThanks": "特别感谢",

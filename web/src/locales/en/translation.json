@@ -231,7 +231,7 @@
     "ViewedHistoryStorage": "Viewed History Storage:",
     "ViewedStorageHint": "Choose where to store viewed history",
     "SettingsSaveFailed": "Failed to save settings",
-    "AppTabHint": "TMDB settings apply after Save (may restart the server). Player buttons save instantly in this browser.",
+    "AppTabHint": "Appearance and player buttons save instantly in this browser. TMDB settings apply after Save (may restart the server).",
     "MobileAppInstantHint": "These toggles save immediately in this browser — Save is not required.",
     "UseDisk": "Use disk cache",
     "StorageSettings": "Storage",
@@ -249,7 +249,11 @@
     "SectionSearchSources": "Search sources",
     "SectionDisplayPerformance": "Display & performance",
     "TrackTimecode": "Track playback position",
-    "TrackTimecodeHint": "Store resume timecodes in viewed history."
+    "TrackTimecodeHint": "Store resume timecodes in viewed history.",
+    "SectionAppearance": "Appearance",
+    "AppearanceInstantHint": "Theme and palette apply immediately in this browser — Save is not required.",
+    "ThemePaletteSearch": "Search palettes…",
+    "ThemePaletteEmpty": "No palettes match your search."
   },
   "Size": "Size",
   "SpecialThanks": "Special Thanks",

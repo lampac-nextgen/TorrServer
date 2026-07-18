@@ -1,4 +1,4 @@
-import { lazy, type ReactNode, Suspense, useEffect, useState } from 'react'
+import { lazy, type ReactNode, Suspense, useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
 import { Button, Dropdown, Spinner, Tooltip, useMediaQuery } from '@heroui/react'
 import { Check, ChevronLeft, Menu, Moon, Palette, SortAsc, SortDesc, Sun, SunMoon, X } from 'lucide-react'
@@ -12,6 +12,7 @@ import { useLocalJsonPref } from 'shared/hooks/useLocalPref'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
 import { OPEN_SETTINGS_EVENT, type SettingsDeepLinkTab } from 'shared/lib/settingsEvents'
 import { MEDIA_SHORT_VIEWPORT, queryMax } from 'shared/theme/breakpoints'
+import { THEME_PALETTE_SWATCHES } from 'shared/theme/paletteSwatches'
 import {
   THEME_MODES,
   THEME_PALETTE_IDS,
@@ -114,15 +115,15 @@ export default function Shell() {
     return () => window.removeEventListener(OPEN_SETTINGS_EVENT, openWithTab)
   }, [])
 
+  const closeAdd = () => {
+    setAddOpen(false)
+    setLaunchSource(null)
+  }
+
   const cycleTheme = () => {
     if (currentThemeMode === THEME_MODES.LIGHT) updateThemeMode(THEME_MODES.DARK)
     else if (currentThemeMode === THEME_MODES.DARK) updateThemeMode(THEME_MODES.AUTO)
     else updateThemeMode(THEME_MODES.LIGHT)
-  }
-
-  const closeAdd = () => {
-    setAddOpen(false)
-    setLaunchSource(null)
   }
 
   const isCategoryFilterActive = globalCategoryFilter !== 'all'
@@ -154,6 +155,13 @@ export default function Shell() {
       : currentThemeMode === THEME_MODES.DARK
         ? t('ThemeDark')
         : t('ThemeAuto')
+  const paletteLabels = useMemo(
+    () =>
+      Object.fromEntries(
+        THEME_PALETTE_IDS.map(id => [id, t(`ThemePalette${id.charAt(0).toUpperCase()}${id.slice(1)}`)]),
+      ) as Record<ThemePalette, string>,
+    [t],
+  )
   const SortIcon = sortABC ? SortAsc : SortDesc
   const headerHeight = isShortViewport ? HEADER_HEIGHT_SHORT : HEADER_HEIGHT
 
@@ -222,12 +230,7 @@ export default function Shell() {
           current={palette}
           label={t('ThemePalette')}
           onChange={setPalette}
-          labels={Object.fromEntries(
-            THEME_PALETTE_IDS.map(id => [
-              id,
-              t(`ThemePalette${id.charAt(0).toUpperCase()}${id.slice(1)}`),
-            ]),
-          ) as Record<ThemePalette, string>}
+          labels={paletteLabels}
         />
 
         <LanguageMenu
@@ -351,12 +354,20 @@ function PaletteMenu({
           </span>
         </Button>
       </Dropdown.Trigger>
-      <Dropdown.Popover placement='bottom end' className='max-h-[min(70dvh,28rem)] min-w-[11rem] overflow-y-auto'>
+      <Dropdown.Popover placement='bottom end' className='max-h-[min(70dvh,28rem)] min-w-[13rem] overflow-y-auto'>
         <Dropdown.Menu aria-label={label}>
           {THEME_PALETTE_IDS.map(id => {
             const selected = id === current
+            const swatch = THEME_PALETTE_SWATCHES[id]
             return (
               <Dropdown.Item key={id} textValue={labels[id]} onPress={() => onChange(id)} className='min-h-11 gap-2'>
+                <span
+                  className='size-4 shrink-0 rounded-sm border border-black/10'
+                  aria-hidden
+                  style={{
+                    background: `linear-gradient(135deg, ${swatch.header} 0 52%, ${swatch.accent} 52% 100%)`,
+                  }}
+                />
                 <span className='min-w-0 flex-1 truncate text-sm'>{labels[id]}</span>
                 {selected ? (
                   <Check {...iconMenu} className='shrink-0 text-accent' aria-hidden />
