@@ -1,6 +1,17 @@
 import { useMemo, memo, useState, type ReactNode } from 'react'
-import { Button, ButtonGroup, Modal, Separator, Spinner, useOverlayState } from '@heroui/react'
-import { EyeOff, Hash, Link2, ListMusic, Magnet, Play, Settings, SquareArrowOutUpRight, Trash2 } from 'lucide-react'
+import { Button, ButtonGroup, Dropdown, Modal, Separator, Spinner, useMediaQuery, useOverlayState } from '@heroui/react'
+import {
+  EyeOff,
+  Hash,
+  Link2,
+  ListMusic,
+  Magnet,
+  MoreHorizontal,
+  Play,
+  Settings,
+  SquareArrowOutUpRight,
+  Trash2,
+} from 'lucide-react'
 import ptt from 'parse-torrent-title'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
@@ -12,6 +23,8 @@ import { clearViewedFiles } from 'shared/api/viewed'
 import { useExternalPlayers } from 'shared/lib/externalPlayers'
 import { copyToClipboard } from 'shared/lib/clipboard'
 import { requestOpenSettings } from 'shared/lib/settingsEvents'
+import { queryMax } from 'shared/theme/breakpoints'
+import { iconBtn } from 'shared/ui/controlClasses'
 import { iconMenu } from 'shared/ui/iconProps'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 import { usePlayLauncher } from 'features/player/usePlayLauncher'
@@ -30,6 +43,8 @@ export interface TorrentActionsProps {
   /** Continue Watching: auto-play this file when the list is ready. */
   autoPlayFileId?: number
   autoPlayTimecode?: number
+  /** Phone/fullscreen Details — denser Play row + secondary actions in a menu. */
+  compact?: boolean
 }
 
 type PendingConfirm = 'drop' | 'clearViews' | null
@@ -38,9 +53,11 @@ type PendingConfirm = 'drop' | 'clearViews' | null
 function ExternalPlayersGroup({
   players,
   size = 'md',
+  compact = false,
 }: {
   players: { label: string; href: string }[]
   size?: 'sm' | 'md' | 'lg'
+  compact?: boolean
 }) {
   if (players.length === 0) return null
 
@@ -48,14 +65,14 @@ function ExternalPlayersGroup({
     <Button
       key={player.label}
       variant='secondary'
-      size={size}
-      className='min-h-11'
+      size={compact ? 'sm' : size}
+      className={compact ? 'min-h-11 max-w-[5rem] px-2 text-xs' : 'min-h-11'}
       onPress={() => {
         window.location.href = player.href
       }}
     >
-      <SquareArrowOutUpRight {...iconMenu} aria-hidden />
-      {player.label}
+      {compact ? null : <SquareArrowOutUpRight {...iconMenu} aria-hidden />}
+      <span className='truncate'>{player.label}</span>
     </Button>
   ))
 
@@ -79,10 +96,13 @@ function TorrentActions({
   onShowFiles,
   autoPlayFileId,
   autoPlayTimecode,
+  compact: compactProp = false,
 }: TorrentActionsProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
   const queryClient = useQueryClient()
+  const isPhone = useMediaQuery(queryMax('mobile'))
+  const compact = compactProp || isPhone
   const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm>(null)
   const confirmState = useOverlayState({
     isOpen: pendingConfirm != null,
@@ -176,6 +196,157 @@ function TorrentActions({
       ? `${t('TorrentContent')} (${playableFileList!.length})`
       : t('Play')
 
+  const onPlayPress = () => {
+    if (!isSingleFileTorrent && onShowFiles) {
+      onShowFiles()
+      return
+    }
+    handlePlay()
+  }
+
+  const confirmModal = (
+    <Modal.Root state={confirmState}>
+      <Modal.Backdrop>
+        <Modal.Container size='sm'>
+          <Modal.Dialog>
+            <Modal.Header>
+              <Modal.Heading>{pendingConfirm === 'drop' ? t('DropTorrent') : t('RemoveViews')}</Modal.Heading>
+            </Modal.Header>
+            <Modal.Body>{pendingConfirm === 'drop' ? t('ConfirmDropTorrent') : t('ConfirmRemoveViews')}</Modal.Body>
+            <Modal.Footer>
+              <Button variant='secondary' onPress={() => setPendingConfirm(null)} autoFocus>
+                {t('Cancel')}
+              </Button>
+              <Button variant={pendingConfirm === 'drop' ? 'danger' : 'primary'} onPress={runPendingConfirm}>
+                {t('OK')}
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
+    </Modal.Root>
+  )
+
+  if (compact) {
+    return (
+      <div className='space-y-2.5'>
+        <div className='flex items-center gap-1.5'>
+          <Button
+            variant='primary'
+            size='md'
+            className='min-h-11 min-w-0 flex-1 gap-2'
+            isPending={isResolving}
+            onPress={onPlayPress}
+          >
+            {({ isPending }) => (
+              <>
+                {isPending ? (
+                  <Spinner size='sm' color='current' />
+                ) : (
+                  <Play {...iconMenu} fill='currentColor' aria-hidden />
+                )}
+                <span className='truncate'>{playLabel}</span>
+              </>
+            )}
+          </Button>
+          <ExternalPlayersGroup players={externalPlayers} compact />
+          <Dropdown>
+            <Dropdown.Trigger>
+              <Button variant='ghost' isIconOnly className={`${iconBtn} shrink-0 text-muted`} aria-label={t('Info')}>
+                <MoreHorizontal {...iconMenu} aria-hidden />
+              </Button>
+            </Dropdown.Trigger>
+            <Dropdown.Popover placement='bottom end' className='min-w-[14rem]'>
+              <Dropdown.Menu aria-label={t('Info')}>
+                {singleFileStream ? (
+                  <Dropdown.Item onPress={() => void copyStreamLink()}>
+                    <Link2 {...iconMenu} />
+                    {t('CopyLink')}
+                  </Dropdown.Item>
+                ) : null}
+                {isSingleFileTorrent || !viewedFileList?.length ? (
+                  <Dropdown.Item onPress={() => window.open(fullPlaylistLink, '_blank')}>
+                    <ListMusic {...iconMenu} />
+                    {t('DownloadPlaylist')}
+                  </Dropdown.Item>
+                ) : null}
+                <Dropdown.Item onPress={() => void copyMagnetLink()}>
+                  <Magnet {...iconMenu} />
+                  {t('CopyMagnet')}
+                </Dropdown.Item>
+                <Dropdown.Item onPress={() => void copyInfoHash()}>
+                  <Hash {...iconMenu} />
+                  {t('CopyHash')}
+                </Dropdown.Item>
+                <Dropdown.Item onPress={() => window.open(playlistAllUrl({ category: undefined }), '_blank')}>
+                  <ListMusic {...iconMenu} />
+                  {t('DownloadAllPlaylists')}
+                </Dropdown.Item>
+                <Dropdown.Item onPress={() => setPendingConfirm('clearViews')}>
+                  <EyeOff {...iconMenu} />
+                  {t('RemoveViews')}
+                </Dropdown.Item>
+                <Dropdown.Item onPress={() => setPendingConfirm('drop')}>
+                  <Trash2 {...iconMenu} />
+                  {t('DropTorrent')}
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown.Popover>
+          </Dropdown>
+        </div>
+
+        {isSingleFileTorrent && !hasAnyExternalPlayer ? (
+          <button
+            type='button'
+            onClick={() => requestOpenSettings('app')}
+            className='flex items-center gap-1.5 text-xs text-muted transition-colors hover:text-accent'
+          >
+            <Settings size={14} strokeWidth={1.75} aria-hidden />
+            {t('ExternalPlayersHint')}
+          </button>
+        ) : null}
+
+        {hasPartialProgress ? (
+          <div className='rounded-lg border border-border bg-surface-secondary p-3'>
+            <p className='mb-2 truncate text-xs text-muted'>
+              {t('LatestFilePlayed')}{' '}
+              <strong className='text-foreground'>
+                {latestViewedFileInfo?.title}
+                {latestViewedFileInfo?.season ? (
+                  <>
+                    {' '}
+                    · {t('Season')} {latestViewedFileInfo.season} · {t('Episode')} {latestViewedFileInfo.episode}
+                  </>
+                ) : null}
+              </strong>
+            </p>
+            <ButtonGroup className='w-full'>
+              <Button
+                variant='primary'
+                size='sm'
+                className='min-h-11 flex-1'
+                onPress={() => window.open(fullPlaylistLink, '_blank')}
+              >
+                {t('Full')}
+              </Button>
+              <Button
+                variant='primary'
+                size='sm'
+                className='min-h-11 flex-1'
+                onPress={() => window.open(fromLatestPlaylistLink, '_blank')}
+              >
+                {t('FromLatestFile')}
+              </Button>
+            </ButtonGroup>
+          </div>
+        ) : null}
+
+        {playerModals}
+        {confirmModal}
+      </div>
+    )
+  }
+
   return (
     <div className='space-y-4'>
       <div className='flex flex-wrap items-center gap-2'>
@@ -185,15 +356,7 @@ function TorrentActions({
           fullWidth
           className='sm:w-auto'
           isPending={isResolving}
-          onPress={() => {
-            // Series / multi-file: jump to the Content tab (per-file Play/Copy/external) instead of
-            // opening a second file-picker modal.
-            if (!isSingleFileTorrent && onShowFiles) {
-              onShowFiles()
-              return
-            }
-            handlePlay()
-          }}
+          onPress={onPlayPress}
         >
           {({ isPending }) => (
             <>
@@ -298,27 +461,7 @@ function TorrentActions({
       </div>
 
       {playerModals}
-
-      <Modal.Root state={confirmState}>
-        <Modal.Backdrop>
-          <Modal.Container size='sm'>
-            <Modal.Dialog>
-              <Modal.Header>
-                <Modal.Heading>{pendingConfirm === 'drop' ? t('DropTorrent') : t('RemoveViews')}</Modal.Heading>
-              </Modal.Header>
-              <Modal.Body>{pendingConfirm === 'drop' ? t('ConfirmDropTorrent') : t('ConfirmRemoveViews')}</Modal.Body>
-              <Modal.Footer>
-                <Button variant='secondary' onPress={() => setPendingConfirm(null)} autoFocus>
-                  {t('Cancel')}
-                </Button>
-                <Button variant={pendingConfirm === 'drop' ? 'danger' : 'primary'} onPress={runPendingConfirm}>
-                  {t('OK')}
-                </Button>
-              </Modal.Footer>
-            </Modal.Dialog>
-          </Modal.Container>
-        </Modal.Backdrop>
-      </Modal.Root>
+      {confirmModal}
     </div>
   )
 }

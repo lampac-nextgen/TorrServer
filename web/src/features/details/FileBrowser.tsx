@@ -1,9 +1,10 @@
-import { Button } from '@heroui/react'
+import { Button, Label, ListBox, Select, useMediaQuery } from '@heroui/react'
 import { Folder, FolderOpen } from 'lucide-react'
 import { iconMenu } from 'shared/ui/iconProps'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PlayableFile, TorrentFileStat } from 'shared/api/types'
+import { queryMax } from 'shared/theme/breakpoints'
 
 import FilesDataGrid from './FilesDataGrid'
 
@@ -61,6 +62,15 @@ function findNodeById(node: DirectoryNode, id: string): DirectoryNode | null {
   return null
 }
 
+function flattenFolders(node: DirectoryNode, depth = 0): { id: string; label: string; depth: number }[] {
+  const rows: { id: string; label: string; depth: number }[] = []
+  for (const child of node.children.values()) {
+    rows.push({ id: child.id, label: child.label, depth })
+    rows.push(...flattenFolders(child, depth + 1))
+  }
+  return rows
+}
+
 function DirectoryTreeList({
   node,
   selectedFolderId,
@@ -111,6 +121,7 @@ export default function FileBrowser({
   onViewedChange,
 }: FileBrowserProps) {
   const { t } = useTranslation()
+  const isCompact = useMediaQuery(queryMax('mobile'))
   const tree = useMemo(() => buildDirectoryTree(playableFileList), [playableFileList])
   // A single release folder (common for series packs) isn't worth a sidebar — only show the
   // tree when there are multiple folders or nested structure to navigate.
@@ -118,6 +129,7 @@ export default function FileBrowser({
   const hasUsefulFolders =
     folderCount > 1 || [...tree.children.values()].some(child => child.children.size > 0 || child.files.length === 0)
   const [selectedFolderId, setSelectedFolderId] = useState('root')
+  const folderOptions = useMemo(() => flattenFolders(tree), [tree])
 
   const filesInSelectedFolder = useMemo(() => {
     if (!hasUsefulFolders || selectedFolderId === 'root') return playableFileList
@@ -128,18 +140,47 @@ export default function FileBrowser({
   return (
     <div className={`grid min-h-[200px] w-full gap-3 ${hasUsefulFolders ? 'md:grid-cols-[200px_1fr]' : 'grid-cols-1'}`}>
       {hasUsefulFolders ? (
-        <div className='rounded-xl border border-border bg-surface-secondary p-2 md:rounded-none md:border-0 md:border-r md:border-border md:bg-transparent md:p-0 md:pr-3'>
-          <p className='mb-1.5 px-1 text-xs font-medium uppercase tracking-wide text-muted'>{t('Folders')}</p>
-          <Button
-            variant={selectedFolderId === 'root' ? 'primary' : 'ghost'}
-            size='sm'
-            className='mb-1 w-full justify-start'
-            onPress={() => setSelectedFolderId('root')}
+        isCompact ? (
+          <Select
+            selectedKey={selectedFolderId}
+            onSelectionChange={key => {
+              if (key != null) setSelectedFolderId(String(key))
+            }}
+            className='w-full'
+            aria-label={t('Folders')}
           >
-            {t('AllFiles')}
-          </Button>
-          <DirectoryTreeList node={tree} selectedFolderId={selectedFolderId} onSelect={setSelectedFolderId} />
-        </div>
+            <Label className='sr-only'>{t('Folders')}</Label>
+            <Select.Trigger className='min-h-11 w-full'>
+              <Select.Value />
+              <Select.Indicator />
+            </Select.Trigger>
+            <Select.Popover>
+              <ListBox>
+                <ListBox.Item id='root' textValue={t('AllFiles')}>
+                  {t('AllFiles')}
+                </ListBox.Item>
+                {folderOptions.map(folder => (
+                  <ListBox.Item key={folder.id} id={folder.id} textValue={folder.label}>
+                    <span style={{ paddingLeft: folder.depth * 12 }}>{folder.label}</span>
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </Select.Popover>
+          </Select>
+        ) : (
+          <div className='rounded-xl border border-border bg-surface-secondary p-2 md:rounded-none md:border-0 md:border-r md:border-border md:bg-transparent md:p-0 md:pr-3'>
+            <p className='mb-1.5 px-1 text-xs font-medium uppercase tracking-wide text-muted'>{t('Folders')}</p>
+            <Button
+              variant={selectedFolderId === 'root' ? 'primary' : 'ghost'}
+              size='sm'
+              className='mb-1 w-full justify-start'
+              onPress={() => setSelectedFolderId('root')}
+            >
+              {t('AllFiles')}
+            </Button>
+            <DirectoryTreeList node={tree} selectedFolderId={selectedFolderId} onSelect={setSelectedFolderId} />
+          </div>
+        )
       ) : null}
 
       <FilesDataGrid

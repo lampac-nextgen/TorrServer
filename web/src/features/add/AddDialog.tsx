@@ -222,13 +222,14 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
       onClose={onClose}
       size='md'
       fullScreen={isFullScreenBreakpoint}
+      dialogClassName='flex flex-col overflow-hidden'
       dialogStyle={isFullScreenBreakpoint ? undefined : DIALOG_SHEET_M}
     >
-      <Modal.Header>
+      <Modal.Header className='shrink-0'>
         <Modal.Heading>{t('AddNewTorrent')}</Modal.Heading>
         <Modal.CloseTrigger aria-label={t('Close')} />
       </Modal.Header>
-      <Modal.Body className='space-y-4'>
+      <Modal.Body className='min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain'>
         <TextField value={source} onChange={setSource} isInvalid={hashExists || sourceInvalid} isDisabled={saving}>
           <Label>{t('AddDialog.TorrentSourceLink')}</Label>
           <TextArea rows={2} autoFocus />
@@ -307,7 +308,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
           </div>
         ) : null}
       </Modal.Body>
-      <Modal.Footer>
+      <Modal.Footer className='shrink-0'>
         <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName}>
           {t('Cancel')}
         </Button>

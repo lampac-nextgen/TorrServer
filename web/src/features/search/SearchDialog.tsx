@@ -395,14 +395,15 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
       onClose={onClose}
       size='lg'
       fullScreen={isFullScreenBreakpoint}
+      dialogClassName='flex flex-col overflow-hidden'
       dialogStyle={isFullScreenBreakpoint ? undefined : DIALOG_SHEET_L}
     >
-      <Modal.Header>
+      <Modal.Header className='shrink-0'>
         <Modal.Heading>{t('Torznab.SearchTorrents')}</Modal.Heading>
         <Modal.CloseTrigger aria-label={t('Close')} />
       </Modal.Header>
-      <Modal.Body>
-        <div className='sticky top-0 z-10 -mx-1 bg-surface px-1 pb-4 pt-1'>
+      <Modal.Body className='flex min-h-0 flex-1 flex-col overflow-hidden'>
+        <div className='sticky top-0 z-10 shrink-0 -mx-1 border-b border-border/60 bg-surface px-1 pb-3 pt-1'>
           <div className='flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end'>
             <Select
               selectedKey={trackerKey}
@@ -483,84 +484,88 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
           </div>
         </div>
 
-        {searched && sortedResults.length > 0 ? (
-          <div className='mb-3 flex flex-wrap items-center gap-2'>
-            <p className='text-sm text-muted'>{t('Torznab.ResultsCount', { count: sortedResults.length })}</p>
-            <ToggleButtonGroup selectionMode='single' selectedKeys={[sortField]} className='flex flex-wrap gap-1'>
-              {sortFields.map(({ field, label }) => {
-                const active = sortField === field
-                return (
-                  <ToggleButton key={field} id={field} onPress={() => handleSortChip(field)}>
-                    {label}
-                    {active ? (
-                      sortDirection === 'asc' ? (
-                        <ArrowUp className='ml-1' size={14} strokeWidth={1.75} aria-hidden />
-                      ) : (
-                        <ArrowDown className='ml-1' size={14} strokeWidth={1.75} aria-hidden />
-                      )
-                    ) : null}
-                  </ToggleButton>
-                )
-              })}
-            </ToggleButtonGroup>
+        <div className='min-h-0 flex-1 overflow-y-auto overscroll-contain pt-3'>
+          {searched && sortedResults.length > 0 ? (
+            <div className='mb-3 flex flex-wrap items-center gap-2'>
+              <p className='text-sm text-muted'>{t('Torznab.ResultsCount', { count: sortedResults.length })}</p>
+              <ToggleButtonGroup selectionMode='single' selectedKeys={[sortField]} className='flex flex-wrap gap-1'>
+                {sortFields.map(({ field, label }) => {
+                  const active = sortField === field
+                  return (
+                    <ToggleButton key={field} id={field} onPress={() => handleSortChip(field)}>
+                      {label}
+                      {active ? (
+                        sortDirection === 'asc' ? (
+                          <ArrowUp className='ml-1' size={14} strokeWidth={1.75} aria-hidden />
+                        ) : (
+                          <ArrowDown className='ml-1' size={14} strokeWidth={1.75} aria-hidden />
+                        )
+                      ) : null}
+                    </ToggleButton>
+                  )
+                })}
+              </ToggleButtonGroup>
+            </div>
+          ) : null}
+
+          <div className='min-h-[200px] sm:min-h-[280px]'>
+            {loading ? (
+              <div className='grid place-items-center py-16'>
+                <Spinner size='lg' />
+              </div>
+            ) : null}
+
+            {!loading && searchError ? (
+              <div className='flex flex-col items-center gap-3 py-16 text-center'>
+                <AlertCircle {...iconEmpty} className='text-danger' aria-hidden />
+                <p className='text-muted'>{searchError}</p>
+                <Button variant='primary' onPress={() => void runSearch()} className={footerButtonClassName}>
+                  {t('Retry')}
+                </Button>
+              </div>
+            ) : null}
+
+            {!loading && emptyMessage ? (
+              <div className='flex flex-col items-center gap-2 py-16 text-center text-muted'>
+                <SearchX {...iconEmpty} aria-hidden />
+                <p>{emptyMessage}</p>
+              </div>
+            ) : null}
+
+            {!loading && sortedResults.length > 0 ? (
+              <>
+                <SearchResultsGrid
+                  results={sortedResults}
+                  adding={adding}
+                  addingKey={addingKey}
+                  resultDedupeKey={resultDedupeKey}
+                  formatSize={item => formatSizeToClassicUnits(parseSizeToBytes(item.Size || '0'))}
+                  onAdd={item => void handleAdd(item)}
+                />
+                {showLoadMore ? (
+                  <div className='mt-4 flex justify-center'>
+                    <Button
+                      variant='secondary'
+                      onPress={() => handleLoadMore()}
+                      isDisabled={loadingMore}
+                      className={footerButtonClassName}
+                    >
+                      {loadingMore ? <Spinner size='sm' color='current' /> : t('Torznab.LoadMore')}
+                    </Button>
+                  </div>
+                ) : null}
+              </>
+            ) : null}
           </div>
-        ) : null}
-
-        <div className='min-h-[280px]'>
-          {loading ? (
-            <div className='grid place-items-center py-16'>
-              <Spinner size='lg' />
-            </div>
-          ) : null}
-
-          {!loading && searchError ? (
-            <div className='flex flex-col items-center gap-3 py-16 text-center'>
-              <AlertCircle {...iconEmpty} className='text-danger' aria-hidden />
-              <p className='text-muted'>{searchError}</p>
-              <Button variant='primary' onPress={() => void runSearch()} className={footerButtonClassName}>
-                {t('Retry')}
-              </Button>
-            </div>
-          ) : null}
-
-          {!loading && emptyMessage ? (
-            <div className='flex flex-col items-center gap-2 py-16 text-center text-muted'>
-              <SearchX {...iconEmpty} aria-hidden />
-              <p>{emptyMessage}</p>
-            </div>
-          ) : null}
-
-          {!loading && sortedResults.length > 0 ? (
-            <>
-              <SearchResultsGrid
-                results={sortedResults}
-                adding={adding}
-                addingKey={addingKey}
-                resultDedupeKey={resultDedupeKey}
-                formatSize={item => formatSizeToClassicUnits(parseSizeToBytes(item.Size || '0'))}
-                onAdd={item => void handleAdd(item)}
-              />
-              {showLoadMore ? (
-                <div className='mt-4 flex justify-center'>
-                  <Button
-                    variant='secondary'
-                    onPress={() => handleLoadMore()}
-                    isDisabled={loadingMore}
-                    className={footerButtonClassName}
-                  >
-                    {loadingMore ? <Spinner size='sm' color='current' /> : t('Torznab.LoadMore')}
-                  </Button>
-                </div>
-              ) : null}
-            </>
-          ) : null}
         </div>
       </Modal.Body>
-      <Modal.Footer>
-        <Button onPress={onClose} variant='secondary' className={footerButtonClassName}>
-          {t('Close')}
-        </Button>
-      </Modal.Footer>
+      {isMobile ? null : (
+        <Modal.Footer className='shrink-0'>
+          <Button onPress={onClose} variant='secondary'>
+            {t('Close')}
+          </Button>
+        </Modal.Footer>
+      )}
     </AppDialog>
   )
 }

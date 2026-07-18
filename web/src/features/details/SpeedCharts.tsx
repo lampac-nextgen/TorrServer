@@ -9,6 +9,8 @@ const CHART_HEIGHT = 96
 interface SpeedChartsProps {
   downloadSpeed?: number | null
   uploadSpeed?: number | null
+  /** Hide speed legend + shorter chart — used when hero already shows live speeds. */
+  compact?: boolean
 }
 
 function buildAreaPath(values: number[], max: number): { line: string; area: string } {
@@ -25,7 +27,7 @@ function buildAreaPath(values: number[], max: number): { line: string; area: str
 }
 
 /** Live download/upload sparkline for the torrent overview tab. */
-export default function SpeedCharts({ downloadSpeed, uploadSpeed }: SpeedChartsProps) {
+export default function SpeedCharts({ downloadSpeed, uploadSpeed, compact = false }: SpeedChartsProps) {
   const { t } = useTranslation()
   const [downloadHistory, setDownloadHistory] = useState<number[]>(() => Array(HISTORY_LENGTH).fill(0))
   const [uploadHistory, setUploadHistory] = useState<number[]>(() => Array(HISTORY_LENGTH).fill(0))
@@ -44,23 +46,27 @@ export default function SpeedCharts({ downloadSpeed, uploadSpeed }: SpeedChartsP
   const uploadPath = useMemo(() => buildAreaPath(uploadHistory, peak), [uploadHistory, peak])
 
   return (
-    <div className='w-full min-w-0 rounded-xl border border-border bg-surface-secondary p-4'>
-      <div className='mb-3 flex flex-wrap items-center gap-4'>
-        <div className='flex items-center gap-2'>
-          <span className='size-2.5 rounded-full bg-accent' aria-hidden />
-          <span className='text-xs text-muted'>{t('DownloadSpeed')}</span>
-          <span className='text-sm font-bold tabular-nums text-foreground'>{humanizeSpeed(downloadSpeed)}</span>
+    <div
+      className={`w-full min-w-0 rounded-xl border border-border bg-surface-secondary ${compact ? 'p-2.5' : 'p-4'}`}
+    >
+      {compact ? null : (
+        <div className='mb-3 flex flex-wrap items-center gap-4'>
+          <div className='flex items-center gap-2'>
+            <span className='size-2.5 rounded-full bg-accent' aria-hidden />
+            <span className='text-xs text-muted'>{t('DownloadSpeed')}</span>
+            <span className='text-sm font-bold tabular-nums text-foreground'>{humanizeSpeed(downloadSpeed)}</span>
+          </div>
+          <div className='flex items-center gap-2'>
+            <span className='size-2.5 rounded-full bg-warning' aria-hidden />
+            <span className='text-xs text-muted'>{t('UploadSpeed')}</span>
+            <span className='text-sm font-bold tabular-nums text-foreground'>{humanizeSpeed(uploadSpeed)}</span>
+          </div>
         </div>
-        <div className='flex items-center gap-2'>
-          <span className='size-2.5 rounded-full bg-warning' aria-hidden />
-          <span className='text-xs text-muted'>{t('UploadSpeed')}</span>
-          <span className='text-sm font-bold tabular-nums text-foreground'>{humanizeSpeed(uploadSpeed)}</span>
-        </div>
-      </div>
+      )}
 
       <svg
         viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
-        className='h-[110px] w-full'
+        className={`w-full ${compact ? 'h-16' : 'h-[110px]'}`}
         preserveAspectRatio='none'
         aria-hidden
       >

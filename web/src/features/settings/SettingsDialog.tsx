@@ -452,30 +452,49 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
           </Tabs.Root>
         )}
       </Modal.Body>
-      <Modal.Footer
-        className={isMobile ? 'flex shrink-0 flex-col-reverse gap-2 sm:flex-row sm:justify-end' : 'shrink-0'}
-      >
-        <div className={isMobile ? 'grid grid-cols-2 gap-2' : 'contents'}>
-          <Button
-            onPress={() => void handleResetDefaults()}
-            isDisabled={loading || saving}
-            variant='outline'
-            className={footerButtonClassName}
-          >
-            {t('SettingsDialog.ResetToDefault')}
-          </Button>
-          <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName} autoFocus>
-            {t('Cancel')}
-          </Button>
-        </div>
-        <Button
-          variant='primary'
-          onPress={() => void handleSave()}
-          isDisabled={loading || saving}
-          className={isMobile ? `${footerButtonClassName || ''} w-full`.trim() : footerButtonClassName}
-        >
-          {saving ? <Spinner size='sm' color='current' /> : t('Save')}
-        </Button>
+      <Modal.Footer className='shrink-0'>
+        {isMobile ? (
+          <div className='flex w-full gap-2'>
+            <Button
+              onPress={() => void handleResetDefaults()}
+              isDisabled={loading || saving}
+              variant='outline'
+              className={`${footerButtonClassName || ''} flex-1`.trim()}
+            >
+              {t('SettingsDialog.ResetToDefault')}
+            </Button>
+            <Button
+              variant='primary'
+              onPress={() => void handleSave()}
+              isDisabled={loading || saving}
+              className={`${footerButtonClassName || ''} flex-1`.trim()}
+            >
+              {saving ? <Spinner size='sm' color='current' /> : t('Save')}
+            </Button>
+          </div>
+        ) : (
+          <>
+            <Button
+              onPress={() => void handleResetDefaults()}
+              isDisabled={loading || saving}
+              variant='outline'
+              className={footerButtonClassName}
+            >
+              {t('SettingsDialog.ResetToDefault')}
+            </Button>
+            <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName} autoFocus>
+              {t('Cancel')}
+            </Button>
+            <Button
+              variant='primary'
+              onPress={() => void handleSave()}
+              isDisabled={loading || saving}
+              className={footerButtonClassName}
+            >
+              {saving ? <Spinner size='sm' color='current' /> : t('Save')}
+            </Button>
+          </>
+        )}
       </Modal.Footer>
     </AppDialog>
   )

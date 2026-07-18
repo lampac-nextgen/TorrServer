@@ -201,16 +201,17 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
       onClose={onClose}
       size='md'
       fullScreen={isFullScreenBreakpoint}
+      dialogClassName='flex flex-col overflow-hidden'
       dialogStyle={isFullScreenBreakpoint ? undefined : DIALOG_SHEET_M}
     >
-      <Modal.Header>
+      <Modal.Header className='shrink-0'>
         <Modal.Heading>
           {t('AddNewTorrent')} ({visibleFiles.length}
           {skippedCount > 0 ? ` · ${skippedCount} ${t('TorrentInDb')}` : ''})
         </Modal.Heading>
         <Modal.CloseTrigger aria-label={t('Close')} />
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body className='min-h-0 flex-1 overflow-y-auto overscroll-contain'>
         {enriching ? (
           <div className='grid place-items-center py-8'>
             <Spinner size='lg' />
@@ -290,7 +291,7 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
           </div>
         )}
       </Modal.Body>
-      <Modal.Footer>
+      <Modal.Footer className='shrink-0'>
         <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName}>
           {t('Cancel')}
         </Button>
