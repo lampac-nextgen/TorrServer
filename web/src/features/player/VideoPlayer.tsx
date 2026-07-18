@@ -1,26 +1,26 @@
+import {
+  Alert,
+  Button,
+  ListBox,
+  Modal,
+  Popover,
+  Slider,
+  Spinner,
+  Tooltip,
+  useMediaQuery,
+  useOverlayState,
+} from '@heroui/react'
+import {
+  Captions,
+  Maximize,
+  Minimize,
+  Pause,
+  Play,
+  Volume2,
+  VolumeX,
+  X,
+} from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import Alert from '@mui/material/Alert'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import CircularProgress from '@mui/material/CircularProgress'
-import Dialog from '@mui/material/Dialog'
-import DialogContent from '@mui/material/DialogContent'
-import DialogTitle from '@mui/material/DialogTitle'
-import IconButton from '@mui/material/IconButton'
-import Menu from '@mui/material/Menu'
-import MenuItem from '@mui/material/MenuItem'
-import Slider from '@mui/material/Slider'
-import Tooltip from '@mui/material/Tooltip'
-import Typography from '@mui/material/Typography'
-import useMediaQuery from '@mui/material/useMediaQuery'
-import ClosedCaptionIcon from '@mui/icons-material/ClosedCaption'
-import CloseIcon from '@mui/icons-material/Close'
-import FullscreenIcon from '@mui/icons-material/Fullscreen'
-import FullscreenExitIcon from '@mui/icons-material/FullscreenExit'
-import PauseIcon from '@mui/icons-material/Pause'
-import PlayArrowIcon from '@mui/icons-material/PlayArrow'
-import VolumeOffIcon from '@mui/icons-material/VolumeOff'
-import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import Hls from 'hls.js'
 import { useTranslation } from 'react-i18next'
 import { queryMax } from 'shared/theme/breakpoints'
@@ -102,7 +102,15 @@ export default function VideoPlayer({
   const [fullscreen, setFullscreen] = useState(false)
   const [subtitleTracks, setSubtitleTracks] = useState<SubtitleTrackInfo[]>([])
   const [subtitleTrack, setSubtitleTrack] = useState(-1)
-  const [subtitleAnchor, setSubtitleAnchor] = useState<HTMLElement | null>(null)
+  const [subtitlesOpen, setSubtitlesOpen] = useState(false)
+
+  const state = useOverlayState({
+    isOpen: open,
+    onOpenChange: next => {
+      if (!next) closePlayer()
+      else setOpen(true)
+    },
+  })
 
   useSyncModalOpen(open)
 
@@ -228,16 +236,16 @@ export default function VideoPlayer({
     setLoading(false)
   }
 
-  const handleSeek = (_: Event, val: number | number[]) => {
+  const handleSeek = (value: number | number[]) => {
     if (!videoRef.current) return
-    const next = Array.isArray(val) ? val[0] : val
+    const next = Array.isArray(value) ? value[0] : value
     videoRef.current.currentTime = next
     setCurrentTime(next)
   }
 
-  const handleVolume = (_: Event, val: number | number[]) => {
+  const handleVolume = (value: number | number[]) => {
     if (!videoRef.current) return
-    const next = Array.isArray(val) ? val[0] : val
+    const next = Array.isArray(value) ? value[0] : value
     const v = next / 100
     videoRef.current.volume = v
     setVolume(v)
@@ -260,7 +268,7 @@ export default function VideoPlayer({
       hlsPlayer.subtitleTrack = index
     }
     setSubtitleTrack(index)
-    setSubtitleAnchor(null)
+    setSubtitlesOpen(false)
   }
 
   const openPlayer = () => {
@@ -272,7 +280,7 @@ export default function VideoPlayer({
   const closePlayer = () => {
     setOpen(false)
     setMediaError(false)
-    setSubtitleAnchor(null)
+    setSubtitlesOpen(false)
     onClose?.()
   }
 
@@ -280,134 +288,143 @@ export default function VideoPlayer({
     <>
       {showTrigger &&
         (inlineTrigger ? (
-          <Button
-            variant='outlined'
-            color='primary'
-            size='small'
-            onClick={openPlayer}
-            sx={{ flex: '1 1 auto', minWidth: 72, maxWidth: '100%' }}
-          >
+          <Button variant='secondary' size='sm' onPress={openPlayer} className='min-w-[72px] max-w-full flex-1'>
             {t('Play')}
           </Button>
         ) : (
-          <Button variant='outlined' color='primary' startIcon={<PlayArrowIcon />} onClick={openPlayer}>
+          <Button variant='secondary' onPress={openPlayer}>
+            <Play className='size-4' />
             {t('Play')}
           </Button>
         ))}
 
-      <Dialog
-        open={open}
-        onClose={closePlayer}
-        maxWidth='lg'
-        fullWidth
-        fullScreen={isMobile}
-        disableEnforceFocus
-        className={isMobile ? 'ts-immersive' : undefined}
-        sx={{ zIndex: theme => theme.zIndex.modal + 1 }}
-      >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 1 }}>
-          <Typography variant='h6' noWrap sx={{ flex: 1 }}>
-            {title || t('Play')}
-          </Typography>
-          <IconButton aria-label={t('Close', { defaultValue: 'Close' })} onClick={closePlayer}>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
+      <Modal.Root state={state}>
+        <Modal.Backdrop>
+          <Modal.Container size={isMobile ? 'full' : 'lg'} scroll='inside' className={isMobile ? 'ts-immersive' : undefined}>
+            <Modal.Dialog>
+              <Modal.Header className='flex items-center gap-2 py-2'>
+                <Modal.Heading className='min-w-0 flex-1 truncate text-base'>{title || t('Play')}</Modal.Heading>
+                <Modal.CloseTrigger aria-label={t('Close', { defaultValue: 'Close' })}>
+                  <X className='size-4' />
+                </Modal.CloseTrigger>
+              </Modal.Header>
 
-        {mediaError && (
-          <Alert
-            severity='error'
-            action={
-              downloadSrc ? (
-                <Button color='inherit' size='small' component='a' href={downloadSrc} target='_blank' rel='noreferrer'>
-                  {t('OpenLink')}
-                </Button>
-              ) : undefined
-            }
-            sx={{ borderRadius: 0 }}
-          >
-            {t('PlaybackError')}
-          </Alert>
-        )}
-
-        <DialogContent sx={{ p: 0, bgcolor: '#000', display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ position: 'relative', width: '100%', bgcolor: '#000', minHeight: isMobile ? 240 : 360 }}>
-            <Box
-              component='video'
-              autoPlay
-              ref={setVideoNode}
-              src={hls ? undefined : videoSrc}
-              onTimeUpdate={handleTimeUpdate}
-              onLoadedMetadata={handleLoaded}
-              onPlay={() => setPlaying(true)}
-              onPause={() => setPlaying(false)}
-              sx={{ width: '100%', maxHeight: isMobile ? 'calc(100dvh - 180px)' : '70vh', display: 'block' }}
-            />
-            {loading && (
-              <Box sx={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>
-                <CircularProgress sx={{ color: '#fff' }} />
-              </Box>
-            )}
-          </Box>
-
-          <Box sx={{ p: 1.5, bgcolor: 'background.paper' }}>
-            <Slider value={currentTime} max={duration || 0} onChange={handleSeek} size='small' sx={{ mb: 1 }} />
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-              <Tooltip title={playing ? t('Pause') : t('Play')}>
-                <IconButton onClick={handlePlayPause} size='small'>
-                  {playing ? <PauseIcon /> : <PlayArrowIcon />}
-                </IconButton>
-              </Tooltip>
-              <Typography variant='caption' sx={{ minWidth: 100 }}>
-                {formatTime(currentTime)} / {formatTime(duration)}
-              </Typography>
-              <Tooltip title={muted ? t('Unmute') : t('Mute')}>
-                <IconButton onClick={toggleMute} size='small'>
-                  {muted ? <VolumeOffIcon /> : <VolumeUpIcon />}
-                </IconButton>
-              </Tooltip>
-              <Slider value={volume * 100} onChange={handleVolume} size='small' sx={{ width: 100 }} />
-              {subtitleTracks.length > 0 ? (
-                <>
-                  <Tooltip title={t('Subtitles', { defaultValue: 'Subtitles' })}>
-                    <IconButton
-                      size='small'
-                      color={subtitleTrack >= 0 ? 'secondary' : 'default'}
-                      onClick={e => setSubtitleAnchor(e.currentTarget)}
-                    >
-                      <ClosedCaptionIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Menu
-                    anchorEl={subtitleAnchor}
-                    open={Boolean(subtitleAnchor)}
-                    onClose={() => setSubtitleAnchor(null)}
-                  >
-                    <MenuItem selected={subtitleTrack === -1} onClick={() => changeSubtitleTrack(-1)}>
-                      {t('Off', { defaultValue: 'Off' })}
-                    </MenuItem>
-                    {subtitleTracks.map(track => (
-                      <MenuItem
-                        key={track.id}
-                        selected={subtitleTrack === track.id}
-                        onClick={() => changeSubtitleTrack(track.id)}
+              {mediaError ? (
+                <Alert status='danger' className='rounded-none'>
+                  <Alert.Content>
+                    <Alert.Title>{t('PlaybackError')}</Alert.Title>
+                    {downloadSrc ? (
+                      <Button
+                        variant='ghost'
+                        size='sm'
+                        onPress={() => window.open(downloadSrc, '_blank', 'noopener,noreferrer')}
                       >
-                        {subtitleLabel(track)}
-                      </MenuItem>
-                    ))}
-                  </Menu>
-                </>
+                        {t('OpenLink')}
+                      </Button>
+                    ) : null}
+                  </Alert.Content>
+                </Alert>
               ) : null}
-              <Box sx={{ flexGrow: 1 }} />
-              <Tooltip title={fullscreen ? t('ExitFullscreen') : t('Fullscreen')}>
-                <IconButton onClick={fullscreen ? exitFull : enterFull} size='small'>
-                  {fullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-                </IconButton>
-              </Tooltip>
-            </Box>
-          </Box>
-        </DialogContent>
-      </Dialog>
+
+              <Modal.Body className='gap-0 bg-black p-0'>
+                <div className='relative w-full bg-black' style={{ minHeight: isMobile ? 240 : 360 }}>
+                  <video
+                    autoPlay
+                    ref={setVideoNode}
+                    src={hls ? undefined : videoSrc}
+                    onTimeUpdate={handleTimeUpdate}
+                    onLoadedMetadata={handleLoaded}
+                    onPlay={() => setPlaying(true)}
+                    onPause={() => setPlaying(false)}
+                    className='block w-full'
+                    style={{ maxHeight: isMobile ? 'calc(100dvh - 180px)' : '70vh' }}
+                  />
+                  {loading ? (
+                    <div className='absolute inset-0 grid place-items-center'>
+                      <Spinner size='lg' className='text-white' />
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className='bg-content1 p-3'>
+                  <Slider value={currentTime} maxValue={duration || 0} onChange={handleSeek} className='mb-3'>
+                    <Slider.Track>
+                      <Slider.Fill />
+                      <Slider.Thumb />
+                    </Slider.Track>
+                  </Slider>
+                  <div className='flex flex-wrap items-center gap-2'>
+                    <Tooltip.Root>
+                      <Tooltip.Trigger>
+                        <Button isIconOnly size='sm' variant='ghost' onPress={handlePlayPause}>
+                          {playing ? <Pause className='size-4' /> : <Play className='size-4' />}
+                        </Button>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content>{playing ? t('Pause') : t('Play')}</Tooltip.Content>
+                    </Tooltip.Root>
+                    <span className='min-w-[100px] text-xs tabular-nums'>
+                      {formatTime(currentTime)} / {formatTime(duration)}
+                    </span>
+                    <Tooltip.Root>
+                      <Tooltip.Trigger>
+                        <Button isIconOnly size='sm' variant='ghost' onPress={toggleMute}>
+                          {muted ? <VolumeX className='size-4' /> : <Volume2 className='size-4' />}
+                        </Button>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content>{muted ? t('Unmute') : t('Mute')}</Tooltip.Content>
+                    </Tooltip.Root>
+                    <Slider value={volume * 100} maxValue={100} onChange={handleVolume} className='w-24'>
+                      <Slider.Track>
+                        <Slider.Fill />
+                        <Slider.Thumb />
+                      </Slider.Track>
+                    </Slider>
+                    {subtitleTracks.length > 0 ? (
+                      <Popover isOpen={subtitlesOpen} onOpenChange={setSubtitlesOpen}>
+                        <Popover.Trigger>
+                          <Button
+                            isIconOnly
+                            size='sm'
+                            variant={subtitleTrack >= 0 ? 'primary' : 'ghost'}
+                            aria-label={t('Subtitles', { defaultValue: 'Subtitles' })}
+                          >
+                            <Captions className='size-4' />
+                          </Button>
+                        </Popover.Trigger>
+                        <Popover.Content>
+                          <ListBox
+                            selectedKeys={[String(subtitleTrack)]}
+                            onSelectionChange={keys => {
+                              const value = [...keys][0]
+                              changeSubtitleTrack(value == null ? -1 : Number(value))
+                            }}
+                          >
+                            <ListBox.Item id='-1'>{t('Off', { defaultValue: 'Off' })}</ListBox.Item>
+                            {subtitleTracks.map(track => (
+                              <ListBox.Item key={track.id} id={String(track.id)}>
+                                {subtitleLabel(track)}
+                              </ListBox.Item>
+                            ))}
+                          </ListBox>
+                        </Popover.Content>
+                      </Popover>
+                    ) : null}
+                    <div className='flex-1' />
+                    <Tooltip.Root>
+                      <Tooltip.Trigger>
+                        <Button isIconOnly size='sm' variant='ghost' onPress={fullscreen ? exitFull : enterFull}>
+                          {fullscreen ? <Minimize className='size-4' /> : <Maximize className='size-4' />}
+                        </Button>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content>{fullscreen ? t('ExitFullscreen') : t('Fullscreen')}</Tooltip.Content>
+                    </Tooltip.Root>
+                  </div>
+                </div>
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal.Root>
     </>
   )
 }

@@ -1,20 +1,7 @@
+import { Button, Input, Label, ListBox, Modal, Select, Spinner, TextField } from '@heroui/react'
+import { Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import DeleteIcon from '@mui/icons-material/Delete'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import CircularProgress from '@mui/material/CircularProgress'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogTitle from '@mui/material/DialogTitle'
-import FormControl from '@mui/material/FormControl'
-import IconButton from '@mui/material/IconButton'
-import InputLabel from '@mui/material/InputLabel'
-import MenuItem from '@mui/material/MenuItem'
-import Select from '@mui/material/Select'
-import Stack from '@mui/material/Stack'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
-import useMediaQuery from '@mui/material/useMediaQuery'
+import { useMediaQuery } from '@heroui/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { MultiAddFileState } from 'shared/api/types'
@@ -38,8 +25,6 @@ export interface MultiAddDialogProps {
   open: boolean
   onClose: () => void
 }
-
-const touchTargetSx = { minHeight: 44, minWidth: 44 }
 
 function createInitialState(files: File[]): MultiAddFileState[] {
   return files.map(file => ({
@@ -175,127 +160,117 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
     }
   }
 
-  const footerButtonSx = isMobile ? { minHeight: 44, px: 2.5 } : undefined
+  const footerButtonClassName = isMobile ? 'min-h-11 px-4' : undefined
 
   return (
-    <AppDialog open={open} onClose={onClose} fullWidth maxWidth='md'>
-      <DialogTitle>
-        {t('AddNewTorrent', { defaultValue: 'Add torrent' })} ({visibleFiles.length}
-        {skippedCount > 0 ? ` · ${skippedCount} ${t('AlreadyExists', { defaultValue: 'exist' })}` : ''})
-      </DialogTitle>
-      <DialogContent>
+    <AppDialog open={open} onClose={onClose} size='md'>
+      <Modal.Header>
+        <Modal.Heading>
+          {t('AddNewTorrent', { defaultValue: 'Add torrent' })} ({visibleFiles.length}
+          {skippedCount > 0 ? ` · ${skippedCount} ${t('AlreadyExists', { defaultValue: 'exist' })}` : ''})
+        </Modal.Heading>
+        <Modal.CloseTrigger />
+      </Modal.Header>
+      <Modal.Body>
         {enriching ? (
-          <Box sx={{ display: 'grid', placeItems: 'center', py: 4 }}>
-            <CircularProgress />
-          </Box>
+          <div className='grid place-items-center py-8'>
+            <Spinner size='lg' />
+          </div>
         ) : (
-          <Stack spacing={2} sx={{ pt: 1 }}>
+          <div className='space-y-4'>
             {fileList.map((item, index) => {
               if (item.alreadyExists) {
                 return (
-                  <Typography key={`${item.file.name}-exists-${index}`} variant='body2' color='text.secondary'>
+                  <p key={`${item.file.name}-exists-${index}`} className='text-sm text-default-500'>
                     {t('TorrentAlreadyInList', {
                       defaultValue: 'Already in list: {{name}}',
                       name: item.title || item.file.name,
                     })}
-                  </Typography>
+                  </p>
                 )
               }
               return (
-                <Box
+                <div
                   key={`${item.file.name}-${index}`}
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: { xs: '1fr auto', sm: item.poster ? '72px 1fr auto' : '1fr auto' },
-                    gap: 1.5,
-                    alignItems: 'start',
-                    borderBottom: 1,
-                    borderColor: 'divider',
-                    pb: 2,
-                  }}
+                  className={`grid gap-3 border-b border-default-200 pb-4 ${
+                    item.poster ? 'sm:grid-cols-[72px_1fr_auto]' : 'sm:grid-cols-[1fr_auto]'
+                  }`}
                 >
                   {item.poster ? (
-                    <Box
-                      component='img'
+                    <img
                       src={item.poster}
                       alt=''
-                      sx={{
-                        width: 72,
-                        height: 108,
-                        objectFit: 'cover',
-                        borderRadius: 1,
-                        display: { xs: 'none', sm: 'block' },
-                      }}
+                      className='hidden h-[108px] w-[72px] rounded-lg object-cover sm:block'
                     />
                   ) : null}
-                  <Stack spacing={1.5}>
-                    <Typography variant='subtitle2' color='text.secondary'>
+                  <div className='space-y-3'>
+                    <p className='text-sm text-default-500'>
                       {index + 1}. {item.file.name}
-                    </Typography>
+                    </p>
+                    <TextField value={item.title} onChange={value => handleUpdate(index, { title: value })}>
+                      <Label>{t('AddDialog.TitleBlank', { defaultValue: 'Title' })}</Label>
+                      <Input />
+                    </TextField>
                     <TextField
-                      fullWidth
-                      size='small'
-                      label={t('AddDialog.TitleBlank', { defaultValue: 'Title' })}
-                      value={item.title}
-                      onChange={e => handleUpdate(index, { title: e.target.value })}
-                    />
-                    <TextField
-                      fullWidth
-                      size='small'
-                      label={t('Poster', { defaultValue: 'Poster URL' })}
                       value={item.poster}
-                      onChange={e =>
-                        handleUpdate(index, { poster: e.target.value, isPosterOk: Boolean(e.target.value) })
-                      }
-                    />
-                    <FormControl fullWidth size='small'>
-                      <InputLabel>{t('AddDialog.CategoryHelperText', { defaultValue: 'Category' })}</InputLabel>
-                      <Select
-                        label={t('AddDialog.CategoryHelperText', { defaultValue: 'Category' })}
-                        value={item.category}
-                        onChange={e => handleUpdate(index, { category: e.target.value })}
-                      >
-                        <MenuItem value=''>
-                          <em>—</em>
-                        </MenuItem>
-                        {TORRENT_CATEGORIES.map(cat => (
-                          <MenuItem key={cat.key} value={cat.key}>
-                            {t(cat.name)}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Stack>
-                  <IconButton
+                      onChange={value => handleUpdate(index, { poster: value, isPosterOk: Boolean(value) })}
+                    >
+                      <Label>{t('Poster', { defaultValue: 'Poster URL' })}</Label>
+                      <Input />
+                    </TextField>
+                    <Select
+                      selectedKey={item.category || 'none'}
+                      onSelectionChange={key => handleUpdate(index, { category: key === 'none' ? '' : String(key) })}
+                    >
+                      <Label>{t('AddDialog.CategoryHelperText', { defaultValue: 'Category' })}</Label>
+                      <Select.Trigger>
+                        <Select.Value />
+                        <Select.Indicator />
+                      </Select.Trigger>
+                      <Select.Popover>
+                        <ListBox>
+                          <ListBox.Item id='none'>—</ListBox.Item>
+                          {TORRENT_CATEGORIES.map(cat => (
+                            <ListBox.Item key={cat.key} id={cat.key}>
+                              {t(cat.name)}
+                            </ListBox.Item>
+                          ))}
+                        </ListBox>
+                      </Select.Popover>
+                    </Select>
+                  </div>
+                  <Button
+                    isIconOnly
+                    variant='ghost'
                     aria-label={t('Delete', { defaultValue: 'Delete' })}
-                    onClick={() => handleRemove(index)}
-                    sx={touchTargetSx}
+                    onPress={() => handleRemove(index)}
+                    className='min-h-11 min-w-11'
                   >
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
+                    <Trash2 className='size-4' />
+                  </Button>
+                </div>
               )
             })}
-          </Stack>
+          </div>
         )}
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose} disabled={saving} sx={footerButtonSx}>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName}>
           {t('Cancel')}
         </Button>
         <Button
-          variant='contained'
-          onClick={() => void handleSaveAll()}
-          disabled={saving || enriching || visibleFiles.length === 0}
-          sx={footerButtonSx}
+          variant='primary'
+          onPress={() => void handleSaveAll()}
+          isDisabled={saving || enriching || visibleFiles.length === 0}
+          className={footerButtonClassName}
         >
           {saving ? (
-            <CircularProgress size={20} color='inherit' />
+            <Spinner size='sm' color='current' />
           ) : (
             `${t('Add', { defaultValue: 'Add' })} (${visibleFiles.length})`
           )}
         </Button>
-      </DialogActions>
+      </Modal.Footer>
     </AppDialog>
   )
 }

@@ -1,14 +1,5 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import CircularProgress from '@mui/material/CircularProgress'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogTitle from '@mui/material/DialogTitle'
-import FormHelperText from '@mui/material/FormHelperText'
-import Tab from '@mui/material/Tab'
-import Tabs from '@mui/material/Tabs'
-import useMediaQuery from '@mui/material/useMediaQuery'
+import { Button, Description, Modal, Spinner, Tabs, useMediaQuery } from '@heroui/react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { BTSets } from 'shared/api/types'
@@ -44,11 +35,6 @@ export interface SettingsDialogProps {
 }
 
 type SettingsTab = 'primary' | 'network' | 'features' | 'storage' | 'app' | 'gstreamer' | 'torznab'
-
-function TabPanel({ children, active, tab }: { children: ReactNode; active: SettingsTab; tab: SettingsTab }) {
-  if (active !== tab) return null
-  return <Box sx={{ pt: 2 }}>{children}</Box>
-}
 
 export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const { t } = useTranslation()
@@ -186,31 +172,30 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
     }
   }
 
-  const footerButtonSx = isMobile ? { minHeight: 44, px: 2.5 } : undefined
+  const footerButtonClassName = isMobile ? 'min-h-11 px-4' : undefined
 
   return (
-    <AppDialog open={open} onClose={onClose} fullWidth maxWidth='md'>
-      <DialogTitle>{t('Settings')}</DialogTitle>
-      <DialogContent>
+    <AppDialog open={open} onClose={onClose} size='md'>
+      <Modal.Header>
+        <Modal.Heading>{t('Settings')}</Modal.Heading>
+        <Modal.CloseTrigger />
+      </Modal.Header>
+      <Modal.Body>
         {loading ? (
-          <Box sx={{ display: 'grid', placeItems: 'center', py: 6 }}>
-            <CircularProgress />
-          </Box>
+          <div className='grid place-items-center py-12'>
+            <Spinner size='lg' />
+          </div>
         ) : (
-          <>
-            <Tabs
-              value={tab}
-              onChange={(_, v) => setTab(v as SettingsTab)}
-              variant='scrollable'
-              scrollButtons='auto'
-              sx={{ borderBottom: 1, borderColor: 'divider', mx: { xs: -1, sm: -1.5 } }}
-            >
+          <Tabs.Root selectedKey={tab} onSelectionChange={key => setTab(String(key) as SettingsTab)}>
+            <Tabs.List aria-label={t('Settings')} className='overflow-x-auto'>
               {visibleTabs.map(item => (
-                <Tab key={item.id} value={item.id} label={item.label} sx={isMobile ? { minHeight: 44 } : undefined} />
+                <Tabs.Tab key={item.id} id={item.id} className={isMobile ? 'min-h-11' : undefined}>
+                  {item.label}
+                </Tabs.Tab>
               ))}
-            </Tabs>
+            </Tabs.List>
 
-            <TabPanel active={tab} tab='primary'>
+            <Tabs.Panel id='primary' className='pt-4'>
               <PrimarySettingsPanel
                 settings={settings}
                 cacheSizeMb={cacheSizeMb}
@@ -218,68 +203,72 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
                 onUpdate={updateSetting}
                 onBoolSwitch={handleBoolSwitch}
               />
-            </TabPanel>
+            </Tabs.Panel>
 
-            <TabPanel active={tab} tab='network'>
+            <Tabs.Panel id='network' className='pt-4'>
               <NetworkSettingsPanel
                 settings={settings}
                 boolChecked={boolChecked}
                 onUpdate={updateSetting}
                 onBoolSwitch={handleBoolSwitch}
               />
-            </TabPanel>
+            </Tabs.Panel>
 
-            <TabPanel active={tab} tab='features'>
+            <Tabs.Panel id='features' className='pt-4'>
               <FeaturesSettingsPanel
                 settings={settings}
                 boolChecked={boolChecked}
                 onUpdate={updateSetting}
                 onBoolSwitch={handleBoolSwitch}
               />
-            </TabPanel>
+            </Tabs.Panel>
 
-            <TabPanel active={tab} tab='storage'>
+            <Tabs.Panel id='storage' className='pt-4'>
               <StorageSettingsPanel
                 settings={settings}
                 onBoolSwitch={handleBoolSwitch}
                 backends={storageBackends}
                 onBackendsChange={setStorageBackends}
               />
-            </TabPanel>
+            </Tabs.Panel>
 
-            <TabPanel active={tab} tab='app'>
-              <FormHelperText sx={{ mb: 2, mt: 0 }}>{t('SettingsDialog.AppTabHint')}</FormHelperText>
+            <Tabs.Panel id='app' className='pt-4'>
+              <Description className='mb-4'>{t('SettingsDialog.AppTabHint')}</Description>
               <TMDBSettingsSection settings={settings} updateSettings={updateSettingsPartial} />
               <MobilePlayersSection />
-            </TabPanel>
+            </Tabs.Panel>
 
             {gstAvailable ? (
-              <TabPanel active={tab} tab='gstreamer'>
+              <Tabs.Panel id='gstreamer' className='pt-4'>
                 <GStreamerSettingsPanel config={gstConfig} onChange={setGstConfig} />
                 <Button
-                  sx={{ mt: 2 }}
-                  variant='outlined'
-                  onClick={() => setGstConfig({ ...emptyGstConfig(), ...gstDefaults })}
+                  className='mt-4'
+                  variant='secondary'
+                  onPress={() => setGstConfig({ ...emptyGstConfig(), ...gstDefaults })}
                 >
                   {t('Reset', { defaultValue: 'Reset to defaults' })}
                 </Button>
-              </TabPanel>
+              </Tabs.Panel>
             ) : null}
 
-            <TabPanel active={tab} tab='torznab'>
-              <TorznabSettingsPanel settings={settings} onUpdate={updateSetting} footerButtonSx={footerButtonSx} />
-            </TabPanel>
-          </>
+            <Tabs.Panel id='torznab' className='pt-4'>
+              <TorznabSettingsPanel
+                settings={settings}
+                onUpdate={updateSetting}
+                footerButtonClassName={footerButtonClassName}
+              />
+            </Tabs.Panel>
+          </Tabs.Root>
         )}
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose} disabled={saving} sx={footerButtonSx} autoFocus>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName} autoFocus>
           {t('Cancel')}
         </Button>
-        <Button variant='contained' onClick={() => void handleSave()} disabled={loading || saving} sx={footerButtonSx}>
-          {saving ? <CircularProgress size={20} color='inherit' /> : t('Save')}
+        <Button variant='primary' onPress={() => void handleSave()} isDisabled={loading || saving} className={footerButtonClassName}>
+          {saving ? <Spinner size='sm' color='current' /> : t('Save')}
         </Button>
-      </DialogActions>
+      </Modal.Footer>
     </AppDialog>
   )
 }

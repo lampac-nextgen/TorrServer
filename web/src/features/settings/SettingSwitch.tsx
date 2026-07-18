@@ -1,6 +1,4 @@
-import ListItem from '@mui/material/ListItem'
-import ListItemText from '@mui/material/ListItemText'
-import Switch from '@mui/material/Switch'
+import { Description, Label, Switch } from '@heroui/react'
 
 /** Keys stored inverted in UI (switch ON = feature enabled). */
 export const DISABLE_SWITCH_IDS = new Set([
@@ -26,28 +24,16 @@ export function SettingSwitch({
   onChange: (id: string, checked: boolean) => void
 }) {
   return (
-    <ListItem
-      disableGutters
-      sx={{ minHeight: 48, py: 0.5, alignItems: 'flex-start' }}
-      secondaryAction={
-        <Switch
-          edge='end'
-          id={id}
-          checked={checked}
-          onChange={e => onChange(id, e.target.checked)}
-          slotProps={{ input: { 'aria-label': label } }}
-          sx={{ mt: 0.5 }}
-        />
-      }
-    >
-      <ListItemText
-        primary={label}
-        secondary={helper}
-        slotProps={{
-          secondary: { sx: { mt: 0.25, pr: 7 } },
-          primary: { sx: { pr: 7 } },
-        }}
-      />
-    </ListItem>
+    <div className='flex min-h-12 items-start justify-between gap-4 py-2'>
+      <div className='min-w-0 flex-1 pr-4'>
+        <Label htmlFor={id}>{label}</Label>
+        {helper ? <Description>{helper}</Description> : null}
+      </div>
+      <Switch id={id} isSelected={checked} onChange={value => onChange(id, value)}>
+        <Switch.Control>
+          <Switch.Thumb />
+        </Switch.Control>
+      </Switch>
+    </div>
   )
 }

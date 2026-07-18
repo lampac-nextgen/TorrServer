@@ -1,9 +1,6 @@
 import { useEffect } from 'react'
-import CssBaseline from '@mui/material/CssBaseline'
-import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles'
+import { Toaster } from 'sonner'
 
-import AppGlobalStyles from 'shared/theme/AppGlobalStyles'
-import { appTheme } from 'shared/theme/appTheme'
 import { ModalOpenProvider } from 'shared/ui/ModalOpenContext'
 import { AppSnackbarProvider } from 'shared/ui/Toast'
 
@@ -30,14 +27,11 @@ export default function App() {
   }, [])
 
   return (
-    <MuiThemeProvider theme={appTheme} defaultMode='system' modeStorageKey='ts-color-scheme' forceThemeRerender>
-      <ModalOpenProvider>
-        <AppGlobalStyles />
-        <CssBaseline />
-        <AppSnackbarProvider>
-          <Shell />
-        </AppSnackbarProvider>
-      </ModalOpenProvider>
-    </MuiThemeProvider>
+    <ModalOpenProvider>
+      <AppSnackbarProvider>
+        <Shell />
+        <Toaster richColors closeButton position='bottom-center' />
+      </AppSnackbarProvider>
+    </ModalOpenProvider>
   )
 }

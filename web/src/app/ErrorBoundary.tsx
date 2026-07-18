@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { Button } from '@heroui/react'
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -9,7 +10,7 @@ interface ErrorBoundaryState {
   message?: string
 }
 
-/** Plain HTML fallback — sits outside ThemeProvider. */
+/** Plain fallback — sits outside app providers. */
 export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state: ErrorBoundaryState = { hasError: false }
 
@@ -29,34 +30,14 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
     if (!this.state.hasError) return this.props.children
 
     return (
-      <div
-        style={{
-          minHeight: '100dvh',
-          display: 'grid',
-          placeItems: 'center',
-          padding: 24,
-          textAlign: 'center',
-          gap: 16,
-          fontFamily: 'system-ui, sans-serif',
-        }}
-      >
-        <h1 style={{ margin: 0, fontSize: '1.5rem' }}>Something went wrong</h1>
-        {this.state.message ? <p style={{ margin: 0, color: '#666', maxWidth: 480 }}>{this.state.message}</p> : null}
-        <button
-          type='button'
-          onClick={this.handleReload}
-          style={{
-            padding: '10px 20px',
-            borderRadius: 8,
-            border: 'none',
-            background: '#00a572',
-            color: '#fff',
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
+      <div className='grid min-h-dvh place-items-center gap-4 p-6 text-center font-[family-name:var(--font-sans,system-ui,sans-serif)]'>
+        <h1 className='m-0 text-2xl font-semibold text-[var(--foreground,#e6f2ec)]'>Something went wrong</h1>
+        {this.state.message ? (
+          <p className='m-0 max-w-md text-sm text-[var(--muted,#8fafa0)]'>{this.state.message}</p>
+        ) : null}
+        <Button variant='primary' onPress={this.handleReload}>
           Reload
-        </button>
+        </Button>
       </div>
     )
   }

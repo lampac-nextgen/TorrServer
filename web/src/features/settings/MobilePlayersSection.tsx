@@ -1,11 +1,4 @@
-import List from '@mui/material/List'
-import ListItem from '@mui/material/ListItem'
-import ListItemText from '@mui/material/ListItemText'
-import Switch from '@mui/material/Switch'
-import Typography from '@mui/material/Typography'
-import FormHelperText from '@mui/material/FormHelperText'
-import Link from '@mui/material/Link'
-import Box from '@mui/material/Box'
+import { Description, Label, Link, Switch } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
 import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
 import { isAppleDevice, isDesktop, isMacOS } from 'shared/lib/platform'
@@ -29,28 +22,17 @@ function PlayerSwitch({
   onChange: (checked: boolean) => void
 }) {
   return (
-    <ListItem
-      disableGutters
-      sx={{ minHeight: 48, py: 0.5, alignItems: 'flex-start' }}
-      secondaryAction={
-        <Switch
-          edge='end'
-          checked={checked}
-          onChange={(_, next) => onChange(next)}
-          slotProps={{ input: { 'aria-label': label } }}
-          sx={{ mt: 0.5 }}
-        />
-      }
-    >
-      <ListItemText
-        primary={label}
-        secondary={helper}
-        slotProps={{
-          secondary: { sx: { mt: 0.25, pr: 7 } },
-          primary: { sx: { pr: 7 } },
-        }}
-      />
-    </ListItem>
+    <div className='flex min-h-12 items-start justify-between gap-4 py-2'>
+      <div className='min-w-0 flex-1 pr-4'>
+        <Label>{label}</Label>
+        <Description>{helper}</Description>
+      </div>
+      <Switch isSelected={checked} onChange={onChange}>
+        <Switch.Control>
+          <Switch.Thumb />
+        </Switch.Control>
+      </Switch>
+    </div>
   )
 }
 
@@ -66,12 +48,10 @@ export default function MobilePlayersSection() {
   const [isIinaUsed, setIsIinaUsed] = useLocalBoolPref(PLAYER_KEYS.iina)
 
   return (
-    <Box sx={{ mt: 3 }}>
-      <Typography variant='overline' color='text.secondary' sx={{ display: 'block', mb: 0.5 }}>
-        {t('SettingsDialog.MobileAppSettings')}
-      </Typography>
-      <FormHelperText sx={{ mb: 1, mt: 0 }}>{t('SettingsDialog.MobileAppInstantHint')}</FormHelperText>
-      <List disablePadding>
+    <div className='mt-6'>
+      <p className='mb-1 text-xs uppercase tracking-wide text-default-500'>{t('SettingsDialog.MobileAppSettings')}</p>
+      <Description className='mb-3'>{t('SettingsDialog.MobileAppInstantHint')}</Description>
+      <div className='divide-y divide-default-200'>
         <PlayerSwitch
           label={t('SettingsDialog.UseVLC')}
           helper={t('SettingsDialog.UseVLCHint')}
@@ -79,17 +59,12 @@ export default function MobilePlayersSection() {
           onChange={setIsVlcUsed}
         />
         {isDesktopPlatform ? (
-          <FormHelperText sx={{ mt: 0, mb: 1.5, pr: 7 }}>
+          <Description className='py-2 pr-8'>
             {t('SettingsDialog.UseVLCDesktopHintPrefix')}{' '}
-            <Link
-              href='https://github.com/northsea4/vlc-protocol'
-              target='_blank'
-              rel='noopener noreferrer'
-              color='secondary'
-            >
+            <Link href='https://github.com/northsea4/vlc-protocol' target='_blank' rel='noopener noreferrer'>
               vlc-protocol-handler
             </Link>
-          </FormHelperText>
+          </Description>
         ) : null}
 
         {isApple ? (
@@ -117,7 +92,7 @@ export default function MobilePlayersSection() {
             onChange={setIsIinaUsed}
           />
         ) : null}
-      </List>
-    </Box>
+      </div>
+    </div>
   )
 }

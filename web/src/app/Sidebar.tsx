@@ -1,21 +1,16 @@
 import type { ReactNode } from 'react'
-import Divider from '@mui/material/Divider'
-import List from '@mui/material/List'
-import ListItemButton from '@mui/material/ListItemButton'
-import ListItemIcon from '@mui/material/ListItemIcon'
-import ListItemText from '@mui/material/ListItemText'
-import Tooltip from '@mui/material/Tooltip'
-import AddIcon from '@mui/icons-material/Add'
-import SearchIcon from '@mui/icons-material/Search'
-import CategoryIcon from '@mui/icons-material/Category'
-import SettingsIcon from '@mui/icons-material/Settings'
-import InfoIcon from '@mui/icons-material/Info'
-import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew'
-import DeleteIcon from '@mui/icons-material/Delete'
-import { useTheme } from '@mui/material/styles'
+import { Button, Tooltip } from '@heroui/react'
+import {
+  FolderPlus,
+  Info,
+  Layers,
+  Power,
+  Search,
+  Settings,
+  Trash2,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { OfflineAwareProps } from 'shared/api/types'
-import { getThemeColors } from 'shared/theme/colors'
 
 export interface ShellNavProps extends OfflineAwareProps {
   onAdd: () => void
@@ -26,6 +21,14 @@ export interface ShellNavProps extends OfflineAwareProps {
   onCloseServer: () => void
   onRemoveAll: () => void
   collapsed?: boolean
+}
+
+type NavItem = {
+  key: string
+  label: string
+  icon: ReactNode
+  onClick: () => void
+  disabled?: boolean
 }
 
 export default function Sidebar({
@@ -41,61 +44,49 @@ export default function Sidebar({
   collapsed = false,
 }: ShellNavProps) {
   const { t } = useTranslation()
-  const theme = useTheme()
   const disabled = isOffline || isLoading
-  const mode = theme.palette.mode === 'dark' ? 'dark' : 'light'
-  const { sidebarBGColor: sidebarBg, sidebarFillColor: sidebarFill } = getThemeColors(mode).app
 
-  const items: Array<{
-    key: string
-    label: string
-    icon: ReactNode
-    onClick: () => void
-    disabled?: boolean
-  }> = [
-    { key: 'add', label: t('Add'), icon: <AddIcon />, onClick: onAdd, disabled },
-    { key: 'search', label: t('Search'), icon: <SearchIcon />, onClick: onSearch, disabled },
-    { key: 'category', label: t('Category'), icon: <CategoryIcon />, onClick: onCategories },
-    { key: 'removeAll', label: t('RemoveAll'), icon: <DeleteIcon />, onClick: onRemoveAll, disabled },
+  const items: NavItem[] = [
+    { key: 'add', label: t('Add'), icon: <FolderPlus size={20} />, onClick: onAdd, disabled },
+    { key: 'search', label: t('Search'), icon: <Search size={20} />, onClick: onSearch, disabled },
+    { key: 'category', label: t('Category'), icon: <Layers size={20} />, onClick: onCategories },
+    { key: 'removeAll', label: t('RemoveAll'), icon: <Trash2 size={20} />, onClick: onRemoveAll, disabled },
   ]
 
-  const footerItems = [
-    { key: 'settings', label: t('Settings'), icon: <SettingsIcon />, onClick: onSettings, disabled },
-    { key: 'about', label: t('About'), icon: <InfoIcon />, onClick: onAbout },
+  const footerItems: NavItem[] = [
+    { key: 'settings', label: t('Settings'), icon: <Settings size={20} />, onClick: onSettings, disabled },
+    { key: 'about', label: t('About'), icon: <Info size={20} />, onClick: onAbout },
     {
       key: 'close',
       label: t('CloseServer'),
-      icon: <PowerSettingsNewIcon />,
+      icon: <Power size={20} />,
       onClick: onCloseServer,
       disabled,
     },
   ]
 
-  const renderItem = (item: (typeof items)[number]) => {
+  const renderItem = (item: NavItem) => {
     const button = (
-      <ListItemButton
+      <Button
         key={item.key}
-        disabled={item.disabled}
-        onClick={item.onClick}
-        sx={{
-          justifyContent: collapsed ? 'center' : 'flex-start',
-          px: collapsed ? 1 : 2,
-          minHeight: 48,
-          color: sidebarFill,
-          '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' },
-          '&.Mui-disabled': { opacity: 0.45 },
-          '& .MuiListItemIcon-root': { color: 'inherit', minWidth: collapsed ? 0 : 40 },
-          '& .MuiListItemText-primary': { fontSize: '0.95rem', fontWeight: 500 },
-        }}
+        variant='ghost'
+        isDisabled={item.disabled}
+        onPress={item.onClick}
+        isIconOnly={collapsed}
+        className={`w-full justify-start gap-3 rounded-xl px-3 py-2.5 text-[#d4ebe0] hover:bg-white/8 ${
+          collapsed ? 'justify-center px-2' : ''
+        }`}
+        aria-label={item.label}
       >
-        <ListItemIcon>{item.icon}</ListItemIcon>
-        {!collapsed ? <ListItemText primary={item.label} /> : null}
-      </ListItemButton>
+        {item.icon}
+        {!collapsed ? <span className='truncate text-sm font-medium'>{item.label}</span> : null}
+      </Button>
     )
 
     return collapsed ? (
-      <Tooltip key={item.key} title={item.label} placement='right'>
-        <span>{button}</span>
+      <Tooltip key={item.key}>
+        <Tooltip.Trigger>{button}</Tooltip.Trigger>
+        <Tooltip.Content placement='right'>{item.label}</Tooltip.Content>
       </Tooltip>
     ) : (
       button
@@ -103,20 +94,10 @@ export default function Sidebar({
   }
 
   return (
-    <List
-      dense
-      disablePadding
-      sx={{
-        height: '100%',
-        bgcolor: sidebarBg,
-        color: sidebarFill,
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
+    <nav className='flex h-full flex-col gap-1 bg-[#14201b] p-2 dark:bg-[#070b09]'>
       {items.map(renderItem)}
-      <Divider sx={{ borderColor: 'rgba(255,255,255,0.12)', my: 0.5 }} />
-      {footerItems.map(renderItem)}
-    </List>
+      <div className='my-1 h-px bg-white/12' />
+      <div className='mt-auto flex flex-col gap-1'>{footerItems.map(renderItem)}</div>
+    </nav>
   )
 }

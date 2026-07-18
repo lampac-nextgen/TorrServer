@@ -1,23 +1,15 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import axios from 'axios'
-import AppBar from '@mui/material/AppBar'
-import Box from '@mui/material/Box'
-import Drawer from '@mui/material/Drawer'
-import IconButton from '@mui/material/IconButton'
-import Toolbar from '@mui/material/Toolbar'
-import Tooltip from '@mui/material/Tooltip'
-import Typography from '@mui/material/Typography'
-import useMediaQuery from '@mui/material/useMediaQuery'
+import { Button, Tooltip, useMediaQuery } from '@heroui/react'
 import {
-  Brightness4 as Brightness4Icon,
-  Brightness5 as Brightness5Icon,
-  BrightnessAuto as BrightnessAutoIcon,
-  ChevronLeft as ChevronLeftIcon,
-  Menu as MenuIcon,
-  Sort as SortIcon,
-  SortByAlpha as SortByAlphaIcon,
-} from '@mui/icons-material'
-import { useTheme } from '@mui/material/styles'
+  ChevronLeft,
+  Menu,
+  Moon,
+  SortAsc,
+  SortDesc,
+  Sun,
+  SunMoon,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { echoHost } from 'shared/api/hosts'
 import useChangeLanguage from 'shared/lib/useChangeLanguage'
@@ -26,7 +18,6 @@ import { detectApplePlatform, isStandaloneApp } from 'shared/lib/platform'
 import { useLocalJsonPref } from 'shared/hooks/useLocalPref'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
 import { queryMax } from 'shared/theme/breakpoints'
-import { getThemeColors } from 'shared/theme/colors'
 import { THEME_MODES, useThemePreference } from 'shared/theme/useThemePreference'
 import { TorrentsPage } from 'features/torrents'
 
@@ -50,7 +41,6 @@ const SIDEBAR_COLLAPSED = 60
 
 export default function Shell() {
   const { t } = useTranslation()
-  const theme = useTheme()
   const isMobile = useMediaQuery(queryMax('mobile'))
 
   const [, currentThemeMode, updateThemeMode] = useThemePreference()
@@ -73,8 +63,6 @@ export default function Shell() {
   const { isLoading, isError } = useTorrentsQuery()
   const isOffline = isError
   const sidebarWidth = sidebarOpen ? SIDEBAR_OPEN : SIDEBAR_COLLAPSED
-  const mode = theme.palette.mode === 'dark' ? 'dark' : 'light'
-  const sidebarBg = getThemeColors(mode).app.sidebarBGColor
 
   useEffect(() => {
     axios.get(echoHost()).then(({ data }) => setTorrServerVersion(String(data)))
@@ -113,136 +101,138 @@ export default function Shell() {
     onRemoveAll: () => setRemoveAllOpen(true),
   }
 
+  const themeIcon =
+    currentThemeMode === THEME_MODES.LIGHT ? (
+      <Sun size={20} />
+    ) : currentThemeMode === THEME_MODES.DARK ? (
+      <Moon size={20} />
+    ) : (
+      <SunMoon size={20} />
+    )
+
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        height: '100%',
-        overflow: 'hidden',
+    <div
+      className='grid h-full overflow-hidden bg-[var(--background,#0a0f0d)]'
+      style={{
         gridTemplateRows: 'calc(60px + env(safe-area-inset-top, 0px)) 1fr',
         gridTemplateColumns: isMobile ? '1fr' : `${sidebarWidth}px 1fr`,
         gridTemplateAreas: isMobile ? '"header" "content"' : '"header header" "sidebar content"',
-        transition: theme.transitions.create('grid-template-columns', {
-          duration: theme.transitions.duration.shorter,
-        }),
+        transition: 'grid-template-columns 200ms ease',
       }}
     >
-      <AppBar
-        position='static'
-        color='primary'
-        sx={{
+      <header
+        className='flex items-center gap-2 bg-[#0d6b4f] px-2 pt-[env(safe-area-inset-top,0px)] text-white dark:bg-[#0e1613]'
+        style={{
           gridArea: 'header',
-          pt: 'env(safe-area-inset-top, 0px)',
           minHeight: 'calc(60px + env(safe-area-inset-top, 0px))',
         }}
       >
-        <Toolbar sx={{ minHeight: 60, gap: 1 }}>
-          {!isMobile ? (
-            <Tooltip title={sidebarOpen ? t('CollapseSidebar', { defaultValue: 'Collapse sidebar' }) : t('ExpandSidebar', { defaultValue: 'Expand sidebar' })}>
-              <IconButton
-                color='inherit'
-                edge='start'
-                aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-                onClick={() => setSidebarOpen(!sidebarOpen)}
+        {!isMobile ? (
+          <Tooltip>
+            <Tooltip.Trigger>
+              <Button
+                variant='ghost'
+                isIconOnly
+                className='text-white hover:bg-white/10'
+                aria-label={
+                  sidebarOpen
+                    ? t('CollapseSidebar', { defaultValue: 'Collapse sidebar' })
+                    : t('ExpandSidebar', { defaultValue: 'Expand sidebar' })
+                }
+                onPress={() => setSidebarOpen(!sidebarOpen)}
               >
-                {sidebarOpen ? <ChevronLeftIcon /> : <MenuIcon />}
-              </IconButton>
-            </Tooltip>
-          ) : null}
+                {sidebarOpen ? <ChevronLeft size={22} /> : <Menu size={22} />}
+              </Button>
+            </Tooltip.Trigger>
+            <Tooltip.Content>
+              {sidebarOpen
+                ? t('CollapseSidebar', { defaultValue: 'Collapse sidebar' })
+                : t('ExpandSidebar', { defaultValue: 'Expand sidebar' })}
+            </Tooltip.Content>
+          </Tooltip>
+        ) : null}
 
-          <Typography variant='h6' noWrap sx={{ flex: 1, minWidth: 0 }}>
-            TorrServer {torrServerVersion}
-          </Typography>
+        <h1 className='min-w-0 flex-1 truncate text-lg font-semibold'>
+          TorrServer {torrServerVersion}
+        </h1>
 
-          <Tooltip
-            title={
-              sortABC
-                ? t('SortByDate', { defaultValue: 'Sort by date' })
-                : t('SortByName', { defaultValue: 'Sort by name' })
-            }
-          >
-            <IconButton
-              color='inherit'
+        <Tooltip>
+          <Tooltip.Trigger>
+            <Button
+              variant='ghost'
+              isIconOnly
+              className='text-white hover:bg-white/10'
               aria-label={
                 sortABC
                   ? t('SortByDate', { defaultValue: 'Sort by date' })
                   : t('SortByName', { defaultValue: 'Sort by name' })
               }
-              onClick={() => setSortABC(v => !v)}
+              onPress={() => setSortABC(v => !v)}
             >
-              {sortABC ? <SortByAlphaIcon /> : <SortIcon />}
-            </IconButton>
-          </Tooltip>
+              {sortABC ? <SortAsc size={20} /> : <SortDesc size={20} />}
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>
+            {sortABC
+              ? t('SortByDate', { defaultValue: 'Sort by date' })
+              : t('SortByName', { defaultValue: 'Sort by name' })}
+          </Tooltip.Content>
+        </Tooltip>
 
-          <Tooltip title={t('Theme', { defaultValue: 'Theme' })}>
-            <IconButton color='inherit' aria-label={t('Theme', { defaultValue: 'Theme' })} onClick={cycleTheme}>
-              {currentThemeMode === THEME_MODES.LIGHT ? (
-                <Brightness5Icon />
-              ) : currentThemeMode === THEME_MODES.DARK ? (
-                <Brightness4Icon />
-              ) : (
-                <BrightnessAutoIcon />
-              )}
-            </IconButton>
-          </Tooltip>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <Button
+              variant='ghost'
+              isIconOnly
+              className='text-white hover:bg-white/10'
+              aria-label={t('Theme', { defaultValue: 'Theme' })}
+              onPress={cycleTheme}
+            >
+              {themeIcon}
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>{t('Theme', { defaultValue: 'Theme' })}</Tooltip.Content>
+        </Tooltip>
 
-          <Tooltip title={t('Language', { defaultValue: 'Language' })}>
-            <IconButton
-              color='inherit'
+        <Tooltip>
+          <Tooltip.Trigger>
+            <Button
+              variant='ghost'
+              className='min-w-10 px-2 text-xs font-semibold text-white hover:bg-white/10'
               aria-label={t('Language', { defaultValue: 'Language' })}
-              onClick={cycleLanguage}
+              onPress={cycleLanguage}
             >
-              <Typography component='span' variant='button' sx={{ fontSize: '0.75rem', minWidth: 24 }}>
-                {currentLang.toUpperCase()}
-              </Typography>
-            </IconButton>
-          </Tooltip>
-        </Toolbar>
-      </AppBar>
+              {currentLang.toUpperCase()}
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>{t('Language', { defaultValue: 'Language' })}</Tooltip.Content>
+        </Tooltip>
+      </header>
 
-      {!isMobile && (
-        <Drawer
-          variant='permanent'
-          sx={{
+      {!isMobile ? (
+        <aside
+          className='min-h-0 overflow-hidden'
+          style={{
             gridArea: 'sidebar',
             width: sidebarWidth,
-            flexShrink: 0,
-            transition: theme.transitions.create('width', {
-              duration: theme.transitions.duration.shorter,
-            }),
-            '& .MuiDrawer-paper': {
-              width: sidebarWidth,
-              boxSizing: 'border-box',
-              position: 'relative',
-              borderRight: 0,
-              bgcolor: sidebarBg,
-              overflowX: 'hidden',
-              transition: theme.transitions.create('width', {
-                duration: theme.transitions.duration.shorter,
-              }),
-            },
+            transition: 'width 200ms ease',
           }}
         >
           <Sidebar {...navProps} collapsed={!sidebarOpen} />
-        </Drawer>
-      )}
+        </aside>
+      ) : null}
 
-      <Box
-        component='main'
-        sx={{
+      <main
+        className='min-h-0 min-w-0 overflow-auto bg-[var(--background,#0a0f0d)] [-webkit-overflow-scrolling:touch]'
+        style={{
           gridArea: 'content',
-          minHeight: 0,
-          minWidth: 0,
-          overflow: 'auto',
-          WebkitOverflowScrolling: 'touch',
-          bgcolor: 'background.default',
-          pb: isMobile ? 'calc(90px + env(safe-area-inset-bottom, 0px))' : 0,
+          paddingBottom: isMobile ? 'calc(90px + env(safe-area-inset-bottom, 0px))' : 0,
         }}
       >
         <TorrentsPage sortABC={sortABC} sortCategory={globalCategoryFilter} onAdd={() => setAddOpen(true)} />
-      </Box>
+      </main>
 
-      {isMobile && <BottomNav {...navProps} />}
+      {isMobile ? <BottomNav {...navProps} /> : null}
 
       <Suspense fallback={null}>
         <AddDialog open={addOpen && !launchFiles} onClose={closeAdd} initialSource={launchSource} />
@@ -269,6 +259,6 @@ export default function Shell() {
         />
         {detectApplePlatform().isIOS && !isStandaloneApp ? <PWAInstallationGuide /> : null}
       </Suspense>
-    </Box>
+    </div>
   )
 }

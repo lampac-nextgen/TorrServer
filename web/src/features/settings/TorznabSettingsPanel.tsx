@@ -1,15 +1,6 @@
+import { Button, Input, Label, Spinner, TextField } from '@heroui/react'
+import { Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import AddIcon from '@mui/icons-material/Add'
-import DeleteIcon from '@mui/icons-material/Delete'
-import Button from '@mui/material/Button'
-import CircularProgress from '@mui/material/CircularProgress'
-import IconButton from '@mui/material/IconButton'
-import List from '@mui/material/List'
-import ListItem from '@mui/material/ListItem'
-import ListItemText from '@mui/material/ListItemText'
-import Stack from '@mui/material/Stack'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
 import axios from 'axios'
 import { useTranslation } from 'react-i18next'
 import type { BTSets, TorznabUrl } from 'shared/api/types'
@@ -18,10 +9,10 @@ import { torznabTestHost } from 'shared/api/hosts'
 export interface TorznabSettingsPanelProps {
   settings: BTSets
   onUpdate: <K extends keyof BTSets>(key: K, value: BTSets[K]) => void
-  footerButtonSx?: object
+  footerButtonClassName?: string
 }
 
-export default function TorznabSettingsPanel({ settings, onUpdate, footerButtonSx }: TorznabSettingsPanelProps) {
+export default function TorznabSettingsPanel({ settings, onUpdate, footerButtonClassName }: TorznabSettingsPanelProps) {
   const { t } = useTranslation()
   const [newTorznabHost, setNewTorznabHost] = useState('')
   const [newTorznabKey, setNewTorznabKey] = useState('')
@@ -68,66 +59,58 @@ export default function TorznabSettingsPanel({ settings, onUpdate, footerButtonS
 
   return (
     <>
-      <List dense sx={{ mb: 2 }}>
+      <ul className='mb-4 space-y-2'>
         {(settings.TorznabUrls || []).map((url, index) => (
-          <ListItem
-            key={`${url.Host}-${url.Key}-${index}`}
-            secondaryAction={
-              <IconButton edge='end' aria-label='delete' onClick={() => handleRemove(index)} sx={{ minHeight: 44, minWidth: 44 }}>
-                <DeleteIcon />
-              </IconButton>
-            }
-            sx={{ px: 0 }}
-          >
-            <ListItemText primary={url.Name || url.Host} secondary={`${url.Host} · Key: ${url.Key.slice(0, 5)}…`} />
-          </ListItem>
+          <li key={`${url.Host}-${url.Key}-${index}`} className='flex items-start justify-between gap-3 border-b border-default-200 pb-2'>
+            <div className='min-w-0'>
+              <p className='font-medium'>{url.Name || url.Host}</p>
+              <p className='text-sm text-default-500'>
+                {url.Host} · Key: {url.Key.slice(0, 5)}…
+              </p>
+            </div>
+            <Button isIconOnly variant='ghost' aria-label='delete' onPress={() => handleRemove(index)} className='min-h-11 min-w-11'>
+              <Trash2 className='size-4' />
+            </Button>
+          </li>
         ))}
-      </List>
+      </ul>
 
-      <Stack spacing={2}>
-        <TextField
-          label={t('Torznab.NameOptional')}
-          value={newTorznabName}
-          onChange={e => setNewTorznabName(e.target.value)}
-          fullWidth
-        />
-        <TextField
-          label={t('Torznab.TorznabHostURL')}
-          value={newTorznabHost}
-          onChange={e => setNewTorznabHost(e.target.value)}
-          fullWidth
-        />
-        <TextField
-          label={t('Torznab.APIKey')}
-          value={newTorznabKey}
-          onChange={e => setNewTorznabKey(e.target.value)}
-          fullWidth
-        />
+      <div className='space-y-3'>
+        <TextField value={newTorznabName} onChange={setNewTorznabName}>
+          <Label>{t('Torznab.NameOptional')}</Label>
+          <Input />
+        </TextField>
+        <TextField value={newTorznabHost} onChange={setNewTorznabHost}>
+          <Label>{t('Torznab.TorznabHostURL')}</Label>
+          <Input />
+        </TextField>
+        <TextField value={newTorznabKey} onChange={setNewTorznabKey}>
+          <Label>{t('Torznab.APIKey')}</Label>
+          <Input />
+        </TextField>
         {torznabTestMsg ? (
-          <Typography variant='body2' color={torznabTestMsg.ok ? 'success.main' : 'error.main'}>
-            {torznabTestMsg.text}
-          </Typography>
+          <p className={`text-sm ${torznabTestMsg.ok ? 'text-success' : 'text-danger'}`}>{torznabTestMsg.text}</p>
         ) : null}
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+        <div className='flex flex-col gap-2 sm:flex-row'>
           <Button
-            variant='outlined'
-            onClick={() => void handleTest()}
-            disabled={!newTorznabHost || !newTorznabKey || torznabTesting}
-            sx={footerButtonSx}
+            variant='secondary'
+            onPress={() => void handleTest()}
+            isDisabled={!newTorznabHost || !newTorznabKey || torznabTesting}
+            className={footerButtonClassName}
           >
-            {torznabTesting ? <CircularProgress size={20} /> : t('Torznab.Test')}
+            {torznabTesting ? <Spinner size='sm' /> : t('Torznab.Test')}
           </Button>
           <Button
-            variant='contained'
-            startIcon={<AddIcon />}
-            onClick={handleAdd}
-            disabled={!newTorznabHost || !newTorznabKey}
-            sx={footerButtonSx}
+            variant='primary'
+            onPress={handleAdd}
+            isDisabled={!newTorznabHost || !newTorznabKey}
+            className={footerButtonClassName}
           >
+            <Plus className='size-4' />
             {t('Torznab.AddServer')}
           </Button>
-        </Stack>
-      </Stack>
+        </div>
+      </div>
     </>
   )
 }

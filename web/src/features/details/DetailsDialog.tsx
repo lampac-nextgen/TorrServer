@@ -1,22 +1,16 @@
+import {
+  Button,
+  Checkbox,
+  Modal,
+  Tabs,
+  ToggleButton,
+  ToggleButtonGroup,
+  useMediaQuery,
+  useOverlayState,
+} from '@heroui/react'
+import { ImageOff, Pencil, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import ptt from 'parse-torrent-title'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Checkbox from '@mui/material/Checkbox'
-import Dialog from '@mui/material/Dialog'
-import DialogContent from '@mui/material/DialogContent'
-import DialogTitle from '@mui/material/DialogTitle'
-import Divider from '@mui/material/Divider'
-import FormControlLabel from '@mui/material/FormControlLabel'
-import IconButton from '@mui/material/IconButton'
-import Stack from '@mui/material/Stack'
-import ToggleButton from '@mui/material/ToggleButton'
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
-import Typography from '@mui/material/Typography'
-import useMediaQuery from '@mui/material/useMediaQuery'
-import CloseIcon from '@mui/icons-material/Close'
-import EditIcon from '@mui/icons-material/Edit'
-import ImageNotSupportedIcon from '@mui/icons-material/ImageNotSupported'
 import { useTranslation } from 'react-i18next'
 import type { PlayableFile, TorrentFileStat, TorrentStat } from 'shared/api/types'
 import { listViewedFiles } from 'shared/api/viewed'
@@ -28,6 +22,7 @@ import { isFilePlayable } from 'shared/torrent/playable'
 import { CLOSED, GETTING_INFO, IN_DB, PRELOAD, WORKING } from 'shared/torrent/states'
 import { queryMax } from 'shared/theme/breakpoints'
 import { getThemeColors } from 'shared/theme/colors'
+import { useThemePreference } from 'shared/theme/useThemePreference'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 
 import FileBrowser from './FileBrowser'
@@ -41,71 +36,59 @@ export interface DetailsDialogProps {
   onEdit?: (torrent: TorrentStat) => void
 }
 
+type DetailsTab = 'overview' | 'files' | 'cache'
+
 const toPlayableFile = (file: TorrentFileStat): PlayableFile => ({
   id: file.id ?? file.Id ?? 0,
   path: file.path ?? file.Path ?? '',
   length: file.length ?? file.Length ?? 0,
 })
 
-function detailsTokens(mode: 'light' | 'dark') {
-  return getThemeColors(mode).dialogTorrentDetailsContent
-}
-
 function StatWidget({ label, value }: { label: string; value: string }) {
+  const [isDark] = useThemePreference()
+  const colors = getThemeColors(isDark ? 'dark' : 'light').dialogTorrentDetailsContent
+
   return (
-    <Box
-      sx={theme => {
-        const colors = detailsTokens(theme.palette.mode === 'dark' ? 'dark' : 'light')
-        return {
-          flex: '1 1 120px',
-          minWidth: 108,
-          px: 1.5,
-          py: 1.25,
-          borderRadius: 1,
-          border: 1,
-          borderColor: colors.bufferTrackBorderColor,
-          bgcolor: colors.cacheSectionBGColor,
-          textAlign: 'center',
-        }
+    <div
+      className='min-w-[108px] flex-1 rounded-lg border px-3 py-2 text-center'
+      style={{
+        borderColor: colors.bufferTrackBorderColor,
+        backgroundColor: colors.cacheSectionBGColor,
       }}
     >
-      <Typography
-        variant='caption'
-        sx={theme => ({
-          display: 'block',
-          color: detailsTokens(theme.palette.mode === 'dark' ? 'dark' : 'light').widgetFontColor,
-          lineHeight: 1.2,
-        })}
-      >
+      <span className='block text-xs leading-tight' style={{ color: colors.widgetFontColor }}>
         {label}
-      </Typography>
-      <Typography
-        variant='body1'
+      </span>
+      <span
+        className='mt-1 block break-words text-base font-bold tabular-nums'
         title={value}
-        sx={theme => ({
-          fontWeight: 700,
-          fontVariantNumeric: 'tabular-nums',
-          wordBreak: 'break-word',
-          mt: 0.35,
-          fontSize: '1rem',
-          color: detailsTokens(theme.palette.mode === 'dark' ? 'dark' : 'light').titleFontColor,
-        })}
+        style={{ color: colors.titleFontColor }}
       >
         {value || '—'}
-      </Typography>
-    </Box>
+      </span>
+    </div>
   )
 }
 
 export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit }: DetailsDialogProps) {
   const { t } = useTranslation()
   const fullScreen = useMediaQuery(queryMax('dialog'))
+  const [isDark] = useThemePreference()
+  const colors = getThemeColors(isDark ? 'dark' : 'light').dialogTorrentDetailsContent
   useSyncModalOpen(true)
+
+  const state = useOverlayState({
+    isOpen: true,
+    onOpenChange: open => {
+      if (!open) onClose()
+    },
+  })
 
   const hash = initialTorrent.hash
   const { data: liveTorrent } = useTorrentDetail(hash, initialTorrent)
   const torrent = liveTorrent ?? initialTorrent
 
+  const [tab, setTab] = useState<DetailsTab>('overview')
   const [viewedFileList, setViewedFileList] = useState<number[] | undefined>()
   const [seasonAmount, setSeasonAmount] = useState<number[] | null>(null)
   const [selectedSeason, setSelectedSeason] = useState<number | undefined>()
@@ -190,235 +173,174 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
   const loading = stat === GETTING_INFO || stat === IN_DB
 
   return (
-    <>
-      <Dialog open fullWidth maxWidth='lg' fullScreen={fullScreen} onClose={onClose}>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, pr: 1 }}>
-          <Typography variant='h6' component='span' noWrap sx={{ flex: 1 }}>
-            {t('TorrentDetails')}
-          </Typography>
-          {onEdit ? (
-            <IconButton
-              aria-label={t('EditTorrent')}
-              onClick={() => onEdit(torrent)}
-              edge='end'
-            >
-              <EditIcon />
-            </IconButton>
-          ) : null}
-          <IconButton aria-label={t('Close', { defaultValue: 'Close' })} onClick={onClose} edge='end'>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-
-        <DialogContent dividers sx={{ p: { xs: 1.5, sm: 2 } }}>
-          <Stack spacing={2}>
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={2}
-              sx={theme => {
-                const mode = theme.palette.mode === 'dark' ? 'dark' : 'light'
-                const colors = detailsTokens(mode)
-                return {
-                  alignItems: { sm: 'flex-start' },
-                  p: { xs: 1.5, sm: 2 },
-                  mx: { xs: -1.5, sm: -2 },
-                  mt: { xs: -1.5, sm: -2 },
-                  background: `linear-gradient(135deg, ${colors.gradientStartColor}, ${colors.gradientEndColor})`,
-                }
-              }}
-            >
-              <Box
-                sx={theme => ({
-                  width: { xs: '100%', sm: 160 },
-                  maxWidth: 160,
-                  aspectRatio: '2/3',
-                  borderRadius: 1,
-                  overflow: 'hidden',
-                  bgcolor:
-                    detailsTokens(theme.palette.mode === 'dark' ? 'dark' : 'light')
-                      .posterBGColor,
-                  display: 'grid',
-                  placeItems: 'center',
-                  flexShrink: 0,
-                })}
-              >
-                {poster ? (
-                  <Box component='img' src={poster} alt='' sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <ImageNotSupportedIcon sx={{ fontSize: 48, opacity: 0.4 }} />
-                )}
-              </Box>
-
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography
-                  variant='h6'
-                  sx={theme => ({
-                    mb: 0.5,
-                    wordBreak: 'break-word',
-                    fontWeight: 700,
-                    color:
-                      detailsTokens(theme.palette.mode === 'dark' ? 'dark' : 'light')
-                        .titleFontColor,
-                  })}
-                >
-                  {getParsedTitle() || title || name || hash}
-                </Typography>
-                {name && title !== name && (
-                  <Typography
-                    variant='body2'
-                    sx={theme => ({
-                      mb: 1.5,
-                      color:
-                        detailsTokens(theme.palette.mode === 'dark' ? 'dark' : 'light')
-                          .subNameFontColor,
-                    })}
-                  >
-                    {ptt.parse(name).title || name}
-                  </Typography>
-                )}
-
-                <Stack direction='row' useFlexGap spacing={1} sx={{ flexWrap: 'wrap', mb: 1.5 }}>
-                  <StatWidget label={t('DownloadSpeed')} value={humanizeSpeed(downloadSpeed)} />
-                  <StatWidget label={t('UploadSpeed')} value={humanizeSpeed(uploadSpeed)} />
-                  <StatWidget label={t('Peers')} value={getPeerString(torrent) || '—'} />
-                  <StatWidget label={t('Size')} value={humanizeSize(torrentSize)} />
-                  <StatWidget label={t('Status')} value={statusLabel(stat)} />
-                  {category ? <StatWidget label={t('Category')} value={category} /> : null}
-                </Stack>
-
-                <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} />
-              </Box>
-            </Stack>
-
-            <Divider />
-
-            <TorrentActions
-              hash={hash}
-              name={name}
-              title={title}
-              playableFileList={playableFileList}
-              viewedFileList={viewedFileList}
-              setViewedFileList={setViewedFileList}
-              onDropped={onClose}
-            />
-
-            <Divider />
-
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={1}
-              sx={{ alignItems: { sm: 'center' }, justifyContent: 'space-between' }}
-            >
-              <Typography variant='subtitle1' sx={{ fontWeight: 600 }}>
-                {t('Cache')}
-              </Typography>
-              <Stack direction='row' spacing={1} sx={{ flexWrap: 'wrap', alignItems: 'center' }}>
+    <Modal.Root state={state}>
+      <Modal.Backdrop>
+        <Modal.Container size={fullScreen ? 'full' : 'lg'} scroll='inside'>
+          <Modal.Dialog>
+            <Modal.Header className='flex items-center gap-2'>
+              <Modal.Heading className='min-w-0 flex-1 truncate'>{t('TorrentDetails')}</Modal.Heading>
+              {onEdit ? (
                 <Button
-                  size='small'
-                  variant={isDetailedCacheView ? 'contained' : 'outlined'}
-                  color='secondary'
-                  onClick={() => setIsDetailedCacheView(v => !v)}
+                  isIconOnly
+                  variant='ghost'
+                  aria-label={t('EditTorrent')}
+                  onPress={() => onEdit(torrent)}
                 >
-                  {isDetailedCacheView
-                    ? t('CacheViewCompact', { defaultValue: 'Compact' })
-                    : t('DetailedCacheView.button')}
+                  <Pencil className='size-4' />
                 </Button>
-                {isDetailedCacheView ? (
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        size='small'
-                        checked={isSnakeDebugMode}
-                        onChange={(_, checked) => {
-                          setIsSnakeDebugMode(checked)
-                        }}
-                      />
-                    }
-                    label={t('SnakeDebug', { defaultValue: 'Debug pieces' })}
-                  />
-                ) : null}
-              </Stack>
-            </Stack>
+              ) : null}
+              <Modal.CloseTrigger aria-label={t('Close', { defaultValue: 'Close' })}>
+                <X className='size-4' />
+              </Modal.CloseTrigger>
+            </Modal.Header>
 
-            <TorrentCache
-              cache={cache}
-              mode={isDetailedCacheView ? 'detailed' : 'mini'}
-              isSnakeDebugMode={isSnakeDebugMode}
-            />
-
-            {(cache.PiecesCount != null || cache.PiecesLength != null) && (
-              <Stack direction='row' useFlexGap spacing={1} sx={{ flexWrap: 'wrap' }}>
-                {cache.PiecesCount != null ? (
-                  <StatWidget label={t('PiecesCount')} value={String(cache.PiecesCount)} />
-                ) : null}
-                {cache.PiecesLength != null ? (
-                  <StatWidget label={t('PiecesLength')} value={humanizeSize(cache.PiecesLength)} />
-                ) : null}
-                {cache.Filled != null && cache.Capacity != null ? (
-                  <StatWidget
-                    label={t('CacheFilled', { defaultValue: 'Cache' })}
-                    value={`${humanizeSize(cache.Filled)} / ${humanizeSize(cache.Capacity)}`}
-                  />
-                ) : null}
-              </Stack>
-            )}
-
-            <Divider />
-
-            <Box
-              sx={theme => {
-                const mode = theme.palette.mode === 'dark' ? 'dark' : 'light'
-                const colors = detailsTokens(mode)
-                return {
-                  p: { xs: 1.5, sm: 2 },
-                  mx: { xs: -1.5, sm: -2 },
-                  mb: { xs: -1.5, sm: -2 },
-                  bgcolor: colors.torrentFilesSectionBGColor,
-                }
-              }}
-            >
-              <Typography variant='subtitle1' sx={{ fontWeight: 600, mb: 1.5 }}>
-                {t('TorrentContent')}
-              </Typography>
-
-              {loading ? (
-                <Typography color='text.secondary'>{t('TorrentGettingInfo')}</Typography>
-              ) : (
-                <>
-                  {(seasonAmount?.length ?? 0) > 1 && (
-                    <Box sx={{ mb: 2 }}>
-                      <ToggleButtonGroup
-                        exclusive
-                        size='small'
-                        color='secondary'
-                        value={selectedSeason}
-                        onChange={(_, value: number | null) => {
-                          if (value != null) setSelectedSeason(value)
-                        }}
-                        sx={{ flexWrap: 'wrap', gap: 1 }}
-                      >
-                        {seasonAmount!.map(season => (
-                          <ToggleButton key={season} value={season} sx={{ textTransform: 'none', px: 2 }}>
-                            {t('Season')} {season}
-                          </ToggleButton>
-                        ))}
-                      </ToggleButtonGroup>
-                    </Box>
+            <Modal.Body className='gap-4'>
+              <div
+                className='flex flex-col gap-4 rounded-xl p-4 sm:flex-row sm:items-start'
+                style={{
+                  background: `linear-gradient(135deg, ${colors.gradientStartColor}, ${colors.gradientEndColor})`,
+                }}
+              >
+                <div
+                  className='mx-auto grid aspect-[2/3] w-full max-w-[160px] shrink-0 place-items-center overflow-hidden rounded-lg sm:mx-0'
+                  style={{ backgroundColor: colors.posterBGColor }}
+                >
+                  {poster ? (
+                    <img src={poster} alt='' className='h-full w-full object-cover' />
+                  ) : (
+                    <ImageOff className='size-12 opacity-40' aria-hidden />
                   )}
+                </div>
 
-                  <FileBrowser
-                    hash={hash}
-                    playableFileList={playableFileList || []}
-                    viewedFileList={viewedFileList}
-                    selectedSeason={selectedSeason}
-                    seasonAmount={seasonAmount}
+                <div className='min-w-0 flex-1'>
+                  <h2 className='mb-1 break-words text-lg font-bold' style={{ color: colors.titleFontColor }}>
+                    {getParsedTitle() || title || name || hash}
+                  </h2>
+                  {name && title !== name ? (
+                    <p className='mb-3 text-sm' style={{ color: colors.subNameFontColor }}>
+                      {ptt.parse(name).title || name}
+                    </p>
+                  ) : null}
+                  <div className='mb-3 flex flex-wrap gap-2'>
+                    <StatWidget label={t('DownloadSpeed')} value={humanizeSpeed(downloadSpeed)} />
+                    <StatWidget label={t('UploadSpeed')} value={humanizeSpeed(uploadSpeed)} />
+                    <StatWidget label={t('Peers')} value={getPeerString(torrent) || '—'} />
+                    <StatWidget label={t('Size')} value={humanizeSize(torrentSize)} />
+                    <StatWidget label={t('Status')} value={statusLabel(stat)} />
+                    {category ? <StatWidget label={t('Category')} value={category} /> : null}
+                  </div>
+                </div>
+              </div>
+
+              <Tabs.Root selectedKey={tab} onSelectionChange={key => setTab(String(key) as DetailsTab)}>
+                <Tabs.List aria-label={t('TorrentDetails')}>
+                  <Tabs.Tab id='overview'>{t('Overview', { defaultValue: 'Overview' })}</Tabs.Tab>
+                  <Tabs.Tab id='files'>{t('TorrentContent')}</Tabs.Tab>
+                  <Tabs.Tab id='cache'>{t('Cache')}</Tabs.Tab>
+                </Tabs.List>
+
+                <Tabs.Panel id='overview' className='pt-4'>
+                  <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} />
+                  <div className='mt-4'>
+                    <TorrentActions
+                      hash={hash}
+                      name={name}
+                      title={title}
+                      playableFileList={playableFileList}
+                      viewedFileList={viewedFileList}
+                      setViewedFileList={setViewedFileList}
+                      onDropped={onClose}
+                    />
+                  </div>
+                </Tabs.Panel>
+
+                <Tabs.Panel id='files' className='pt-4'>
+                  <div className='rounded-xl p-4' style={{ backgroundColor: colors.torrentFilesSectionBGColor }}>
+                    {loading ? (
+                      <p className='text-default-500'>{t('TorrentGettingInfo')}</p>
+                    ) : (
+                      <>
+                        {(seasonAmount?.length ?? 0) > 1 ? (
+                          <div className='mb-4'>
+                            <ToggleButtonGroup
+                              selectionMode='single'
+                              selectedKeys={selectedSeason != null ? [String(selectedSeason)] : []}
+                              onSelectionChange={keys => {
+                                const value = [...keys][0]
+                                if (value != null) setSelectedSeason(Number(value))
+                              }}
+                              className='flex flex-wrap gap-2'
+                            >
+                              {seasonAmount!.map(season => (
+                                <ToggleButton key={season} id={String(season)}>
+                                  {t('Season')} {season}
+                                </ToggleButton>
+                              ))}
+                            </ToggleButtonGroup>
+                          </div>
+                        ) : null}
+
+                        <FileBrowser
+                          hash={hash}
+                          playableFileList={playableFileList || []}
+                          viewedFileList={viewedFileList}
+                          selectedSeason={selectedSeason}
+                          seasonAmount={seasonAmount}
+                        />
+                      </>
+                    )}
+                  </div>
+                </Tabs.Panel>
+
+                <Tabs.Panel id='cache' className='space-y-4 pt-4'>
+                  <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
+                    <p className='text-sm font-semibold'>{t('Cache')}</p>
+                    <div className='flex flex-wrap items-center gap-2'>
+                      <Button
+                        size='sm'
+                        variant={isDetailedCacheView ? 'primary' : 'secondary'}
+                        onPress={() => setIsDetailedCacheView(v => !v)}
+                      >
+                        {isDetailedCacheView
+                          ? t('CacheViewCompact', { defaultValue: 'Compact' })
+                          : t('DetailedCacheView.button')}
+                      </Button>
+                      {isDetailedCacheView ? (
+                        <Checkbox isSelected={isSnakeDebugMode} onChange={setIsSnakeDebugMode}>
+                          {t('SnakeDebug', { defaultValue: 'Debug pieces' })}
+                        </Checkbox>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <TorrentCache
+                    cache={cache}
+                    mode={isDetailedCacheView ? 'detailed' : 'mini'}
+                    isSnakeDebugMode={isSnakeDebugMode}
                   />
-                </>
-              )}
-            </Box>
-          </Stack>
-        </DialogContent>
-      </Dialog>
-    </>
+
+                  {(cache.PiecesCount != null || cache.PiecesLength != null) && (
+                    <div className='flex flex-wrap gap-2'>
+                      {cache.PiecesCount != null ? (
+                        <StatWidget label={t('PiecesCount')} value={String(cache.PiecesCount)} />
+                      ) : null}
+                      {cache.PiecesLength != null ? (
+                        <StatWidget label={t('PiecesLength')} value={humanizeSize(cache.PiecesLength)} />
+                      ) : null}
+                      {cache.Filled != null && cache.Capacity != null ? (
+                        <StatWidget
+                          label={t('CacheFilled', { defaultValue: 'Cache' })}
+                          value={`${humanizeSize(cache.Filled)} / ${humanizeSize(cache.Capacity)}`}
+                        />
+                      ) : null}
+                    </div>
+                  )}
+                </Tabs.Panel>
+              </Tabs.Root>
+            </Modal.Body>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
+    </Modal.Root>
   )
 }

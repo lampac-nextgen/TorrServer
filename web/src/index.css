@@ -1,0 +1,31 @@
+@import "tailwindcss";
+@import "@heroui/styles";
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  background: var(--background, #0a0f0d);
+  color: var(--foreground, #e6f2ec);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#root {
+  overflow: hidden;
+}
+
+body[data-modal-open='true'] .ts-bottom-nav {
+  pointer-events: none;
+}
+
+body[data-immersive='true'] .ts-bottom-nav {
+  visibility: hidden;
+}

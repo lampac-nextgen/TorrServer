@@ -1,8 +1,4 @@
-import { useMemo } from 'react'
-import { DataGrid, type GridColDef, type GridRenderCellParams } from '@mui/x-data-grid'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import CircularProgress from '@mui/material/CircularProgress'
+import { Button, Spinner } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
 import type { SearchResultItem } from 'shared/api/types'
 
@@ -16,7 +12,7 @@ interface SearchResultsGridProps {
   onAdd: (item: SearchResultItem) => void
 }
 
-/** Torznab/Rutor search results as MUI X Data Grid. */
+/** Torznab/Rutor search results table. */
 export default function SearchResultsGrid({
   results,
   loading,
@@ -28,106 +24,56 @@ export default function SearchResultsGrid({
 }: SearchResultsGridProps) {
   const { t } = useTranslation()
 
-  const rows = useMemo(
-    () =>
-      results.map((item, index) => {
-        const key = resultDedupeKey(item) || `${item.Title || 'item'}-${index}`
-        return {
-          id: key,
-          title: item.Title || '—',
-          poster: item.Poster || '',
-          size: formatSize(item),
-          seeders: item.Seed ?? '—',
-          peers: item.Peer ?? '—',
-          item,
-        }
-      }),
-    [results, resultDedupeKey, formatSize],
-  )
-
-  const columns = useMemo<GridColDef[]>(
-    () => [
-      {
-        field: 'poster',
-        headerName: '',
-        width: 56,
-        sortable: false,
-        filterable: false,
-        renderCell: (params: GridRenderCellParams) =>
-          params.value ? (
-            <Box
-              component='img'
-              src={String(params.value)}
-              alt=''
-              sx={{ width: 36, height: 54, objectFit: 'cover', borderRadius: 0.5, my: 0.5 }}
-            />
-          ) : (
-            <Box sx={{ width: 36, height: 54, bgcolor: 'action.hover', borderRadius: 0.5, my: 0.5 }} />
-          ),
-      },
-      { field: 'title', headerName: t('Name'), flex: 2, minWidth: 180 },
-      { field: 'size', headerName: t('Size'), width: 100 },
-      { field: 'seeders', headerName: t('Seeders'), width: 90 },
-      { field: 'peers', headerName: t('Peers'), width: 90 },
-      {
-        field: 'actions',
-        headerName: '',
-        width: 100,
-        sortable: false,
-        filterable: false,
-        renderCell: (params: GridRenderCellParams) => {
-          const key = String(params.id)
-          const busy = adding && addingKey === key
-          return (
-            <Button
-              size='small'
-              variant='contained'
-              disabled={adding}
-              onClick={e => {
-                e.stopPropagation()
-                onAdd(params.row.item as SearchResultItem)
-              }}
-            >
-              {busy ? <CircularProgress size={16} color='inherit' /> : t('Add')}
-            </Button>
-          )
-        },
-      },
-    ],
-    [t, adding, addingKey, onAdd],
-  )
-
   if (loading) {
     return (
-      <Box sx={{ display: 'grid', placeItems: 'center', py: 4 }}>
-        <CircularProgress color='secondary' size={32} />
-      </Box>
+      <div className='grid place-items-center py-8'>
+        <Spinner size='lg' />
+      </div>
     )
   }
 
   return (
-    <DataGrid
-      rows={rows}
-      columns={columns}
-      density='compact'
-      disableRowSelectionOnClick
-      pageSizeOptions={[25, 50]}
-      initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
-      getRowHeight={() => 'auto'}
-      sx={{
-        border: 0,
-        minHeight: 280,
-        height: '100%',
-        opacity: adding ? 0.85 : 1,
-        '& .MuiDataGrid-cell': { py: 0.5 },
-        '& .MuiDataGrid-row': {
-          ...(addingKey
-            ? {
-                [`&[data-id="${addingKey}"]`]: { bgcolor: 'action.selected' },
-              }
-            : {}),
-        },
-      }}
-    />
+    <div
+      className={`min-h-[280px] overflow-auto rounded-xl border border-default-200 ${adding ? 'opacity-85' : ''}`}
+    >
+      <table className='w-full min-w-[640px] border-collapse text-sm'>
+        <thead className='bg-default-100 text-left text-xs uppercase text-default-500'>
+          <tr>
+            <th className='w-14 px-3 py-2' />
+            <th className='px-3 py-2'>{t('Name')}</th>
+            <th className='w-24 px-3 py-2'>{t('Size')}</th>
+            <th className='w-24 px-3 py-2'>{t('Seeders')}</th>
+            <th className='w-24 px-3 py-2'>{t('Peers')}</th>
+            <th className='w-28 px-3 py-2' />
+          </tr>
+        </thead>
+        <tbody>
+          {results.map((item, index) => {
+            const key = resultDedupeKey(item) || `${item.Title || 'item'}-${index}`
+            const busy = adding && addingKey === key
+            return (
+              <tr key={key} className={addingKey === key ? 'bg-default-100' : undefined}>
+                <td className='px-3 py-2'>
+                  {item.Poster ? (
+                    <img src={item.Poster} alt='' className='h-[54px] w-9 rounded object-cover' />
+                  ) : (
+                    <div className='h-[54px] w-9 rounded bg-default-200' />
+                  )}
+                </td>
+                <td className='px-3 py-2 align-top'>{item.Title || '—'}</td>
+                <td className='px-3 py-2 whitespace-nowrap'>{formatSize(item)}</td>
+                <td className='px-3 py-2'>{item.Seed ?? '—'}</td>
+                <td className='px-3 py-2'>{item.Peer ?? '—'}</td>
+                <td className='px-3 py-2'>
+                  <Button size='sm' variant='primary' isDisabled={adding} onPress={() => onAdd(item)}>
+                    {busy ? <Spinner size='sm' color='current' /> : t('Add')}
+                  </Button>
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
   )
 }

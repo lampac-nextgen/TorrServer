@@ -1,7 +1,5 @@
-import Button from '@mui/material/Button'
-import DialogActions from '@mui/material/DialogActions'
-import DialogTitle from '@mui/material/DialogTitle'
-import DeleteIcon from '@mui/icons-material/Delete'
+import { Button, Modal } from '@heroui/react'
+import { Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { wipeTorrents, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import AppDialog from 'shared/ui/AppDialog'
@@ -24,22 +22,19 @@ export default function RemoveAllDialog({ open, onClose }: RemoveAllDialogProps)
   }
 
   return (
-    <AppDialog open={open} onClose={onClose}>
-      <DialogTitle>{t('DeleteTorrents?')}</DialogTitle>
-      <DialogActions>
-        <Button variant='outlined' onClick={onClose} color='secondary' autoFocus>
+    <AppDialog open={open} onClose={onClose} size='sm'>
+      <Modal.Header>
+        <Modal.Heading>{t('DeleteTorrents?')}</Modal.Heading>
+      </Modal.Header>
+      <Modal.Footer>
+        <Button variant='secondary' onPress={onClose} autoFocus>
           {t('Cancel')}
         </Button>
-        <UnsafeButton
-          timeout={5}
-          startIcon={<DeleteIcon />}
-          variant='contained'
-          color='secondary'
-          onClick={() => void handleRemove()}
-        >
+        <UnsafeButton variant='danger' onPress={() => void handleRemove()}>
+          <Trash2 className='size-4' />
           {t('OK')}
         </UnsafeButton>
-      </DialogActions>
+      </Modal.Footer>
     </AppDialog>
   )
 }

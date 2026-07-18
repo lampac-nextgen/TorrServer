@@ -1,12 +1,10 @@
-import Box from '@mui/material/Box'
-import Chip from '@mui/material/Chip'
-import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
-import ImageNotSupportedIcon from '@mui/icons-material/ImageNotSupported'
-import { alpha, useTheme } from '@mui/material/styles'
+import { useRef } from 'react'
+import { useGSAP } from '@gsap/react'
+import gsap from 'gsap'
+import { Chip } from '@heroui/react'
+import { ImageOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
-import { getPeerString, humanizeSize, humanizeSpeed } from 'shared/lib/format'
 import { CLOSED, GETTING_INFO, IN_DB, PRELOAD, WORKING } from 'shared/torrent/states'
 
 import TorrentCardActions from './TorrentCardActions'
@@ -17,13 +15,13 @@ export interface TorrentCardProps {
   onEdit?: (torrent: TorrentStat) => void
 }
 
-function statusColor(stat?: number): 'default' | 'success' | 'warning' | 'info' {
+function statusColor(stat?: number): 'default' | 'success' | 'warning' | 'accent' {
   switch (stat) {
     case WORKING:
       return 'success'
     case PRELOAD:
     case GETTING_INFO:
-      return 'info'
+      return 'accent'
     case CLOSED:
     case IN_DB:
       return 'default'
@@ -32,48 +30,13 @@ function statusColor(stat?: number): 'default' | 'success' | 'warning' | 'info' 
   }
 }
 
-function MetaStat({ label, value }: { label: string; value: string }) {
-  return (
-    <Box sx={{ minWidth: 0, flex: '1 1 0' }}>
-      <Typography
-        component='div'
-        sx={{
-          fontSize: '0.65rem',
-          fontWeight: 500,
-          letterSpacing: '0.06em',
-          textTransform: 'uppercase',
-          color: 'text.secondary',
-          lineHeight: 1.2,
-          mb: 0.35,
-        }}
-      >
-        {label}
-      </Typography>
-      <Typography
-        component='div'
-        noWrap
-        title={value}
-        sx={{
-          fontSize: '0.8125rem',
-          fontWeight: 600,
-          fontVariantNumeric: 'tabular-nums',
-          lineHeight: 1.25,
-          color: 'text.primary',
-        }}
-      >
-        {value}
-      </Typography>
-    </Box>
-  )
-}
-
 export default function TorrentCard({ torrent, onSelect, onEdit }: TorrentCardProps) {
   const { t } = useTranslation()
-  const theme = useTheme()
+  const cardRef = useRef<HTMLElement>(null)
+  const overlayRef = useRef<HTMLDivElement>(null)
 
   const title = torrent.title || torrent.name || torrent.hash
   const poster = torrent.poster
-  const isDark = theme.palette.mode === 'dark'
 
   const statusLabel = (() => {
     const map: Record<number, string> = {
@@ -86,115 +49,96 @@ export default function TorrentCard({ torrent, onSelect, onEdit }: TorrentCardPr
     return torrent.stat != null ? map[torrent.stat] || String(torrent.stat) : '—'
   })()
 
+  useGSAP(
+    () => {
+      const overlay = overlayRef.current
+      const card = cardRef.current
+      if (!overlay || !card) return
+
+      const onEnter = () => {
+        gsap.to(overlay, { opacity: 1, duration: 0.2, ease: 'power2.out' })
+      }
+      const onLeave = () => {
+        gsap.to(overlay, { opacity: 0, duration: 0.15, ease: 'power2.in' })
+      }
+
+      card.addEventListener('mouseenter', onEnter)
+      card.addEventListener('mouseleave', onLeave)
+      card.addEventListener('focusin', onEnter)
+      card.addEventListener('focusout', onLeave)
+
+      return () => {
+        card.removeEventListener('mouseenter', onEnter)
+        card.removeEventListener('mouseleave', onLeave)
+        card.removeEventListener('focusin', onEnter)
+        card.removeEventListener('focusout', onLeave)
+      }
+    },
+    { scope: cardRef },
+  )
+
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'stretch',
-        minHeight: 132,
-        borderRadius: 2.5,
-        overflow: 'hidden',
-        bgcolor: 'background.paper',
-        border: 1,
-        borderColor: 'divider',
-        boxShadow: isDark ? `0 1px 0 ${alpha('#fff', 0.04)}` : `0 1px 2px ${alpha('#0b1210', 0.06)}`,
-        transition: theme.transitions.create(['transform', 'box-shadow', 'border-color'], {
-          duration: theme.transitions.duration.shorter,
-        }),
-        '&:hover': {
-          borderColor: alpha(theme.palette.primary.main, isDark ? 0.45 : 0.35),
-          boxShadow: isDark
-            ? `0 10px 28px ${alpha('#000', 0.45)}`
-            : `0 10px 28px ${alpha('#0b1210', 0.1)}`,
-          transform: 'translateY(-1px)',
-        },
-      }}
+    <article
+      ref={cardRef}
+      className='group torrent-card flex min-w-0 flex-col gap-2'
+      data-hash={torrent.hash}
     >
-      <Box
+      <div
+        className='relative aspect-[2/3] w-full cursor-pointer overflow-hidden rounded-xl bg-[#1a2620] shadow-sm ring-1 ring-[var(--border,#2a3b32)] transition-shadow hover:shadow-lg hover:ring-[#00a572]/40'
         onClick={() => onSelect(torrent)}
-        sx={{
-          width: 88,
-          flexShrink: 0,
-          bgcolor: alpha(theme.palette.primary.main, isDark ? 0.12 : 0.08),
-          display: 'grid',
-          placeItems: 'center',
-          overflow: 'hidden',
-          cursor: 'pointer',
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onSelect(torrent)
+          }
         }}
+        role='button'
+        tabIndex={0}
+        aria-label={title}
       >
         {poster ? (
-          <Box
-            component='img'
+          <img
             src={poster}
             alt=''
             loading='lazy'
-            sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            className='h-full w-full object-cover'
           />
         ) : (
-          <ImageNotSupportedIcon sx={{ color: 'text.disabled', fontSize: 28 }} />
+          <div className='grid h-full w-full place-items-center text-[var(--muted,#8fafa0)]'>
+            <ImageOff size={32} strokeWidth={1.5} />
+          </div>
         )}
-      </Box>
 
-      <Box
-        onClick={() => onSelect(torrent)}
-        sx={{
-          flex: 1,
-          minWidth: 0,
-          px: 1.5,
-          py: 1.25,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1,
-          cursor: 'pointer',
-        }}
+        <div className='pointer-events-none absolute inset-x-0 top-2 flex flex-wrap gap-1 px-2'>
+          <Chip size='sm' color={statusColor(torrent.stat)} variant={torrent.stat === WORKING ? 'primary' : 'secondary'}>
+            <Chip.Label>{statusLabel}</Chip.Label>
+          </Chip>
+          {torrent.category ? (
+            <Chip size='sm' variant='secondary'>
+              <Chip.Label>{t(torrent.category)}</Chip.Label>
+            </Chip>
+          ) : null}
+        </div>
+
+        <div
+          ref={overlayRef}
+          className='absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/75 via-black/35 to-black/10 opacity-0'
+        >
+          <TorrentCardActions
+            torrent={torrent}
+            onDetails={() => onSelect(torrent)}
+            onEdit={onEdit ? () => onEdit(torrent) : undefined}
+            className='pointer-events-auto opacity-100'
+          />
+        </div>
+      </div>
+
+      <h3
+        className='line-clamp-2 px-0.5 text-sm font-semibold leading-snug text-[var(--foreground,#e6f2ec)]'
+        title={title}
       >
-        <Box sx={{ minWidth: 0 }}>
-          <Typography
-            title={title}
-            sx={{
-              fontSize: '0.875rem',
-              fontWeight: 600,
-              lineHeight: 1.35,
-              color: 'text.primary',
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }}
-          >
-            {title}
-          </Typography>
-          <Stack direction='row' spacing={0.5} sx={{ mt: 0.75, flexWrap: 'wrap', gap: 0.5 }}>
-            <Chip
-              size='small'
-              label={statusLabel}
-              color={statusColor(torrent.stat)}
-              variant={torrent.stat === WORKING ? 'filled' : 'outlined'}
-              sx={{ height: 22, '& .MuiChip-label': { px: 0.75, fontSize: '0.7rem', fontWeight: 500 } }}
-            />
-            {torrent.category ? (
-              <Chip
-                size='small'
-                label={t(torrent.category)}
-                variant='outlined'
-                sx={{ height: 22, '& .MuiChip-label': { px: 0.75, fontSize: '0.7rem' } }}
-              />
-            ) : null}
-          </Stack>
-        </Box>
-
-        <Stack direction='row' spacing={1} useFlexGap sx={{ mt: 'auto', pt: 0.25 }}>
-          <MetaStat label={t('Size')} value={humanizeSize(torrent.torrent_size)} />
-          <MetaStat label={t('Download')} value={humanizeSpeed(torrent.download_speed)} />
-          <MetaStat label={t('Peers')} value={getPeerString(torrent) || '—'} />
-        </Stack>
-      </Box>
-
-      <TorrentCardActions
-        torrent={torrent}
-        onDetails={() => onSelect(torrent)}
-        onEdit={onEdit ? () => onEdit(torrent) : undefined}
-      />
-    </Box>
+        {title}
+      </h3>
+    </article>
   )
 }

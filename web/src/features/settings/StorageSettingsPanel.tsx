@@ -1,12 +1,4 @@
-import Alert from '@mui/material/Alert'
-import Divider from '@mui/material/Divider'
-import FormControl from '@mui/material/FormControl'
-import FormHelperText from '@mui/material/FormHelperText'
-import InputLabel from '@mui/material/InputLabel'
-import MenuItem from '@mui/material/MenuItem'
-import Select from '@mui/material/Select'
-import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
+import { Alert, Description, Label, ListBox, Select, Separator } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
 import type { BTSets } from 'shared/api/types'
 import type { StorageBackend, StorageSettings } from 'shared/api/storage'
@@ -34,7 +26,7 @@ export default function StorageSettingsPanel({
   }
 
   return (
-    <Stack spacing={2}>
+    <div className='space-y-4'>
       <SettingSwitch
         id='StoreSettingsInJson'
         label={t('SettingsDialog.StoreSettingsInJson')}
@@ -43,44 +35,46 @@ export default function StorageSettingsPanel({
         onChange={onBoolSwitch}
       />
 
-      <Divider />
+      <Separator />
 
-      <Typography variant='overline' color='text.secondary'>
-        {t('SettingsDialog.StorageSettings')}
-      </Typography>
-      <FormHelperText sx={{ mt: 0 }}>{t('SettingsDialog.SettingsStorageHint')}</FormHelperText>
+      <p className='text-xs uppercase tracking-wide text-default-500'>{t('SettingsDialog.StorageSettings')}</p>
+      <Description>{t('SettingsDialog.SettingsStorageHint')}</Description>
 
-      <FormControl fullWidth>
-        <InputLabel id='storage-settings-backend'>{t('SettingsDialog.SettingsStorage')}</InputLabel>
-        <Select
-          labelId='storage-settings-backend'
-          label={t('SettingsDialog.SettingsStorage')}
-          value={backends.settings}
-          onChange={e => updateBackend('settings', e.target.value as StorageBackend)}
-        >
-          <MenuItem value='json'>{t('SettingsDialog.JsonFile')} (settings.json)</MenuItem>
-          <MenuItem value='bbolt'>{t('SettingsDialog.BBoltDatabase')} (config.db)</MenuItem>
-        </Select>
-      </FormControl>
+      <Select selectedKey={backends.settings} onSelectionChange={key => updateBackend('settings', String(key) as StorageBackend)}>
+        <Label>{t('SettingsDialog.SettingsStorage')}</Label>
+        <Select.Trigger>
+          <Select.Value />
+          <Select.Indicator />
+        </Select.Trigger>
+        <Select.Popover>
+          <ListBox>
+            <ListBox.Item id='json'>{t('SettingsDialog.JsonFile')} (settings.json)</ListBox.Item>
+            <ListBox.Item id='bbolt'>{t('SettingsDialog.BBoltDatabase')} (config.db)</ListBox.Item>
+          </ListBox>
+        </Select.Popover>
+      </Select>
 
-      <FormControl fullWidth>
-        <InputLabel id='storage-viewed-backend'>{t('SettingsDialog.ViewedHistoryStorage')}</InputLabel>
-        <Select
-          labelId='storage-viewed-backend'
-          label={t('SettingsDialog.ViewedHistoryStorage')}
-          value={backends.viewed}
-          onChange={e => updateBackend('viewed', e.target.value as StorageBackend)}
-        >
-          <MenuItem value='bbolt'>{t('SettingsDialog.BBoltDatabase')} (config.db)</MenuItem>
-          <MenuItem value='json'>{t('SettingsDialog.JsonFile')} (viewed.json)</MenuItem>
-        </Select>
-      </FormControl>
+      <Select selectedKey={backends.viewed} onSelectionChange={key => updateBackend('viewed', String(key) as StorageBackend)}>
+        <Label>{t('SettingsDialog.ViewedHistoryStorage')}</Label>
+        <Select.Trigger>
+          <Select.Value />
+          <Select.Indicator />
+        </Select.Trigger>
+        <Select.Popover>
+          <ListBox>
+            <ListBox.Item id='bbolt'>{t('SettingsDialog.BBoltDatabase')} (config.db)</ListBox.Item>
+            <ListBox.Item id='json'>{t('SettingsDialog.JsonFile')} (viewed.json)</ListBox.Item>
+          </ListBox>
+        </Select.Popover>
+      </Select>
 
-      <Alert severity='info' variant='outlined'>
-        {t('SettingsDialog.StorageSettingsApplyHint', {
-          defaultValue: 'Backend changes apply after Save. Restart may be required for some migrations.',
-        })}
+      <Alert status='accent'>
+        <Alert.Description>
+          {t('SettingsDialog.StorageSettingsApplyHint', {
+            defaultValue: 'Backend changes apply after Save. Restart may be required for some migrations.',
+          })}
+        </Alert.Description>
       </Alert>
-    </Stack>
+    </div>
   )
 }

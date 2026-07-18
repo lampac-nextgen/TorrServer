@@ -1,17 +1,5 @@
+import { Button, Input, Label, ListBox, Modal, Select, Spinner, TextField } from '@heroui/react'
 import { useEffect, useRef, useState } from 'react'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import CircularProgress from '@mui/material/CircularProgress'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogTitle from '@mui/material/DialogTitle'
-import FormControl from '@mui/material/FormControl'
-import InputLabel from '@mui/material/InputLabel'
-import MenuItem from '@mui/material/MenuItem'
-import Select from '@mui/material/Select'
-import Stack from '@mui/material/Stack'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
@@ -98,84 +86,71 @@ export default function EditTorrentDialog({ torrent, open, onClose }: EditTorren
   }
 
   return (
-    <AppDialog open={open && Boolean(torrent)} onClose={onClose} fullWidth maxWidth='sm'>
-      <DialogTitle>{t('EditTorrent')}</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} sx={{ pt: 1 }}>
-          <Typography variant='caption' color='text.secondary' sx={{ fontFamily: 'monospace' }}>
-            {torrent?.hash}
-          </Typography>
-          <TextField
-            label={t('AddDialog.TitleBlank')}
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            fullWidth
-            autoFocus
-          />
-          <FormControl fullWidth>
-            <InputLabel id='edit-torrent-category'>{t('Category')}</InputLabel>
-            <Select
-              labelId='edit-torrent-category'
-              label={t('Category')}
-              value={category}
-              onChange={e => setCategory(String(e.target.value))}
-            >
-              <MenuItem value=''>
-                <em>{t('Uncategorized')}</em>
-              </MenuItem>
+    <AppDialog open={open && Boolean(torrent)} onClose={onClose} size='sm'>
+      <Modal.Header>
+        <Modal.Heading>{t('EditTorrent')}</Modal.Heading>
+        <Modal.CloseTrigger />
+      </Modal.Header>
+      <Modal.Body className='space-y-4'>
+        <p className='font-mono text-xs text-default-500'>{torrent?.hash}</p>
+        <TextField value={title} onChange={setTitle} autoFocus>
+          <Label>{t('AddDialog.TitleBlank')}</Label>
+          <Input />
+        </TextField>
+        <Select
+          selectedKey={category || 'none'}
+          onSelectionChange={key => setCategory(key === 'none' ? '' : String(key))}
+        >
+          <Label>{t('Category')}</Label>
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              <ListBox.Item id='none'>{t('Uncategorized')}</ListBox.Item>
               {TORRENT_CATEGORIES.map(cat => (
-                <MenuItem key={cat.key} value={cat.key}>
+                <ListBox.Item key={cat.key} id={cat.key}>
                   {t(cat.name)}
-                </MenuItem>
+                </ListBox.Item>
               ))}
-            </Select>
-          </FormControl>
-          <TextField
-            label={t('PosterURL', { defaultValue: 'Poster URL' })}
-            value={poster}
-            onChange={e => setPoster(e.target.value)}
-            fullWidth
-          />
-          {(postersLoading || posterOptions.length > 0) && (
-            <Box>
-              <Typography variant='caption' color='text.secondary' sx={{ mb: 1, display: 'block' }}>
-                {t('Poster', { defaultValue: 'Poster' })} {postersLoading ? '…' : ''}
-              </Typography>
-              <Stack direction='row' spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
-                {posterOptions.map(url => (
-                  <Box
-                    key={url}
-                    component='button'
-                    type='button'
-                    onClick={() => setPoster(url)}
-                    sx={{
-                      p: 0,
-                      border: 2,
-                      borderColor: poster === url ? 'primary.main' : 'divider',
-                      borderRadius: 1,
-                      overflow: 'hidden',
-                      cursor: 'pointer',
-                      bgcolor: 'transparent',
-                      width: 72,
-                      height: 108,
-                    }}
-                  >
-                    <Box component='img' src={url} alt='' sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </Box>
-                ))}
-              </Stack>
-            </Box>
-          )}
-        </Stack>
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose} disabled={saving} autoFocus>
+            </ListBox>
+          </Select.Popover>
+        </Select>
+        <TextField value={poster} onChange={setPoster}>
+          <Label>{t('PosterURL', { defaultValue: 'Poster URL' })}</Label>
+          <Input />
+        </TextField>
+        {(postersLoading || posterOptions.length > 0) && (
+          <div>
+            <p className='mb-2 text-xs text-default-500'>
+              {t('Poster', { defaultValue: 'Poster' })} {postersLoading ? '…' : ''}
+            </p>
+            <div className='flex flex-wrap gap-2'>
+              {posterOptions.map(url => (
+                <button
+                  key={url}
+                  type='button'
+                  onClick={() => setPoster(url)}
+                  className={`h-[108px] w-[72px] overflow-hidden rounded-lg border-2 ${
+                    poster === url ? 'border-primary' : 'border-default-200'
+                  }`}
+                >
+                  <img src={url} alt='' className='h-full w-full object-cover' />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </Modal.Body>
+      <Modal.Footer>
+        <Button onPress={onClose} isDisabled={saving} variant='secondary' autoFocus>
           {t('Cancel')}
         </Button>
-        <Button variant='contained' onClick={() => void handleSave()} disabled={saving || !torrent}>
-          {saving ? <CircularProgress size={20} color='inherit' /> : t('Save')}
+        <Button variant='primary' onPress={() => void handleSave()} isDisabled={saving || !torrent}>
+          {saving ? <Spinner size='sm' color='current' /> : t('Save')}
         </Button>
-      </DialogActions>
+      </Modal.Footer>
     </AppDialog>
   )
 }

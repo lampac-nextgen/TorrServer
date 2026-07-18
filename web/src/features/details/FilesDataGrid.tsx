@@ -1,13 +1,8 @@
-import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import { Button } from '@heroui/react'
+import { CheckCircle } from 'lucide-react'
 import { memo, useMemo, useState, type ReactNode } from 'react'
-import { DataGrid, type GridColDef } from '@mui/x-data-grid'
-import Box from '@mui/material/Box'
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
-import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
-import useMediaQuery from '@mui/material/useMediaQuery'
 import ptt from 'parse-torrent-title'
+import { useMediaQuery } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
 import { streamHost } from 'shared/api/hosts'
 import type { PlayableFile } from 'shared/api/types'
@@ -36,6 +31,23 @@ export interface FilesDataGridProps {
   hash: string
 }
 
+type FileRow = {
+  id: number
+  name: string
+  season?: number
+  episode?: number
+  resolution?: string
+  size: number
+  viewed: boolean
+  path: string
+  link: string
+  player: { key: string; src: string; hls: boolean; heartbeatSrc: string }
+  fullLink: string
+  infuseLink: string
+  senPlayerLink: string
+  iinaLink: string
+}
+
 function ShortFileCard({
   name,
   size,
@@ -50,34 +62,29 @@ function ShortFileCard({
   const { t } = useTranslation()
 
   return (
-    <Card
-      variant='outlined'
-      sx={{
-        overflow: 'hidden',
-        borderLeft: 4,
-        borderLeftColor: viewed ? 'success.main' : 'primary.main',
-      }}
+    <div
+      className={`overflow-hidden rounded-xl border border-default-200 bg-content1 ${
+        viewed ? 'border-l-4 border-l-success' : 'border-l-4 border-l-primary'
+      }`}
     >
-      <Box sx={{ px: 1.5, py: 1.25 }}>
-        <Typography variant='subtitle2' sx={{ wordBreak: 'break-word', fontWeight: 600 }}>
-          {name}
-        </Typography>
-      </Box>
-      <CardContent sx={{ py: 1, '&:last-child': { pb: 1 } }}>
-        <Stack direction='row' spacing={2} sx={{ mb: 1, alignItems: 'center' }}>
+      <div className='px-3 py-2'>
+        <p className='break-words text-sm font-semibold'>{name}</p>
+      </div>
+      <div className='px-3 pb-3'>
+        <div className='mb-2 flex items-center gap-4 text-xs text-default-500'>
           {viewed ? (
-            <Typography variant='caption' color='success.main' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-              <CheckCircleIcon fontSize='inherit' />
+            <span className='inline-flex items-center gap-1 text-success'>
+              <CheckCircle className='size-3.5' aria-hidden />
               {t('Viewed')}
-            </Typography>
+            </span>
           ) : null}
-          <Typography variant='caption' color='text.secondary'>
+          <span>
             {t('Size')}: {humanizeSize(size)}
-          </Typography>
-        </Stack>
+          </span>
+        </div>
         {actions}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
 
@@ -166,13 +173,13 @@ const FilesDataGrid = memo(
             infuseLink: `infuse://x-callback-url/play?url=${encodeURIComponent(fullLink.toString())}`,
             senPlayerLink: `senplayer://x-callback-url/play?url=${encodeURIComponent(fullLink.toString())}`,
             iinaLink: `iina://weblink?url=${encodeURIComponent(fullLink.toString())}`,
-          }
+          } satisfies FileRow
         }),
       // eslint-disable-next-line react-hooks/exhaustive-deps -- helpers close over hash/gst
       [filtered, viewedFileList, shouldDisplayFullFileName, hash, gstRuntime, unsupportedPlayers],
     )
 
-    const renderActions = (row: (typeof rows)[number]) => (
+    const renderActions = (row: FileRow) => (
       <FileRowActions
         preloadLabel={t('Preload')}
         onPreload={() => preloadBuffer(row.id)}
@@ -190,56 +197,11 @@ const FilesDataGrid = memo(
       />
     )
 
-    const columns = useMemo<GridColDef[]>(() => {
-      const cols: GridColDef[] = [
-        {
-          field: 'viewed',
-          headerName: t('Viewed'),
-          width: 70,
-          align: 'center',
-          headerAlign: 'center',
-          renderCell: params =>
-            params.value ? <CheckCircleIcon color='success' fontSize='small' aria-label={t('Viewed')} /> : null,
-        },
-        { field: 'name', headerName: t('Name'), flex: 1, minWidth: 160 },
-      ]
-      if (fileHasSeasonText && seasonAmount?.length === 1) {
-        cols.push({ field: 'season', headerName: t('Season'), width: 80 })
-      }
-      if (fileHasEpisodeText) cols.push({ field: 'episode', headerName: t('Episode'), width: 80 })
-      if (fileHasResolutionText) cols.push({ field: 'resolution', headerName: t('Resolution'), width: 100 })
-      cols.push({
-        field: 'size',
-        headerName: t('Size'),
-        width: 100,
-        valueFormatter: (value: number) => humanizeSize(value),
-      })
-      cols.push({
-        field: 'actions',
-        headerName: t('Actions'),
-        flex: 1,
-        minWidth: 280,
-        sortable: false,
-        filterable: false,
-        disableColumnMenu: true,
-        renderCell: params => renderActions(params.row),
-      })
-      return cols
-    }, [
-      t,
-      fileHasSeasonText,
-      fileHasEpisodeText,
-      fileHasResolutionText,
-      seasonAmount,
-      unsupportedPlayers,
-      shouldShowOpenLink,
-    ])
-
     if (!playableFileList?.length) return t('NoPlayableFiles')
 
     if (isCompact) {
       return (
-        <Stack spacing={1.5}>
+        <div className='space-y-3'>
           {rows.map(row => (
             <ShortFileCard
               key={row.id}
@@ -249,32 +211,45 @@ const FilesDataGrid = memo(
               actions={renderActions(row)}
             />
           ))}
-        </Stack>
+        </div>
       )
     }
 
     return (
-      <Box sx={{ width: '100%', minHeight: 240, height: Math.min(520, 56 + rows.length * 72) }}>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          density='compact'
-          disableRowSelectionOnClick
-          getRowHeight={() => 'auto'}
-          getRowClassName={({ row }) => (row.viewed ? 'viewed-row' : '')}
-          pageSizeOptions={[25, 50, 100]}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 25 } },
-            sorting: fileHasEpisodeText ? { sortModel: [{ field: 'episode', sort: 'asc' }] } : undefined,
-          }}
-          sx={{
-            border: 0,
-            '& .viewed-row': { bgcolor: 'action.selected' },
-            '& .MuiDataGrid-cell': { py: 1, alignItems: 'center' },
-            '& .MuiDataGrid-cell[data-field="actions"]': { alignItems: 'flex-start' },
-          }}
-        />
-      </Box>
+      <div className='min-h-[240px] w-full overflow-auto rounded-xl border border-default-200'>
+        <table className='w-full min-w-[640px] border-collapse text-sm'>
+          <thead className='bg-default-100 text-left text-xs uppercase text-default-500'>
+            <tr>
+              <th className='px-3 py-2'>{t('Viewed')}</th>
+              <th className='px-3 py-2'>{t('Name')}</th>
+              {fileHasSeasonText && seasonAmount?.length === 1 ? (
+                <th className='px-3 py-2'>{t('Season')}</th>
+              ) : null}
+              {fileHasEpisodeText ? <th className='px-3 py-2'>{t('Episode')}</th> : null}
+              {fileHasResolutionText ? <th className='px-3 py-2'>{t('Resolution')}</th> : null}
+              <th className='px-3 py-2'>{t('Size')}</th>
+              <th className='px-3 py-2'>{t('Actions')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(row => (
+              <tr key={row.id} className={row.viewed ? 'bg-default-100/60' : undefined}>
+                <td className='px-3 py-2 text-center'>
+                  {row.viewed ? <CheckCircle className='mx-auto size-4 text-success' aria-label={t('Viewed')} /> : null}
+                </td>
+                <td className='px-3 py-2 align-top'>{row.name}</td>
+                {fileHasSeasonText && seasonAmount?.length === 1 ? (
+                  <td className='px-3 py-2'>{row.season ?? '—'}</td>
+                ) : null}
+                {fileHasEpisodeText ? <td className='px-3 py-2'>{row.episode ?? '—'}</td> : null}
+                {fileHasResolutionText ? <td className='px-3 py-2'>{row.resolution ?? '—'}</td> : null}
+                <td className='px-3 py-2 whitespace-nowrap'>{humanizeSize(row.size)}</td>
+                <td className='px-3 py-2 align-top'>{renderActions(row)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     )
   },
   (prev, next) =>

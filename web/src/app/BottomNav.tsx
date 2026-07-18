@@ -1,20 +1,15 @@
-import { useState } from 'react'
-import Box from '@mui/material/Box'
-import BottomNavigation from '@mui/material/BottomNavigation'
-import BottomNavigationAction from '@mui/material/BottomNavigationAction'
-import Drawer from '@mui/material/Drawer'
-import List from '@mui/material/List'
-import ListItemButton from '@mui/material/ListItemButton'
-import ListItemIcon from '@mui/material/ListItemIcon'
-import ListItemText from '@mui/material/ListItemText'
-import AddIcon from '@mui/icons-material/Add'
-import SearchIcon from '@mui/icons-material/Search'
-import CategoryIcon from '@mui/icons-material/Category'
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
-import SettingsIcon from '@mui/icons-material/Settings'
-import InfoIcon from '@mui/icons-material/Info'
-import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew'
-import DeleteIcon from '@mui/icons-material/Delete'
+import { type ReactNode, useState } from 'react'
+import { Button, Modal, useOverlayState } from '@heroui/react'
+import {
+  Ellipsis,
+  FolderPlus,
+  Info,
+  Layers,
+  Power,
+  Search,
+  Settings,
+  Trash2,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 
@@ -33,101 +28,101 @@ export default function BottomNav({
 }: ShellNavProps) {
   const { t } = useTranslation()
   const disabled = isOffline || isLoading
-  const [moreOpen, setMoreOpen] = useState(false)
-  useSyncModalOpen(moreOpen)
+  const moreState = useOverlayState()
+  useSyncModalOpen(moreState.isOpen)
+
+  const closeMore = () => moreState.close()
+
+  const navAction = (
+    label: string,
+    icon: ReactNode,
+    onPress: () => void,
+    isDisabled = false,
+  ) => (
+    <Button
+      key={label}
+      variant='ghost'
+      isDisabled={isDisabled}
+      onPress={onPress}
+      className='flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-none px-1 py-2 text-xs font-medium'
+      aria-label={label}
+    >
+      {icon}
+      <span className='truncate'>{label}</span>
+    </Button>
+  )
 
   return (
     <>
-      <Box
-        className='ts-bottom-nav'
-        sx={{
-          position: 'fixed',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: theme => theme.zIndex.appBar,
-          height: 'calc(90px + env(safe-area-inset-bottom, 0px))',
-          pb: 'env(safe-area-inset-bottom, 0px)',
-          bgcolor: 'background.paper',
-          borderTop: 1,
-          borderColor: 'divider',
-        }}
+      <div
+        className='ts-bottom-nav fixed inset-x-0 bottom-0 z-50 border-t border-[var(--border,#2a3b32)] bg-[var(--surface,#121a16)] pb-[env(safe-area-inset-bottom,0px)]'
+        style={{ height: 'calc(90px + env(safe-area-inset-bottom, 0px))' }}
       >
-        <BottomNavigation showLabels sx={{ height: 90, maxHeight: 90 }}>
-          <BottomNavigationAction
-            label={t('Add', { defaultValue: 'Add' })}
-            icon={<AddIcon />}
-            disabled={disabled}
-            onClick={onAdd}
-          />
-          <BottomNavigationAction label={t('Search')} icon={<SearchIcon />} disabled={disabled} onClick={onSearch} />
-          <BottomNavigationAction
-            label={t('Category', { defaultValue: 'Category' })}
-            icon={<CategoryIcon />}
-            onClick={onCategories}
-          />
-          <BottomNavigationAction
-            label={t('More', { defaultValue: 'More' })}
-            icon={<MoreHorizIcon />}
-            onClick={() => setMoreOpen(true)}
-          />
-        </BottomNavigation>
-      </Box>
+        <div className='mx-auto flex h-[90px] max-w-lg items-stretch'>
+          {navAction(t('Add', { defaultValue: 'Add' }), <FolderPlus size={22} />, onAdd, disabled)}
+          {navAction(t('Search'), <Search size={22} />, onSearch, disabled)}
+          {navAction(t('Category', { defaultValue: 'Category' }), <Layers size={22} />, onCategories)}
+          {navAction(t('More', { defaultValue: 'More' }), <Ellipsis size={22} />, moreState.open)}
+        </div>
+      </div>
 
-      <Drawer anchor='bottom' open={moreOpen} onClose={() => setMoreOpen(false)}>
-        <List sx={{ pb: 'env(safe-area-inset-bottom, 0px)' }}>
-          <ListItemButton
-            disabled={disabled}
-            onClick={() => {
-              setMoreOpen(false)
-              onRemoveAll()
-            }}
-          >
-            <ListItemIcon>
-              <DeleteIcon />
-            </ListItemIcon>
-            <ListItemText primary={t('RemoveAll')} />
-          </ListItemButton>
-
-          <ListItemButton
-            disabled={disabled}
-            onClick={() => {
-              setMoreOpen(false)
-              onSettings()
-            }}
-          >
-            <ListItemIcon>
-              <SettingsIcon />
-            </ListItemIcon>
-            <ListItemText primary={t('Settings')} />
-          </ListItemButton>
-
-          <ListItemButton
-            onClick={() => {
-              setMoreOpen(false)
-              onAbout()
-            }}
-          >
-            <ListItemIcon>
-              <InfoIcon />
-            </ListItemIcon>
-            <ListItemText primary={t('About')} />
-          </ListItemButton>
-
-          <ListItemButton
-            disabled={disabled}
-            onClick={() => {
-              setMoreOpen(false)
-              onCloseServer()
-            }}
-          >
-            <ListItemIcon>
-              <PowerSettingsNewIcon />
-            </ListItemIcon>
-            <ListItemText primary={t('CloseServer')} />
-          </ListItemButton>
-        </List>
-      </Drawer>
+      <Modal state={moreState}>
+        <Modal.Backdrop isDismissable onClick={closeMore}>
+          <Modal.Container placement='bottom' size='md'>
+            <Modal.Dialog aria-label={t('More', { defaultValue: 'More' })}>
+              <Modal.Body className='flex flex-col gap-1 pb-[env(safe-area-inset-bottom,0px)] pt-2'>
+                <Button
+                  variant='ghost'
+                  isDisabled={disabled}
+                  className='justify-start gap-3 px-4 py-3'
+                  onPress={() => {
+                    closeMore()
+                    onRemoveAll()
+                  }}
+                >
+                  <Trash2 size={20} />
+                  {t('RemoveAll')}
+                </Button>
+                <Button
+                  variant='ghost'
+                  isDisabled={disabled}
+                  className='justify-start gap-3 px-4 py-3'
+                  onPress={() => {
+                    closeMore()
+                    onSettings()
+                  }}
+                >
+                  <Settings size={20} />
+                  {t('Settings')}
+                </Button>
+                <Button
+                  variant='ghost'
+                  className='justify-start gap-3 px-4 py-3'
+                  onPress={() => {
+                    closeMore()
+                    onAbout()
+                  }}
+                >
+                  <Info size={20} />
+                  {t('About')}
+                </Button>
+                <Button
+                  variant='ghost'
+                  isDisabled={disabled}
+                  className='justify-start gap-3 px-4 py-3 text-red-400'
+                  onPress={() => {
+                    closeMore()
+                    onCloseServer()
+                  }}
+                >
+                  <Power size={20} />
+                  {t('CloseServer')}
+                </Button>
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
     </>
   )
 }

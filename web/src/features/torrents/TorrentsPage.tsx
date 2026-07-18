@@ -1,11 +1,8 @@
-import { lazy, Suspense, useMemo, useState } from 'react'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import ButtonBase from '@mui/material/ButtonBase'
-import Skeleton from '@mui/material/Skeleton'
-import Typography from '@mui/material/Typography'
-import CloudOffIcon from '@mui/icons-material/CloudOff'
-import CreateNewFolderOutlinedIcon from '@mui/icons-material/CreateNewFolderOutlined'
+import { lazy, Suspense, useMemo, useRef, useState } from 'react'
+import { useGSAP } from '@gsap/react'
+import gsap from 'gsap'
+import { Button } from '@heroui/react'
+import { CloudOff, FolderPlus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
@@ -36,25 +33,11 @@ function sortTorrents(torrents: TorrentStat[], sortABC: boolean, sortCategory: s
   })
 }
 
-const gridSx = {
-  display: 'grid',
-  gridTemplateColumns: {
-    xs: '1fr',
-    sm: 'repeat(2, minmax(0, 1fr))',
-    lg: 'repeat(3, minmax(0, 1fr))',
-  },
-  gap: { xs: 1, sm: 1.25, md: 1.5 },
-  p: { xs: 1, sm: 1.25, md: 1.75 },
-  pb: 2.5,
-  alignContent: 'start',
-  minHeight: '100%',
-  bgcolor: 'background.default',
-} as const
-
 export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsPageProps) {
   const { t } = useTranslation()
   const [selected, setSelected] = useState<TorrentStat | null>(null)
   const [editing, setEditing] = useState<TorrentStat | null>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
 
   const { data: torrents, isLoading, isError } = useTorrentsQuery()
 
@@ -63,92 +46,85 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsP
     [torrents, sortABC, sortCategory],
   )
 
+  useGSAP(
+    () => {
+      if (!gridRef.current) return
+      const cards = gridRef.current.querySelectorAll('.torrent-card')
+      if (!cards.length) return
+      gsap.from(cards, {
+        opacity: 0,
+        y: 24,
+        duration: 0.5,
+        stagger: 0.04,
+        ease: 'power2.out',
+      })
+    },
+    { scope: gridRef, dependencies: [sorted.length, sortABC, sortCategory] },
+  )
+
   if (isLoading) {
     return (
-      <Box sx={gridSx}>
-        {Array.from({ length: 9 }).map((_, i) => (
-          <Skeleton key={i} variant='rounded' height={132} sx={{ borderRadius: 2.5 }} />
+      <div
+        className='grid min-h-full gap-3 p-4'
+        style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))' }}
+      >
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div key={i} className='flex flex-col gap-2'>
+            <div className='aspect-[2/3] animate-pulse rounded-xl bg-[#1a2620]' />
+            <div className='h-4 animate-pulse rounded bg-[#1a2620]' />
+          </div>
         ))}
-      </Box>
+      </div>
     )
   }
 
   if (isError) {
     return (
-      <Box
-        sx={{
-          display: 'grid',
-          placeItems: 'center',
-          height: '100%',
-          minHeight: 200,
-          p: 3,
-          textAlign: 'center',
-          color: 'text.secondary',
-        }}
-      >
-        <CloudOffIcon sx={{ fontSize: 48, mb: 1, opacity: 0.6 }} />
-        <Typography variant='h6'>{t('NoServerConnection')}</Typography>
-      </Box>
+      <div className='grid min-h-[200px] place-items-center p-6 text-center text-[var(--muted,#8fafa0)]'>
+        <CloudOff size={48} strokeWidth={1.25} className='mb-2 opacity-60' />
+        <p className='text-lg font-semibold text-[var(--foreground,#e6f2ec)]'>{t('NoServerConnection')}</p>
+      </div>
     )
   }
 
   if (!torrents?.length) {
     return (
-      <Box
-        sx={{
-          display: 'grid',
-          placeItems: 'center',
-          height: '100%',
-          minHeight: 200,
-          p: 3,
-          textAlign: 'center',
-          color: 'text.secondary',
-        }}
-      >
-        <ButtonBase
+      <div className='grid min-h-[200px] place-items-center p-6 text-center'>
+        <button
+          type='button'
           onClick={onAdd}
           disabled={!onAdd}
-          sx={{
-            display: 'grid',
-            placeItems: 'center',
-            gap: 1.5,
-            p: 3,
-            borderRadius: 3,
-            border: 1,
-            borderColor: 'divider',
-            borderStyle: 'dashed',
-            minWidth: 260,
-            minHeight: 180,
-            bgcolor: 'background.paper',
-          }}
+          className='grid min-h-[180px] min-w-[260px] place-items-center gap-3 rounded-2xl border border-dashed border-[var(--border,#2a3b32)] bg-[var(--surface,#121a16)] p-6 transition-colors hover:border-[#00a572]/50 disabled:opacity-50'
         >
-          <CreateNewFolderOutlinedIcon sx={{ fontSize: 48, opacity: 0.7 }} color='primary' />
-          <Typography variant='h6' color='text.primary'>
-            {t('NoTorrentsAdded')}
-          </Typography>
-          <Button variant='contained' component='span'>
+          <FolderPlus size={48} className='text-[#00a572] opacity-80' />
+          <span className='text-lg font-semibold text-[var(--foreground,#e6f2ec)]'>{t('NoTorrentsAdded')}</span>
+          <Button variant='primary' className='pointer-events-none'>
             {t('AddFirstTorrent')}
           </Button>
-        </ButtonBase>
-      </Box>
+        </button>
+      </div>
     )
   }
 
   if (!sorted.length) {
     return (
-      <Box sx={{ display: 'grid', placeItems: 'center', height: '100%', p: 3 }}>
-        <Typography color='text.secondary'>{t('NoTorrentsInCategory')}</Typography>
-      </Box>
+      <div className='grid min-h-[200px] place-items-center p-6'>
+        <p className='text-[var(--muted,#8fafa0)]'>{t('NoTorrentsInCategory')}</p>
+      </div>
     )
   }
 
   return (
     <>
-      <Box sx={gridSx}>
+      <div
+        ref={gridRef}
+        className='grid min-h-full gap-3 p-3 pb-6 sm:gap-4 sm:p-4 md:p-5'
+        style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))' }}
+      >
         {sorted.map(torrent => (
           <TorrentCard key={torrent.hash} torrent={torrent} onSelect={setSelected} onEdit={setEditing} />
         ))}
-      </Box>
+      </div>
 
       {selected ? (
         <Suspense fallback={null}>

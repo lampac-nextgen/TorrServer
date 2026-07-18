@@ -1,15 +1,49 @@
-import { styled } from '@mui/material/styles'
-import Dialog, { type DialogProps } from '@mui/material/Dialog'
+import { Modal, useOverlayState } from '@heroui/react'
+import { useEffect, type ReactNode } from 'react'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 
-/** Dialog that registers open state for bottom-nav / chrome coordination. */
-export default function AppDialog({ open, children, ...rest }: DialogProps) {
-  useSyncModalOpen(Boolean(open))
-  return (
-    <Dialog open={open} {...rest}>
-      {children}
-    </Dialog>
-  )
+export interface AppDialogProps {
+  open: boolean
+  onClose: () => void
+  children: ReactNode
+  size?: 'sm' | 'md' | 'lg' | 'full'
+  fullScreen?: boolean
+  className?: string
 }
 
-export const StyledAppDialog = styled(AppDialog)({})
+/** Modal wrapper that registers open state for bottom-nav / chrome coordination. */
+export default function AppDialog({
+  open,
+  onClose,
+  children,
+  size = 'md',
+  fullScreen = false,
+  className,
+}: AppDialogProps) {
+  useSyncModalOpen(open)
+
+  const state = useOverlayState({
+    isOpen: open,
+    onOpenChange: next => {
+      if (!next) onClose()
+    },
+  })
+
+  useEffect(() => {
+    if (open) state.setOpen(true)
+  }, [open, state])
+
+  return (
+    <Modal.Root state={state}>
+      <Modal.Backdrop>
+        <Modal.Container
+          size={fullScreen ? 'full' : size}
+          scroll='inside'
+          className={className}
+        >
+          <Modal.Dialog>{children}</Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
+    </Modal.Root>
+  )
+}

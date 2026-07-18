@@ -1,7 +1,4 @@
-import MovieCreationIcon from '@mui/icons-material/MovieCreation'
-import LiveTvIcon from '@mui/icons-material/LiveTv'
-import MusicNoteIcon from '@mui/icons-material/MusicNote'
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
+import { Clapperboard, MoreHorizontal, Music, Tv } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 export interface TorrentCategoryItem {
@@ -11,8 +8,8 @@ export interface TorrentCategoryItem {
 }
 
 export const TORRENT_CATEGORIES: TorrentCategoryItem[] = [
-  { key: 'movie', name: 'Movies', icon: <MovieCreationIcon /> },
-  { key: 'tv', name: 'Series', icon: <LiveTvIcon /> },
-  { key: 'music', name: 'Music', icon: <MusicNoteIcon /> },
-  { key: 'other', name: 'Other', icon: <MoreHorizIcon /> },
+  { key: 'movie', name: 'Movies', icon: <Clapperboard className='size-5' aria-hidden /> },
+  { key: 'tv', name: 'Series', icon: <Tv className='size-5' aria-hidden /> },
+  { key: 'music', name: 'Music', icon: <Music className='size-5' aria-hidden /> },
+  { key: 'other', name: 'Other', icon: <MoreHorizontal className='size-5' aria-hidden /> },
 ]

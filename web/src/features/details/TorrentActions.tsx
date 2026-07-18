@@ -1,14 +1,5 @@
+import { Button, ButtonGroup, Description, Modal, Separator, useOverlayState } from '@heroui/react'
 import { memo, useState } from 'react'
-import Button from '@mui/material/Button'
-import ButtonGroup from '@mui/material/ButtonGroup'
-import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogContentText from '@mui/material/DialogContentText'
-import DialogTitle from '@mui/material/DialogTitle'
-import Divider from '@mui/material/Divider'
-import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
 import ptt from 'parse-torrent-title'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
@@ -43,6 +34,12 @@ function TorrentActions({
   const toast = useOptionalAppToast()
   const queryClient = useQueryClient()
   const [confirm, setConfirm] = useState<ConfirmKind>(null)
+  const confirmState = useOverlayState({
+    isOpen: confirm != null,
+    onOpenChange: open => {
+      if (!open) setConfirm(null)
+    },
+  })
 
   const latestViewedFileId = viewedFileList?.[viewedFileList.length - 1]
   const latestViewedFile = playableFileList?.find(({ id }) => id === latestViewedFileId)?.path
@@ -85,11 +82,9 @@ function TorrentActions({
   return (
     <>
       {!isOnlyOnePlayableFile && !!viewedFileList?.length ? (
-        <Stack spacing={1} sx={{ mb: 2 }}>
-          <Typography variant='subtitle2' sx={{ fontWeight: 600 }}>
-            {t('DownloadPlaylist')}
-          </Typography>
-          <Typography variant='body2' color='text.secondary'>
+        <div className='mb-4 space-y-2'>
+          <p className='text-sm font-semibold'>{t('DownloadPlaylist')}</p>
+          <Description className='text-sm'>
             {t('LatestFilePlayed')}{' '}
             <strong>
               {latestViewedFileData?.title}.
@@ -100,62 +95,62 @@ function TorrentActions({
                 </>
               ) : null}
             </strong>
-          </Typography>
-          <ButtonGroup variant='contained' color='primary'>
-            <Button component='a' href={fullPlaylistLink}>
+          </Description>
+          <ButtonGroup>
+            <Button variant='primary' onPress={() => window.open(fullPlaylistLink, '_blank')}>
               {t('Full')}
             </Button>
-            <Button component='a' href={partialPlaylistLink}>
+            <Button variant='primary' onPress={() => window.open(partialPlaylistLink, '_blank')}>
               {t('FromLatestFile')}
             </Button>
           </ButtonGroup>
-        </Stack>
+        </div>
       ) : null}
 
-      <Typography variant='subtitle2' sx={{ fontWeight: 600, mb: 1 }}>
-        {t('Info')}
-      </Typography>
-      <Stack direction='row' useFlexGap spacing={1} sx={{ flexWrap: 'wrap', mb: 2 }}>
+      <p className='mb-2 text-sm font-semibold'>{t('Info')}</p>
+      <div className='mb-4 flex flex-wrap gap-2'>
         {isOnlyOnePlayableFile || !viewedFileList?.length ? (
-          <Button component='a' href={fullPlaylistLink} variant='contained' color='primary'>
+          <Button variant='primary' onPress={() => window.open(fullPlaylistLink, '_blank')}>
             {t('DownloadPlaylist')}
           </Button>
         ) : null}
-        <Button variant='contained' color='primary' onClick={() => void copyMagnet()}>
+        <Button variant='primary' onPress={() => void copyMagnet()}>
           {t('CopyHash')}
         </Button>
-      </Stack>
+      </div>
 
-      <Divider sx={{ my: 1.5 }} />
+      <Separator className='my-4' />
 
-      <Typography variant='subtitle2' sx={{ fontWeight: 600, mb: 1 }}>
-        {t('TorrentState')}
-      </Typography>
-      <Stack direction='row' useFlexGap spacing={1} sx={{ flexWrap: 'wrap' }}>
-        <Button onClick={() => setConfirm('views')} variant='outlined' color='primary'>
+      <p className='mb-2 text-sm font-semibold'>{t('TorrentState')}</p>
+      <div className='flex flex-wrap gap-2'>
+        <Button variant='secondary' onPress={() => setConfirm('views')}>
           {t('RemoveViews')}
         </Button>
-        <Button onClick={() => setConfirm('drop')} variant='outlined' color='error'>
+        <Button variant='danger' onPress={() => setConfirm('drop')}>
           {t('DropTorrent')}
         </Button>
-      </Stack>
+      </div>
 
-      <Dialog open={confirm != null} onClose={() => setConfirm(null)}>
-        <DialogTitle>{confirm === 'drop' ? t('DropTorrent') : t('RemoveViews')}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {confirm === 'drop' ? t('ConfirmDropTorrent') : t('ConfirmRemoveViews')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button autoFocus onClick={() => setConfirm(null)} variant='outlined'>
-            {t('Cancel')}
-          </Button>
-          <Button onClick={runConfirmed} variant='contained' color={confirm === 'drop' ? 'error' : 'primary'}>
-            {t('OK')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <Modal.Root state={confirmState}>
+        <Modal.Backdrop>
+          <Modal.Container size='sm'>
+            <Modal.Dialog>
+              <Modal.Header>
+                <Modal.Heading>{confirm === 'drop' ? t('DropTorrent') : t('RemoveViews')}</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>{confirm === 'drop' ? t('ConfirmDropTorrent') : t('ConfirmRemoveViews')}</Modal.Body>
+              <Modal.Footer>
+                <Button variant='secondary' onPress={() => setConfirm(null)} autoFocus>
+                  {t('Cancel')}
+                </Button>
+                <Button variant={confirm === 'drop' ? 'danger' : 'primary'} onPress={runConfirmed}>
+                  {t('OK')}
+                </Button>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal.Root>
     </>
   )
 }

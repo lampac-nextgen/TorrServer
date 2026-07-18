@@ -1,8 +1,5 @@
+import { Button } from '@heroui/react'
 import { useMemo, useState } from 'react'
-import Box from '@mui/material/Box'
-import Typography from '@mui/material/Typography'
-import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView'
-import { TreeItem } from '@mui/x-tree-view/TreeItem'
 import { useTranslation } from 'react-i18next'
 import type { PlayableFile } from 'shared/api/types'
 
@@ -46,15 +43,38 @@ function collectFiles(node: DirNode): PlayableFile[] {
   return out
 }
 
-function renderTreeItems(node: DirNode): React.ReactNode {
-  return [...node.children.values()].map(child => (
-    <TreeItem key={child.id} itemId={child.id} label={child.label}>
-      {renderTreeItems(child)}
-    </TreeItem>
-  ))
+function FolderTree({
+  node,
+  selectedFolder,
+  onSelect,
+  depth = 0,
+}: {
+  node: DirNode
+  selectedFolder: string
+  onSelect: (id: string) => void
+  depth?: number
+}) {
+  return (
+    <>
+      {[...node.children.values()].map(child => (
+        <div key={child.id}>
+          <Button
+            variant={selectedFolder === child.id ? 'primary' : 'ghost'}
+            size='sm'
+            className='mb-1 w-full justify-start'
+            style={{ paddingLeft: `${8 + depth * 12}px` }}
+            onPress={() => onSelect(child.id)}
+          >
+            {child.label}
+          </Button>
+          <FolderTree node={child} selectedFolder={selectedFolder} onSelect={onSelect} depth={depth + 1} />
+        </div>
+      ))}
+    </>
+  )
 }
 
-/** Multi-file browser: Tree View folders + Data Grid files (MUI X). */
+/** Multi-file browser: folder tree + file list. */
 export default function FileBrowser({
   playableFileList,
   viewedFileList,
@@ -86,29 +106,22 @@ export default function FileBrowser({
   }, [selectedFolder, folderNode, playableFileList])
 
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: hasFolders ? { xs: '1fr', md: '220px 1fr' } : '1fr',
-        gap: 1.5,
-        minHeight: 280,
-        width: '100%',
-      }}
+    <div
+      className={`grid min-h-[280px] w-full gap-3 ${hasFolders ? 'md:grid-cols-[220px_1fr]' : 'grid-cols-1'}`}
     >
       {hasFolders && (
-        <Box sx={{ borderRight: { md: 1 }, borderColor: 'divider', pr: { md: 1 }, maxHeight: 420, overflow: 'auto' }}>
-          <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mb: 0.5 }}>
-            {t('Folders', { defaultValue: 'Folders' })}
-          </Typography>
-          <SimpleTreeView
-            selectedItems={selectedFolder}
-            onSelectedItemsChange={(_, id) => setSelectedFolder((id as string) || 'root')}
+        <div className='max-h-[420px] overflow-auto md:border-r md:border-default-200 md:pr-2'>
+          <p className='mb-1 block text-xs text-default-500'>{t('Folders', { defaultValue: 'Folders' })}</p>
+          <Button
+            variant={selectedFolder === 'root' ? 'primary' : 'ghost'}
+            size='sm'
+            className='mb-2 w-full justify-start'
+            onPress={() => setSelectedFolder('root')}
           >
-            <TreeItem itemId='root' label={t('AllFiles', { defaultValue: 'All files' })}>
-              {renderTreeItems(tree)}
-            </TreeItem>
-          </SimpleTreeView>
-        </Box>
+            {t('AllFiles', { defaultValue: 'All files' })}
+          </Button>
+          <FolderTree node={tree} selectedFolder={selectedFolder} onSelect={setSelectedFolder} />
+        </div>
       )}
       <FilesDataGrid
         playableFileList={filesInFolder}
@@ -117,6 +130,6 @@ export default function FileBrowser({
         seasonAmount={seasonAmount}
         hash={hash}
       />
-    </Box>
+    </div>
   )
 }

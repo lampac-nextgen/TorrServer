@@ -1,16 +1,17 @@
+import {
+  Alert,
+  Description,
+  Input,
+  Label,
+  ListBox,
+  Select,
+  Separator,
+  Switch,
+  TextField,
+} from '@heroui/react'
 import { useEffect, useState } from 'react'
-import Alert from '@mui/material/Alert'
-import Box from '@mui/material/Box'
-import Divider from '@mui/material/Divider'
-import FormControlLabel from '@mui/material/FormControlLabel'
-import FormHelperText from '@mui/material/FormHelperText'
-import MenuItem from '@mui/material/MenuItem'
-import Stack from '@mui/material/Stack'
-import Switch from '@mui/material/Switch'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
 import { useTranslation } from 'react-i18next'
-import { gstEchoHost, gstSettingsHost } from 'shared/api/hosts'
+import { gstEchoHost } from 'shared/api/hosts'
 
 export interface GStreamerConfig {
   GSTVersion: number
@@ -87,12 +88,14 @@ function GstSwitch({
   onChange: (checked: boolean) => void
 }) {
   return (
-    <FormControlLabel
-      control={<Switch checked={checked} onChange={e => onChange(e.target.checked)} />}
-      label={label}
-      labelPlacement='start'
-      sx={{ ml: 0, width: '100%', justifyContent: 'space-between', mr: 0, mb: 0.5, minHeight: 44 }}
-    />
+    <div className='mb-2 flex min-h-11 items-center justify-between gap-4'>
+      <Label>{label}</Label>
+      <Switch isSelected={checked} onChange={onChange}>
+        <Switch.Control>
+          <Switch.Thumb />
+        </Switch.Control>
+      </Switch>
+    </div>
   )
 }
 
@@ -130,187 +133,97 @@ export default function GStreamerSettingsPanel({ config, onChange }: GStreamerSe
   }
 
   return (
-    <Stack spacing={2}>
-      <Typography variant='overline' color='text.secondary'>
+    <div className='space-y-4'>
+      <p className='text-xs uppercase tracking-wide text-default-500'>
         {t('GStreamer.Settings', { defaultValue: 'GStreamer' })}
-      </Typography>
+      </p>
 
       {echo ? (
-        <Alert severity='info'>
-          {t('GStreamer.Runtime', { defaultValue: 'Runtime' })}: {statusLabel(echo.gstreamer)} ·{' '}
-          {t('GStreamer.Discoverer', { defaultValue: 'Discoverer' })}: {statusLabel(echo.gst_discoverer)}
+        <Alert status='accent'>
+          <Alert.Description>
+            {t('GStreamer.Runtime', { defaultValue: 'Runtime' })}: {statusLabel(echo.gstreamer)} ·{' '}
+            {t('GStreamer.Discoverer', { defaultValue: 'Discoverer' })}: {statusLabel(echo.gst_discoverer)}
+          </Alert.Description>
         </Alert>
       ) : null}
 
-      <Typography variant='subtitle2'>{t('GStreamer.SectionGeneral', { defaultValue: 'General' })}</Typography>
-      <TextField
-        label={t('GStreamer.Version', { defaultValue: 'Min GStreamer version' })}
-        type='number'
-        value={config.GSTVersion}
-        onChange={e => update('GSTVersion', Number(e.target.value) || GST_MIN_VERSION)}
-        helperText={t('GStreamer.VersionHint', { defaultValue: 'Minimum required version (e.g. 1.22)' })}
-        fullWidth
-        size='small'
-        slotProps={{ htmlInput: { min: 1, step: 0.01 } }}
-      />
-      <TextField
-        label={t('GStreamer.Path', { defaultValue: 'GStreamer path' })}
-        value={config.GSTPath || ''}
-        onChange={e => update('GSTPath', e.target.value)}
-        helperText={t('GStreamer.PathHint', { defaultValue: 'Optional custom binary/plugin path' })}
-        fullWidth
-        size='small'
-      />
-      <TextField
-        select
-        label={t('GStreamer.Source', { defaultValue: 'Source mode' })}
-        value={config.Source || 'stream'}
-        onChange={e => update('Source', e.target.value)}
-        helperText={t('GStreamer.SourceHint', { defaultValue: 'stream = HLS pipeline, play = direct' })}
-        fullWidth
-        size='small'
-      >
-        <MenuItem value='stream'>{t('GStreamer.SourceStream', { defaultValue: 'Stream (HLS)' })}</MenuItem>
-        <MenuItem value='play'>{t('GStreamer.SourcePlay', { defaultValue: 'Play' })}</MenuItem>
+      <p className='text-sm font-semibold'>{t('GStreamer.SectionGeneral', { defaultValue: 'General' })}</p>
+      <TextField value={String(config.GSTVersion)} onChange={value => update('GSTVersion', Number(value) || GST_MIN_VERSION)}>
+        <Label>{t('GStreamer.Version', { defaultValue: 'Min GStreamer version' })}</Label>
+        <Input type='number' min={1} step={0.01} />
+        <Description>{t('GStreamer.VersionHint', { defaultValue: 'Minimum required version (e.g. 1.22)' })}</Description>
+      </TextField>
+      <TextField value={config.GSTPath || ''} onChange={value => update('GSTPath', value)}>
+        <Label>{t('GStreamer.Path', { defaultValue: 'GStreamer path' })}</Label>
+        <Input />
+        <Description>{t('GStreamer.PathHint', { defaultValue: 'Optional custom binary/plugin path' })}</Description>
+      </TextField>
+      <Select selectedKey={config.Source || 'stream'} onSelectionChange={key => update('Source', String(key))}>
+        <Label>{t('GStreamer.Source', { defaultValue: 'Source mode' })}</Label>
+        <Select.Trigger>
+          <Select.Value />
+          <Select.Indicator />
+        </Select.Trigger>
+        <Select.Popover>
+          <ListBox>
+            <ListBox.Item id='stream'>{t('GStreamer.SourceStream', { defaultValue: 'Stream (HLS)' })}</ListBox.Item>
+            <ListBox.Item id='play'>{t('GStreamer.SourcePlay', { defaultValue: 'Play' })}</ListBox.Item>
+          </ListBox>
+        </Select.Popover>
+        <Description>{t('GStreamer.SourceHint', { defaultValue: 'stream = HLS pipeline, play = direct' })}</Description>
+      </Select>
+
+      <Separator />
+      <p className='text-sm font-semibold'>{t('GStreamer.SectionPipeline', { defaultValue: 'Pipeline' })}</p>
+      {(['MaxTasks', 'InactiveMinutes', 'SegmentSeconds', 'SegmentDiff'] as const).map(key => (
+        <TextField key={key} value={String(config[key] ?? 0)} onChange={value => update(key, Number(value))}>
+          <Label>{t(`GStreamer.${key}`, { defaultValue: key })}</Label>
+          <Input type='number' />
+        </TextField>
+      ))}
+
+      <Separator />
+      <p className='text-sm font-semibold'>{t('GStreamer.SectionAudio', { defaultValue: 'Audio' })}</p>
+      <TextField value={String(config.AACBitrateKbps ?? 256)} onChange={value => update('AACBitrateKbps', Number(value))}>
+        <Label>{t('GStreamer.AACBitrateKbps', { defaultValue: 'AAC bitrate (kbps)' })}</Label>
+        <Input type='number' />
+      </TextField>
+      <TextField value={String(config.AACChannels ?? 0)} onChange={value => update('AACChannels', Number(value))}>
+        <Label>{t('GStreamer.AACChannels', { defaultValue: 'AAC channels' })}</Label>
+        <Input type='number' />
+        <Description>{t('GStreamer.AACChannelsHint', { defaultValue: '0 = keep source' })}</Description>
+      </TextField>
+      <TextField value={String(config.AACSamplerate ?? 0)} onChange={value => update('AACSamplerate', Number(value))}>
+        <Label>{t('GStreamer.AACSamplerate', { defaultValue: 'AAC sample rate' })}</Label>
+        <Input type='number' />
+        <Description>{t('GStreamer.AACSamplerateHint', { defaultValue: '0 = keep source' })}</Description>
       </TextField>
 
-      <Divider />
-      <Typography variant='subtitle2'>{t('GStreamer.SectionPipeline', { defaultValue: 'Pipeline' })}</Typography>
-      <TextField
-        label={t('GStreamer.MaxTasks', { defaultValue: 'Max tasks' })}
-        type='number'
-        value={config.MaxTasks ?? 0}
-        onChange={e => update('MaxTasks', Number(e.target.value))}
-        fullWidth
-        size='small'
-      />
-      <TextField
-        label={t('GStreamer.InactiveMinutes', { defaultValue: 'Inactive minutes' })}
-        type='number'
-        value={config.InactiveMinutes ?? 5}
-        onChange={e => update('InactiveMinutes', Number(e.target.value))}
-        fullWidth
-        size='small'
-      />
-      <TextField
-        label={t('GStreamer.SegmentSeconds', { defaultValue: 'Segment seconds' })}
-        type='number'
-        value={config.SegmentSeconds ?? 6}
-        onChange={e => update('SegmentSeconds', Number(e.target.value))}
-        fullWidth
-        size='small'
-      />
-      <TextField
-        label={t('GStreamer.SegmentDiff', { defaultValue: 'Segment diff' })}
-        type='number'
-        value={config.SegmentDiff ?? 20}
-        onChange={e => update('SegmentDiff', Number(e.target.value))}
-        fullWidth
-        size='small'
-      />
+      <Separator />
+      <p className='text-sm font-semibold'>{t('GStreamer.SectionTranscoding', { defaultValue: 'Transcoding' })}</p>
+      <TextField value={String(config.VideoBitrate ?? 10000)} onChange={value => update('VideoBitrate', Number(value))}>
+        <Label>{t('GStreamer.VideoBitrate', { defaultValue: 'Video bitrate (kbps)' })}</Label>
+        <Input type='number' />
+      </TextField>
+      <div>
+        <GstSwitch label={t('GStreamer.TranscodeH264')} checked={Boolean(config.TranscodeH264)} onChange={v => update('TranscodeH264', v)} />
+        <GstSwitch label={t('GStreamer.TranscodeH265')} checked={Boolean(config.TranscodeH265)} onChange={v => update('TranscodeH265', v)} />
+        <GstSwitch label={t('GStreamer.TranscodeAV1', { defaultValue: 'Transcode AV1' })} checked={Boolean(config.TranscodeAV1)} onChange={v => update('TranscodeAV1', v)} />
+        <GstSwitch label={t('GStreamer.TranscodeVP9', { defaultValue: 'Transcode VP9' })} checked={Boolean(config.TranscodeVP9)} onChange={v => update('TranscodeVP9', v)} />
+        <GstSwitch label={t('GStreamer.TranscodeVP8', { defaultValue: 'Transcode VP8' })} checked={Boolean(config.TranscodeVP8)} onChange={v => update('TranscodeVP8', v)} />
+        <GstSwitch label={t('GStreamer.TranscodeAVI')} checked={Boolean(config.TranscodeAVI)} onChange={v => update('TranscodeAVI', v)} />
+        <GstSwitch label={t('GStreamer.HDRToSDR', { defaultValue: 'HDR → SDR' })} checked={Boolean(config.HDRToSDR)} onChange={v => update('HDRToSDR', v)} />
+      </div>
 
-      <Divider />
-      <Typography variant='subtitle2'>{t('GStreamer.SectionAudio', { defaultValue: 'Audio' })}</Typography>
-      <TextField
-        label={t('GStreamer.AACBitrateKbps', { defaultValue: 'AAC bitrate (kbps)' })}
-        type='number'
-        value={config.AACBitrateKbps ?? 256}
-        onChange={e => update('AACBitrateKbps', Number(e.target.value))}
-        fullWidth
-        size='small'
-      />
-      <TextField
-        label={t('GStreamer.AACChannels', { defaultValue: 'AAC channels' })}
-        type='number'
-        value={config.AACChannels ?? 0}
-        onChange={e => update('AACChannels', Number(e.target.value))}
-        helperText={t('GStreamer.AACChannelsHint', { defaultValue: '0 = keep source' })}
-        fullWidth
-        size='small'
-      />
-      <TextField
-        label={t('GStreamer.AACSamplerate', { defaultValue: 'AAC sample rate' })}
-        type='number'
-        value={config.AACSamplerate ?? 0}
-        onChange={e => update('AACSamplerate', Number(e.target.value))}
-        helperText={t('GStreamer.AACSamplerateHint', { defaultValue: '0 = keep source' })}
-        fullWidth
-        size='small'
-      />
-
-      <Divider />
-      <Typography variant='subtitle2'>{t('GStreamer.SectionTranscoding', { defaultValue: 'Transcoding' })}</Typography>
-      <TextField
-        label={t('GStreamer.VideoBitrate', { defaultValue: 'Video bitrate (kbps)' })}
-        type='number'
-        value={config.VideoBitrate ?? 10000}
-        onChange={e => update('VideoBitrate', Number(e.target.value))}
-        fullWidth
-        size='small'
-      />
-      <Box>
-        <GstSwitch
-          label={t('GStreamer.TranscodeH264')}
-          checked={Boolean(config.TranscodeH264)}
-          onChange={v => update('TranscodeH264', v)}
-        />
-        <GstSwitch
-          label={t('GStreamer.TranscodeH265')}
-          checked={Boolean(config.TranscodeH265)}
-          onChange={v => update('TranscodeH265', v)}
-        />
-        <GstSwitch
-          label={t('GStreamer.TranscodeAV1', { defaultValue: 'Transcode AV1' })}
-          checked={Boolean(config.TranscodeAV1)}
-          onChange={v => update('TranscodeAV1', v)}
-        />
-        <GstSwitch
-          label={t('GStreamer.TranscodeVP9', { defaultValue: 'Transcode VP9' })}
-          checked={Boolean(config.TranscodeVP9)}
-          onChange={v => update('TranscodeVP9', v)}
-        />
-        <GstSwitch
-          label={t('GStreamer.TranscodeVP8', { defaultValue: 'Transcode VP8' })}
-          checked={Boolean(config.TranscodeVP8)}
-          onChange={v => update('TranscodeVP8', v)}
-        />
-        <GstSwitch
-          label={t('GStreamer.TranscodeAVI')}
-          checked={Boolean(config.TranscodeAVI)}
-          onChange={v => update('TranscodeAVI', v)}
-        />
-        <GstSwitch
-          label={t('GStreamer.HDRToSDR', { defaultValue: 'HDR → SDR' })}
-          checked={Boolean(config.HDRToSDR)}
-          onChange={v => update('HDRToSDR', v)}
-        />
-      </Box>
-
-      <Divider />
-      <Typography variant='subtitle2'>{t('GStreamer.SectionAdvanced', { defaultValue: 'Advanced' })}</Typography>
-      <Box>
-        <GstSwitch
-          label={t('GStreamer.Subtitles', { defaultValue: 'Subtitles' })}
-          checked={Boolean(config.Subtitles)}
-          onChange={v => update('Subtitles', v)}
-        />
-        <GstSwitch
-          label={t('GStreamer.UseGPU', { defaultValue: 'Use GPU' })}
-          checked={Boolean(config.UseGPU)}
-          onChange={v => update('UseGPU', v)}
-        />
-        <GstSwitch
-          label={t('GStreamer.HardwareAcceleration')}
-          checked={Boolean(config.HardwareAcceleration)}
-          onChange={v => update('HardwareAcceleration', v)}
-        />
-        <GstSwitch
-          label={t('GStreamer.X264Ultrafast', { defaultValue: 'x264 ultrafast' })}
-          checked={Boolean(config.X264Ultrafast)}
-          onChange={v => update('X264Ultrafast', v)}
-        />
-      </Box>
-      <FormHelperText>{t('GStreamer.SaveHint', { defaultValue: 'Changes apply when you press Save.' })}</FormHelperText>
-    </Stack>
+      <Separator />
+      <p className='text-sm font-semibold'>{t('GStreamer.SectionAdvanced', { defaultValue: 'Advanced' })}</p>
+      <div>
+        <GstSwitch label={t('GStreamer.Subtitles', { defaultValue: 'Subtitles' })} checked={Boolean(config.Subtitles)} onChange={v => update('Subtitles', v)} />
+        <GstSwitch label={t('GStreamer.UseGPU', { defaultValue: 'Use GPU' })} checked={Boolean(config.UseGPU)} onChange={v => update('UseGPU', v)} />
+        <GstSwitch label={t('GStreamer.HardwareAcceleration')} checked={Boolean(config.HardwareAcceleration)} onChange={v => update('HardwareAcceleration', v)} />
+        <GstSwitch label={t('GStreamer.X264Ultrafast', { defaultValue: 'x264 ultrafast' })} checked={Boolean(config.X264Ultrafast)} onChange={v => update('X264Ultrafast', v)} />
+      </div>
+      <Description>{t('GStreamer.SaveHint', { defaultValue: 'Changes apply when you press Save.' })}</Description>
+    </div>
   )
 }

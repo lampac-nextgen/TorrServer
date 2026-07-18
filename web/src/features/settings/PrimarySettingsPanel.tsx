@@ -1,8 +1,4 @@
-import List from '@mui/material/List'
-import Slider from '@mui/material/Slider'
-import Stack from '@mui/material/Stack'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
+import { Description, Input, Label, Slider, TextField } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
 import type { BTSets } from 'shared/api/types'
 
@@ -26,53 +22,61 @@ export default function PrimarySettingsPanel({
   const { t } = useTranslation()
 
   return (
-    <Stack spacing={2}>
-      <Typography>
+    <div className='space-y-4'>
+      <p>
         {t('SettingsDialog.CacheSize')}: {cacheSizeMb} {t('MB')}
-      </Typography>
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { sm: 'center' } }}>
-        <Slider
-          sx={{ flex: 1 }}
-          value={cacheSizeMb}
-          min={16}
-          max={2048}
-          step={16}
-          valueLabelDisplay='auto'
-          onChange={(_, v) => onCacheSizeMb(v as number)}
-        />
-        <TextField
-          type='number'
-          label={t('MB')}
-          value={cacheSizeMb}
-          onChange={e => onCacheSizeMb(Math.max(16, Number(e.target.value) || 16))}
-          slotProps={{ htmlInput: { min: 16, step: 16 } }}
-          sx={{ width: { xs: '100%', sm: 120 } }}
-        />
-      </Stack>
+      </p>
+      <Slider
+        value={cacheSizeMb}
+        minValue={16}
+        maxValue={2048}
+        step={16}
+        onChange={value => onCacheSizeMb(Number(value))}
+      >
+        <Slider.Output />
+        <Slider.Track>
+          <Slider.Fill />
+          <Slider.Thumb />
+        </Slider.Track>
+      </Slider>
+      <TextField value={String(cacheSizeMb)} onChange={value => onCacheSizeMb(Math.max(16, Number(value) || 16))}>
+        <Label>{t('MB')}</Label>
+        <Input type='number' min={16} step={16} className='max-w-[120px]' />
+      </TextField>
 
-      <Typography>
+      <p>
         {t('SettingsDialog.ReaderReadAHead')}: {settings.ReaderReadAHead ?? 95}%
-      </Typography>
+      </p>
       <Slider
         value={settings.ReaderReadAHead ?? 95}
-        min={1}
-        max={100}
-        valueLabelDisplay='auto'
-        onChange={(_, v) => onUpdate('ReaderReadAHead', v as number)}
-      />
+        minValue={1}
+        maxValue={100}
+        onChange={value => onUpdate('ReaderReadAHead', Number(value))}
+      >
+        <Slider.Output />
+        <Slider.Track>
+          <Slider.Fill />
+          <Slider.Thumb />
+        </Slider.Track>
+      </Slider>
 
-      <Typography>
+      <p>
         {t('SettingsDialog.PreloadCache')}: {settings.PreloadCache ?? 50}%
-      </Typography>
+      </p>
       <Slider
         value={settings.PreloadCache ?? 50}
-        min={0}
-        max={100}
-        valueLabelDisplay='auto'
-        onChange={(_, v) => onUpdate('PreloadCache', v as number)}
-      />
+        minValue={0}
+        maxValue={100}
+        onChange={value => onUpdate('PreloadCache', Number(value))}
+      >
+        <Slider.Output />
+        <Slider.Track>
+          <Slider.Fill />
+          <Slider.Thumb />
+        </Slider.Track>
+      </Slider>
 
-      <List disablePadding>
+      <div className='divide-y divide-default-200'>
         <SettingSwitch
           id='UseDisk'
           label={t('SettingsDialog.UseDisk')}
@@ -81,12 +85,13 @@ export default function PrimarySettingsPanel({
           onChange={onBoolSwitch}
         />
         <TextField
-          fullWidth
-          margin='normal'
-          label={t('SettingsDialog.TorrentsSavePath')}
           value={settings.TorrentsSavePath || ''}
-          onChange={e => onUpdate('TorrentsSavePath', e.target.value)}
-        />
+          onChange={value => onUpdate('TorrentsSavePath', value)}
+          className='py-3'
+        >
+          <Label>{t('SettingsDialog.TorrentsSavePath')}</Label>
+          <Input />
+        </TextField>
         <SettingSwitch
           id='RemoveCacheOnDrop'
           label={t('SettingsDialog.RemoveCacheOnDrop')}
@@ -94,7 +99,7 @@ export default function PrimarySettingsPanel({
           checked={Boolean(settings.RemoveCacheOnDrop)}
           onChange={onBoolSwitch}
         />
-      </List>
-    </Stack>
+      </div>
+    </div>
   )
 }

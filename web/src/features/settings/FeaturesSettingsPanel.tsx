@@ -1,5 +1,4 @@
-import List from '@mui/material/List'
-import TextField from '@mui/material/TextField'
+import { Description, Input, Label, TextField } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
 import type { BTSets } from 'shared/api/types'
 
@@ -21,62 +20,19 @@ export default function FeaturesSettingsPanel({
   const { t } = useTranslation()
 
   return (
-    <List disablePadding>
-      <SettingSwitch
-        id='EnableDLNA'
-        label={t('SettingsDialog.DLNA')}
-        checked={boolChecked('EnableDLNA')}
-        onChange={onBoolSwitch}
-      />
-      <SettingSwitch
-        id='EnableBonjour'
-        label={t('SettingsDialog.Bonjour')}
-        helper={t('SettingsDialog.BonjourHint')}
-        checked={boolChecked('EnableBonjour')}
-        onChange={onBoolSwitch}
-      />
-      <TextField
-        fullWidth
-        margin='normal'
-        label={t('SettingsDialog.FriendlyName')}
-        value={settings.FriendlyName || ''}
-        onChange={e => onUpdate('FriendlyName', e.target.value)}
-        helperText={t('SettingsDialog.FriendlyNameHint')}
-      />
-      <SettingSwitch
-        id='EnableRutorSearch'
-        label={t('SettingsDialog.EnableRutorSearch')}
-        helper={t('SettingsDialog.EnableRutorSearchHint')}
-        checked={boolChecked('EnableRutorSearch')}
-        onChange={onBoolSwitch}
-      />
-      <SettingSwitch
-        id='EnableTorznabSearch'
-        label={t('Torznab.EnableTorznabSearch')}
-        checked={boolChecked('EnableTorznabSearch')}
-        onChange={onBoolSwitch}
-      />
-      <SettingSwitch
-        id='EnableDebug'
-        label={t('SettingsDialog.EnableDebug')}
-        helper={t('SettingsDialog.EnableDebugHint')}
-        checked={boolChecked('EnableDebug')}
-        onChange={onBoolSwitch}
-      />
-      <SettingSwitch
-        id='ResponsiveMode'
-        label={t('SettingsDialog.ResponsiveMode')}
-        helper={t('SettingsDialog.ResponsiveModeHint')}
-        checked={boolChecked('ResponsiveMode')}
-        onChange={onBoolSwitch}
-      />
-      <SettingSwitch
-        id='ShowFSActiveTorr'
-        label={t('SettingsDialog.ShowFSActiveTorr')}
-        helper={t('SettingsDialog.ShowFSActiveTorrHint')}
-        checked={boolChecked('ShowFSActiveTorr')}
-        onChange={onBoolSwitch}
-      />
-    </List>
+    <div className='divide-y divide-default-200'>
+      <SettingSwitch id='EnableDLNA' label={t('SettingsDialog.DLNA')} checked={boolChecked('EnableDLNA')} onChange={onBoolSwitch} />
+      <SettingSwitch id='EnableBonjour' label={t('SettingsDialog.Bonjour')} helper={t('SettingsDialog.BonjourHint')} checked={boolChecked('EnableBonjour')} onChange={onBoolSwitch} />
+      <TextField value={settings.FriendlyName || ''} onChange={value => onUpdate('FriendlyName', value)} className='py-3'>
+        <Label>{t('SettingsDialog.FriendlyName')}</Label>
+        <Input />
+        <Description>{t('SettingsDialog.FriendlyNameHint')}</Description>
+      </TextField>
+      <SettingSwitch id='EnableRutorSearch' label={t('SettingsDialog.EnableRutorSearch')} helper={t('SettingsDialog.EnableRutorSearchHint')} checked={boolChecked('EnableRutorSearch')} onChange={onBoolSwitch} />
+      <SettingSwitch id='EnableTorznabSearch' label={t('Torznab.EnableTorznabSearch')} checked={boolChecked('EnableTorznabSearch')} onChange={onBoolSwitch} />
+      <SettingSwitch id='EnableDebug' label={t('SettingsDialog.EnableDebug')} helper={t('SettingsDialog.EnableDebugHint')} checked={boolChecked('EnableDebug')} onChange={onBoolSwitch} />
+      <SettingSwitch id='ResponsiveMode' label={t('SettingsDialog.ResponsiveMode')} helper={t('SettingsDialog.ResponsiveModeHint')} checked={boolChecked('ResponsiveMode')} onChange={onBoolSwitch} />
+      <SettingSwitch id='ShowFSActiveTorr' label={t('SettingsDialog.ShowFSActiveTorr')} helper={t('SettingsDialog.ShowFSActiveTorrHint')} checked={boolChecked('ShowFSActiveTorr')} onChange={onBoolSwitch} />
+    </div>
   )
 }

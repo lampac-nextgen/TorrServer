@@ -1,11 +1,11 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
-import Alert from '@mui/material/Alert'
-import Snackbar from '@mui/material/Snackbar'
-import type { AlertColor } from '@mui/material'
+import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react'
+import { toast } from 'sonner'
+
+export type ToastSeverity = 'info' | 'success' | 'warning' | 'error'
 
 export interface ToastOptions {
   message: string
-  severity?: AlertColor
+  severity?: ToastSeverity
   autoHideDuration?: number
 }
 
@@ -27,37 +27,33 @@ export function useOptionalAppToast() {
   return useContext(AppSnackbarContext)
 }
 
-export function AppSnackbarProvider({ children }: { children: ReactNode }) {
-  const [open, setOpen] = useState(false)
-  const [message, setMessage] = useState('')
-  const [severity, setSeverity] = useState<AlertColor>('info')
-  const [autoHideDuration, setAutoHideDuration] = useState(2500)
+function showToastMessage(options: ToastOptions | string) {
+  const next = typeof options === 'string' ? { message: options } : options
+  const duration = next.autoHideDuration ?? 2500
 
+  switch (next.severity) {
+    case 'success':
+      toast.success(next.message, { duration })
+      break
+    case 'warning':
+      toast.warning(next.message, { duration })
+      break
+    case 'error':
+      toast.error(next.message, { duration })
+      break
+    default:
+      toast(next.message, { duration })
+  }
+}
+
+export function AppSnackbarProvider({ children }: { children: ReactNode }) {
   const showToast = useCallback((options: ToastOptions | string) => {
-    const next = typeof options === 'string' ? { message: options } : options
-    setMessage(next.message)
-    setSeverity(next.severity || 'info')
-    setAutoHideDuration(next.autoHideDuration ?? 2500)
-    setOpen(true)
+    showToastMessage(options)
   }, [])
 
   const value = useMemo(() => ({ showToast }), [showToast])
 
-  return (
-    <AppSnackbarContext.Provider value={value}>
-      {children}
-      <Snackbar
-        open={open}
-        autoHideDuration={autoHideDuration}
-        onClose={() => setOpen(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={() => setOpen(false)} severity={severity} variant='filled' sx={{ width: '100%' }}>
-          {message}
-        </Alert>
-      </Snackbar>
-    </AppSnackbarContext.Provider>
-  )
+  return <AppSnackbarContext.Provider value={value}>{children}</AppSnackbarContext.Provider>
 }
 
 /** @deprecated Use AppSnackbarProvider */

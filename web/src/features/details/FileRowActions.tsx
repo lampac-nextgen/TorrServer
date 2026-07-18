@@ -1,6 +1,4 @@
-import Button from '@mui/material/Button'
-import Stack from '@mui/material/Stack'
-import Tooltip from '@mui/material/Tooltip'
+import { Button, Tooltip } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
@@ -27,11 +25,7 @@ export interface FileRowActionsProps {
   externalPlayers: ExternalPlayerLink[]
 }
 
-const actionSx = {
-  flex: '1 1 auto',
-  minWidth: 72,
-  maxWidth: '100%',
-} as const
+const actionClass = 'min-w-[72px] max-w-full flex-1'
 
 export default function FileRowActions({
   preloadLabel,
@@ -61,12 +55,15 @@ export default function FileRowActions({
   }
 
   return (
-    <Stack direction='row' useFlexGap spacing={0.5} sx={{ flexWrap: 'wrap', width: '100%' }}>
-      <Tooltip title={preloadLabel}>
-        <Button onClick={onPreload} variant='outlined' color='primary' size='small' sx={actionSx}>
-          {preloadLabel}
-        </Button>
-      </Tooltip>
+    <div className='flex w-full flex-wrap gap-1'>
+      <Tooltip.Root>
+        <Tooltip.Trigger>
+          <Button variant='secondary' size='sm' onPress={onPreload} className={actionClass}>
+            {preloadLabel}
+          </Button>
+        </Tooltip.Trigger>
+        <Tooltip.Content>{preloadLabel}</Tooltip.Content>
+      </Tooltip.Root>
 
       {playerSupported ? (
         <VideoPlayer
@@ -81,34 +78,43 @@ export default function FileRowActions({
       ) : (
         showOpenLink &&
         openLinkHref && (
-          <Tooltip title={t('OpenLink')}>
-            <Button
-              component='a'
-              href={openLinkHref}
-              target='_blank'
-              rel='noreferrer'
-              variant='outlined'
-              color='primary'
-              size='small'
-              sx={actionSx}
-            >
-              {t('OpenLink')}
-            </Button>
-          </Tooltip>
+          <Tooltip.Root>
+            <Tooltip.Trigger>
+              <Button
+                variant='secondary'
+                size='sm'
+                className={actionClass}
+                onPress={() => window.open(openLinkHref, '_blank', 'noopener,noreferrer')}
+              >
+                {t('OpenLink')}
+              </Button>
+            </Tooltip.Trigger>
+            <Tooltip.Content>{t('OpenLink')}</Tooltip.Content>
+          </Tooltip.Root>
         )
       )}
 
       {externalPlayers.map(player => (
-        <Tooltip key={player.label} title={player.label}>
-          <Button component='a' href={player.href} variant='outlined' color='primary' size='small' sx={actionSx}>
-            {player.label}
-          </Button>
-        </Tooltip>
+        <Tooltip.Root key={player.label}>
+          <Tooltip.Trigger>
+            <Button
+              variant='secondary'
+              size='sm'
+              className={actionClass}
+              onPress={() => {
+                window.location.href = player.href
+              }}
+            >
+              {player.label}
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>{player.label}</Tooltip.Content>
+        </Tooltip.Root>
       ))}
 
-      <Button variant='outlined' color='primary' size='small' sx={actionSx} onClick={() => void copyLink()}>
+      <Button variant='secondary' size='sm' className={actionClass} onPress={() => void copyLink()}>
         {t('CopyLink')}
       </Button>
-    </Stack>
+    </div>
   )
 }

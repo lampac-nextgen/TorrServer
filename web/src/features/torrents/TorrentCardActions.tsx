@@ -1,28 +1,23 @@
-import { useMemo, useRef, useState, type MouseEvent } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import axios from 'axios'
-import AudiotrackIcon from '@mui/icons-material/Audiotrack'
-import CloseIcon from '@mui/icons-material/Close'
-import DeleteIcon from '@mui/icons-material/Delete'
-import EditIcon from '@mui/icons-material/Edit'
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
-import MoreVertIcon from '@mui/icons-material/MoreVert'
-import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay'
-import PlayArrowIcon from '@mui/icons-material/PlayArrow'
-import Button from '@mui/material/Button'
-import CircularProgress from '@mui/material/CircularProgress'
-import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogContentText from '@mui/material/DialogContentText'
-import DialogTitle from '@mui/material/DialogTitle'
-import Divider from '@mui/material/Divider'
-import IconButton from '@mui/material/IconButton'
-import ListItemIcon from '@mui/material/ListItemIcon'
-import ListItemText from '@mui/material/ListItemText'
-import Menu from '@mui/material/Menu'
-import MenuItem from '@mui/material/MenuItem'
-import Stack from '@mui/material/Stack'
-import Tooltip from '@mui/material/Tooltip'
+import {
+  Button,
+  Dropdown,
+  Modal,
+  Tooltip,
+  useOverlayState,
+} from '@heroui/react'
+import {
+  Info,
+  ListMusic,
+  Loader2,
+  MoreVertical,
+  Music2,
+  Pencil,
+  Play,
+  Trash2,
+  X,
+} from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { PlayableFile, TorrentFileStat, TorrentStat } from 'shared/api/types'
@@ -43,6 +38,7 @@ export interface TorrentCardActionsProps {
   torrent: TorrentStat
   onDetails: () => void
   onEdit?: () => void
+  className?: string
 }
 
 type ConfirmKind = 'drop' | 'delete' | null
@@ -73,18 +69,7 @@ const audioTrackLabel = (track: ProbeTrack, index: number) => {
   return parts.join(' · ') || `Audio ${index}`
 }
 
-const railBtnSx = {
-  width: 36,
-  height: 36,
-  borderRadius: 1.5,
-  color: 'text.secondary',
-  '&:hover': {
-    color: 'text.primary',
-    bgcolor: 'action.hover',
-  },
-} as const
-
-export default function TorrentCardActions({ torrent, onDetails, onEdit }: TorrentCardActionsProps) {
+export default function TorrentCardActions({ torrent, onDetails, onEdit, className }: TorrentCardActionsProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
   const queryClient = useQueryClient()
@@ -92,9 +77,6 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
   const audioCache = useRef<Record<number, ProbeTrack[]>>({})
 
   const [confirm, setConfirm] = useState<ConfirmKind>(null)
-  const [playMenuAnchor, setPlayMenuAnchor] = useState<HTMLElement | null>(null)
-  const [audioMenuAnchor, setAudioMenuAnchor] = useState<HTMLElement | null>(null)
-  const [moreAnchor, setMoreAnchor] = useState<HTMLElement | null>(null)
   const [playableFiles, setPlayableFiles] = useState<PlayableFile[]>([])
   const [audioTracks, setAudioTracks] = useState<ProbeTrack[]>([])
   const [pendingAudioFile, setPendingAudioFile] = useState<PlayableFile | null>(null)
@@ -106,6 +88,15 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
     hls: boolean
     heartbeatSrc?: string
   } | null>(null)
+
+  const playMenuState = useOverlayState()
+  const audioMenuState = useOverlayState()
+  const confirmState = useOverlayState({
+    isOpen: confirm != null,
+    onOpenChange: open => {
+      if (!open) setConfirm(null)
+    },
+  })
 
   const hash = torrent.hash
   const displayName = torrent.title || torrent.name || hash
@@ -129,12 +120,12 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
       hls: useHls,
       heartbeatSrc: useHls ? gstreamerHeartbeatUrl(hash) : undefined,
     })
-    setPlayMenuAnchor(null)
-    setAudioMenuAnchor(null)
+    playMenuState.close()
+    audioMenuState.close()
     setPendingAudioFile(null)
   }
 
-  const resolveAndPlay = async (file: PlayableFile, anchor?: HTMLElement | null) => {
+  const resolveAndPlay = async (file: PlayableFile) => {
     const useHls = shouldUseGStreamerPlayer(file.path, gstRuntime)
     if (!useHls) {
       openPlayerForFile(file)
@@ -149,7 +140,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
       }
       setPendingAudioFile(file)
       setAudioTracks(cached)
-      setAudioMenuAnchor(anchor || null)
+      audioMenuState.open()
       return
     }
 
@@ -164,7 +155,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
       }
       setPendingAudioFile(file)
       setAudioTracks(tracks)
-      setAudioMenuAnchor(anchor || null)
+      audioMenuState.open()
     } catch {
       openPlayerForFile(file, 0)
     } finally {
@@ -172,7 +163,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
     }
   }
 
-  const handlePlayClick = async (event: MouseEvent<HTMLElement>) => {
+  const handlePlayClick = async () => {
     try {
       let files = listPlayable
       if (!files.length) {
@@ -187,11 +178,11 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
         return
       }
       if (files.length === 1) {
-        await resolveAndPlay(files[0], event.currentTarget)
+        await resolveAndPlay(files[0])
         return
       }
       setPlayableFiles(files)
-      setPlayMenuAnchor(event.currentTarget)
+      playMenuState.open()
     } catch {
       toast?.showToast({ message: t('Error'), severity: 'error' })
     }
@@ -200,6 +191,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
   const runConfirmed = () => {
     const action = confirm
     setConfirm(null)
+    confirmState.close()
     if (action === 'drop') {
       void dropTorrent(hash)
         .then(async () => {
@@ -218,141 +210,144 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
     }
   }
 
-  const closeMore = () => setMoreAnchor(null)
+  const actionBtnClass =
+    'h-9 w-9 min-w-9 rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-[#00a572]'
 
   return (
     <>
-      <Stack
-        spacing={0.25}
-        sx={{
-          height: '100%',
-          justifyContent: 'center',
-          alignItems: 'center',
-          px: 0.5,
-          py: 0.75,
-          borderLeft: 1,
-          borderColor: 'divider',
-          bgcolor: 'action.hover',
-        }}
+      <div
+        className={`pointer-events-none flex items-center justify-center gap-1.5 opacity-0 transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 ${className ?? ''}`}
+        onClick={e => e.stopPropagation()}
       >
-        <Tooltip title={t('Play')} placement='left'>
-          <IconButton
-            size='small'
-            aria-label={t('Play')}
-            onClick={e => void handlePlayClick(e)}
-            disabled={resolvingAudio}
-            sx={{
-              ...railBtnSx,
-              color: 'primary.contrastText',
-              bgcolor: 'primary.main',
-              '&:hover': { bgcolor: 'primary.dark', color: 'primary.contrastText' },
-              '&.Mui-disabled': { bgcolor: 'action.disabledBackground', color: 'action.disabled' },
-            }}
-          >
-            {resolvingAudio ? <CircularProgress size={16} color='inherit' /> : <PlayArrowIcon fontSize='small' />}
-          </IconButton>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <Button
+              variant='primary'
+              isIconOnly
+              className={actionBtnClass}
+              aria-label={t('Play')}
+              isDisabled={resolvingAudio}
+              onPress={() => void handlePlayClick()}
+            >
+              {resolvingAudio ? <Loader2 size={16} className='animate-spin' /> : <Play size={16} fill='currentColor' />}
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>{t('Play')}</Tooltip.Content>
         </Tooltip>
 
-        <Tooltip title={t('Details')} placement='left'>
-          <IconButton size='small' aria-label={t('Details')} onClick={onDetails} sx={railBtnSx}>
-            <InfoOutlinedIcon fontSize='small' />
-          </IconButton>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <Button variant='primary' isIconOnly className={actionBtnClass} aria-label={t('Details')} onPress={onDetails}>
+              <Info size={16} />
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>{t('Details')}</Tooltip.Content>
         </Tooltip>
 
-        <Tooltip title={t('DownloadPlaylist')} placement='left'>
-          <IconButton size='small' aria-label={t('DownloadPlaylist')} component='a' href={playlistLink} sx={railBtnSx}>
-            <PlaylistPlayIcon fontSize='small' />
-          </IconButton>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <a
+              href={playlistLink}
+              className={`inline-flex items-center justify-center ${actionBtnClass}`}
+              aria-label={t('DownloadPlaylist')}
+              onClick={e => e.stopPropagation()}
+            >
+              <ListMusic size={16} />
+            </a>
+          </Tooltip.Trigger>
+          <Tooltip.Content>{t('DownloadPlaylist')}</Tooltip.Content>
         </Tooltip>
 
-        <Tooltip title={t('Actions')} placement='left'>
-          <IconButton
-            size='small'
-            aria-label={t('Actions')}
-            aria-haspopup='menu'
-            onClick={e => setMoreAnchor(e.currentTarget)}
-            sx={railBtnSx}
-          >
-            <MoreVertIcon fontSize='small' />
-          </IconButton>
-        </Tooltip>
-      </Stack>
+        <Dropdown>
+          <Dropdown.Trigger>
+            <Button variant='primary' isIconOnly className={actionBtnClass} aria-label={t('Actions')}>
+              <MoreVertical size={16} />
+            </Button>
+          </Dropdown.Trigger>
+          <Dropdown.Popover placement='bottom end'>
+            <Dropdown.Menu aria-label={t('Actions')}>
+              {onEdit ? (
+                <Dropdown.Item
+                  onPress={() => {
+                    onEdit()
+                  }}
+                >
+                  <Pencil size={16} />
+                  {t('EditTorrent')}
+                </Dropdown.Item>
+              ) : null}
+              <Dropdown.Item
+                onPress={() => {
+                  setConfirm('drop')
+                  confirmState.open()
+                }}
+              >
+                <X size={16} />
+                {t('DropTorrent')}
+              </Dropdown.Item>
+              <Dropdown.Item
+                variant='danger'
+                onPress={() => {
+                  setConfirm('delete')
+                  confirmState.open()
+                }}
+              >
+                <Trash2 size={16} />
+                {t('Delete')}
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown.Popover>
+        </Dropdown>
+      </div>
 
-      <Menu
-        anchorEl={moreAnchor}
-        open={Boolean(moreAnchor)}
-        onClose={closeMore}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-      >
-        {onEdit ? (
-          <MenuItem
-            onClick={() => {
-              closeMore()
-              onEdit()
-            }}
-          >
-            <ListItemIcon>
-              <EditIcon fontSize='small' />
-            </ListItemIcon>
-            <ListItemText>{t('EditTorrent')}</ListItemText>
-          </MenuItem>
-        ) : null}
-        <MenuItem
-          onClick={() => {
-            closeMore()
-            setConfirm('drop')
-          }}
-        >
-          <ListItemIcon>
-            <CloseIcon fontSize='small' />
-          </ListItemIcon>
-          <ListItemText>{t('DropTorrent')}</ListItemText>
-        </MenuItem>
-        <Divider />
-        <MenuItem
-          onClick={() => {
-            closeMore()
-            setConfirm('delete')
-          }}
-          sx={{ color: 'error.main' }}
-        >
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            <DeleteIcon fontSize='small' />
-          </ListItemIcon>
-          <ListItemText>{t('Delete')}</ListItemText>
-        </MenuItem>
-      </Menu>
+      <Modal state={playMenuState}>
+        <Modal.Backdrop isDismissable>
+          <Modal.Container size='sm'>
+            <Modal.Dialog aria-label={t('Play')}>
+              <Modal.Header>
+                <Modal.Heading>{t('Play')}</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body className='flex flex-col gap-1'>
+                {playableFiles.map(file => (
+                  <Button
+                    key={file.id}
+                    variant='ghost'
+                    className='justify-start'
+                    onPress={() => void resolveAndPlay(file)}
+                  >
+                    {file.path.split('/').pop() || file.path}
+                  </Button>
+                ))}
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
 
-      <Menu anchorEl={playMenuAnchor} open={Boolean(playMenuAnchor)} onClose={() => setPlayMenuAnchor(null)}>
-        {playableFiles.map(file => (
-          <MenuItem
-            key={file.id}
-            onClick={e => {
-              setPlayMenuAnchor(null)
-              void resolveAndPlay(file, e.currentTarget)
-            }}
-          >
-            {file.path.split('/').pop() || file.path}
-          </MenuItem>
-        ))}
-      </Menu>
-
-      <Menu
-        anchorEl={audioMenuAnchor}
-        open={Boolean(audioMenuAnchor) && Boolean(pendingAudioFile)}
-        onClose={() => {
-          setAudioMenuAnchor(null)
-          setPendingAudioFile(null)
-        }}
-      >
-        {audioTracks.map((track, index) => (
-          <MenuItem key={index} onClick={() => pendingAudioFile && openPlayerForFile(pendingAudioFile, index)}>
-            <AudiotrackIcon fontSize='small' sx={{ mr: 1 }} />
-            {audioTrackLabel(track, index)}
-          </MenuItem>
-        ))}
-      </Menu>
+      <Modal state={audioMenuState}>
+        <Modal.Backdrop isDismissable>
+          <Modal.Container size='sm'>
+            <Modal.Dialog aria-label={t('Play')}>
+              <Modal.Header>
+                <Modal.Heading>{t('Play')}</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body className='flex flex-col gap-1'>
+                {audioTracks.map((track, index) => (
+                  <Button
+                    key={index}
+                    variant='ghost'
+                    className='justify-start gap-2'
+                    onPress={() => pendingAudioFile && openPlayerForFile(pendingAudioFile, index)}
+                  >
+                    <Music2 size={16} />
+                    {audioTrackLabel(track, index)}
+                  </Button>
+                ))}
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
 
       {player ? (
         <VideoPlayer
@@ -367,22 +362,28 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
         />
       ) : null}
 
-      <Dialog open={confirm != null} onClose={() => setConfirm(null)}>
-        <DialogTitle>{confirm === 'delete' ? t('Delete') : t('DropTorrent')}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {confirm === 'delete' ? t('DeleteTorrents?') : t('ConfirmDropTorrent')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button autoFocus onClick={() => setConfirm(null)} variant='outlined'>
-            {t('Cancel')}
-          </Button>
-          <Button onClick={runConfirmed} variant='contained' color='error'>
-            {t('OK')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <Modal state={confirmState}>
+        <Modal.Backdrop isDismissable>
+          <Modal.Container size='sm'>
+            <Modal.Dialog aria-label={confirm === 'delete' ? t('Delete') : t('DropTorrent')}>
+              <Modal.Header>
+                <Modal.Heading>{confirm === 'delete' ? t('Delete') : t('DropTorrent')}</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                {confirm === 'delete' ? t('DeleteTorrents?') : t('ConfirmDropTorrent')}
+              </Modal.Body>
+              <Modal.Footer className='flex justify-end gap-2'>
+                <Button autoFocus variant='secondary' onPress={() => setConfirm(null)}>
+                  {t('Cancel')}
+                </Button>
+                <Button variant='danger' onPress={runConfirmed}>
+                  {t('OK')}
+                </Button>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
     </>
   )
 }

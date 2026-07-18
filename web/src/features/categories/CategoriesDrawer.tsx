@@ -1,14 +1,8 @@
-import CheckIcon from '@mui/icons-material/Check'
-import ClearIcon from '@mui/icons-material/Clear'
-import Divider from '@mui/material/Divider'
-import Drawer from '@mui/material/Drawer'
-import List from '@mui/material/List'
-import ListItemButton from '@mui/material/ListItemButton'
-import ListItemIcon from '@mui/material/ListItemIcon'
-import ListItemText from '@mui/material/ListItemText'
+import { Drawer, Separator } from '@heroui/react'
+import { Check, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useOverlayState } from '@heroui/react'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
-
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 
 interface CategoriesDrawerProps {
@@ -22,41 +16,56 @@ export default function CategoriesDrawer({ open, onClose, selectedCategory, onSe
   const { t } = useTranslation()
   useSyncModalOpen(open)
 
+  const state = useOverlayState({
+    isOpen: open,
+    onOpenChange: next => {
+      if (!next) onClose()
+    },
+  })
+
   const select = (key: string) => {
     onSelectCategory(key)
     onClose()
   }
 
+  const itemClass = (active: boolean) =>
+    `flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left transition-colors ${
+      active ? 'bg-primary/15 text-primary' : 'hover:bg-default-100'
+    }`
+
   return (
-    <Drawer anchor='left' open={open} onClose={onClose}>
-      <List sx={{ width: 280, pt: 1 }}>
-        <ListItemButton selected={selectedCategory === 'all'} onClick={() => select('all')}>
-          <ListItemIcon>
-            <CheckIcon />
-          </ListItemIcon>
-          <ListItemText primary={t('All')} />
-        </ListItemButton>
+    <Drawer.Root state={state}>
+      <Drawer.Backdrop>
+        <Drawer.Content placement='left'>
+          <Drawer.Dialog>
+            <Drawer.Body className='w-[280px] pt-2'>
+              <button type='button' className={itemClass(selectedCategory === 'all')} onClick={() => select('all')}>
+                <Check className='size-5 shrink-0' aria-hidden />
+                <span>{t('All')}</span>
+              </button>
 
-        {TORRENT_CATEGORIES.map(category => (
-          <ListItemButton
-            key={category.key}
-            selected={selectedCategory === category.key}
-            onClick={() => select(category.key)}
-          >
-            <ListItemIcon>{category.icon}</ListItemIcon>
-            <ListItemText primary={t(category.name)} />
-          </ListItemButton>
-        ))}
+              {TORRENT_CATEGORIES.map(category => (
+                <button
+                  key={category.key}
+                  type='button'
+                  className={itemClass(selectedCategory === category.key)}
+                  onClick={() => select(category.key)}
+                >
+                  <span className='shrink-0'>{category.icon}</span>
+                  <span>{t(category.name)}</span>
+                </button>
+              ))}
 
-        <Divider sx={{ my: 1 }} />
+              <Separator className='my-2' />
 
-        <ListItemButton selected={selectedCategory === ''} onClick={() => select('')}>
-          <ListItemIcon>
-            <ClearIcon />
-          </ListItemIcon>
-          <ListItemText primary={t('Uncategorized')} />
-        </ListItemButton>
-      </List>
-    </Drawer>
+              <button type='button' className={itemClass(selectedCategory === '')} onClick={() => select('')}>
+                <X className='size-5 shrink-0' aria-hidden />
+                <span>{t('Uncategorized')}</span>
+              </button>
+            </Drawer.Body>
+          </Drawer.Dialog>
+        </Drawer.Content>
+      </Drawer.Backdrop>
+    </Drawer.Root>
   )
 }

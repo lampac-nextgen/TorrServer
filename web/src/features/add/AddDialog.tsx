@@ -1,19 +1,18 @@
+import {
+  Button,
+  Description,
+  Input,
+  Label,
+  ListBox,
+  Modal,
+  Select,
+  Spinner,
+  TextArea,
+  TextField,
+} from '@heroui/react'
+import { CloudUpload } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import CloudUploadIcon from '@mui/icons-material/CloudUpload'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import CircularProgress from '@mui/material/CircularProgress'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogTitle from '@mui/material/DialogTitle'
-import FormControl from '@mui/material/FormControl'
-import InputLabel from '@mui/material/InputLabel'
-import MenuItem from '@mui/material/MenuItem'
-import Select from '@mui/material/Select'
-import Stack from '@mui/material/Stack'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
-import useMediaQuery from '@mui/material/useMediaQuery'
+import { useMediaQuery } from '@heroui/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useDropzone } from 'react-dropzone'
@@ -191,7 +190,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
     }
   }
 
-  const footerButtonSx = isMobile ? { minHeight: 44, px: 2.5 } : undefined
+  const footerButtonClassName = isMobile ? 'min-h-11 px-4' : undefined
 
   if (multiFiles) {
     return (
@@ -207,132 +206,100 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
   }
 
   return (
-    <AppDialog open={open} onClose={onClose} fullWidth maxWidth='sm'>
-      <DialogTitle>{t('AddNewTorrent')}</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} sx={{ pt: 1 }}>
-          <TextField
-            autoFocus
-            fullWidth
-            multiline
-            minRows={2}
-            label={t('AddDialog.TorrentSourceLink')}
-            helperText={hashExists ? t('AddDialog.HashExists') : t('AddDialog.TorrentSourceOptions')}
-            error={hashExists}
-            value={source}
-            onChange={e => setSource(e.target.value)}
-            disabled={saving}
-          />
+    <AppDialog open={open} onClose={onClose} size='sm'>
+      <Modal.Header>
+        <Modal.Heading>{t('AddNewTorrent')}</Modal.Heading>
+        <Modal.CloseTrigger />
+      </Modal.Header>
+      <Modal.Body className='space-y-4'>
+        <TextField value={source} onChange={setSource} isInvalid={hashExists} isDisabled={saving}>
+          <Label>{t('AddDialog.TorrentSourceLink')}</Label>
+          <TextArea rows={2} autoFocus />
+          <Description>{hashExists ? t('AddDialog.HashExists') : t('AddDialog.TorrentSourceOptions')}</Description>
+        </TextField>
 
-          <TextField
-            fullWidth
-            label={t('AddDialog.TitleBlank')}
-            helperText={t('AddDialog.CustomTorrentTitleHelperText')}
-            value={title}
-            onChange={e => {
-              titleTouchedRef.current = true
-              setTitle(e.target.value)
-            }}
-            disabled={saving}
-          />
+        <TextField
+          value={title}
+          onChange={value => {
+            titleTouchedRef.current = true
+            setTitle(value)
+          }}
+          isDisabled={saving}
+        >
+          <Label>{t('AddDialog.TitleBlank')}</Label>
+          <Input />
+          <Description>{t('AddDialog.CustomTorrentTitleHelperText')}</Description>
+        </TextField>
 
-          <FormControl fullWidth disabled={saving}>
-            <InputLabel>{t('AddDialog.CategoryHelperText')}</InputLabel>
-            <Select
-              label={t('AddDialog.CategoryHelperText')}
-              value={category}
-              onChange={e => setCategory(e.target.value)}
-            >
-              <MenuItem value=''>
-                <em>—</em>
-              </MenuItem>
+        <Select selectedKey={category || 'none'} onSelectionChange={key => setCategory(key === 'none' ? '' : String(key))} isDisabled={saving}>
+          <Label>{t('AddDialog.CategoryHelperText')}</Label>
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              <ListBox.Item id='none'>—</ListBox.Item>
               {TORRENT_CATEGORIES.map(cat => (
-                <MenuItem key={cat.key} value={cat.key}>
+                <ListBox.Item key={cat.key} id={cat.key}>
                   {t(cat.name)}
-                </MenuItem>
+                </ListBox.Item>
               ))}
-            </Select>
-          </FormControl>
+            </ListBox>
+          </Select.Popover>
+        </Select>
 
-          {(postersLoading || posterOptions.length > 0 || poster) && (
-            <Box>
-              <Typography variant='caption' color='text.secondary' sx={{ mb: 1, display: 'block' }}>
-                {t('AddDialog.AddPosterLinkInput')}
-                {postersLoading ? '…' : ''}
-              </Typography>
-              <Stack direction='row' spacing={1} sx={{ overflowX: 'auto', pb: 0.5 }}>
-                {posterOptions.map(url => (
-                  <Box
-                    key={url}
-                    component='button'
-                    type='button'
-                    onClick={() => setPoster(url)}
-                    sx={{
-                      p: 0,
-                      border: 2,
-                      borderColor: poster === url ? 'primary.main' : 'divider',
-                      borderRadius: 1,
-                      overflow: 'hidden',
-                      cursor: 'pointer',
-                      bgcolor: 'transparent',
-                      flexShrink: 0,
-                      width: 64,
-                      height: 96,
-                    }}
-                  >
-                    <Box component='img' src={url} alt='' sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </Box>
-                ))}
-              </Stack>
-              <TextField
-                fullWidth
-                size='small'
-                margin='dense'
-                label={t('AddDialog.AddPosterLinkInput')}
-                value={poster}
-                onChange={e => setPoster(e.target.value)}
-                disabled={saving}
-              />
-            </Box>
-          )}
+        {(postersLoading || posterOptions.length > 0 || poster) && (
+          <div>
+            <Description className='mb-2 block'>
+              {t('AddDialog.AddPosterLinkInput')}
+              {postersLoading ? '…' : ''}
+            </Description>
+            <div className='mb-2 flex gap-2 overflow-x-auto pb-1'>
+              {posterOptions.map(url => (
+                <button
+                  key={url}
+                  type='button'
+                  onClick={() => setPoster(url)}
+                  className={`h-24 w-16 shrink-0 overflow-hidden rounded-lg border-2 ${
+                    poster === url ? 'border-primary' : 'border-default-200'
+                  }`}
+                >
+                  <img src={url} alt='' className='h-full w-full object-cover' />
+                </button>
+              ))}
+            </div>
+            <TextField value={poster} onChange={setPoster} isDisabled={saving}>
+              <Label>{t('AddDialog.AddPosterLinkInput')}</Label>
+              <Input />
+            </TextField>
+          </div>
+        )}
 
-          <Box
-            {...getRootProps()}
-            sx={{
-              border: 2,
-              borderStyle: 'dashed',
-              borderColor: isDragActive ? 'primary.main' : 'divider',
-              borderRadius: 2,
-              p: 3,
-              textAlign: 'center',
-              cursor: 'pointer',
-              minHeight: 44,
-              display: 'grid',
-              placeItems: 'center',
-              gap: 1,
-            }}
-          >
-            <input {...getInputProps()} />
-            <CloudUploadIcon color='action' />
-            <Typography variant='body2' color='text.secondary'>
-              {t('AddDialog.AppendFile.ClickOrDrag')}
-            </Typography>
-          </Box>
-        </Stack>
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose} disabled={saving} sx={footerButtonSx}>
+        <div
+          {...getRootProps()}
+          className={`grid min-h-11 cursor-pointer place-items-center gap-2 rounded-xl border-2 border-dashed p-6 text-center ${
+            isDragActive ? 'border-primary bg-primary/5' : 'border-default-300'
+          }`}
+        >
+          <input {...getInputProps()} />
+          <CloudUpload className='size-6 text-default-500' aria-hidden />
+          <Description>{t('AddDialog.AppendFile.ClickOrDrag')}</Description>
+        </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName}>
           {t('Cancel')}
         </Button>
         <Button
-          variant='contained'
-          onClick={() => void handleAdd()}
-          disabled={saving || !source.trim() || hashExists}
-          sx={footerButtonSx}
+          variant='primary'
+          onPress={() => void handleAdd()}
+          isDisabled={saving || !source.trim() || hashExists}
+          className={footerButtonClassName}
         >
-          {saving ? <CircularProgress size={20} color='inherit' /> : t('Add')}
+          {saving ? <Spinner size='sm' color='current' /> : t('Add')}
         </Button>
-      </DialogActions>
+      </Modal.Footer>
     </AppDialog>
   )
 }

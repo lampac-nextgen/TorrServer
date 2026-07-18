@@ -1,8 +1,4 @@
-import Box from '@mui/material/Box'
-import FormGroup from '@mui/material/FormGroup'
-import FormHelperText from '@mui/material/FormHelperText'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
+import { Description, Input, Label, TextField } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
 import type { BTSets, SettingsUpdater, TMDBSettingsConfig } from 'shared/api/types'
 
@@ -30,57 +26,25 @@ export default function TMDBSettingsSection({ settings, updateSettings }: TMDBSe
     })
   }
 
+  const fields: Array<[keyof TMDBSettingsConfig, string, string, string]> = [
+    ['APIKey', t('TMDB.APIKey'), t('TMDB.APIKeyHint'), 'Enter your TMDB API key'],
+    ['APIURL', t('TMDB.APIURL'), t('TMDB.APIURLHint'), 'https://api.themoviedb.org/3'],
+    ['ImageURL', t('TMDB.ImageURL'), t('TMDB.ImageURLHint'), 'https://image.tmdb.org'],
+    ['ImageURLRu', t('TMDB.ImageURLRu'), t('TMDB.ImageURLRuHint'), 'https://imagetmdb.com'],
+  ]
+
   return (
-    <Box>
-      <Typography variant='overline' color='text.secondary' sx={{ display: 'block', mb: 1 }}>
-        {t('TMDB.Settings')}
-      </Typography>
-      <FormGroup sx={{ gap: 2 }}>
-        <Box>
-          <TextField
-            label={t('TMDB.APIKey')}
-            value={APIKey}
-            onChange={e => handleChange('APIKey', e.target.value)}
-            placeholder='Enter your TMDB API key'
-            size='small'
-            fullWidth
-          />
-          <FormHelperText>{t('TMDB.APIKeyHint')}</FormHelperText>
-        </Box>
-        <Box>
-          <TextField
-            label={t('TMDB.APIURL')}
-            value={APIURL}
-            onChange={e => handleChange('APIURL', e.target.value)}
-            placeholder='https://api.themoviedb.org/3'
-            size='small'
-            fullWidth
-          />
-          <FormHelperText>{t('TMDB.APIURLHint')}</FormHelperText>
-        </Box>
-        <Box>
-          <TextField
-            label={t('TMDB.ImageURL')}
-            value={ImageURL}
-            onChange={e => handleChange('ImageURL', e.target.value)}
-            placeholder='https://image.tmdb.org'
-            size='small'
-            fullWidth
-          />
-          <FormHelperText>{t('TMDB.ImageURLHint')}</FormHelperText>
-        </Box>
-        <Box>
-          <TextField
-            label={t('TMDB.ImageURLRu')}
-            value={ImageURLRu}
-            onChange={e => handleChange('ImageURLRu', e.target.value)}
-            placeholder='https://imagetmdb.com'
-            size='small'
-            fullWidth
-          />
-          <FormHelperText>{t('TMDB.ImageURLRuHint')}</FormHelperText>
-        </Box>
-      </FormGroup>
-    </Box>
+    <div>
+      <p className='mb-3 text-xs uppercase tracking-wide text-default-500'>{t('TMDB.Settings')}</p>
+      <div className='space-y-4'>
+        {fields.map(([field, label, hint, placeholder]) => (
+          <TextField key={field} value={String(tmdb[field] ?? (field === 'APIKey' ? '' : placeholder))} onChange={value => handleChange(field, value)}>
+            <Label>{label}</Label>
+            <Input placeholder={placeholder} />
+            <Description>{hint}</Description>
+          </TextField>
+        ))}
+      </div>
+    </div>
   )
 }

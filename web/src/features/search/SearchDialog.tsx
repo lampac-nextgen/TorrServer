@@ -1,25 +1,19 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type SyntheticEvent } from 'react'
+import {
+  Button,
+  Input,
+  Label,
+  ListBox,
+  Modal,
+  Select,
+  Spinner,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  useMediaQuery,
+} from '@heroui/react'
+import { ArrowDown, ArrowUp } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import axios, { isAxiosError } from 'axios'
-import ArrowDownward from '@mui/icons-material/ArrowDownward'
-import ArrowUpward from '@mui/icons-material/ArrowUpward'
-import Alert from '@mui/material/Alert'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import CircularProgress from '@mui/material/CircularProgress'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogTitle from '@mui/material/DialogTitle'
-import FormControl from '@mui/material/FormControl'
-import InputLabel from '@mui/material/InputLabel'
-import MenuItem from '@mui/material/MenuItem'
-import Select, { type SelectChangeEvent } from '@mui/material/Select'
-import Snackbar from '@mui/material/Snackbar'
-import Stack from '@mui/material/Stack'
-import TextField from '@mui/material/TextField'
-import ToggleButton from '@mui/material/ToggleButton'
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
-import Typography from '@mui/material/Typography'
-import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
 import type { SearchResultItem, TorznabUrl } from 'shared/api/types'
@@ -84,8 +78,6 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
   const [searched, setSearched] = useState(false)
   const [adding, setAdding] = useState(false)
   const [addingKey, setAddingKey] = useState<string | null>(null)
-  const [successMsg, setSuccessMsg] = useState('')
-  const [errorMsg, setErrorMsg] = useState('')
   const [trackers, setTrackers] = useState<TorznabUrl[]>([])
   const [enableRutor, setEnableRutor] = useState(false)
   const [enableTorznab, setEnableTorznab] = useState(false)
@@ -148,7 +140,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
         if (hasRutor) requests.push(searchRutor(q, ac.signal))
         if (requests.length === 0) {
           if (isCurrentSearch(gen, searchGenRef.current, ac.signal)) {
-            setErrorMsg(t('Torznab.NoSearchSources'))
+            toast?.showToast({ message: t('Torznab.NoSearchSources'), severity: 'error' })
           }
           return
         }
@@ -191,7 +183,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
     } catch (err) {
       if (axios.isCancel(err) || (isAxiosError(err) && err.code === 'ERR_CANCELED')) return
       if (!isCurrentSearch(gen, searchGenRef.current, ac.signal)) return
-      setErrorMsg(axiosErrorMessage(err, t('Torznab.SearchFailed')))
+      toast?.showToast({ message: axiosErrorMessage(err, t('Torznab.SearchFailed')), severity: 'error' })
     } finally {
       if (gen === searchGenRef.current) setLoading(false)
     }
@@ -207,8 +199,8 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
     try {
       let poster = item.Poster || ''
       if (!poster && item.Title) {
-        const query = shortenTitleForPosterSearch(item.Title) || item.Title
-        const urls = await getMoviePosters(query, i18n.language?.startsWith('ru') ? 'ru' : 'en')
+        const posterQuery = shortenTitleForPosterSearch(item.Title) || item.Title
+        const urls = await getMoviePosters(posterQuery, i18n.language?.startsWith('ru') ? 'ru' : 'en')
         poster = urls?.[0] || ''
       }
       await addTorrent({
@@ -217,19 +209,13 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
         poster,
       })
       await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
-      setSuccessMsg(t('TorrentAdded'))
+      toast?.showToast({ message: t('TorrentAdded'), severity: 'success' })
     } catch {
       toast?.showToast({ message: t('Error'), severity: 'error' })
     } finally {
       setAdding(false)
       setAddingKey(null)
     }
-  }
-
-  const handleAlertClose = (_event: SyntheticEvent | Event, reason?: string) => {
-    if (reason === 'clickaway') return
-    setSuccessMsg('')
-    setErrorMsg('')
   }
 
   const handleSortChip = (field: SortField) => {
@@ -285,99 +271,103 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
     { field: 'peers', label: t('Torznab.SortByPeers') },
   ]
 
-  const footerButtonSx = isMobile ? { minHeight: 44, px: 2.5 } : undefined
+  const footerButtonClassName = isMobile ? 'min-h-11 px-4' : undefined
+  const trackerKey = selectedTracker === 'rutor' ? 'rutor' : String(selectedTracker)
 
   return (
-    <AppDialog open={open} onClose={onClose} fullWidth maxWidth='lg'>
-      <DialogTitle>{t('Search')}</DialogTitle>
-      <DialogContent>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ pt: 1, pb: 2, alignItems: { sm: 'center' } }}>
-          <FormControl size='small' sx={{ minWidth: { sm: 180 } }} disabled={!hasAnySource}>
-            <InputLabel>{t('Tracker')}</InputLabel>
-            <Select
-              value={selectedTracker}
-              label={t('Tracker')}
-              onChange={(e: SelectChangeEvent<TrackerSelection>) =>
-                setSelectedTracker(e.target.value as TrackerSelection)
-              }
-            >
-              {showAllTrackers ? <MenuItem value={-1}>{t('AllTrackers')}</MenuItem> : null}
-              {hasRutor ? <MenuItem value='rutor'>{t('Rutor')}</MenuItem> : null}
-              {hasTorznab
-                ? trackers.map((tracker, index) => (
-                    <MenuItem key={`${tracker.Host}-${tracker.Key}`} value={index}>
-                      {tracker.Name || tracker.Host}
-                    </MenuItem>
-                  ))
-                : null}
-            </Select>
-          </FormControl>
+    <AppDialog open={open} onClose={onClose} size='lg'>
+      <Modal.Header>
+        <Modal.Heading>{t('Search')}</Modal.Heading>
+        <Modal.CloseTrigger />
+      </Modal.Header>
+      <Modal.Body>
+        <div className='flex flex-col gap-2 pb-4 pt-1 sm:flex-row sm:items-end'>
+          <Select
+            selectedKey={trackerKey}
+            onSelectionChange={key => {
+              const value = String(key)
+              setSelectedTracker(value === 'rutor' ? 'rutor' : Number(value))
+            }}
+            isDisabled={!hasAnySource}
+            className='sm:min-w-[180px]'
+          >
+            <Label>{t('Tracker')}</Label>
+            <Select.Trigger>
+              <Select.Value />
+              <Select.Indicator />
+            </Select.Trigger>
+            <Select.Popover>
+              <ListBox>
+                {showAllTrackers ? <ListBox.Item id='-1'>{t('AllTrackers')}</ListBox.Item> : null}
+                {hasRutor ? <ListBox.Item id='rutor'>{t('Rutor')}</ListBox.Item> : null}
+                {hasTorznab
+                  ? trackers.map((tracker, index) => (
+                      <ListBox.Item key={`${tracker.Host}-${tracker.Key}`} id={String(index)}>
+                        {tracker.Name || tracker.Host}
+                      </ListBox.Item>
+                    ))
+                  : null}
+              </ListBox>
+            </Select.Popover>
+          </Select>
 
           <TextField
-            fullWidth
-            size='small'
-            label={t('SearchQuery')}
             value={query}
-            onChange={e => setQuery(e.target.value)}
+            onChange={setQuery}
+            isDisabled={!hasAnySource}
+            className='flex-1'
             onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
               if (e.key === 'Enter') void handleSearch()
             }}
-            disabled={!hasAnySource}
-          />
+          >
+            <Label>{t('SearchQuery')}</Label>
+            <Input />
+          </TextField>
 
           <Button
-            variant='contained'
-            onClick={() => void handleSearch()}
-            disabled={loading || !hasAnySource || !query.trim()}
-            sx={footerButtonSx}
+            variant='primary'
+            onPress={() => void handleSearch()}
+            isDisabled={loading || !hasAnySource || !query.trim()}
+            className={footerButtonClassName}
           >
-            {loading ? <CircularProgress size={20} color='inherit' /> : t('Search')}
+            {loading ? <Spinner size='sm' color='current' /> : t('Search')}
           </Button>
-        </Stack>
+        </div>
 
         {searched && sortedResults.length > 0 ? (
-          <Stack direction='row' spacing={1} sx={{ mb: 1, flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-            <Typography variant='body2' color='text.secondary'>
+          <div className='mb-2 flex flex-wrap items-center gap-2'>
+            <p className='text-sm text-default-500'>
               {t('Torznab.ResultsCount', { count: sortedResults.length })}
-            </Typography>
-            <ToggleButtonGroup
-              exclusive
-              size='small'
-              value={sortField}
-              onChange={(_, field: SortField | null) => {
-                if (field) handleSortChip(field)
-              }}
-            >
+            </p>
+            <ToggleButtonGroup selectionMode='single' selectedKeys={[sortField]} className='flex flex-wrap gap-1'>
               {sortFields.map(({ field, label }) => {
                 const active = sortField === field
                 return (
-                  <ToggleButton key={field} value={field} selected={active} sx={{ textTransform: 'none' }}>
+                  <ToggleButton key={field} id={field} onPress={() => handleSortChip(field)}>
                     {label}
                     {active ? (
                       sortDirection === 'asc' ? (
-                        <ArrowUpward sx={{ ml: 0.5, fontSize: 14 }} />
+                        <ArrowUp className='ml-1 size-3.5' />
                       ) : (
-                        <ArrowDownward sx={{ ml: 0.5, fontSize: 14 }} />
+                        <ArrowDown className='ml-1 size-3.5' />
                       )
                     ) : null}
                   </ToggleButton>
                 )
               })}
             </ToggleButtonGroup>
-          </Stack>
+          </div>
         ) : null}
 
-        <Box sx={{ minHeight: 280 }}>
+        <div className='min-h-[280px]'>
           {loading ? (
-            <Box sx={{ display: 'grid', placeItems: 'center', py: 6 }}>
-              <CircularProgress />
-            </Box>
+            <div className='grid place-items-center py-12'>
+              <Spinner size='lg' />
+            </div>
           ) : null}
 
           {!loading && emptyMessage ? (
-            <Typography color='text.secondary' sx={{ py: 4, textAlign: 'center' }}>
-              {emptyMessage}
-            </Typography>
+            <p className='py-8 text-center text-default-500'>{emptyMessage}</p>
           ) : null}
 
           {!loading && sortedResults.length > 0 ? (
@@ -391,24 +381,13 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
               onAdd={item => void handleAdd(item)}
             />
           ) : null}
-        </Box>
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose} sx={footerButtonSx}>
+        </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button onPress={onClose} variant='secondary' className={footerButtonClassName}>
           {t('Close')}
         </Button>
-      </DialogActions>
-
-      <Snackbar open={!!successMsg} autoHideDuration={1500} onClose={handleAlertClose}>
-        <Alert onClose={handleAlertClose} severity='success' variant='filled' sx={{ width: '100%' }}>
-          {successMsg}
-        </Alert>
-      </Snackbar>
-      <Snackbar open={!!errorMsg} autoHideDuration={3000} onClose={handleAlertClose}>
-        <Alert onClose={handleAlertClose} severity='error' variant='filled' sx={{ width: '100%' }}>
-          {errorMsg}
-        </Alert>
-      </Snackbar>
+      </Modal.Footer>
     </AppDialog>
   )
 }

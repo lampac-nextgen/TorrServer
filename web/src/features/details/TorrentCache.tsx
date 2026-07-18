@@ -1,13 +1,11 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import Box from '@mui/material/Box'
-import Typography from '@mui/material/Typography'
-import { useColorScheme } from '@mui/material/styles'
 import { useTranslation } from 'react-i18next'
 import type { CacheMapItem, TorrentCache as TorrentCacheData } from 'shared/api/types'
 import { priorityDebugLabel, resolveFocusVisibleCells, resolveFocusWindow } from 'shared/cache/buildCacheMap'
 import { drawSnake, hitTestSnakeCell, setupHiDpiCanvas } from 'shared/cache/drawSnake'
 import { resolvePieceMetrics, snakeSettings, type SnakeThemeMode } from 'shared/cache/snakeSettings'
 import { useCreateFocusMap } from 'shared/cache/useUpdateCache'
+import { useThemePreference } from 'shared/theme/useThemePreference'
 
 export type SnakeViewMode = 'detailed' | 'mini'
 
@@ -53,8 +51,8 @@ const readersFingerprint = (readers: TorrentCacheData['Readers']) => {
 
 function TorrentCache({ cache, isMini, mode: modeProp, isSnakeDebugMode }: TorrentCacheProps) {
   const { t } = useTranslation()
-  const { mode: colorMode, systemMode } = useColorScheme()
-  const theme: SnakeThemeMode = (colorMode === 'system' ? systemMode : colorMode) === 'dark' ? 'dark' : 'light'
+  const [isDark] = useThemePreference()
+  const theme: SnakeThemeMode = isDark ? 'dark' : 'light'
 
   const mode: SnakeViewMode = modeProp || (isMini ? 'mini' : 'detailed')
   const isMiniView = mode === 'mini'
@@ -252,86 +250,43 @@ function TorrentCache({ cache, isMini, mode: modeProp, isSnakeDebugMode }: Torre
   )
 
   return (
-    <Box
-      ref={rootRef}
-      sx={{ display: 'flex', flexDirection: 'column', width: '100%', minWidth: 0, position: 'relative' }}
-    >
-      <Box
+    <div ref={rootRef} className='relative flex w-full min-w-0 flex-col'>
+      <div
         ref={wrapperRef}
-        sx={{
-          width: '100%',
-          minWidth: 0,
-          overflow: 'auto',
-          WebkitOverflowScrolling: 'touch',
-          overscrollBehavior: 'contain',
-          position: 'relative',
-          ...(isMiniView
-            ? {
-                display: 'grid',
-                justifyContent: 'center',
-                maxHeight: cacheMaxHeight ?? 420,
-              }
-            : { maxHeight: 'min(70dvh, 640px)' }),
-          '& canvas': { display: 'block', maxWidth: '100%' },
-        }}
+        className={`relative w-full min-w-0 overflow-auto overscroll-contain ${
+          isMiniView ? 'grid max-h-[420px] justify-center' : 'max-h-[min(70dvh,640px)]'
+        }`}
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {piecesInOneRow > 0 && height > 0 ? (
-          <canvas ref={canvasRef} onMouseMove={onCanvasMove} onMouseLeave={() => setTooltip(null)} />
+          <canvas
+            ref={canvasRef}
+            className='block max-w-full'
+            onMouseMove={onCanvasMove}
+            onMouseLeave={() => setTooltip(null)}
+          />
         ) : null}
-      </Box>
+      </div>
 
       {tooltip ? (
-        <Box
-          sx={{
-            position: 'absolute',
-            zIndex: 2,
-            pointerEvents: 'none',
-            left: tooltip.x,
-            top: tooltip.y,
-            px: 1,
-            py: 0.5,
-            borderRadius: 0.5,
-            fontSize: 12,
-            lineHeight: 1.3,
-            whiteSpace: 'nowrap',
-            bgcolor: 'rgba(20, 28, 24, 0.92)',
-            color: '#fff',
-          }}
+        <div
+          className='pointer-events-none absolute z-20 whitespace-nowrap rounded bg-[rgba(20,28,24,0.92)] px-2 py-1 text-xs leading-snug text-white'
+          style={{ left: tooltip.x, top: tooltip.y }}
         >
           {tooltip.text}
-        </Box>
+        </div>
       ) : null}
 
       {model.windowStart != null && model.windowEnd != null && model.windowEnd >= model.windowStart ? (
-        <Typography
-          variant='caption'
-          sx={{
-            mt: 1,
-            textTransform: 'uppercase',
-            alignSelf: 'center',
-            letterSpacing: '0.4px',
-            color: 'text.secondary',
-          }}
-        >
+        <p className='mt-2 self-center text-xs uppercase tracking-wide text-default-500'>
           {t('SnakeFocusRange', { start: model.windowStart, end: model.windowEnd })}
-        </Typography>
+        </p>
       ) : null}
 
       {isMiniView && cacheMaxHeight != null && height >= cacheMaxHeight ? (
-        <Typography
-          variant='caption'
-          sx={{
-            mt: 1,
-            textTransform: 'uppercase',
-            alignSelf: 'center',
-            letterSpacing: '0.4px',
-            color: 'text.secondary',
-          }}
-        >
-          {t('ScrollDown')}
-        </Typography>
+        <p className='mt-2 self-center text-xs uppercase tracking-wide text-default-500'>{t('ScrollDown')}</p>
       ) : null}
-    </Box>
+    </div>
   )
 }
 
