@@ -134,6 +134,8 @@ export const TorrentCardDescription = styled.div`
       display: flex;
       flex-direction: column;
       min-width: 0;
+      min-height: 0;
+      overflow: hidden;
     }
 
     .description-section-name {
@@ -143,6 +145,7 @@ export const TorrentCardDescription = styled.div`
       letter-spacing: 0.4px;
       color: ${accentCardColor};
       min-width: 0;
+      flex-shrink: 0;
 
       ${mediaMax('cardDense')} {
         font-size: 0.5rem;
@@ -151,16 +154,27 @@ export const TorrentCardDescription = styled.div`
     }
 
     .description-status-wrapper {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 8px;
       height: 8px;
       margin-inline-end: 4px;
-      vertical-align: baseline;
+      vertical-align: middle;
+      flex-shrink: 0;
     }
 
     .description-torrent-title {
-      overflow: hidden;
-      word-break: break-all;
       min-width: 0;
+      overflow: hidden;
+      font-size: 0.8125rem;
+      font-weight: 400;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
     }
 
     .description-statistics-wrapper {
@@ -168,6 +182,7 @@ export const TorrentCardDescription = styled.div`
       grid-template-columns: 80px 80px 1fr;
       align-self: end;
       min-width: 0;
+      flex-shrink: 0;
 
       ${mediaMax('list3')}, ${MEDIA_SHORT_VIEWPORT} {
         grid-template-columns: 70px 70px 1fr;
@@ -192,6 +207,8 @@ export const TorrentCardDescription = styled.div`
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      font-size: 0.8125rem;
+      line-height: 1.2;
 
       ${mediaMax('list3')}, ${MEDIA_SHORT_VIEWPORT} {
         font-size: 0.7rem;
@@ -218,10 +235,7 @@ export const StatusIndicators = styled.div<{ $color: string }>`
     width: 8px;
     background-color: ${$color};
     border-radius: 50%;
-    position: relative;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    flex-shrink: 0;
     box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
   `}
 `

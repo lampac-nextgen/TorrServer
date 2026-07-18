@@ -3,7 +3,7 @@ import { MOBILE_BOTTOM_NAV_PX } from 'style/chrome'
 import styled, { css } from 'styled-components'
 
 /**
- * Bottom nav — master PWA footer pattern: fixed, full-width, 90px + safe-area.
+ * Bottom nav — master PWA footer pattern: fixed 90px band including safe-area.
  * Always visible at ≤700 (browser and Home Screen).
  */
 export default styled.nav`
@@ -22,14 +22,14 @@ export default styled.nav`
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       justify-items: stretch;
-      align-items: center;
+      align-items: stretch;
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
       width: 100%;
-      /* Hardcoded master 90px — do not rely only on CSS vars */
-      height: calc(${MOBILE_BOTTOM_NAV_PX}px + env(safe-area-inset-bottom, 0px));
+      /* Master: 90px total; home-indicator padding eats into the band */
+      height: ${MOBILE_BOTTOM_NAV_PX}px;
       padding-bottom: env(safe-area-inset-bottom, 0px);
       padding-left: env(safe-area-inset-left, 0px);
       padding-right: env(safe-area-inset-right, 0px);
@@ -38,14 +38,14 @@ export default styled.nav`
 
     .MuiListItemButton-root {
       width: 100%;
-      height: ${MOBILE_BOTTOM_NAV_PX}px;
-      min-height: ${MOBILE_BOTTOM_NAV_PX}px;
+      height: 100%;
+      min-height: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       font-size: 10px;
-      padding: 8px 2px !important;
+      padding: 6px 2px !important;
       color: #fff;
       gap: 2px;
 
@@ -56,7 +56,7 @@ export default styled.nav`
         margin: 0;
 
         svg {
-          font-size: 26px;
+          font-size: 22px;
           fill: currentColor;
         }
       }
@@ -67,20 +67,16 @@ export default styled.nav`
 
         .MuiTypography-root {
           font-size: 10px;
-          line-height: 1.2;
+          line-height: 1.15;
           font-weight: 400;
         }
       }
     }
 
-    .ts-nav-list-label {
-      display: none;
-    }
-
     .ts-nav-tab-label {
       display: block;
       font-size: 10px;
-      line-height: 1.2;
+      line-height: 1.15;
       text-align: center;
     }
   `}

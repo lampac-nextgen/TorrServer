@@ -19,7 +19,9 @@ export default createGlobalStyle`
 
   ${mediaMax('mobile')} {
     :root {
+      /* 90px total band — safe-area is padding inside the nav, not added on top */
       --app-bottom-nav-h: ${MOBILE_BOTTOM_NAV_PX}px;
+      --app-chrome-bottom: ${MOBILE_BOTTOM_NAV_PX}px;
     }
   }
 
@@ -62,13 +64,14 @@ export default createGlobalStyle`
     letter-spacing: -0.1px;
   }
 
-  /* Modal open: bottom nav must not steal taps in the chrome gap */
-  body:has(.MuiModal-root) .ts-bottom-nav {
+  /* Only OPEN modals — keepMounted Drawers leave .MuiModal-root with aria-hidden=true */
+  body:has(.MuiModal-root:not([aria-hidden='true'])) .ts-bottom-nav {
     pointer-events: none;
   }
 
   /* Immersive video: hide bottom chrome entirely */
-  body:has(.ts-immersive) .ts-bottom-nav {
+  body:has(.ts-immersive.MuiDialog-root:not([aria-hidden='true'])) .ts-bottom-nav,
+  body:has(.MuiModal-root:not([aria-hidden='true']) .ts-immersive) .ts-bottom-nav {
     visibility: hidden;
   }
 `

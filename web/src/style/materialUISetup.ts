@@ -34,6 +34,16 @@ export const LAYOUT_LIST_3COL_MEDIA = queryMax('list3')
 
 const typography = {
   fontFamily: `'Open Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif`,
+  fontSize: 14,
+  htmlFontSize: 16,
+  body1: {
+    fontSize: '0.875rem',
+    letterSpacing: '-0.1px',
+  },
+  button: {
+    fontSize: '0.8125rem',
+    letterSpacing: '-0.1px',
+  },
 }
 
 export const darkTheme = createTheme({
@@ -142,7 +152,7 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
                   textTransform: 'uppercase',
                   justifyContent: 'flex-start',
                   fontSize: '0.75rem',
-                  fontWeight: 500,
+                  fontWeight: 400,
                   letterSpacing: '0.01em',
                   padding: '0 10px',
                   boxShadow: 'none',
@@ -168,7 +178,7 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
                   },
                   [`@media ${queryMax('list3')}, ${MEDIA_SHORT_VIEWPORT}`]: {
                     justifyContent: 'center',
-                    fontSize: '0.75rem',
+                    fontSize: '0.7rem',
                     fontWeight: 400,
                     letterSpacing: '0.02em',
                     minHeight: 40,
@@ -178,11 +188,11 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
                     },
                   },
                   [`@media ${queryMax('mobile')}`]: {
-                    fontSize: '0.75rem',
+                    fontSize: '0.7rem',
                     fontWeight: 400,
                   },
                   [`@media ${queryMax('phone')}`]: {
-                    fontSize: '0.75rem',
+                    fontSize: '0.65rem',
                     fontWeight: 400,
                     padding: '6px 8px',
                     minHeight: 40,
@@ -247,6 +257,11 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
             styleOverrides: {
               h6: {
                 fontSize: '1rem',
+                fontWeight: 600,
+                lineHeight: 1.3,
+                [`@media ${queryMax('mobile')}`]: {
+                  fontSize: '0.875rem',
+                },
               },
             },
           },
