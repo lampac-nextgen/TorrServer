@@ -1,0 +1,1 @@
+import{I as e,Wt as t,Xt as n}from"./mui-D1rrPa1m.js";import{g as r}from"./index-Cb4jo-7f.js";var i=n();function a({open:t,children:n,...a}){return r(!!t),(0,i.jsx)(e,{open:t,...a,children:n})}t(a)({});export{a as t};

@@ -4,9 +4,10 @@ import AudiotrackIcon from '@mui/icons-material/Audiotrack'
 import CloseIcon from '@mui/icons-material/Close'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
-import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
 import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
 import Dialog from '@mui/material/Dialog'
@@ -14,9 +15,14 @@ import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogContentText from '@mui/material/DialogContentText'
 import DialogTitle from '@mui/material/DialogTitle'
+import Divider from '@mui/material/Divider'
+import IconButton from '@mui/material/IconButton'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import ListItemText from '@mui/material/ListItemText'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import Stack from '@mui/material/Stack'
+import Tooltip from '@mui/material/Tooltip'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { PlayableFile, TorrentFileStat, TorrentStat } from 'shared/api/types'
@@ -78,6 +84,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
   const [confirm, setConfirm] = useState<ConfirmKind>(null)
   const [playMenuAnchor, setPlayMenuAnchor] = useState<HTMLElement | null>(null)
   const [audioMenuAnchor, setAudioMenuAnchor] = useState<HTMLElement | null>(null)
+  const [moreAnchor, setMoreAnchor] = useState<HTMLElement | null>(null)
   const [playableFiles, setPlayableFiles] = useState<PlayableFile[]>([])
   const [audioTracks, setAudioTracks] = useState<ProbeTrack[]>([])
   const [pendingAudioFile, setPendingAudioFile] = useState<PlayableFile | null>(null)
@@ -201,48 +208,96 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
     }
   }
 
+  const closeMore = () => setMoreAnchor(null)
+
   return (
     <>
       <Stack
-        spacing={{ xs: 0.75, sm: 0 }}
-        direction={{ xs: 'row', sm: 'column' }}
+        direction='row'
+        spacing={0.5}
         useFlexGap
         sx={{
           width: '100%',
-          height: { sm: '100%' },
-          flex: 1,
-          flexWrap: { xs: 'wrap', sm: 'nowrap' },
-          '& > .MuiButton-root + .MuiButton-root': {
-            borderTop: { sm: '1px solid rgba(255,255,255,0.18)' },
-          },
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: { xs: 'flex-start', sm: 'flex-end' },
         }}
       >
-        <Button variant='cardAction' startIcon={<UnfoldMoreIcon />} onClick={onDetails}>
-          {t('Details')}
-        </Button>
-        {onEdit ? (
-          <Button variant='cardAction' startIcon={<EditIcon />} onClick={onEdit}>
-            {t('EditTorrent')}
-          </Button>
-        ) : null}
         <Button
-          variant='cardAction'
-          startIcon={resolvingAudio ? <CircularProgress size={16} color='inherit' /> : <PlayArrowIcon />}
+          variant='contained'
+          size='small'
+          startIcon={resolvingAudio ? <CircularProgress size={14} color='inherit' /> : <PlayArrowIcon />}
           onClick={e => void handlePlayClick(e)}
           disabled={resolvingAudio}
+          sx={{ minWidth: 96 }}
         >
           {t('Play')}
         </Button>
-        <Button variant='cardAction' startIcon={<PlaylistPlayIcon />} component='a' href={playlistLink}>
-          {t('DownloadPlaylist')}
-        </Button>
-        <Button variant='cardAction' startIcon={<CloseIcon />} onClick={() => setConfirm('drop')}>
-          {t('DropTorrent')}
-        </Button>
-        <Button variant='cardAction' startIcon={<DeleteIcon />} onClick={() => setConfirm('delete')}>
-          {t('Delete')}
-        </Button>
+
+        <Tooltip title={t('Details')}>
+          <IconButton size='small' aria-label={t('Details')} onClick={onDetails}>
+            <InfoOutlinedIcon fontSize='small' />
+          </IconButton>
+        </Tooltip>
+
+        {onEdit ? (
+          <Tooltip title={t('EditTorrent')}>
+            <IconButton size='small' aria-label={t('EditTorrent')} onClick={onEdit}>
+              <EditIcon fontSize='small' />
+            </IconButton>
+          </Tooltip>
+        ) : null}
+
+        <Tooltip title={t('DownloadPlaylist')}>
+          <IconButton size='small' aria-label={t('DownloadPlaylist')} component='a' href={playlistLink}>
+            <PlaylistPlayIcon fontSize='small' />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip title={t('Actions')}>
+          <IconButton
+            size='small'
+            aria-label={t('Actions')}
+            aria-haspopup='menu'
+            onClick={e => setMoreAnchor(e.currentTarget)}
+          >
+            <MoreVertIcon fontSize='small' />
+          </IconButton>
+        </Tooltip>
       </Stack>
+
+      <Menu
+        anchorEl={moreAnchor}
+        open={Boolean(moreAnchor)}
+        onClose={closeMore}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <MenuItem
+          onClick={() => {
+            closeMore()
+            setConfirm('drop')
+          }}
+        >
+          <ListItemIcon>
+            <CloseIcon fontSize='small' />
+          </ListItemIcon>
+          <ListItemText>{t('DropTorrent')}</ListItemText>
+        </MenuItem>
+        <Divider />
+        <MenuItem
+          onClick={() => {
+            closeMore()
+            setConfirm('delete')
+          }}
+          sx={{ color: 'error.main' }}
+        >
+          <ListItemIcon sx={{ color: 'inherit' }}>
+            <DeleteIcon fontSize='small' />
+          </ListItemIcon>
+          <ListItemText>{t('Delete')}</ListItemText>
+        </MenuItem>
+      </Menu>
 
       <Menu anchorEl={playMenuAnchor} open={Boolean(playMenuAnchor)} onClose={() => setPlayMenuAnchor(null)}>
         {playableFiles.map(file => (
@@ -267,10 +322,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
         }}
       >
         {audioTracks.map((track, index) => (
-          <MenuItem
-            key={index}
-            onClick={() => pendingAudioFile && openPlayerForFile(pendingAudioFile, index)}
-          >
+          <MenuItem key={index} onClick={() => pendingAudioFile && openPlayerForFile(pendingAudioFile, index)}>
             <AudiotrackIcon fontSize='small' sx={{ mr: 1 }} />
             {audioTrackLabel(track, index)}
           </MenuItem>
@@ -293,9 +345,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
       <Dialog open={confirm != null} onClose={() => setConfirm(null)}>
         <DialogTitle>{confirm === 'delete' ? t('Delete') : t('DropTorrent')}</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            {confirm === 'delete' ? t('DeleteTorrents?') : t('ConfirmDropTorrent')}
-          </DialogContentText>
+          <DialogContentText>{confirm === 'delete' ? t('DeleteTorrents?') : t('ConfirmDropTorrent')}</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button autoFocus onClick={() => setConfirm(null)} variant='outlined'>

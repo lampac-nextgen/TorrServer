@@ -3,7 +3,7 @@ import { createTheme } from '@mui/material/styles'
 
 import { brand, mainColors, themeColors } from './colors'
 import { alphaCss } from './color'
-import { BP, MEDIA_SHORT_VIEWPORT, queryMax } from './breakpoints'
+import { BP, queryMax } from './breakpoints'
 import { FONT_STACK, LETTER_SPACING, TOUCH_TARGET_PX, radius, typography as typeScale } from './tokens'
 
 const typography = {
@@ -50,8 +50,15 @@ const sharedComponents = {
   },
   MuiAppBar: {
     styleOverrides: {
-      colorPrimary: {
-        backgroundImage: 'none',
+      colorPrimary: ({ theme }: { theme: { palette: { mode: string } } }) => {
+        const mode = theme.palette.mode === 'dark' ? 'dark' : 'light'
+        return {
+          backgroundImage: 'none',
+          backgroundColor: mainColors[mode].header,
+          color: mode === 'dark' ? brand.textDark : '#ffffff',
+          boxShadow: 'none',
+          borderBottom: mode === 'dark' ? `1px solid ${alphaCss('#fff', 0.06)}` : 'none',
+        }
       },
     },
   },
@@ -68,62 +75,6 @@ const sharedComponents = {
       sizeMedium: { minHeight: 36 },
       sizeLarge: { minHeight: 40 },
     },
-    variants: [
-      {
-        props: { variant: 'cardAction' as const },
-        style: ({ theme }: { theme: { palette: { mode: string } } }) => {
-          const card = themeColors[theme.palette.mode === 'dark' ? 'dark' : 'light'].torrentCard
-          return {
-            backgroundColor: card.buttonBGColor,
-            color: '#fff',
-            flex: '1 1 0',
-            minHeight: 40,
-            minWidth: 0,
-            width: '100%',
-            borderRadius: 0,
-            textTransform: 'uppercase' as const,
-            justifyContent: 'flex-start',
-            fontSize: typeScale.button,
-            fontWeight: 600,
-            letterSpacing: '0.02em',
-            lineHeight: 1.15,
-            padding: '6px 12px',
-            boxShadow: 'none',
-            WebkitTapHighlightColor: 'transparent',
-            touchAction: 'manipulation',
-            '&:hover': {
-              backgroundColor: card.accentCardColor,
-              boxShadow: 'none',
-            },
-            '&:active': { transform: 'none', backgroundColor: card.accentCardColor },
-            '&.Mui-disabled': { color: '#fff', opacity: 0.75 },
-            '& .MuiButton-startIcon': {
-              marginRight: 8,
-              marginLeft: 0,
-              '& > *:nth-of-type(1)': { fontSize: 18 },
-            },
-            [`@media ${queryMax('list3')}, ${MEDIA_SHORT_VIEWPORT}`]: {
-              justifyContent: 'center',
-              fontSize: typeScale.buttonDense,
-              minHeight: 40,
-              padding: '6px 6px',
-              '& .MuiButton-startIcon': { display: 'none' },
-            },
-            [`@media ${queryMax('mobile')}`]: {
-              fontSize: typeScale.buttonDense,
-              minHeight: TOUCH_TARGET_PX,
-              borderRadius: radius.sm,
-              flex: '1 1 auto',
-            },
-            [`@media ${queryMax('phone')}`]: {
-              fontSize: typeScale.buttonPhone,
-              padding: '6px 8px',
-              minHeight: TOUCH_TARGET_PX,
-            },
-          }
-        },
-      },
-    ],
   },
   MuiIconButton: {
     styleOverrides: {

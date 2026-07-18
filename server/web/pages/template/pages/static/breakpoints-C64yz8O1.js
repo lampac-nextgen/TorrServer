@@ -1,1 +1,0 @@
-var e={narrow:340,micro:410,phone:420,compact:600,mobile:700,cardDense:770,tablet:840,dialog:960,shortTable:970,list2:1100,list3:1260,desktop:1280},t=t=>`(max-width: ${e[t]}px)`,n=`(max-height: 500px)`;export{n,t as r,e as t};

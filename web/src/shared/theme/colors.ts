@@ -36,11 +36,11 @@ export const themeColors = {
       paperColor: '#ffffff',
     },
     torrentCard: {
-      accentCardColor: brand.greenDeep,
-      buttonBGColor: brand.greenHover,
-      cardPrimaryColor: brand.green,
-      cardSecondaryColor: '#9fd4b8',
-      cardSurfaceColor: brand.cream,
+      accentCardColor: alphaCss(brand.green, 0.12),
+      buttonBGColor: 'transparent',
+      cardPrimaryColor: brand.textLight,
+      cardSecondaryColor: alphaCss(brand.greenDeep, 0.12),
+      cardSurfaceColor: '#ffffff',
     },
     dialogTorrentDetailsContent: {
       posterBGColor: '#9fd4b8',
@@ -92,7 +92,7 @@ export const themeColors = {
       viewedTertiaryColor: '#8a9f96',
     },
     settingsDialog: {
-      contentBG: brand.cream,
+      contentBG: '#ffffff',
       footerBG: '#ffffff',
       separatorColor: alphaCss(brand.greenDeep, 0.12),
       cacheBeforeReaderColor: '#b3dfc9',
@@ -112,17 +112,17 @@ export const themeColors = {
   dark: {
     app: {
       headerToggleColor: brand.greenBright,
-      appSecondaryColor: brand.ink,
-      sidebarBGColor: '#080d0b',
-      sidebarFillColor: '#c5ddd2',
-      paperColor: brand.inkElevated,
+      appSecondaryColor: '#0a0f0d',
+      sidebarBGColor: '#070b09',
+      sidebarFillColor: '#b8d0c4',
+      paperColor: '#121a16',
     },
     torrentCard: {
-      accentCardColor: '#075a40',
-      buttonBGColor: brand.greenHover,
-      cardPrimaryColor: brand.greenBright,
-      cardSecondaryColor: brand.inkBorder,
-      cardSurfaceColor: brand.inkSoft,
+      accentCardColor: alphaCss(brand.greenBright, 0.1),
+      buttonBGColor: 'transparent',
+      cardPrimaryColor: brand.textDark,
+      cardSecondaryColor: alphaCss('#fff', 0.08),
+      cardSurfaceColor: '#161f1b',
     },
     dialogTorrentDetailsContent: {
       posterBGColor: brand.inkBorder,
@@ -174,9 +174,9 @@ export const themeColors = {
       viewedTertiaryColor: '#607b6f',
     },
     settingsDialog: {
-      contentBG: brand.inkSoft,
-      footerBG: brand.inkElevated,
-      separatorColor: alphaCss(brand.greenBright, 0.14),
+      contentBG: '#121a16',
+      footerBG: '#121a16',
+      separatorColor: alphaCss(brand.greenBright, 0.12),
       cacheBeforeReaderColor: '#2a4036',
       cacheAfterReaderColor: brand.greenBright,
       preloadCacheBorderColor: brand.greenBright,
@@ -199,18 +199,20 @@ export function getThemeColors(mode: 'light' | 'dark') {
   return themeColors[mode]
 }
 
-/** MUI primary/secondary/text anchors. Dark primary stays brand-bright for AppBar contrast. */
+/** MUI primary/secondary/text. AppBar uses dedicated header surface, not neon primary fill. */
 export const mainColors = {
   light: {
     primary: brand.green,
     secondary: brand.greenHover,
     labels: brand.textLight,
     labelsMuted: brand.textMutedLight,
+    header: '#0d6b4f',
   },
   dark: {
     primary: brand.green,
     secondary: brand.greenBright,
     labels: brand.textDark,
     labelsMuted: brand.textMutedDark,
+    header: '#0e1613',
   },
 } as const
