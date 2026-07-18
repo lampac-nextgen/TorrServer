@@ -42,6 +42,7 @@ export interface AddDialogProps {
   initialSource?: string | null
 }
 
+/** Add torrent by magnet/hash/URL or file drop; TMDB poster search + category. */
 export default function AddDialog({ open, onClose, initialSource }: AddDialogProps) {
   const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()

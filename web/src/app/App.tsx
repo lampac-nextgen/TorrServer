@@ -29,6 +29,10 @@ function migrateLegacyThemeKey() {
   }
 }
 
+/**
+ * Root providers: modal-open chrome, snackbars, settings cache bootstrap, Shell.
+ * Toaster offset clears the mobile BottomNav when present.
+ */
 export default function App() {
   // Shell only renders its fixed BottomNav below this breakpoint — toasts must clear it, not sit under it.
   const hasBottomNav = useMediaQuery(queryMax('mobile'))

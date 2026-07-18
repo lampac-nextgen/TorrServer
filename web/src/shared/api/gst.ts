@@ -7,6 +7,7 @@ export interface GstSettingsResponse {
   [key: string]: unknown
 }
 
+/** Raw fetch (not axios) — GST may be absent; callers handle `built_in: false`. */
 export const getGstSettings = async (signal?: AbortSignal): Promise<GstSettingsResponse> => {
   const response = await fetch(gstSettingsHost(), { signal })
   if (!response.ok) throw new Error('Failed to load GStreamer settings')
@@ -22,6 +23,7 @@ export const setGstSettings = async (config: Record<string, unknown>): Promise<v
   if (!response.ok) throw new Error('Failed to save GStreamer settings')
 }
 
+/** Lightweight GST pipeline health probe (plain text body). */
 export const getGstEcho = async (signal?: AbortSignal): Promise<string> => {
   const response = await fetch(gstEchoHost(), { signal })
   if (!response.ok) throw new Error('GStreamer echo failed')

@@ -76,4 +76,9 @@ const playableExtList = [
   'xm',
 ]
 
+/**
+ * Extension allowlist for showing Play / stream actions in the UI.
+ * Broader than the GStreamer subset — progressive `/stream` covers most of these;
+ * use {@link shouldUseGStreamerPlayer} to pick the GST HLS path.
+ */
 export const isFilePlayable = (fileName: string): boolean => playableExtList.includes(getExt(fileName))

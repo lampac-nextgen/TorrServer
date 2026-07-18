@@ -18,6 +18,7 @@ export const listViewedFiles = async (hash: string): Promise<number[] | undefine
   return entries.map(itm => itm.file_index).sort((a, b) => a - b)
 }
 
+/** Clear every viewed mark for a torrent (`file_index: -1` is the server sentinel). */
 export const clearViewedFiles = async (hash: string): Promise<void> => {
   await axios.post(viewedHost(), { action: 'rem', hash, file_index: -1 })
 }
@@ -27,6 +28,7 @@ export const remViewedFile = async (hash: string, fileIndex: number): Promise<vo
   await axios.post(viewedHost(), { action: 'rem', hash, file_index: fileIndex })
 }
 
+/** Mark viewed and optionally persist resume `timecode` (seconds). */
 export const setViewedFile = async (hash: string, fileIndex: number, timecode = 0): Promise<void> => {
   await axios.post(viewedHost(), { action: 'set', hash, file_index: fileIndex, timecode })
 }

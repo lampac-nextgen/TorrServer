@@ -2,6 +2,7 @@ import axios from 'axios'
 
 import { downloadTestHost, ffpHost, playlistAllHost } from 'shared/api/hosts'
 
+/** Library-wide M3U; optional `category` / `search` query filters. */
 export const playlistAllUrl = (opts?: { category?: string; search?: string }): string => {
   const params = new URLSearchParams()
   if (opts?.category) params.set('category', opts.category)

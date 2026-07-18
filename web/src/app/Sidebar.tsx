@@ -18,6 +18,7 @@ type NavItem = {
   active?: boolean
 }
 
+/** Desktop / tablet left rail; collapse to icons on narrow desktop layouts. */
 export default function Sidebar({
   isOffline,
   isLoading,

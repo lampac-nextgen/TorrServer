@@ -1,3 +1,4 @@
+/** True when running as an installed PWA / iOS "Add to Home Screen" (display-mode standalone). */
 export const detectStandaloneApp = (): boolean => {
   if (typeof window === 'undefined') return false
 
@@ -17,9 +18,17 @@ export const detectStandaloneApp = (): boolean => {
   return byDisplayMode || (window.navigator as Navigator & { standalone?: boolean }).standalone === true
 }
 
-/** Install guide / launch / protocol only — not for layout or feature gating. */
+/**
+ * Eager snapshot at module load — use for install/protocol guides only.
+ * Do not gate layout or features on this; prefer {@link detectStandaloneApp} when
+ * the value must re-evaluate after install.
+ */
 export const isStandaloneApp = detectStandaloneApp()
 
+/**
+ * Apple platform detection. iPadOS 13+ often reports Macintosh in UA —
+ * `maxTouchPoints > 1` on a Mac UA means iPad, not desktop Mac.
+ */
 export const detectApplePlatform = (): { isMac: boolean; isIOS: boolean } => {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') {
     return { isMac: false, isIOS: false }
@@ -48,11 +57,13 @@ export const isAppleDevice = (): boolean => {
   return isMac || isIOS
 }
 
+/** Desktop Mac only (excludes iPad masquerading as Macintosh). */
 export const isMacOS = (): boolean => {
   const { isMac, isIOS } = detectApplePlatform()
   return isMac && !isIOS
 }
 
+/** Coarse desktop vs phone/tablet (treats touch-Mac as tablet). */
 export const isDesktop = (): boolean => {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') {
     return false

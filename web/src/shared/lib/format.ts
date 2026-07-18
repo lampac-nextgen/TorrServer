@@ -1,6 +1,7 @@
 import i18n from 'shared/i18n'
 import type { TorrentStat } from 'shared/api/types'
 
+/** Human file/cache size using binary 1024 steps and localized unit labels. */
 export function humanizeSize(size?: number | null): string {
   if (size == null || Number.isNaN(size) || size < 0) return '—'
   if (size === 0) return `0 ${i18n.t('B')}`
@@ -10,6 +11,10 @@ export function humanizeSize(size?: number | null): string {
   }`
 }
 
+/**
+ * Torrent transfer rate for the UI.
+ * Server reports **bytes/s**; we multiply by 8 and format with SI 1000 (bps/kbps/Mbps).
+ */
 export function humanizeSpeed(speed?: number | null): string {
   if (speed == null || Number.isNaN(speed) || speed < 0) return `0 ${i18n.t('bps')}`
   if (speed === 0) return `0 ${i18n.t('bps')}`
@@ -19,6 +24,7 @@ export function humanizeSpeed(speed?: number | null): string {
   }`
 }
 
+/** `active/total · seeders` peer summary, or null when torrent is missing. */
 export function getPeerString(torrent?: TorrentStat | null): string | null {
   if (!torrent) return null
   const active = torrent.active_peers
@@ -28,6 +34,10 @@ export function getPeerString(torrent?: TorrentStat | null): string | null {
   return `${active}/${total ?? 0} · ${seeders}`
 }
 
+/**
+ * Strip unbalanced trailing bracket groups and trailing dots/spaces from titles
+ * (common in release-group naming) so display names stay readable.
+ */
 export const removeRedundantCharacters = (string: string): string => {
   let newString = string
   const brackets: Array<[string, string]> = [
@@ -54,6 +64,7 @@ export const removeRedundantCharacters = (string: string): string => {
   return hasThreeDotsAtTheEnd ? `${trimmedString}..` : trimmedString
 }
 
+/** Binary (1024) size with fixed English unit labels — prefer {@link humanizeSize} in UI. */
 export function formatSizeToClassicUnits(bytes?: number | null): string {
   if (!bytes || bytes === 0) return '0 B'
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
@@ -62,6 +73,10 @@ export function formatSizeToClassicUnits(bytes?: number | null): string {
   return `${value.toFixed(i === 0 ? 0 : 2)} ${sizes[i]}`
 }
 
+/**
+ * Parse Torznab/search size strings into bytes.
+ * `KiB`/`MiB`/`…iB` (or `CiB`) use base 1024; plain `KB`/`MB` use decimal 1000.
+ */
 export function parseSizeToBytes(sizeStr?: string | null): number {
   if (!sizeStr || typeof sizeStr !== 'string') return 0
 

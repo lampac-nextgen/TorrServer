@@ -11,6 +11,10 @@ import translationRO from 'locales/ro/translation.json'
 
 export const SUPPORTED_LANGS = ['en', 'ru', 'ua', 'zh', 'bg', 'fr', 'ro'] as const
 
+/**
+ * i18n bootstrap: `load: 'languageOnly'` + `nonExplicitSupportedLngs` so `en-US`
+ * resolves to `en`. Detection prefers localStorage over navigator.
+ */
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)

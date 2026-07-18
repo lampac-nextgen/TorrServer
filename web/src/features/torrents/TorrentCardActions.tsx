@@ -22,6 +22,10 @@ export interface TorrentCardActionsProps {
 
 type ConfirmKind = 'drop' | 'delete' | null
 
+/**
+ * Poster overlay actions: Play + overflow menu (details / playlist / edit / externals / drop / delete).
+ * Secondary actions stay in the menu so 44px targets fit a narrow poster tile.
+ */
 export default function TorrentCardActions({ torrent, onDetails, onEdit }: TorrentCardActionsProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()

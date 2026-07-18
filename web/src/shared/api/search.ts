@@ -22,6 +22,10 @@ const resolveTorznabSearchOptions = (
   return signal ? { ...optionsOrIndex, signal } : optionsOrIndex
 }
 
+/**
+ * Torznab indexer search.
+ * Second arg may be a numeric indexer `index` (legacy) or a full {@link TorznabSearchOptions} object.
+ */
 export const searchTorznab = async (
   query: string,
   optionsOrIndex?: TorznabSearchOptions | number,
@@ -47,6 +51,7 @@ export const fetchTorznabCaps = async (index: number, signal?: AbortSignal): Pro
   return data
 }
 
+/** Built-in RuTor mirror search (`/search/`) — separate from Torznab indexers. */
 export const searchRutor = async (query: string, signal?: AbortSignal): Promise<SearchResultItem[]> => {
   const { data } = await axios.get<SearchResultItem[]>(searchHost(), { params: { query }, signal })
   return Array.isArray(data) ? data : []

@@ -70,6 +70,10 @@ const axiosErrorMessage = (err: unknown, fallback: string): string => {
   return fallback
 }
 
+/**
+ * Torznab + RuTor search sheet. Aborts in-flight requests on query change;
+ * optional poster enrichment via TMDB when adding a hit.
+ */
 export default function SearchDialog({ open, onClose }: SearchDialogProps) {
   const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()

@@ -1,5 +1,6 @@
 import type { FfpProbeResult, FfpStream } from 'shared/api/extras'
 
+/** Format ffprobe duration (seconds) as `m:ss` or `h:mm:ss`. */
 export function formatFfpDuration(secondsRaw?: string | number | null): string | null {
   if (secondsRaw == null || secondsRaw === '') return null
   const total = Math.round(Number(secondsRaw))
@@ -11,6 +12,7 @@ export function formatFfpDuration(secondsRaw?: string | number | null): string |
   return `${m}:${String(s).padStart(2, '0')}`
 }
 
+/** Bitrate string from ffprobe (bits/s) → Mbps/kbps display. */
 export function formatFfpBitrate(raw?: string | null): string | null {
   if (!raw) return null
   const bits = Number(raw)
@@ -34,6 +36,9 @@ export function formatFfpBytes(raw?: string | null): string | null {
   return `${bytes} B`
 }
 
+/**
+ * Read a stream tag by exact key or `key-*` prefixed variant (ffprobe language/title tags).
+ */
 export function streamTag(stream: FfpStream, key: string): string {
   const tags = stream.tags
   if (!tags) return ''
@@ -43,6 +48,7 @@ export function streamTag(stream: FfpStream, key: string): string {
   return found && typeof found[1] === 'string' ? found[1] : ''
 }
 
+/** Partition ffprobe streams for MediaInfo sections. */
 export function groupStreams(data: FfpProbeResult | null) {
   const streams = data?.streams ?? []
   return {
@@ -53,6 +59,7 @@ export function groupStreams(data: FfpProbeResult | null) {
   }
 }
 
+/** Convert `r_frame_rate` (`num/den`) to a display FPS string. */
 export function fpsFromRate(rate?: string | null): string | null {
   if (!rate || rate === '0/0') return null
   const [a, b] = rate.split('/').map(Number)

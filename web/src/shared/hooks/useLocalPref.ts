@@ -37,6 +37,10 @@ export function useLocalBoolPref(key: string, fallback = false): [boolean, (next
   return [value, set]
 }
 
+/**
+ * Typed JSON localStorage preference with the same cross-tab / in-app sync as
+ * {@link useLocalBoolPref} (`storage` + `torrserver:local-pref` custom event).
+ */
 export function useLocalJsonPref<T>(key: string, fallback: T): [T, (next: T) => void] {
   const [value, setValue] = useState(() => readLocalJson(key, fallback))
 

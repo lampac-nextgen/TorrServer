@@ -55,6 +55,10 @@ const SIDEBAR_COLLAPSED_PX = 60
 const HEADER_HEIGHT = 'calc(60px + env(safe-area-inset-top, 0px))'
 const HEADER_HEIGHT_SHORT = 'calc(44px + env(safe-area-inset-top, 0px))'
 
+/**
+ * App chrome: sidebar / bottom nav, library host, and lazy-loaded dialogs.
+ * Owns offline echo probe, theme/language toggles, and settings deep-link events.
+ */
 export default function Shell() {
   const { t } = useTranslation()
   const isMobile = useMediaQuery(queryMax('mobile'))

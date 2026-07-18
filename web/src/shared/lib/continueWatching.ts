@@ -1,4 +1,14 @@
+/**
+ * Local "Continue Watching" shelf (browser localStorage only — not server viewed).
+ *
+ * Rules:
+ * - Skip remembering until playback passes 15s (avoids noise from accidental opens).
+ * - Cap at CONTINUE_LIMIT (12) newest entries.
+ * - {@link listContinueWatching} can prune orphans when given the live torrent hash set.
+ */
+
 const CONTINUE_KEY = 'torrserver.continueWatching'
+/** Max remembered items; older rows fall off the end of the list. */
 const CONTINUE_LIMIT = 12
 
 export interface ContinueWatchEntry {
@@ -29,6 +39,7 @@ function writeAll(entries: ContinueWatchEntry[]) {
   }
 }
 
+/** Upsert one resume row; no-op when `timecode < 15`. */
 export function rememberContinueWatching(entry: Omit<ContinueWatchEntry, 'updatedAt'>): void {
   if (!entry.hash || entry.fileIndex == null || entry.timecode < 15) return
   const next: ContinueWatchEntry = { ...entry, updatedAt: Date.now() }
@@ -36,6 +47,10 @@ export function rememberContinueWatching(entry: Omit<ContinueWatchEntry, 'update
   writeAll([next, ...rest])
 }
 
+/**
+ * Newest-first list. When `knownHashes` is provided, drops entries for torrents
+ * no longer in the library and persists the prune.
+ */
 export function listContinueWatching(knownHashes?: Set<string>): ContinueWatchEntry[] {
   const entries = readAll()
   if (!knownHashes) return entries
@@ -44,6 +59,7 @@ export function listContinueWatching(knownHashes?: Set<string>): ContinueWatchEn
   return filtered
 }
 
+/** Remove one file or every entry for a torrent hash. */
 export function removeContinueWatching(hash: string, fileIndex?: number): void {
   writeAll(
     readAll().filter(item => (fileIndex == null ? item.hash !== hash : !(item.hash === hash && item.fileIndex === fileIndex))),

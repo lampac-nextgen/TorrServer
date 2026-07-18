@@ -5,6 +5,7 @@ import { torrentUploadHost, torrentsHost } from 'shared/api/hosts'
 
 export const TORRENTS_QUERY_KEY = ['torrents'] as const
 
+/** List torrents; attaches HTTP `status` on the thrown Error for auth/offline UI. */
 export const getTorrents = async (): Promise<TorrentStat[]> => {
   try {
     const { data } = await axios.post<TorrentStat[]>(torrentsHost(), { action: 'list' })
@@ -58,10 +59,12 @@ export const updateTorrent = async (input: UpdateTorrentInput): Promise<void> =>
   })
 }
 
+/** Stop swarm activity but keep the torrent in the DB (`action: drop`). */
 export const dropTorrent = async (hash: string): Promise<void> => {
   await axios.post(torrentsHost(), { action: 'drop', hash })
 }
 
+/** Permanently delete the torrent from the DB (`action: rem`). */
 export const removeTorrent = async (hash: string): Promise<void> => {
   await axios.post(torrentsHost(), { action: 'rem', hash })
 }
@@ -77,6 +80,7 @@ export interface UploadTorrentMeta {
   save?: boolean
 }
 
+/** Multipart `.torrent` upload; form field `save` mirrors server "save to DB" flag. */
 export const uploadTorrent = async (file: File, meta: UploadTorrentMeta = {}): Promise<void> => {
   const data = new FormData()
   data.append('save', meta.save === false ? 'false' : 'true')

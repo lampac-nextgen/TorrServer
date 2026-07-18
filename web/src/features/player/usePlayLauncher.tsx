@@ -54,6 +54,10 @@ const fileBaseName = (path: string): string => path.split('\\').pop()?.split('/'
 const fileStreamUrl = (hash: string, file: Pick<PlayableFile, 'id' | 'path'>): string =>
   `${streamHost()}/${encodeURIComponent(fileBaseName(file.path))}?link=${hash}&index=${file.id}&play`
 
+/**
+ * Sidecar caption URL: same basename as the video plus `.srt` / `.vtt` elsewhere in the torrent.
+ * Empty string when none found.
+ */
 export const findCaptionSrc = (file: PlayableFile, allFiles: TorrentFileStat[], hash: string): string => {
   const base = file.path.replace(/\.[^/.]+$/, '')
   const caption = allFiles.find(candidate => {

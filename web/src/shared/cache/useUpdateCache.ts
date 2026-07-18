@@ -51,6 +51,11 @@ export interface UseUpdateCacheOptions {
   fast?: boolean
 }
 
+/**
+ * Poll `/cache` for the snake visualization.
+ * Active (~100ms) while pieces/readers change; idle (~400ms) after quiet + no readers.
+ * Keeps the last good snapshot on error; pauses timers while `document.hidden`.
+ */
 export const useUpdateCache = (hash?: string, options?: UseUpdateCacheOptions) => {
   const enabled = options?.enabled ?? true
   const fast = options?.fast ?? true

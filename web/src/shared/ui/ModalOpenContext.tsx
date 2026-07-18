@@ -9,7 +9,11 @@ interface ModalOpenContextValue {
 
 const ModalOpenContext = createContext<ModalOpenContextValue | null>(null)
 
-/** Tracks open dialogs/drawers for bottom-nav pointer-events (MUI 9 Backdrop aria-hidden-safe). */
+/**
+ * Counts open dialogs/drawers and mirrors state onto `document.body.dataset`:
+ * - `data-modal-open` — CSS can disable bottom-nav pointer-events under overlays
+ * - `data-immersive` — hide chrome for fullscreen player (`setImmersive`)
+ */
 export function ModalOpenProvider({ children }: { children: ReactNode }) {
   const [openCount, setOpenCount] = useState(0)
   const [immersive, setImmersiveState] = useState(false)
@@ -42,7 +46,7 @@ export function useModalOpen() {
   return ctx
 }
 
-/** Sync open state with a controlled Dialog/Drawer `open` prop. */
+/** Sync open state with a controlled Dialog/Drawer `open` prop (push on mount, pop on close). */
 export function useSyncModalOpen(open: boolean) {
   const { pushOpen, popOpen } = useModalOpen()
   useEffect(() => {

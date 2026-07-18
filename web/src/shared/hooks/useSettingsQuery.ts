@@ -19,6 +19,7 @@ export function useSettingsQuery(options?: { enabled?: boolean }): UseQueryResul
   })
 }
 
+/** Persists BTSets and broadcasts {@link notifySettingsChanged} so non-query listeners refresh. */
 export function useSaveSettingsMutation(): UseMutationResult<void, Error, BTSets> {
   const queryClient = useQueryClient()
   return useMutation({

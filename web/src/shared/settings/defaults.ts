@@ -1,5 +1,10 @@
 import type { BTSets } from 'shared/api/types'
 
+/**
+ * Client-side BTSets seed for forms before `/settings` loads.
+ * "Reset to defaults" in the UI must call the server `reset` action — do not treat
+ * this object as authoritative server defaults.
+ */
 const defaultSettings: BTSets = {
   CacheSize: 64,
   ReaderReadAHead: 95,

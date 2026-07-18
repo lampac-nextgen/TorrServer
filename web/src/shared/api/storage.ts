@@ -9,11 +9,16 @@ export interface StorageSettings {
   viewed: StorageBackend
 }
 
+/**
+ * Default persistence backends when `/storage/settings` has never been saved:
+ * editable JSON for BTSets, robust BBolt for viewed/resume history.
+ */
 export const defaultStorageSettings = (): StorageSettings => ({
   settings: 'json',
   viewed: 'bbolt',
 })
 
+/** Coerces unknown server values to the two known backends (safe defaults on garbage). */
 export const getStorageSettings = async (signal?: AbortSignal): Promise<StorageSettings> => {
   const { data } = await axios.get<Partial<StorageSettings>>(storageSettingsHost(), { signal })
   return {

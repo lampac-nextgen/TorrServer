@@ -13,6 +13,10 @@ const loadGStreamerRuntime = async (): Promise<GStreamerRuntime> => {
   return response.json()
 }
 
+/**
+ * Cached GST capability/config. Soft-fails to `{ built_in: false }` when the
+ * endpoint is missing or errors — non-GST builds must still boot the UI.
+ */
 export const useGStreamerRuntime = (): GStreamerRuntime => {
   const { data } = useQuery<GStreamerRuntime, Error>({
     queryKey: [GST_RUNTIME_QUERY_KEY],
@@ -32,6 +36,11 @@ const fileExtension = (path: string): string => {
   return dot === -1 ? '' : fileName.slice(dot + 1).toLowerCase()
 }
 
+/**
+ * Whether this path should open via the GStreamer HLS path instead of progressive stream.
+ * MKV/WebM always when GST is built in; AVI only when `TranscodeAVI` is enabled.
+ * Broader allowlist still applies for Play button visibility — see `isFilePlayable`.
+ */
 export const shouldUseGStreamerPlayer = (path: string, runtime?: GStreamerRuntime | null): boolean => {
   if (!runtime?.built_in) return false
 

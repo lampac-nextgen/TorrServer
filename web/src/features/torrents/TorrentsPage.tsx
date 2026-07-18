@@ -54,6 +54,9 @@ function prefersReducedMotion(): boolean {
   return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
+/**
+ * Poster library grid: filter/sort, multi-select, Continue Watching, details/edit sheets.
+ */
 export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCategory }: TorrentsPageProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
