@@ -180,7 +180,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
       onClose={onClose}
       size='lg'
       fullScreen={isMobile}
-      dialogClassName={isMobile ? undefined : 'sm:min-w-[42rem] sm:max-w-2xl'}
+      dialogStyle={isMobile ? undefined : { minWidth: '48rem', maxWidth: '56rem' }}
     >
       <Modal.Header>
         <Modal.Heading>{t('SettingsDialog.Settings')}</Modal.Heading>
@@ -200,7 +200,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
           >
             <Tabs.List
               aria-label={t('SettingsDialog.Settings')}
-              className={isMobile ? 'overflow-x-auto' : 'w-52 shrink-0'}
+              className={isMobile ? 'overflow-x-auto' : 'w-56 shrink-0'}
             >
               {visibleTabs.map(item => (
                 <Tabs.Tab

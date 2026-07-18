@@ -1,5 +1,5 @@
 import { Modal, useOverlayState } from '@heroui/react'
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, type CSSProperties, type ReactNode } from 'react'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 
 export interface AppDialogProps {
@@ -11,6 +11,13 @@ export interface AppDialogProps {
   className?: string
   /** Extra classes applied to the dialog surface itself — use to widen a dialog past its `size` ceiling. */
   dialogClassName?: string
+  /**
+   * Inline min/max-width for the dialog surface (desktop only, ignored when `fullScreen`).
+   * HeroUI's `size` ceilings and our own collapse-prevention floor (`index.css`) live in CSS
+   * layers, so a plain Tailwind width utility can lose to them regardless of specificity —
+   * inline style always wins and is the only reliable way to widen a dialog past `lg`.
+   */
+  dialogStyle?: CSSProperties
 }
 
 /** Modal wrapper that registers open state for bottom-nav / chrome coordination. */
@@ -22,6 +29,7 @@ export default function AppDialog({
   fullScreen = false,
   className,
   dialogClassName,
+  dialogStyle,
 }: AppDialogProps) {
   useSyncModalOpen(open)
 
@@ -40,7 +48,12 @@ export default function AppDialog({
     <Modal.Root state={state}>
       <Modal.Backdrop>
         <Modal.Container size={fullScreen ? 'full' : size} scroll='inside' className={className}>
-          <Modal.Dialog className={fullScreen ? undefined : dialogClassName}>{children}</Modal.Dialog>
+          <Modal.Dialog
+            className={fullScreen ? undefined : dialogClassName}
+            style={fullScreen ? undefined : dialogStyle}
+          >
+            {children}
+          </Modal.Dialog>
         </Modal.Container>
       </Modal.Backdrop>
     </Modal.Root>

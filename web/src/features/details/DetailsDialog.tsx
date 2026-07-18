@@ -161,7 +161,9 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
     <Modal.Root state={overlayState}>
       <Modal.Backdrop>
         <Modal.Container size={isFullScreen ? 'full' : 'lg'} scroll='inside'>
-          <Modal.Dialog className={isFullScreen ? undefined : 'sm:min-w-[42rem] sm:max-w-4xl lg:max-w-5xl'}>
+          {/* Inline style: HeroUI's size ceiling + our collapse-prevention floor (index.css) live in CSS
+              layers, so a plain width utility can lose to them regardless of specificity — see AppDialog. */}
+          <Modal.Dialog style={isFullScreen ? undefined : { minWidth: '46rem', maxWidth: '64rem' }}>
             <Modal.Header className='flex items-center gap-2'>
               <Modal.Heading className='min-w-0 flex-1 truncate'>{t('TorrentDetails')}</Modal.Heading>
               {onEdit ? (
