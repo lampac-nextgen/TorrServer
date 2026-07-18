@@ -413,5 +413,6 @@
   "Search.Seeders": "做种数",
   "Search.Peers": "连接数",
   "Search.Rutor": "RuTor",
-  "CopyMagnet": "复制磁力链接"
+  "CopyMagnet": "复制磁力链接",
+  "SnakeIdleFrozen": "idle · 冻结"
 }

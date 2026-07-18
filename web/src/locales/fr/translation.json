@@ -413,5 +413,6 @@
   "Search.Seeders": "Sources",
   "Search.Peers": "Pairs",
   "Search.Rutor": "RuTor",
-  "CopyMagnet": "Copier le Magnet"
+  "CopyMagnet": "Copier le Magnet",
+  "SnakeIdleFrozen": "idle · figé"
 }

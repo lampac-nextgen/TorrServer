@@ -61,11 +61,13 @@ export const forEachPiece = (pieces: TorrentCache['Pieces'], fn: (id: number, pi
   }
 }
 
-const pieceFillPercentage = (piece: CachePiece | undefined, pieceLength: number): number => {
+/** Byte-accurate fill 0–100. Completed pieces are always full. */
+export const pieceFillPercentage = (piece: CachePiece | undefined, pieceLength: number): number => {
   if (!piece) return 0
+  if (piece.Completed) return 100
   const length = piece.Length || pieceLength || 0
   const rawSize = piece.Size || 0
-  if (length <= 0) return rawSize > 0 ? 100 : 0
+  if (length <= 0) return 0
   const size = Math.min(rawSize, length)
   return Math.min(100, (size / length) * 100)
 }
@@ -174,9 +176,13 @@ export const buildCacheDrawModel = (cache: TorrentCache, maxCells: number): Cach
     if (id < 0 || id >= piecesCount) return
     const bucket = Math.floor(id / bucketSize)
     const length = piece.Length || pieceLength || 0
-    const rawSize = piece.Size || 0
-    const size = length > 0 ? Math.min(rawSize, length) : rawSize
-    filled[bucket] += size
+    if (piece.Completed && length > 0) {
+      filled[bucket] += length
+    } else {
+      const rawSize = piece.Size || 0
+      const size = length > 0 ? Math.min(rawSize, length) : rawSize
+      filled[bucket] += size
+    }
 
     if (pieceLength <= 0 && length > 0) capacity[bucket] += length
 
@@ -225,19 +231,50 @@ export const buildCacheDrawModel = (cache: TorrentCache, maxCells: number): Cach
 export interface FocusWindow {
   start: number
   end: number
-  readerPiece: number
+  /** Furthest active reader piece, or null when idle (no playhead). */
+  readerPiece: number | null
+}
+
+export interface FocusWindowOptions {
+  /** Previous window start — enables dead-zone camera and idle freeze. */
+  lastWindowStart?: number
+  /** Fraction of window kept as edge margin before scrolling (default 0.18). */
+  edgeMarginRatio?: number
+}
+
+const resolveWindowSize = (cache: TorrentCache, visibleCells: number, piecesCount: number): number => {
+  const pieceLength = cache.PiecesLength || 0
+  const capacityPieces = pieceLength > 0 ? Math.max(1, Math.round((cache.Capacity || 0) / pieceLength)) : visibleCells
+  const maxWindow = Math.max(visibleCells, 64)
+  return Math.max(1, Math.min(piecesCount, Math.max(visibleCells, capacityPieces), maxWindow))
+}
+
+const clampWindow = (start: number, windowSize: number, piecesCount: number): { start: number; end: number } => {
+  let s = start
+  if (s < 0) s = 0
+  let end = s + windowSize - 1
+  if (end >= piecesCount) {
+    end = piecesCount - 1
+    s = Math.max(0, end - windowSize + 1)
+  }
+  return { start: s, end }
 }
 
 /**
- * Sliding 1:1 window around the primary reader.
- * Sized to ~cache capacity (or on-screen rows), centered on the playhead.
+ * Sliding 1:1 window with dead-zone camera: head walks across cells;
+ * window scrolls only when the playhead nears the left/right margin.
+ * Idle (no readers): freeze at lastWindowStart (do not jump to piece 0).
  */
-export const resolveFocusWindow = (cache: TorrentCache, visibleCells: number): FocusWindow | null => {
+export const resolveFocusWindow = (
+  cache: TorrentCache,
+  visibleCells: number,
+  options?: FocusWindowOptions,
+): FocusWindow | null => {
   const piecesCount = cache.PiecesCount ?? 0
   if (piecesCount <= 0) return null
 
   const readers = cache.Readers || []
-  let readerPiece = 0
+  let readerPiece: number | null = null
   if (readers.length > 0) {
     // Prefer the furthest-ahead reader so preload/stream progress drives the window
     // (min id stuck the view at piece 0 when dual preload readers exist).
@@ -247,33 +284,51 @@ export const resolveFocusWindow = (cache: TorrentCache, visibleCells: number): F
         bestReader = r.Reader
       }
     }
-    readerPiece = bestReader >= 0 ? bestReader : 0
+    if (bestReader >= 0) readerPiece = bestReader
   }
 
-  const pieceLength = cache.PiecesLength || 0
-  const capacityPieces = pieceLength > 0 ? Math.max(1, Math.round((cache.Capacity || 0) / pieceLength)) : visibleCells
+  const windowSize = resolveWindowSize(cache, visibleCells, piecesCount)
+  const lastStart = options?.lastWindowStart
+  const marginRatio = options?.edgeMarginRatio ?? 0.18
+  const margin = Math.max(1, Math.floor(windowSize * marginRatio))
 
-  const maxWindow = Math.max(visibleCells, 64)
-  let windowSize = Math.min(piecesCount, Math.max(visibleCells, capacityPieces), maxWindow)
-  windowSize = Math.max(1, windowSize)
-
-  let start = readerPiece - Math.floor(windowSize / 2)
-  if (start < 0) start = 0
-  let end = start + windowSize - 1
-  if (end >= piecesCount) {
-    end = piecesCount - 1
-    start = Math.max(0, end - windowSize + 1)
+  // Idle: freeze last camera; first open with no history → start at 0.
+  if (readerPiece == null) {
+    const frozen = lastStart != null ? lastStart : 0
+    const { start, end } = clampWindow(frozen, windowSize, piecesCount)
+    return { start, end, readerPiece: null }
   }
 
-  return { start, end, readerPiece }
+  let start: number
+  if (lastStart == null) {
+    // First frame with a reader: center once.
+    start = readerPiece - Math.floor(windowSize / 2)
+  } else {
+    start = lastStart
+    const tentativeEnd = start + windowSize - 1
+    const leftBound = start + margin
+    const rightBound = tentativeEnd - margin
+    if (readerPiece < leftBound) {
+      start = readerPiece - margin
+    } else if (readerPiece > rightBound) {
+      start = readerPiece - (windowSize - 1 - margin)
+    }
+  }
+
+  const clamped = clampWindow(start, windowSize, piecesCount)
+  return { start: clamped.start, end: clamped.end, readerPiece }
 }
 
 /**
  * 1:1 focus model: one cell per piece in [window.start, window.end].
  */
-export const buildFocusModel = (cache: TorrentCache, visibleCells: number): CacheDrawModel => {
+export const buildFocusModel = (
+  cache: TorrentCache,
+  visibleCells: number,
+  options?: FocusWindowOptions,
+): CacheDrawModel => {
   const piecesCount = cache.PiecesCount ?? 0
-  const window = resolveFocusWindow(cache, visibleCells)
+  const window = resolveFocusWindow(cache, visibleCells, options)
   if (!window || piecesCount <= 0) {
     return { cells: [], piecesCount, bucketSize: 1, windowStart: 0, windowEnd: -1 }
   }

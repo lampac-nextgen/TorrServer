@@ -444,5 +444,6 @@
   "FfpFps": "Кадр/с",
   "FfpColor": "Цвет",
   "FfpSampleRate": "Частота",
-  "FfpChannels": "Каналы"
+  "FfpChannels": "Каналы",
+  "SnakeIdleFrozen": "idle · заморожено"
 }

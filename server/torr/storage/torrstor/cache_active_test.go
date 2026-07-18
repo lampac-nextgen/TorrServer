@@ -2,6 +2,25 @@ package torrstor
 
 import "testing"
 
+func TestGetStateSkipsUnusedReaders(t *testing.T) {
+	c := &Cache{
+		pieces:       make(map[int]*Piece),
+		activePieces: make(map[int]struct{}),
+		readers:      make(map[*Reader]struct{}),
+		pieceCount:   10,
+		pieceLength:  1024,
+		capacity:     10 * 1024,
+	}
+	// Unused reader must not appear in GetState (no torrent.File needed — skipped before range calc).
+	unused := &Reader{isUse: false, cache: c}
+	c.readers[unused] = struct{}{}
+
+	st := c.GetState()
+	if len(st.Readers) != 0 {
+		t.Fatalf("expected unused readers omitted, got %d", len(st.Readers))
+	}
+}
+
 func TestInRangesInclusiveEnd(t *testing.T) {
 	ranges := []Range{{Start: 2, End: 4}}
 	if !inRanges(ranges, 2) || !inRanges(ranges, 4) {

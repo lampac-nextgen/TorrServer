@@ -34,14 +34,14 @@ const piecesFingerprint = (pieces: TorrentCacheData['Pieces']) => {
     for (let i = 0; i < pieces.length; i++) {
       const p = pieces[i]
       if (!p) continue
-      acc += `${i}:${p.Size ?? 0}:${p.Priority ?? 0};`
+      acc += `${i}:${p.Size ?? 0}:${p.Priority ?? 0}:${p.Completed ? 1 : 0};`
     }
     return acc
   }
   let acc = ''
   for (const [key, p] of Object.entries(pieces)) {
     if (!p) continue
-    acc += `${key}:${p.Size ?? 0}:${p.Priority ?? 0};`
+    acc += `${key}:${p.Size ?? 0}:${p.Priority ?? 0}:${p.Completed ? 1 : 0};`
   }
   return acc
 }
@@ -62,6 +62,7 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const scrollWrapperRef = useRef<HTMLDivElement | null>(null)
   const rootRef = useRef<HTMLDivElement | null>(null)
+  const lastWindowStartRef = useRef<number | undefined>(undefined)
   const drawFrame = useRef(0)
   const isFollowingPlayhead = useRef(true)
   const resumeFollowTimer = useRef(0)
@@ -84,6 +85,11 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
   )
   const focusModel = useCreateFocusMap(cache, visibleCellBudget)
   const cells = focusModel.cells
+  const hasActiveReaders = (cache.Readers?.length ?? 0) > 0
+
+  useEffect(() => {
+    if (focusModel.windowStart != null) lastWindowStartRef.current = focusModel.windowStart
+  }, [focusModel.windowStart])
 
   const variant = isMiniView ? 'mini' : 'default'
   const baseSettings = snakeSettings[theme][variant]
@@ -167,8 +173,11 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
     if (isMiniView) return
     if (!scrollWrapperRef.current || !piecesPerRow || cellStride <= 0) return
     if (!isFollowingPlayhead.current) return
-    const focusWindow = resolveFocusWindow(cache, visibleCellBudget)
-    if (!focusWindow || focusModel.windowStart == null) return
+    if (!hasActiveReaders) return
+    const focusWindow = resolveFocusWindow(cache, visibleCellBudget, {
+      lastWindowStart: lastWindowStartRef.current,
+    })
+    if (!focusWindow || focusWindow.readerPiece == null || focusModel.windowStart == null) return
     const localIndex = focusWindow.readerPiece - focusModel.windowStart
     if (localIndex < 0) return
     const row = Math.floor(localIndex / piecesPerRow)
@@ -179,7 +188,16 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
     if (rowTop < viewTop || rowTop + cellStride > viewBottom) {
       el.scrollTop = Math.max(0, rowTop - el.clientHeight / 3)
     }
-  }, [cache, visibleCellBudget, focusModel.windowStart, piecesPerRow, cellStride, drawCells, isMiniView])
+  }, [
+    cache,
+    visibleCellBudget,
+    focusModel.windowStart,
+    piecesPerRow,
+    cellStride,
+    drawCells,
+    isMiniView,
+    hasActiveReaders,
+  ])
 
   useEffect(() => {
     if (isMiniView) return
@@ -276,8 +294,11 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
       <div
         ref={scrollWrapperRef}
         className={`relative w-full min-w-0 rounded-lg border border-border bg-surface-secondary p-2 ${
-          isMiniView ? 'grid max-h-[420px] justify-center overflow-hidden' : 'min-w-0'
+          isMiniView
+            ? 'grid max-h-[420px] justify-center overflow-hidden'
+            : 'max-h-[min(70dvh,640px)] min-w-0 overflow-auto overscroll-contain'
         }`}
+        style={isMiniView ? undefined : { WebkitOverflowScrolling: 'touch' }}
       >
         {piecesPerRow > 0 && canvasHeight > 0 ? (
           <canvas
@@ -310,6 +331,9 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
       focusModel.windowEnd >= focusModel.windowStart ? (
         <p className='mt-2 self-center text-xs uppercase tracking-wide text-muted'>
           {t('SnakeFocusRange', { start: focusModel.windowStart, end: focusModel.windowEnd })}
+          {!hasActiveReaders
+            ? ` · ${t('SnakeIdleFrozen', { defaultValue: 'idle · frozen' })}`
+            : null}
         </p>
       ) : null}
     </div>

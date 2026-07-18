@@ -5,11 +5,11 @@ import { cacheHost } from 'shared/api/hosts'
 
 import { buildFocusModel, type CacheDrawModel } from './buildCacheMap'
 
-/** Active fill cadence (classic TorrServer). */
+/** Active fill cadence (classic TorrServer) — near-real-time for debug. */
 const CACHE_POLL_ACTIVE_MS = 100
-/** Idle cadence when cache snapshot is unchanged. */
+/** Idle cadence when cache snapshot is unchanged and no readers. */
 const CACHE_POLL_IDLE_MS = 400
-/** Switch to idle after this many unchanged polls. */
+/** Switch to idle after this many ms without visual changes (and no readers). */
 const CACHE_IDLE_AFTER_MS = 2000
 
 const readersFingerprint = (readers: TorrentCache['Readers']) => {
@@ -24,14 +24,14 @@ const piecesFingerprint = (pieces: TorrentCache['Pieces']) => {
     for (let i = 0; i < pieces.length; i++) {
       const p = pieces[i]
       if (!p) continue
-      acc += `${i}:${p.Size ?? 0}:${p.Priority ?? 0};`
+      acc += `${i}:${p.Size ?? 0}:${p.Priority ?? 0}:${p.Completed ? 1 : 0};`
     }
     return acc
   }
   let acc = ''
   for (const [key, p] of Object.entries(pieces)) {
     if (!p) continue
-    acc += `${key}:${p.Size ?? 0}:${p.Priority ?? 0};`
+    acc += `${key}:${p.Size ?? 0}:${p.Priority ?? 0}:${p.Completed ? 1 : 0};`
   }
   return acc
 }
@@ -92,9 +92,13 @@ export const useUpdateCache = (hash?: string, options?: UseUpdateCacheOptions) =
         .then(({ data }) => {
           if (!componentIsMounted.current || cancelled) return
           const next = (data || {}) as TorrentCache
+          const hasReaders = (next.Readers?.length ?? 0) > 0
           if (cacheVisualEqual(cacheRef.current, next)) {
-            if (fast && Date.now() - lastChangeAt.current >= CACHE_IDLE_AFTER_MS) {
-              pollMs.current = CACHE_POLL_IDLE_MS
+            // Stay near-real-time while readers are active OR fill recently changed.
+            // Idle 400ms only after quiet + no readers (peers can still fill without a player).
+            if (fast) {
+              const quiet = Date.now() - lastChangeAt.current >= CACHE_IDLE_AFTER_MS
+              pollMs.current = !hasReaders && quiet ? CACHE_POLL_IDLE_MS : CACHE_POLL_ACTIVE_MS
             }
             return
           }
@@ -136,5 +140,15 @@ export const useUpdateCache = (hash?: string, options?: UseUpdateCacheOptions) =
   return cache
 }
 
-export const useCreateFocusMap = (cache: TorrentCache, visibleCells: number): CacheDrawModel =>
-  useMemo(() => buildFocusModel(cache, visibleCells), [cache, visibleCells])
+export const useCreateFocusMap = (cache: TorrentCache, visibleCells: number): CacheDrawModel => {
+  const lastWindowStartRef = useRef<number | undefined>(undefined)
+  return useMemo(() => {
+    const model = buildFocusModel(cache, visibleCells, {
+      lastWindowStart: lastWindowStartRef.current,
+    })
+    if (model.windowStart != null && model.windowEnd != null && model.windowEnd >= model.windowStart) {
+      lastWindowStartRef.current = model.windowStart
+    }
+    return model
+  }, [cache, visibleCells])
+}

@@ -411,5 +411,6 @@
   "Search.Seeders": "Сийдъри",
   "Search.Peers": "Пирс",
   "Search.Rutor": "RuTor",
-  "CopyMagnet": "Копиране на Magnet"
+  "CopyMagnet": "Копиране на Magnet",
+  "SnakeIdleFrozen": "idle · замразено"
 }

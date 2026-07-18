@@ -6,6 +6,7 @@ import {
   buildFocusModel,
   clampReaderRangeInclusive,
   forEachPieceInReaderRange,
+  pieceFillPercentage,
   priorityDebugLabel,
   resolveFocusWindow,
 } from './buildCacheMap'
@@ -101,8 +102,24 @@ describe('buildCacheDrawModel', () => {
   })
 })
 
+describe('pieceFillPercentage', () => {
+  it('returns 100 for Completed regardless of Size', () => {
+    expect(pieceFillPercentage({ Completed: true, Size: 0, Length: 100 }, 100)).toBe(100)
+  })
+
+  it('returns 0 when Length is missing/zero (cannot compute partial)', () => {
+    expect(pieceFillPercentage({ Size: 50 }, 0)).toBe(0)
+    expect(pieceFillPercentage({ Size: 50, Length: 0 }, 0)).toBe(0)
+  })
+
+  it('computes partial fill from Size/Length', () => {
+    expect(pieceFillPercentage({ Size: 25, Length: 100 }, 100)).toBe(25)
+    expect(pieceFillPercentage({ Size: 200, Length: 100 }, 100)).toBe(100)
+  })
+})
+
 describe('resolveFocusWindow / buildFocusModel', () => {
-  it('centers window on reader and stays in bounds', () => {
+  it('centers window on reader on first frame and stays in bounds', () => {
     const cache: TorrentCache = {
       PiecesCount: 100,
       PiecesLength: 1024,
@@ -115,9 +132,59 @@ describe('resolveFocusWindow / buildFocusModel', () => {
     expect(window!.end).toBeLessThan(100)
     expect(window!.readerPiece).toBe(50)
     expect(window!.end - window!.start + 1).toBeGreaterThanOrEqual(20)
-    // Reader should sit near the middle of the window
+    // Reader should sit near the middle of the window on first frame
     const mid = (window!.start + window!.end) / 2
     expect(Math.abs(mid - 50)).toBeLessThanOrEqual(2)
+  })
+
+  it('keeps windowStart when head advances inside dead zone', () => {
+    const base: TorrentCache = {
+      PiecesCount: 200,
+      PiecesLength: 1024,
+      Capacity: 40 * 1024,
+      Readers: [{ Reader: 80, Start: 70, End: 100 }],
+    }
+    const first = resolveFocusWindow(base, 40)
+    expect(first).not.toBeNull()
+    const next = resolveFocusWindow(
+      { ...base, Readers: [{ Reader: 82, Start: 70, End: 100 }] },
+      40,
+      { lastWindowStart: first!.start },
+    )
+    expect(next!.start).toBe(first!.start)
+    expect(next!.readerPiece).toBe(82)
+  })
+
+  it('scrolls window when head passes right margin', () => {
+    const cache: TorrentCache = {
+      PiecesCount: 200,
+      PiecesLength: 1024,
+      Capacity: 40 * 1024,
+      Readers: [{ Reader: 50, Start: 40, End: 80 }],
+    }
+    const first = resolveFocusWindow(cache, 40)!
+    // Jump head near the right edge of the frozen window
+    const rightEdge = first.end - 2
+    const scrolled = resolveFocusWindow(
+      { ...cache, Readers: [{ Reader: rightEdge, Start: 40, End: 120 }] },
+      40,
+      { lastWindowStart: first.start },
+    )!
+    expect(scrolled.start).toBeGreaterThan(first.start)
+    expect(scrolled.readerPiece).toBe(rightEdge)
+  })
+
+  it('freezes window when readers disappear (idle)', () => {
+    const active: TorrentCache = {
+      PiecesCount: 100,
+      PiecesLength: 1024,
+      Capacity: 20 * 1024,
+      Readers: [{ Reader: 40, Start: 30, End: 50 }],
+    }
+    const first = resolveFocusWindow(active, 20)!
+    const idle = resolveFocusWindow({ ...active, Readers: [] }, 20, { lastWindowStart: first.start })!
+    expect(idle.readerPiece).toBeNull()
+    expect(idle.start).toBe(first.start)
   })
 
   it('builds 1:1 cells with priorities including empty Size=0 entries', () => {
@@ -139,6 +206,22 @@ describe('resolveFocusWindow / buildFocusModel', () => {
     expect(readerCell!.pieceStart).toBe(9)
     expect(readerCell!.priority).toBe(5)
     expect(readerCell!.percentage).toBe(0)
+  })
+
+  it('marks Completed piece as 100% fill in focus model', () => {
+    const cache: TorrentCache = {
+      PiecesCount: 20,
+      PiecesLength: 100,
+      Capacity: 500,
+      Pieces: {
+        5: { Size: 10, Length: 100, Completed: true, Priority: 0 },
+      },
+      Readers: [{ Reader: 5, Start: 5, End: 12 }],
+    }
+    const model = buildFocusModel(cache, 12)
+    const cell = model.cells.find(c => c.pieceStart === 5)
+    expect(cell?.percentage).toBe(100)
+    expect(cell?.completed).toBe(true)
   })
 
   it('infers H/R/N/A when API priority is missing on incomplete range pieces', () => {

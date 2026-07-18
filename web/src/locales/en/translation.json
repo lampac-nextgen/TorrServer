@@ -444,5 +444,6 @@
   "FfpFps": "FPS",
   "FfpColor": "Color",
   "FfpSampleRate": "Sample rate",
-  "FfpChannels": "Channels"
+  "FfpChannels": "Channels",
+  "SnakeIdleFrozen": "idle · frozen"
 }

@@ -172,6 +172,11 @@ func (c *Cache) GetState() *state.CacheState {
 	if c.Readers() > 0 {
 		c.muReaders.Lock()
 		for r := range c.readers {
+			// Only active (in-use) readers — idle/ghost readers after player close
+			// must not drive the snake playhead or priority window.
+			if !r.isUse {
+				continue
+			}
 			rng := r.getPiecesRange()
 			pc := r.getReaderPiece()
 			readersState = append(readersState, &state.ReaderState{
