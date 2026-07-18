@@ -60,7 +60,11 @@ function PanelFade({ children }: { children: ReactNode }) {
   return <div ref={ref}>{children}</div>
 }
 
-/** Tabbed server settings dialog — full-screen on mobile, persists via BTSets + GST + storage-backend APIs. */
+/** Tabbed server settings dialog — full-screen on mobile, persists via BTSets + GST + storage-backend APIs.
+ *
+ * Mobile: horizontal Tabs.List was unreadable; a sticky section Select drives the same `tab` state.
+ * Desktop: vertical Tabs. One global Save still applies to every section.
+ */
 export default function SettingsDialog({ open, onClose, initialTab }: SettingsDialogProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
@@ -280,6 +284,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
   const tabsRootClassName = 'flex min-h-0 flex-1 gap-6 overflow-hidden'
   const tabsListClassName = 'sticky top-0 z-10 w-60 shrink-0 self-start bg-surface'
 
+  /** Shared panel body for both the mobile Select path and desktop Tabs.Panel mounts. */
   const renderPanel = (id: SettingsTab) => {
     switch (id) {
       case 'primary':

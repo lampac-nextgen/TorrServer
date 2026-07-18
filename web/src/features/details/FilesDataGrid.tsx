@@ -56,7 +56,11 @@ function episodeBadge(episode?: number): string | null {
   return `E${String(episode).padStart(2, '0')}`
 }
 
-/** Streaming-style episode/file row — title + meta chips + compact action strip. */
+/**
+ * Compact episode/file card used in the details Files list.
+ * Mobile: tighter padding + single-line meta; actions fill width below the title.
+ * Desktop (`sm+`): title row and action strip sit side-by-side.
+ */
 function EpisodeRow({
   row,
   actions,
@@ -115,6 +119,10 @@ function EpisodeRow({
   )
 }
 
+/**
+ * Playable-file list for a torrent: parse seasons/episodes, wire PlayLauncher,
+ * and render one {@link EpisodeRow} per file (plus MediaInfo dialog).
+ */
 const FilesDataGrid = memo(
   ({
     playableFileList,

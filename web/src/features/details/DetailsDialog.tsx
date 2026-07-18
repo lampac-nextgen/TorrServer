@@ -54,7 +54,10 @@ function StatWidget({ label, value }: { label: string; value: string }) {
   )
 }
 
-/** Derives a deduplicated display title from the raw torrent name via parse-torrent-title. */
+/**
+ * Derives a short display title from torrent `name` / `title` via parse-torrent-title,
+ * dropping redundant year/resolution tokens already present in the primary string.
+ */
 function buildDisplayTitle(name: string | undefined, title: string | undefined): string {
   const parts: Array<string | number> = []
   const parsedName = name ? ptt.parse(name) : null
@@ -87,6 +90,7 @@ export default function DetailsDialog({
 }: DetailsDialogProps) {
   const { t } = useTranslation()
   const isFullScreen = useMediaQuery(queryMax('dialog'))
+  /** Equal-width Overview/Files/Cache segments — only needed below the phone breakpoint. */
   const isMobile = useMediaQuery(queryMax('mobile'))
   useSyncModalOpen(true)
 
@@ -270,6 +274,11 @@ export default function DetailsDialog({
                 </div>
               </div>
 
+              {/*
+                HeroUI primary tabs default to `w-full` per tab; without `w-auto` + Indicator,
+                only the first label was visible (others scrolled off-screen). Secondary variant
+                gives a clear underline for the active section on both phone and desktop.
+              */}
               <Tabs.Root
                 variant='secondary'
                 selectedKey={resolvedTab}

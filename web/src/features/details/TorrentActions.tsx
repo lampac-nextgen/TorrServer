@@ -24,6 +24,7 @@ export interface TorrentActionsProps {
   setViewedFileList: (list?: number[]) => void
   onViewedChange?: () => void
   onDropped?: () => void
+  /** Switch details sheet to the Files tab (multi-file "Play" entry point). */
   onShowFiles?: () => void
   /** Continue Watching: auto-play this file when the list is ready. */
   autoPlayFileId?: number
@@ -32,6 +33,7 @@ export interface TorrentActionsProps {
 
 type PendingConfirm = 'drop' | 'clearViews' | null
 
+/** Renders Infuse/VLC/… as a single button or a ButtonGroup when several are enabled. */
 function ExternalPlayersGroup({
   players,
   size = 'md',
@@ -60,6 +62,10 @@ function ExternalPlayersGroup({
   return <ButtonGroup>{buttons}</ButtonGroup>
 }
 
+/**
+ * Overview-tab action block: Play / playlist / magnet / hash / drop / clear viewed.
+ * Copy helpers go through {@link copyToClipboard} so LAN HTTP phones do not error.
+ */
 function TorrentActions({
   hash,
   viewedFileList,

@@ -126,6 +126,13 @@ function bufferedEnd(video: HTMLVideoElement | null): number {
   }
 }
 
+/**
+ * In-app stream player (progressive + HLS/GStreamer).
+ *
+ * Breakpoint note: `queryMax('dialog')` drives immersive fullscreen chrome —
+ * tablets get the phone-style shell so the video is not a tiny letterboxed strip.
+ * Volume slider is desktop-only; iOS expects hardware volume.
+ */
 export default function VideoPlayer({
   videoSrc,
   downloadSrc = videoSrc,
@@ -192,12 +199,15 @@ export default function VideoPlayer({
   const canSwitchAudio = hls && Boolean(hash) && fileIndex != null && resolvedAudioTracks.length > 1
   const showPip = supportsPiP()
 
+  // Without PLAYER_DIALOG_MOBILE the Modal.Container is "full" but the dialog itself
+  // stays content-sized → huge black void under a tiny video (Safari phone screenshot).
   const dialogStyle: CSSProperties | undefined = isMobile
     ? PLAYER_DIALOG_MOBILE
     : expanded
       ? PLAYER_DIALOG_EXPANDED
       : PLAYER_DIALOG_NORMAL
 
+  // Mobile sizes via flex-1 shell; fixed maxHeight only for desktop windows.
   const videoMaxHeight = isMobile
     ? undefined
     : expanded

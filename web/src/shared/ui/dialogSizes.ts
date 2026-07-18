@@ -11,6 +11,7 @@ export const DIALOG_SHEET_L: CSSProperties = {
   width: 'min(92vw, 72rem)',
 }
 
+/** Mid-width sheet (add / search style dialogs). */
 export const DIALOG_SHEET_M: CSSProperties = {
   minWidth: 'min(92vw, 48rem)',
   maxWidth: 'min(92vw, 48rem)',

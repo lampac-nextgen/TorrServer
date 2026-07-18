@@ -1,5 +1,10 @@
 /**
  * Canonical layout scale for TorrServer web.
+ *
+ * Use `queryMax('mobile')` for phone chrome (stacked actions, section Select),
+ * and `queryMax('dialog')` when a sheet should go fullscreen (details / player).
+ * Do not mix them casually — dialog (960) includes tablets that still want
+ * two-column desktop patterns in some places.
  */
 export const BP = {
   narrow: 340,
@@ -20,8 +25,11 @@ export type Breakpoint = keyof typeof BP
 
 export const bp = (name: Breakpoint): number => BP[name]
 
+/** CSS `@media` fragment for styled layers that cannot use JS `useMediaQuery`. */
 export const mediaMax = (name: Breakpoint): string => `@media (max-width: ${BP[name]}px)`
 
+/** MatchMedia query string for HeroUI `useMediaQuery` / `window.matchMedia`. */
 export const queryMax = (name: Breakpoint): string => `(max-width: ${BP[name]}px)`
 
+/** Short landscape phones / split-view: hide tall chrome that would crush content. */
 export const MEDIA_SHORT_VIEWPORT = '(max-height: 500px)'

@@ -5,6 +5,9 @@
  * TorrServer is often opened as `http://192.168.x.x` on phones — that fails.
  * Fall back to a hidden textarea + `document.execCommand('copy')`, which still
  * works from a user gesture on iOS Safari / Android Chrome over plain HTTP.
+ *
+ * @param text - Plain string to place on the system clipboard.
+ * @throws If both the Clipboard API and the legacy `execCommand` path fail.
  */
 export async function copyToClipboard(text: string): Promise<void> {
   const secure =

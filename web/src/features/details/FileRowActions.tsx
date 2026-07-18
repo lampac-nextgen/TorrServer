@@ -10,25 +10,36 @@ import { useOptionalAppToast } from 'shared/ui/Toast'
 export type { ExternalPlayerLink }
 
 export interface FileRowActionsProps {
+  /** Localized preload / buffer button label (TorrentDetails preload wording). */
   preloadLabel: string
   onPreload: () => void
+  /** False when the in-app player cannot handle this file — show open-link Play fallback. */
   playerSupported: boolean
   onPlay: () => void
   isPlayPending?: boolean
   openLinkHref?: string
   showOpenLink?: boolean
+  /** Direct stream URL copied by "Copy link". */
   copyText: string
+  /** Deep links for Infuse / VLC / etc. — always visible; never buried in the More menu. */
   externalPlayers: ExternalPlayerLink[]
   onProbeMedia?: () => void
 }
 
+/** Desktop / tablet external-player chip. */
 const playerBtn = 'min-h-11 shrink-0 px-3 font-medium'
+/** Mobile equal-width chips under Play — `flex-1` + truncate so long labels never overflow. */
 const playerBtnMobile = 'min-h-11 min-w-0 flex-1 px-2 text-xs font-medium'
 
 /**
- * Per-file actions: Play + external players always visible;
- * secondary Open/Copy/Preload/Info — inline icons on desktop, overflow menu on mobile.
- * Mobile stacks rows (no horizontal scroll) so Play / Infuse / VLC never clip.
+ * Per-file action strip for the details Files tab.
+ *
+ * Layout contract:
+ * - Play is always primary and reachable (doctrine).
+ * - External players stay on-screen (not only in a menu).
+ * - Open / Copy / Preload / MediaInfo: icon row on desktop; `⋯` Dropdown on mobile.
+ * - Mobile uses two stacked rows (Play+More, then equal external chips) — never
+ *   `overflow-x-auto`, which clipped VLC on narrow phones.
  */
 export default function FileRowActions({
   preloadLabel,
