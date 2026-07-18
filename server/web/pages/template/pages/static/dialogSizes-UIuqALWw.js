@@ -1,1 +1,0 @@
-var e={minWidth:`min(92vw, 72rem)`,maxWidth:`min(92vw, 72rem)`,width:`min(92vw, 72rem)`},t={minWidth:`min(92vw, 48rem)`,maxWidth:`min(92vw, 48rem)`,width:`min(92vw, 48rem)`},n={...e,minHeight:`min(78dvh, 44rem)`};export{e as n,t as r,n as t};

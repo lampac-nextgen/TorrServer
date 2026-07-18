@@ -42,6 +42,8 @@ interface ActivePlayer {
   fileIndex: number
   initialTimecode: number
   trackTimecode: boolean
+  audioTracks: ProbeTrack[]
+  audioIndex: number
 }
 
 export const toPlayableFile = (file: TorrentFileStat): PlayableFile => ({
@@ -162,12 +164,18 @@ export function usePlayLauncher({
     return entries.find(entry => entry.file_index === fileIndex)?.timecode ?? 0
   }
 
-  const openPlayer = async (file: PlayableFile, audioIndex = 0) => {
+  const openPlayer = async (file: PlayableFile, audioIndex = 0, tracksForPlayer: ProbeTrack[] = []) => {
     const useHls = shouldUseGStreamerPlayer(file.path, gstRuntime)
     const directStream = fileStreamUrl(hash, file)
     const allFiles = await ensureAllTorrentFiles()
     const captionSrc = findCaptionSrc(file, allFiles, hash)
     const initialTimecode = await resolveInitialTimecode(file.id)
+    const audioTracksForPlayer =
+      tracksForPlayer.length > 0
+        ? tracksForPlayer
+        : useHls
+          ? audioProbeCache.current[file.id] || []
+          : []
 
     setActivePlayer({
       src: useHls ? gstreamerMasterUrl(hash, file.id, audioIndex) : directStream,
@@ -180,6 +188,8 @@ export function usePlayLauncher({
       fileIndex: file.id,
       initialTimecode,
       trackTimecode,
+      audioTracks: audioTracksForPlayer,
+      audioIndex,
     })
     filePickerState.close()
     audioPickerState.close()
@@ -333,7 +343,7 @@ export function usePlayLauncher({
                         key={index}
                         variant='ghost'
                         className='h-auto justify-start gap-3 py-2.5'
-                        onPress={() => pendingAudioFile && void openPlayer(pendingAudioFile, index)}
+                        onPress={() => pendingAudioFile && void openPlayer(pendingAudioFile, index, audioTracks)}
                       >
                         <span className='flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-accent'>
                           <Music2 className='size-4' aria-hidden />
@@ -366,6 +376,19 @@ export function usePlayLauncher({
               fileIndex={activePlayer.fileIndex}
               initialTimecode={activePlayer.initialTimecode}
               trackTimecode={activePlayer.trackTimecode}
+              audioTracks={activePlayer.audioTracks}
+              audioIndex={activePlayer.audioIndex}
+              onAudioIndexChange={index => {
+                setActivePlayer(current =>
+                  current
+                    ? {
+                        ...current,
+                        audioIndex: index,
+                        src: gstreamerMasterUrl(current.hash, current.fileIndex, index),
+                      }
+                    : null,
+                )
+              }}
               onViewedChange={notifyViewedChange}
               onNotSupported={() => onPlayerNotSupported?.(activePlayer.fileIndex)}
               onClose={() => setActivePlayer(null)}
