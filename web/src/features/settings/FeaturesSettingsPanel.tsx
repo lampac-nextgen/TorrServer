@@ -1,3 +1,4 @@
+import List from '@mui/material/List'
 import TextField from '@mui/material/TextField'
 import { useTranslation } from 'react-i18next'
 import type { BTSets } from 'shared/api/types'
@@ -20,7 +21,7 @@ export default function FeaturesSettingsPanel({
   const { t } = useTranslation()
 
   return (
-    <>
+    <List disablePadding>
       <SettingSwitch
         id='EnableDLNA'
         label={t('SettingsDialog.DLNA')}
@@ -76,6 +77,6 @@ export default function FeaturesSettingsPanel({
         checked={boolChecked('ShowFSActiveTorr')}
         onChange={onBoolSwitch}
       />
-    </>
+    </List>
   )
 }

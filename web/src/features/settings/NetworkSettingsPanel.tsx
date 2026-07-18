@@ -1,6 +1,7 @@
 import FormControl from '@mui/material/FormControl'
 import FormHelperText from '@mui/material/FormHelperText'
 import InputLabel from '@mui/material/InputLabel'
+import List from '@mui/material/List'
 import MenuItem from '@mui/material/MenuItem'
 import Select from '@mui/material/Select'
 import Stack from '@mui/material/Stack'
@@ -32,76 +33,78 @@ export default function NetworkSettingsPanel({
         {t('SettingsDialog.ProMode')}
       </Typography>
 
-      <SettingSwitch
-        id='DisableTCP'
-        label='TCP'
-        helper={t('SettingsDialog.DisableTCPHint')}
-        checked={boolChecked('DisableTCP')}
-        onChange={onBoolSwitch}
-      />
-      <SettingSwitch
-        id='DisableUTP'
-        label='μTP'
-        helper={t('SettingsDialog.DisableUTPHint')}
-        checked={boolChecked('DisableUTP')}
-        onChange={onBoolSwitch}
-      />
-      <SettingSwitch
-        id='DisableUPNP'
-        label='UPnP'
-        helper={t('SettingsDialog.DisableUPNPHint')}
-        checked={boolChecked('DisableUPNP')}
-        onChange={onBoolSwitch}
-      />
-      <SettingSwitch
-        id='DisableDHT'
-        label={t('SettingsDialog.DHT')}
-        helper={t('SettingsDialog.DisableDHTHint')}
-        checked={boolChecked('DisableDHT')}
-        onChange={onBoolSwitch}
-      />
-      <SettingSwitch
-        id='DisablePEX'
-        label='PEX'
-        helper={t('SettingsDialog.DisablePEXHint')}
-        checked={boolChecked('DisablePEX')}
-        onChange={onBoolSwitch}
-      />
-      <SettingSwitch
-        id='EnableIPv6'
-        label='IPv6'
-        helper={t('SettingsDialog.EnableIPv6Hint')}
-        checked={boolChecked('EnableIPv6')}
-        onChange={onBoolSwitch}
-      />
-      <SettingSwitch
-        id='EnableLPD'
-        label='LPD'
-        helper={t('SettingsDialog.EnableLPDHint')}
-        checked={boolChecked('EnableLPD')}
-        onChange={onBoolSwitch}
-      />
-      <SettingSwitch
-        id='LPDIPv6'
-        label='LPD IPv6'
-        helper={t('SettingsDialog.EnableLPDIPv6Hint')}
-        checked={boolChecked('LPDIPv6')}
-        onChange={onBoolSwitch}
-      />
-      <SettingSwitch
-        id='DisableUpload'
-        label={t('SettingsDialog.Upload')}
-        helper={t('SettingsDialog.UploadHint')}
-        checked={boolChecked('DisableUpload')}
-        onChange={onBoolSwitch}
-      />
-      <SettingSwitch
-        id='ForceEncrypt'
-        label={t('SettingsDialog.ForceEncrypt')}
-        helper={t('SettingsDialog.ForceEncryptHint')}
-        checked={boolChecked('ForceEncrypt')}
-        onChange={onBoolSwitch}
-      />
+      <List disablePadding>
+        <SettingSwitch
+          id='DisableTCP'
+          label='TCP'
+          helper={t('SettingsDialog.DisableTCPHint')}
+          checked={boolChecked('DisableTCP')}
+          onChange={onBoolSwitch}
+        />
+        <SettingSwitch
+          id='DisableUTP'
+          label='μTP'
+          helper={t('SettingsDialog.DisableUTPHint')}
+          checked={boolChecked('DisableUTP')}
+          onChange={onBoolSwitch}
+        />
+        <SettingSwitch
+          id='DisableUPNP'
+          label='UPnP'
+          helper={t('SettingsDialog.DisableUPNPHint')}
+          checked={boolChecked('DisableUPNP')}
+          onChange={onBoolSwitch}
+        />
+        <SettingSwitch
+          id='DisableDHT'
+          label={t('SettingsDialog.DHT')}
+          helper={t('SettingsDialog.DisableDHTHint')}
+          checked={boolChecked('DisableDHT')}
+          onChange={onBoolSwitch}
+        />
+        <SettingSwitch
+          id='DisablePEX'
+          label='PEX'
+          helper={t('SettingsDialog.DisablePEXHint')}
+          checked={boolChecked('DisablePEX')}
+          onChange={onBoolSwitch}
+        />
+        <SettingSwitch
+          id='EnableIPv6'
+          label='IPv6'
+          helper={t('SettingsDialog.EnableIPv6Hint')}
+          checked={boolChecked('EnableIPv6')}
+          onChange={onBoolSwitch}
+        />
+        <SettingSwitch
+          id='EnableLPD'
+          label='LPD'
+          helper={t('SettingsDialog.EnableLPDHint')}
+          checked={boolChecked('EnableLPD')}
+          onChange={onBoolSwitch}
+        />
+        <SettingSwitch
+          id='LPDIPv6'
+          label='LPD IPv6'
+          helper={t('SettingsDialog.EnableLPDIPv6Hint')}
+          checked={boolChecked('LPDIPv6')}
+          onChange={onBoolSwitch}
+        />
+        <SettingSwitch
+          id='DisableUpload'
+          label={t('SettingsDialog.Upload')}
+          helper={t('SettingsDialog.UploadHint')}
+          checked={boolChecked('DisableUpload')}
+          onChange={onBoolSwitch}
+        />
+        <SettingSwitch
+          id='ForceEncrypt'
+          label={t('SettingsDialog.ForceEncrypt')}
+          helper={t('SettingsDialog.ForceEncryptHint')}
+          checked={boolChecked('ForceEncrypt')}
+          onChange={onBoolSwitch}
+        />
+      </List>
 
       <FormControl fullWidth margin='normal'>
         <InputLabel id='retrackers-mode'>{t('SettingsDialog.RetrackersMode')}</InputLabel>

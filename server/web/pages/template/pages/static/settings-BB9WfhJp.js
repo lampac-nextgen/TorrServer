@@ -1,0 +1,1 @@
+import{i as e}from"./vendor-D-EeHPjx.js";import{c as t}from"./hosts-DEls55Sh.js";var n=async n=>{let{data:r}=await e.post(t(),{action:`get`},{signal:n});return r},r=async n=>{await e.post(t(),{action:`set`,sets:n})};export{r as n,n as t};

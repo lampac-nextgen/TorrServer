@@ -239,7 +239,7 @@ export default function VideoPlayer({
             color='primary'
             size='small'
             onClick={openPlayer}
-            sx={{ width: '100%', minWidth: 0 }}
+            sx={{ flex: '1 1 auto', minWidth: 72, maxWidth: '100%' }}
           >
             {t('Play')}
           </Button>
@@ -255,7 +255,9 @@ export default function VideoPlayer({
         maxWidth='lg'
         fullWidth
         fullScreen={isMobile}
+        disableEnforceFocus
         className={isMobile ? 'ts-immersive' : undefined}
+        sx={{ zIndex: theme => theme.zIndex.modal + 1 }}
       >
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 1 }}>
           <Typography variant='h6' noWrap sx={{ flex: 1 }}>

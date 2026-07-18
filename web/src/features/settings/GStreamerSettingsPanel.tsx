@@ -77,8 +77,6 @@ export const emptyGstConfig = (): GStreamerConfig => ({
   VideoBitrate: 10000,
 })
 
-const touchTargetSx = { minHeight: 44, minWidth: 44 }
-
 function GstSwitch({
   label,
   checked,
@@ -90,10 +88,10 @@ function GstSwitch({
 }) {
   return (
     <FormControlLabel
-      control={<Switch checked={checked} onChange={e => onChange(e.target.checked)} sx={touchTargetSx} />}
+      control={<Switch checked={checked} onChange={e => onChange(e.target.checked)} />}
       label={label}
       labelPlacement='start'
-      sx={{ ml: 0, width: '100%', justifyContent: 'space-between', mr: 0, mb: 0.5 }}
+      sx={{ ml: 0, width: '100%', justifyContent: 'space-between', mr: 0, mb: 0.5, minHeight: 44 }}
     />
   )
 }

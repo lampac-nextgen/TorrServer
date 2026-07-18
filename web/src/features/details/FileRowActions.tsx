@@ -1,5 +1,5 @@
 import Button from '@mui/material/Button'
-import Box from '@mui/material/Box'
+import Stack from '@mui/material/Stack'
 import Tooltip from '@mui/material/Tooltip'
 import { useTranslation } from 'react-i18next'
 import { useOptionalAppToast } from 'shared/ui/Toast'
@@ -28,8 +28,9 @@ export interface FileRowActionsProps {
 }
 
 const actionSx = {
-  width: '100%',
-  minWidth: 0,
+  flex: '1 1 auto',
+  minWidth: 72,
+  maxWidth: '100%',
 } as const
 
 export default function FileRowActions({
@@ -60,16 +61,7 @@ export default function FileRowActions({
   }
 
   return (
-    <Box
-      className='button-cell'
-      sx={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: 0.5,
-        width: '100%',
-        '& .MuiButton-root': { ...actionSx },
-      }}
-    >
+    <Stack direction='row' useFlexGap spacing={0.5} sx={{ flexWrap: 'wrap', width: '100%' }}>
       <Tooltip title={preloadLabel}>
         <Button onClick={onPreload} variant='outlined' color='primary' size='small' sx={actionSx}>
           {preloadLabel}
@@ -117,6 +109,6 @@ export default function FileRowActions({
       <Button variant='outlined' color='primary' size='small' sx={actionSx} onClick={() => void copyLink()}>
         {t('CopyLink')}
       </Button>
-    </Box>
+    </Stack>
   )
 }

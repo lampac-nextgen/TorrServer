@@ -1,7 +1,8 @@
 import './mui-augmentation'
 import { createTheme } from '@mui/material/styles'
 
-import { mainColors, themeColors } from './colors'
+import { brand, mainColors, themeColors } from './colors'
+import { alphaCss } from './color'
 import { BP, MEDIA_SHORT_VIEWPORT, queryMax } from './breakpoints'
 import { FONT_STACK, LETTER_SPACING, TOUCH_TARGET_PX, radius, typography as typeScale } from './tokens'
 
@@ -39,6 +40,21 @@ const breakpoints = {
 }
 
 const sharedComponents = {
+  MuiCssBaseline: {
+    styleOverrides: {
+      body: {
+        backgroundColor: 'var(--ts-palette-background-default)',
+        color: 'var(--ts-palette-text-primary)',
+      },
+    },
+  },
+  MuiAppBar: {
+    styleOverrides: {
+      colorPrimary: {
+        backgroundImage: 'none',
+      },
+    },
+  },
   MuiButton: {
     defaultProps: {
       disableElevation: true,
@@ -60,16 +76,18 @@ const sharedComponents = {
           return {
             backgroundColor: card.buttonBGColor,
             color: '#fff',
-            minHeight: 36,
+            flex: '1 1 0',
+            minHeight: 40,
             minWidth: 0,
             width: '100%',
-            borderRadius: radius.sm,
+            borderRadius: 0,
             textTransform: 'uppercase' as const,
             justifyContent: 'flex-start',
             fontSize: typeScale.button,
-            fontWeight: 400,
-            letterSpacing: '0.01em',
-            padding: '0 10px',
+            fontWeight: 600,
+            letterSpacing: '0.02em',
+            lineHeight: 1.15,
+            padding: '6px 12px',
             boxShadow: 'none',
             WebkitTapHighlightColor: 'transparent',
             touchAction: 'manipulation',
@@ -77,7 +95,7 @@ const sharedComponents = {
               backgroundColor: card.accentCardColor,
               boxShadow: 'none',
             },
-            '&:active': { transform: 'scale(0.98)' },
+            '&:active': { transform: 'none', backgroundColor: card.accentCardColor },
             '&.Mui-disabled': { color: '#fff', opacity: 0.75 },
             '& .MuiButton-startIcon': {
               marginRight: 8,
@@ -94,6 +112,8 @@ const sharedComponents = {
             [`@media ${queryMax('mobile')}`]: {
               fontSize: typeScale.buttonDense,
               minHeight: TOUCH_TARGET_PX,
+              borderRadius: radius.sm,
+              flex: '1 1 auto',
             },
             [`@media ${queryMax('phone')}`]: {
               fontSize: typeScale.buttonPhone,
@@ -172,24 +192,95 @@ const sharedComponents = {
       },
     },
   },
+  MuiDialog: {
+    styleOverrides: {
+      paper: {
+        backgroundImage: 'none',
+      },
+    },
+  },
+  MuiDrawer: {
+    styleOverrides: {
+      paper: {
+        backgroundImage: 'none',
+      },
+    },
+  },
   MuiFormControlLabel: {
     styleOverrides: {
       labelPlacementStart: {
         display: 'flex',
         justifyContent: 'space-between',
         marginInlineStart: 0,
-        marginTop: 6,
-        marginBottom: 2,
+        marginTop: 4,
+        marginBottom: 4,
+      },
+    },
+  },
+  MuiSwitch: {
+    defaultProps: { color: 'secondary' as const },
+    styleOverrides: {
+      root: {
+        padding: 8,
       },
     },
   },
   MuiFormGroup: {
     styleOverrides: {
       root: {
-        '& .MuiFormHelperText-root': { marginTop: -8 },
+        '& .MuiFormHelperText-root': { marginTop: 0, marginBottom: 8 },
       },
     },
   },
+  MuiDivider: {
+    styleOverrides: {
+      root: {
+        borderColor: 'var(--ts-palette-divider)',
+      },
+    },
+  },
+}
+
+function schemePalette(mode: 'light' | 'dark') {
+  const main = mainColors[mode]
+  const app = themeColors[mode].app
+  const isDark = mode === 'dark'
+
+  return {
+    primary: {
+      main: main.primary,
+      dark: isDark ? brand.greenHover : brand.greenDeep,
+      light: isDark ? brand.greenBright : '#33b88a',
+      contrastText: '#ffffff',
+    },
+    secondary: {
+      main: main.secondary,
+      dark: isDark ? brand.green : brand.greenDeep,
+      light: isDark ? '#7aecc0' : '#4db380',
+      contrastText: isDark ? brand.ink : '#ffffff',
+    },
+    error: { main: brand.danger },
+    warning: { main: brand.warning },
+    info: { main: brand.info },
+    success: { main: brand.green },
+    background: {
+      default: app.appSecondaryColor,
+      paper: app.paperColor,
+    },
+    text: {
+      primary: main.labels,
+      secondary: main.labelsMuted,
+      disabled: alphaCss(main.labels, 0.38),
+    },
+    divider: isDark ? alphaCss(brand.greenBright, 0.14) : alphaCss(brand.greenDeep, 0.12),
+    action: {
+      active: isDark ? brand.greenBright : brand.greenHover,
+      hover: alphaCss(main.primary, isDark ? 0.1 : 0.06),
+      selected: alphaCss(main.primary, isDark ? 0.18 : 0.1),
+      disabled: alphaCss(main.labels, 0.3),
+      disabledBackground: alphaCss(main.labels, 0.12),
+    },
+  }
 }
 
 /** Single MUI 9 theme with CSS variables + light/dark color schemes (MatriX). */
@@ -200,28 +291,8 @@ export function createAppTheme() {
       cssVarPrefix: 'ts',
     },
     colorSchemes: {
-      light: {
-        palette: {
-          primary: { main: mainColors.light.primary },
-          secondary: { main: mainColors.light.secondary },
-          background: {
-            default: themeColors.light.app.appSecondaryColor,
-            paper: themeColors.light.app.paperColor,
-          },
-          text: { primary: mainColors.light.labels },
-        },
-      },
-      dark: {
-        palette: {
-          primary: { main: mainColors.dark.primary },
-          secondary: { main: mainColors.dark.secondary },
-          background: {
-            default: themeColors.dark.app.appSecondaryColor,
-            paper: themeColors.dark.app.paperColor,
-          },
-          text: { primary: mainColors.dark.labels },
-        },
-      },
+      light: { palette: schemePalette('light') },
+      dark: { palette: schemePalette('dark') },
     },
     typography,
     breakpoints,

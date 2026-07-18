@@ -42,6 +42,10 @@ export const dropTorrent = async (hash: string): Promise<void> => {
   await axios.post(torrentsHost(), { action: 'drop', hash })
 }
 
+export const removeTorrent = async (hash: string): Promise<void> => {
+  await axios.post(torrentsHost(), { action: 'rem', hash })
+}
+
 export const wipeTorrents = async (): Promise<void> => {
   await axios.post(torrentsHost(), { action: 'wipe' })
 }

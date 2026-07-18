@@ -7,13 +7,10 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import CloudOffIcon from '@mui/icons-material/CloudOff'
 import CreateNewFolderOutlinedIcon from '@mui/icons-material/CreateNewFolderOutlined'
-import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
-import { queryMax } from 'shared/theme/breakpoints'
 
-import SimpleTorrentsDataGrid from './SimpleTorrentsDataGrid'
 import TorrentCard from './TorrentCard'
 
 const DetailsDialog = lazy(() => import('features/details/DetailsDialog'))
@@ -41,7 +38,6 @@ function sortTorrents(torrents: TorrentStat[], sortABC: boolean, sortCategory: s
 
 export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsPageProps) {
   const { t } = useTranslation()
-  const isMobile = useMediaQuery(queryMax('mobile'))
   const [selected, setSelected] = useState<TorrentStat | null>(null)
 
   const { data: torrents, isLoading, isError } = useTorrentsQuery()
@@ -55,10 +51,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsP
     return (
       <Box sx={{ p: 2 }}>
         {Array.from({ length: 4 }).map((_, i) => (
-          <Stack key={i} spacing={1} sx={{ mb: 2 }}>
-            <Skeleton variant='rounded' height={isMobile ? 112 : 48} />
-            <Skeleton width='60%' />
-          </Stack>
+          <Skeleton key={i} variant='rounded' height={160} sx={{ mb: 2 }} />
         ))}
       </Box>
     )
@@ -134,17 +127,11 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsP
 
   return (
     <>
-      {!isMobile ? (
-        <Box sx={{ height: '100%', minHeight: 0, p: 1 }}>
-          <SimpleTorrentsDataGrid torrents={sorted} onSelect={setSelected} />
-        </Box>
-      ) : (
-        <Stack spacing={1.5} sx={{ p: 1.5, pb: 2 }}>
-          {sorted.map(torrent => (
-            <TorrentCard key={torrent.hash} torrent={torrent} onSelect={setSelected} />
-          ))}
-        </Stack>
-      )}
+      <Stack spacing={1} sx={{ p: { xs: 1, sm: 1.5, md: 2 }, pb: 2, bgcolor: 'background.default', minHeight: '100%' }}>
+        {sorted.map(torrent => (
+          <TorrentCard key={torrent.hash} torrent={torrent} onSelect={setSelected} />
+        ))}
+      </Stack>
 
       {selected ? (
         <Suspense fallback={null}>

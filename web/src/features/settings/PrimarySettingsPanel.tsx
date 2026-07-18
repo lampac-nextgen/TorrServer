@@ -1,3 +1,4 @@
+import List from '@mui/material/List'
 import Slider from '@mui/material/Slider'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
@@ -25,11 +26,11 @@ export default function PrimarySettingsPanel({
   const { t } = useTranslation()
 
   return (
-    <>
-      <Typography gutterBottom>
+    <Stack spacing={2}>
+      <Typography>
         {t('SettingsDialog.CacheSize')}: {cacheSizeMb} {t('MB')}
       </Typography>
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2, alignItems: { sm: 'center' } }}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { sm: 'center' } }}>
         <Slider
           sx={{ flex: 1 }}
           value={cacheSizeMb}
@@ -49,7 +50,7 @@ export default function PrimarySettingsPanel({
         />
       </Stack>
 
-      <Typography gutterBottom>
+      <Typography>
         {t('SettingsDialog.ReaderReadAHead')}: {settings.ReaderReadAHead ?? 95}%
       </Typography>
       <Slider
@@ -58,10 +59,9 @@ export default function PrimarySettingsPanel({
         max={100}
         valueLabelDisplay='auto'
         onChange={(_, v) => onUpdate('ReaderReadAHead', v as number)}
-        sx={{ mb: 2 }}
       />
 
-      <Typography gutterBottom>
+      <Typography>
         {t('SettingsDialog.PreloadCache')}: {settings.PreloadCache ?? 50}%
       </Typography>
       <Slider
@@ -70,32 +70,31 @@ export default function PrimarySettingsPanel({
         max={100}
         valueLabelDisplay='auto'
         onChange={(_, v) => onUpdate('PreloadCache', v as number)}
-        sx={{ mb: 2 }}
       />
 
-      <SettingSwitch
-        id='UseDisk'
-        label={t('SettingsDialog.UseDisk')}
-        helper={t('SettingsDialog.UseDiskDesc')}
-        checked={Boolean(settings.UseDisk)}
-        onChange={onBoolSwitch}
-      />
-
-      <TextField
-        fullWidth
-        margin='normal'
-        label={t('SettingsDialog.TorrentsSavePath')}
-        value={settings.TorrentsSavePath || ''}
-        onChange={e => onUpdate('TorrentsSavePath', e.target.value)}
-      />
-
-      <SettingSwitch
-        id='RemoveCacheOnDrop'
-        label={t('SettingsDialog.RemoveCacheOnDrop')}
-        helper={t('SettingsDialog.RemoveCacheOnDropDesc')}
-        checked={Boolean(settings.RemoveCacheOnDrop)}
-        onChange={onBoolSwitch}
-      />
-    </>
+      <List disablePadding>
+        <SettingSwitch
+          id='UseDisk'
+          label={t('SettingsDialog.UseDisk')}
+          helper={t('SettingsDialog.UseDiskDesc')}
+          checked={Boolean(settings.UseDisk)}
+          onChange={onBoolSwitch}
+        />
+        <TextField
+          fullWidth
+          margin='normal'
+          label={t('SettingsDialog.TorrentsSavePath')}
+          value={settings.TorrentsSavePath || ''}
+          onChange={e => onUpdate('TorrentsSavePath', e.target.value)}
+        />
+        <SettingSwitch
+          id='RemoveCacheOnDrop'
+          label={t('SettingsDialog.RemoveCacheOnDrop')}
+          helper={t('SettingsDialog.RemoveCacheOnDropDesc')}
+          checked={Boolean(settings.RemoveCacheOnDrop)}
+          onChange={onBoolSwitch}
+        />
+      </List>
+    </Stack>
   )
 }

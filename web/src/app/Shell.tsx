@@ -12,16 +12,21 @@ import {
   Brightness4 as Brightness4Icon,
   Brightness5 as Brightness5Icon,
   BrightnessAuto as BrightnessAutoIcon,
+  ChevronLeft as ChevronLeftIcon,
+  Menu as MenuIcon,
   Sort as SortIcon,
   SortByAlpha as SortByAlphaIcon,
 } from '@mui/icons-material'
+import { useTheme } from '@mui/material/styles'
 import { useTranslation } from 'react-i18next'
 import { echoHost } from 'shared/api/hosts'
 import useChangeLanguage from 'shared/lib/useChangeLanguage'
 import useLaunchHandler from 'shared/lib/useLaunchHandler'
 import { detectApplePlatform, isStandaloneApp } from 'shared/lib/platform'
+import { useLocalJsonPref } from 'shared/hooks/useLocalPref'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
 import { queryMax } from 'shared/theme/breakpoints'
+import { getThemeColors } from 'shared/theme/colors'
 import { THEME_MODES, useThemePreference } from 'shared/theme/useThemePreference'
 import { TorrentsPage } from 'features/torrents'
 
@@ -40,15 +45,18 @@ const PWAInstallationGuide = lazy(() => import('features/pwa/PWAInstallationGuid
 
 const LANG_CYCLE = ['en', 'ru', 'ua', 'zh', 'bg', 'fr', 'ro'] as const
 
-const SIDEBAR_WIDTH = 260
+const SIDEBAR_OPEN = 260
+const SIDEBAR_COLLAPSED = 60
 
 export default function Shell() {
   const { t } = useTranslation()
+  const theme = useTheme()
   const isMobile = useMediaQuery(queryMax('mobile'))
 
   const [, currentThemeMode, updateThemeMode] = useThemePreference()
   const [currentLang, changeLang] = useChangeLanguage()
   const { launchSource, setLaunchSource, launchFiles, setLaunchFiles } = useLaunchHandler()
+  const [sidebarOpen, setSidebarOpen] = useLocalJsonPref('sidebarOpen', true)
 
   const [torrServerVersion, setTorrServerVersion] = useState('')
   const [sortABC, setSortABC] = useState(false)
@@ -64,6 +72,9 @@ export default function Shell() {
 
   const { isLoading, isError } = useTorrentsQuery()
   const isOffline = isError
+  const sidebarWidth = sidebarOpen ? SIDEBAR_OPEN : SIDEBAR_COLLAPSED
+  const mode = theme.palette.mode === 'dark' ? 'dark' : 'light'
+  const sidebarBg = getThemeColors(mode).app.sidebarBGColor
 
   useEffect(() => {
     axios.get(echoHost()).then(({ data }) => setTorrServerVersion(String(data)))
@@ -108,11 +119,12 @@ export default function Shell() {
         display: 'grid',
         height: '100%',
         overflow: 'hidden',
-        gridTemplateRows: isMobile
-          ? 'calc(60px + env(safe-area-inset-top, 0px)) 1fr'
-          : 'calc(60px + env(safe-area-inset-top, 0px)) 1fr',
-        gridTemplateColumns: isMobile ? '1fr' : `${SIDEBAR_WIDTH}px 1fr`,
+        gridTemplateRows: 'calc(60px + env(safe-area-inset-top, 0px)) 1fr',
+        gridTemplateColumns: isMobile ? '1fr' : `${sidebarWidth}px 1fr`,
         gridTemplateAreas: isMobile ? '"header" "content"' : '"header header" "sidebar content"',
+        transition: theme.transitions.create('grid-template-columns', {
+          duration: theme.transitions.duration.shorter,
+        }),
       }}
     >
       <AppBar
@@ -125,6 +137,19 @@ export default function Shell() {
         }}
       >
         <Toolbar sx={{ minHeight: 60, gap: 1 }}>
+          {!isMobile ? (
+            <Tooltip title={sidebarOpen ? t('CollapseSidebar', { defaultValue: 'Collapse sidebar' }) : t('ExpandSidebar', { defaultValue: 'Expand sidebar' })}>
+              <IconButton
+                color='inherit'
+                edge='start'
+                aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+              >
+                {sidebarOpen ? <ChevronLeftIcon /> : <MenuIcon />}
+              </IconButton>
+            </Tooltip>
+          ) : null}
+
           <Typography variant='h6' noWrap sx={{ flex: 1, minWidth: 0 }}>
             TorrServer {torrServerVersion}
           </Typography>
@@ -180,19 +205,25 @@ export default function Shell() {
           variant='permanent'
           sx={{
             gridArea: 'sidebar',
-            width: SIDEBAR_WIDTH,
+            width: sidebarWidth,
             flexShrink: 0,
+            transition: theme.transitions.create('width', {
+              duration: theme.transitions.duration.shorter,
+            }),
             '& .MuiDrawer-paper': {
-              width: SIDEBAR_WIDTH,
+              width: sidebarWidth,
               boxSizing: 'border-box',
               position: 'relative',
-              borderRight: 1,
-              borderColor: 'divider',
-              pt: 0,
+              borderRight: 0,
+              bgcolor: sidebarBg,
+              overflowX: 'hidden',
+              transition: theme.transitions.create('width', {
+                duration: theme.transitions.duration.shorter,
+              }),
             },
           }}
         >
-          <Sidebar {...navProps} />
+          <Sidebar {...navProps} collapsed={!sidebarOpen} />
         </Drawer>
       )}
 
@@ -204,6 +235,7 @@ export default function Shell() {
           minWidth: 0,
           overflow: 'auto',
           WebkitOverflowScrolling: 'touch',
+          bgcolor: 'background.default',
           pb: isMobile ? 'calc(90px + env(safe-area-inset-bottom, 0px))' : 0,
         }}
       >

@@ -1,10 +1,12 @@
 import { memo, useState } from 'react'
 import Button from '@mui/material/Button'
+import ButtonGroup from '@mui/material/ButtonGroup'
 import Dialog from '@mui/material/Dialog'
 import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogContentText from '@mui/material/DialogContentText'
 import DialogTitle from '@mui/material/DialogTitle'
+import Divider from '@mui/material/Divider'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import ptt from 'parse-torrent-title'
@@ -99,33 +101,21 @@ function TorrentActions({
               ) : null}
             </strong>
           </Typography>
-          <Stack direction='row' useFlexGap spacing={1} sx={{ flexWrap: 'wrap' }}>
-            <Button component='a' href={fullPlaylistLink} variant='contained' color='primary'>
+          <ButtonGroup variant='contained' color='primary'>
+            <Button component='a' href={fullPlaylistLink}>
               {t('Full')}
             </Button>
-            <Button component='a' href={partialPlaylistLink} variant='contained' color='primary'>
+            <Button component='a' href={partialPlaylistLink}>
               {t('FromLatestFile')}
             </Button>
-          </Stack>
+          </ButtonGroup>
         </Stack>
       ) : null}
 
       <Typography variant='subtitle2' sx={{ fontWeight: 600, mb: 1 }}>
-        {t('TorrentState')}
-      </Typography>
-      <Stack direction='row' useFlexGap spacing={1} sx={{ flexWrap: 'wrap', mb: 2 }}>
-        <Button onClick={() => setConfirm('views')} variant='outlined' color='primary'>
-          {t('RemoveViews')}
-        </Button>
-        <Button onClick={() => setConfirm('drop')} variant='contained' color='error'>
-          {t('DropTorrent')}
-        </Button>
-      </Stack>
-
-      <Typography variant='subtitle2' sx={{ fontWeight: 600, mb: 1 }}>
         {t('Info')}
       </Typography>
-      <Stack direction='row' useFlexGap spacing={1} sx={{ flexWrap: 'wrap' }}>
+      <Stack direction='row' useFlexGap spacing={1} sx={{ flexWrap: 'wrap', mb: 2 }}>
         {isOnlyOnePlayableFile || !viewedFileList?.length ? (
           <Button component='a' href={fullPlaylistLink} variant='contained' color='primary'>
             {t('DownloadPlaylist')}
@@ -133,6 +123,20 @@ function TorrentActions({
         ) : null}
         <Button variant='contained' color='primary' onClick={() => void copyMagnet()}>
           {t('CopyHash')}
+        </Button>
+      </Stack>
+
+      <Divider sx={{ my: 1.5 }} />
+
+      <Typography variant='subtitle2' sx={{ fontWeight: 600, mb: 1 }}>
+        {t('TorrentState')}
+      </Typography>
+      <Stack direction='row' useFlexGap spacing={1} sx={{ flexWrap: 'wrap' }}>
+        <Button onClick={() => setConfirm('views')} variant='outlined' color='primary'>
+          {t('RemoveViews')}
+        </Button>
+        <Button onClick={() => setConfirm('drop')} variant='outlined' color='error'>
+          {t('DropTorrent')}
         </Button>
       </Stack>
 

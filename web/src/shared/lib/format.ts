@@ -2,7 +2,7 @@ import i18n from 'shared/i18n'
 import type { TorrentStat } from 'shared/api/types'
 
 export function humanizeSize(size?: number | null): string {
-  if (size == null || Number.isNaN(size) || size < 0) return ''
+  if (size == null || Number.isNaN(size) || size < 0) return '—'
   if (size === 0) return `0 ${i18n.t('B')}`
   const i = Math.floor(Math.log(size) / Math.log(1024))
   return `${Number((size / Math.pow(1024, i)).toFixed(2))} ${
@@ -11,7 +11,7 @@ export function humanizeSize(size?: number | null): string {
 }
 
 export function humanizeSpeed(speed?: number | null): string {
-  if (speed == null || Number.isNaN(speed) || speed < 0) return ''
+  if (speed == null || Number.isNaN(speed) || speed < 0) return `0 ${i18n.t('bps')}`
   if (speed === 0) return `0 ${i18n.t('bps')}`
   const i = Math.floor(Math.log(speed * 8) / Math.log(1000))
   return `${Number(((speed * 8) / Math.pow(1000, i)).toFixed(0))} ${
@@ -23,7 +23,7 @@ export function getPeerString(torrent?: TorrentStat | null): string | null {
   if (!torrent) return null
   const active = torrent.active_peers
   const total = torrent.total_peers
-  if (active == null) return null
+  if (active == null) return '—'
   const seeders = torrent.connected_seeders ?? 0
   return `${active}/${total ?? 0} · ${seeders}`
 }

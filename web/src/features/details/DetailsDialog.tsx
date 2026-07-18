@@ -10,6 +10,8 @@ import Divider from '@mui/material/Divider'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import IconButton from '@mui/material/IconButton'
 import Stack from '@mui/material/Stack'
+import ToggleButton from '@mui/material/ToggleButton'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import Typography from '@mui/material/Typography'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import CloseIcon from '@mui/icons-material/Close'
@@ -24,6 +26,7 @@ import { getPeerString, humanizeSize, humanizeSpeed, removeRedundantCharacters }
 import { isFilePlayable } from 'shared/torrent/playable'
 import { CLOSED, GETTING_INFO, IN_DB, PRELOAD, WORKING } from 'shared/torrent/states'
 import { queryMax } from 'shared/theme/breakpoints'
+import { getThemeColors } from 'shared/theme/colors'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 
 import FileBrowser from './FileBrowser'
@@ -42,23 +45,50 @@ const toPlayableFile = (file: TorrentFileStat): PlayableFile => ({
   length: file.length ?? file.Length ?? 0,
 })
 
+function detailsTokens(mode: 'light' | 'dark') {
+  return getThemeColors(mode).dialogTorrentDetailsContent
+}
+
 function StatWidget({ label, value }: { label: string; value: string }) {
   return (
     <Box
-      sx={{
-        flex: '1 1 120px',
-        minWidth: 100,
-        p: 1.25,
-        borderRadius: 1,
-        border: 1,
-        borderColor: 'divider',
-        textAlign: 'center',
+      sx={theme => {
+        const colors = detailsTokens(theme.palette.mode === 'dark' ? 'dark' : 'light')
+        return {
+          flex: '1 1 120px',
+          minWidth: 108,
+          px: 1.5,
+          py: 1.25,
+          borderRadius: 1,
+          border: 1,
+          borderColor: colors.bufferTrackBorderColor,
+          bgcolor: colors.cacheSectionBGColor,
+          textAlign: 'center',
+        }
       }}
     >
-      <Typography variant='caption' color='text.secondary' sx={{ display: 'block' }}>
+      <Typography
+        variant='caption'
+        sx={theme => ({
+          display: 'block',
+          color: detailsTokens(theme.palette.mode === 'dark' ? 'dark' : 'light').widgetFontColor,
+          lineHeight: 1.2,
+        })}
+      >
         {label}
       </Typography>
-      <Typography variant='body2' noWrap sx={{ fontWeight: 600 }}>
+      <Typography
+        variant='body1'
+        title={value}
+        sx={theme => ({
+          fontWeight: 700,
+          fontVariantNumeric: 'tabular-nums',
+          wordBreak: 'break-word',
+          mt: 0.35,
+          fontSize: '1rem',
+          color: detailsTokens(theme.palette.mode === 'dark' ? 'dark' : 'light').titleFontColor,
+        })}
+      >
         {value || '—'}
       </Typography>
     </Box>
@@ -171,19 +201,35 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose }: Deta
 
         <DialogContent dividers sx={{ p: { xs: 1.5, sm: 2 } }}>
           <Stack spacing={2}>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { sm: 'flex-start' } }}>
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={2}
+              sx={theme => {
+                const mode = theme.palette.mode === 'dark' ? 'dark' : 'light'
+                const colors = detailsTokens(mode)
+                return {
+                  alignItems: { sm: 'flex-start' },
+                  p: { xs: 1.5, sm: 2 },
+                  mx: { xs: -1.5, sm: -2 },
+                  mt: { xs: -1.5, sm: -2 },
+                  background: `linear-gradient(135deg, ${colors.gradientStartColor}, ${colors.gradientEndColor})`,
+                }
+              }}
+            >
               <Box
-                sx={{
+                sx={theme => ({
                   width: { xs: '100%', sm: 160 },
                   maxWidth: 160,
                   aspectRatio: '2/3',
                   borderRadius: 1,
                   overflow: 'hidden',
-                  bgcolor: 'action.hover',
+                  bgcolor:
+                    detailsTokens(theme.palette.mode === 'dark' ? 'dark' : 'light')
+                      .posterBGColor,
                   display: 'grid',
                   placeItems: 'center',
                   flexShrink: 0,
-                }}
+                })}
               >
                 {poster ? (
                   <Box component='img' src={poster} alt='' sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -193,11 +239,29 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose }: Deta
               </Box>
 
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant='h6' sx={{ mb: 0.5, wordBreak: 'break-word' }}>
+                <Typography
+                  variant='h6'
+                  sx={theme => ({
+                    mb: 0.5,
+                    wordBreak: 'break-word',
+                    fontWeight: 700,
+                    color:
+                      detailsTokens(theme.palette.mode === 'dark' ? 'dark' : 'light')
+                        .titleFontColor,
+                  })}
+                >
                   {getParsedTitle() || title || name || hash}
                 </Typography>
                 {name && title !== name && (
-                  <Typography variant='body2' color='text.secondary' sx={{ mb: 1.5 }}>
+                  <Typography
+                    variant='body2'
+                    sx={theme => ({
+                      mb: 1.5,
+                      color:
+                        detailsTokens(theme.palette.mode === 'dark' ? 'dark' : 'light')
+                          .subNameFontColor,
+                    })}
+                  >
                     {ptt.parse(name).title || name}
                   </Typography>
                 )}
@@ -290,46 +354,57 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose }: Deta
 
             <Divider />
 
-            <Typography variant='subtitle1' sx={{ fontWeight: 600 }}>
-              {t('TorrentContent')}
-            </Typography>
+            <Box
+              sx={theme => {
+                const mode = theme.palette.mode === 'dark' ? 'dark' : 'light'
+                const colors = detailsTokens(mode)
+                return {
+                  p: { xs: 1.5, sm: 2 },
+                  mx: { xs: -1.5, sm: -2 },
+                  mb: { xs: -1.5, sm: -2 },
+                  bgcolor: colors.torrentFilesSectionBGColor,
+                }
+              }}
+            >
+              <Typography variant='subtitle1' sx={{ fontWeight: 600, mb: 1.5 }}>
+                {t('TorrentContent')}
+              </Typography>
 
-            {loading ? (
-              <Typography color='text.secondary'>{t('TorrentGettingInfo')}</Typography>
-            ) : (
-              <>
-                {(seasonAmount?.length ?? 0) > 1 && (
-                  <Box>
-                    <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
-                      {t('SelectSeason')}
-                    </Typography>
-                    <Stack direction='row' useFlexGap spacing={1} sx={{ flexWrap: 'wrap', mb: 2 }}>
-                      {seasonAmount!.map(season => (
-                        <Button
-                          key={season}
-                          color='secondary'
-                          variant={selectedSeason === season ? 'contained' : 'outlined'}
-                          onClick={() => setSelectedSeason(season)}
-                        >
-                          {season}
-                        </Button>
-                      ))}
-                    </Stack>
-                    <Typography variant='subtitle2' sx={{ mb: 1 }}>
-                      {t('Season')} {selectedSeason}
-                    </Typography>
-                  </Box>
-                )}
+              {loading ? (
+                <Typography color='text.secondary'>{t('TorrentGettingInfo')}</Typography>
+              ) : (
+                <>
+                  {(seasonAmount?.length ?? 0) > 1 && (
+                    <Box sx={{ mb: 2 }}>
+                      <ToggleButtonGroup
+                        exclusive
+                        size='small'
+                        color='secondary'
+                        value={selectedSeason}
+                        onChange={(_, value: number | null) => {
+                          if (value != null) setSelectedSeason(value)
+                        }}
+                        sx={{ flexWrap: 'wrap', gap: 1 }}
+                      >
+                        {seasonAmount!.map(season => (
+                          <ToggleButton key={season} value={season} sx={{ textTransform: 'none', px: 2 }}>
+                            {t('Season')} {season}
+                          </ToggleButton>
+                        ))}
+                      </ToggleButtonGroup>
+                    </Box>
+                  )}
 
-                <FileBrowser
-                  hash={hash}
-                  playableFileList={playableFileList || []}
-                  viewedFileList={viewedFileList}
-                  selectedSeason={selectedSeason}
-                  seasonAmount={seasonAmount}
-                />
-              </>
-            )}
+                  <FileBrowser
+                    hash={hash}
+                    playableFileList={playableFileList || []}
+                    viewedFileList={viewedFileList}
+                    selectedSeason={selectedSeason}
+                    seasonAmount={seasonAmount}
+                  />
+                </>
+              )}
+            </Box>
           </Stack>
         </DialogContent>
       </Dialog>

@@ -40,8 +40,8 @@ export default function SpeedCharts({ downloadSpeed, uploadSpeed }: SpeedChartsP
           { data: ul, label: t('UploadSpeed'), showMark: false },
         ]}
         xAxis={[{ data: xData, hideTooltip: true }]}
-        yAxis={[{ width: 40 }]}
-        margin={{ left: 0, right: 8, top: 8, bottom: 8 }}
+        yAxis={[{ width: 56, tickLabelStyle: { fontSize: 11 } }]}
+        margin={{ left: 4, right: 8, top: 8, bottom: 8 }}
         hideLegend
       />
     </Box>

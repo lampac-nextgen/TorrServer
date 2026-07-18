@@ -1,0 +1,1 @@
+import{Bt as e,I as t,Kt as n}from"./mui-BKQN0pSH.js";import{r}from"./ModalOpenContext-Bo7dKqM4.js";var i=n();function a({open:e,children:n,...a}){return r(!!e),(0,i.jsx)(t,{open:e,...a,children:n})}e(a)({});export{a as t};

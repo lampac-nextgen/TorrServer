@@ -15,8 +15,6 @@ import { useTranslation } from 'react-i18next'
 import type { BTSets, TorznabUrl } from 'shared/api/types'
 import { torznabTestHost } from 'shared/api/hosts'
 
-import { SETTINGS_TOUCH_SX } from './SettingSwitch'
-
 export interface TorznabSettingsPanelProps {
   settings: BTSets
   onUpdate: <K extends keyof BTSets>(key: K, value: BTSets[K]) => void
@@ -75,7 +73,7 @@ export default function TorznabSettingsPanel({ settings, onUpdate, footerButtonS
           <ListItem
             key={`${url.Host}-${url.Key}-${index}`}
             secondaryAction={
-              <IconButton edge='end' aria-label='delete' onClick={() => handleRemove(index)} sx={SETTINGS_TOUCH_SX}>
+              <IconButton edge='end' aria-label='delete' onClick={() => handleRemove(index)} sx={{ minHeight: 44, minWidth: 44 }}>
                 <DeleteIcon />
               </IconButton>
             }

@@ -1,5 +1,5 @@
 import { alphaCss } from 'shared/theme/color'
-import { mainColors } from 'shared/theme/colors'
+import { brand, mainColors } from 'shared/theme/colors'
 
 export type SnakeThemeMode = 'dark' | 'light'
 export type SnakeVariant = 'default' | 'mini'
@@ -23,7 +23,7 @@ export interface SnakePieceSettings {
 /**
  * Visual hierarchy:
  * 1. reader (playhead) — black square outline
- * 2. range — violet / sand window
+ * 2. range — warm window (not legacy violet in dark)
  * 3. cached — brand green
  * 4. idle — quiet empty
  */
@@ -33,26 +33,26 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       borderWidth: 1,
       pieceSize: 20,
       gapBetweenPieces: 4,
-      borderColor: alphaCss('#fff', 0.28),
-      completeColor: mainColors.dark.primary,
-      backgroundColor: '#1a2822',
-      readerColor: '#0a0a0a',
-      readerHaloColor: alphaCss('#fff', 0.55),
-      rangeColor: '#cda184',
-      rangeEmptyColor: alphaCss('#cda184', 0.3),
+      borderColor: alphaCss(brand.greenBright, 0.28),
+      completeColor: brand.greenBright,
+      backgroundColor: brand.inkElevated,
+      readerColor: '#050807',
+      readerHaloColor: alphaCss('#fff', 0.45),
+      rangeColor: '#c4a882',
+      rangeEmptyColor: alphaCss('#c4a882', 0.28),
     },
     mini: {
       cacheMaxHeight: 420,
       borderWidth: 2,
       pieceSize: 26,
       gapBetweenPieces: 5,
-      borderColor: alphaCss('#fff', 0.32),
-      completeColor: mainColors.dark.primary,
-      backgroundColor: '#1f3028',
-      readerColor: '#0a0a0a',
-      readerHaloColor: alphaCss('#fff', 0.5),
-      rangeColor: '#cda184',
-      rangeEmptyColor: alphaCss('#cda184', 0.32),
+      borderColor: alphaCss(brand.greenBright, 0.32),
+      completeColor: brand.greenBright,
+      backgroundColor: brand.inkSoft,
+      readerColor: '#050807',
+      readerHaloColor: alphaCss('#fff', 0.4),
+      rangeColor: '#c4a882',
+      rangeEmptyColor: alphaCss('#c4a882', 0.3),
     },
   },
   light: {
@@ -60,13 +60,13 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       borderWidth: 1,
       pieceSize: 20,
       gapBetweenPieces: 4,
-      borderColor: '#d0e6da',
+      borderColor: '#c5d9ce',
       completeColor: mainColors.light.primary,
       backgroundColor: '#ffffff',
       readerColor: '#000',
       readerHaloColor: alphaCss('#fff', 0.9),
-      rangeColor: '#7e6bc4',
-      rangeEmptyColor: alphaCss('#afa6e3', 0.32),
+      rangeColor: '#6b8fd4',
+      rangeEmptyColor: alphaCss('#6b8fd4', 0.28),
     },
     mini: {
       cacheMaxHeight: 420,
@@ -75,11 +75,11 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       gapBetweenPieces: 5,
       borderColor: '#b7d9c8',
       completeColor: mainColors.light.primary,
-      backgroundColor: '#f4faf7',
+      backgroundColor: brand.greenMist,
       readerColor: '#0a0a0a',
       readerHaloColor: alphaCss('#fff', 0.9),
-      rangeColor: '#7e6bc4',
-      rangeEmptyColor: alphaCss('#afa6e3', 0.36),
+      rangeColor: '#6b8fd4',
+      rangeEmptyColor: alphaCss('#6b8fd4', 0.32),
     },
   },
 }

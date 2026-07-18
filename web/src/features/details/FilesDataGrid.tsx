@@ -1,3 +1,4 @@
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { memo, useMemo, useState, type ReactNode } from 'react'
 import { DataGrid, type GridColDef } from '@mui/x-data-grid'
 import Box from '@mui/material/Box'
@@ -49,19 +50,27 @@ function ShortFileCard({
   const { t } = useTranslation()
 
   return (
-    <Card variant='outlined' sx={{ overflow: 'hidden' }}>
-      <Box sx={{ px: 1.5, py: 1.25, bgcolor: viewed ? 'success.dark' : 'primary.main', color: 'primary.contrastText' }}>
-        <Typography variant='subtitle2' sx={{ textAlign: 'center', wordBreak: 'break-word' }}>
+    <Card
+      variant='outlined'
+      sx={{
+        overflow: 'hidden',
+        borderLeft: 4,
+        borderLeftColor: viewed ? 'success.main' : 'primary.main',
+      }}
+    >
+      <Box sx={{ px: 1.5, py: 1.25 }}>
+        <Typography variant='subtitle2' sx={{ wordBreak: 'break-word', fontWeight: 600 }}>
           {name}
         </Typography>
       </Box>
       <CardContent sx={{ py: 1, '&:last-child': { pb: 1 } }}>
-        <Stack direction='row' spacing={2} sx={{ mb: 1 }}>
-          {viewed && (
-            <Typography variant='caption' color='text.secondary'>
+        <Stack direction='row' spacing={2} sx={{ mb: 1, alignItems: 'center' }}>
+          {viewed ? (
+            <Typography variant='caption' color='success.main' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+              <CheckCircleIcon fontSize='inherit' />
               {t('Viewed')}
             </Typography>
-          )}
+          ) : null}
           <Typography variant='caption' color='text.secondary'>
             {t('Size')}: {humanizeSize(size)}
           </Typography>
@@ -124,7 +133,7 @@ const FilesDataGrid = memo(
       if (!playableFileList?.length) return []
       return playableFileList.filter(({ path }) => {
         const { season } = ptt.parse(path)
-        return season === selectedSeason || !seasonAmount?.length
+        return season == null || season === selectedSeason || !seasonAmount?.length
       })
     }, [playableFileList, selectedSeason, seasonAmount])
 
@@ -135,9 +144,16 @@ const FilesDataGrid = memo(
           const link = getFileLink(file.path, file.id)
           const player = getPlayer(file.path, file.id)
           const fullLink = new URL(link, window.location.href)
+          const fileName = file.path.split('/').pop() || file.path
+          const episodeLabel =
+            parsed.episode != null
+              ? `E${parsed.episode}${parsed.title ? ` · ${parsed.title}` : ''}`
+              : shouldDisplayFullFileName
+                ? file.path
+                : parsed.title || fileName
           return {
             id: file.id,
-            name: shouldDisplayFullFileName ? file.path : parsed.title || file.path,
+            name: episodeLabel,
             season: parsed.season,
             episode: parsed.episode,
             resolution: parsed.resolution,
@@ -180,10 +196,10 @@ const FilesDataGrid = memo(
           field: 'viewed',
           headerName: t('Viewed'),
           width: 70,
+          align: 'center',
+          headerAlign: 'center',
           renderCell: params =>
-            params.value ? (
-              <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: 'success.main', m: 'auto' }} />
-            ) : null,
+            params.value ? <CheckCircleIcon color='success' fontSize='small' aria-label={t('Viewed')} /> : null,
         },
         { field: 'name', headerName: t('Name'), flex: 1, minWidth: 160 },
       ]
@@ -201,7 +217,8 @@ const FilesDataGrid = memo(
       cols.push({
         field: 'actions',
         headerName: t('Actions'),
-        width: 360,
+        flex: 1,
+        minWidth: 280,
         sortable: false,
         filterable: false,
         disableColumnMenu: true,
@@ -237,18 +254,24 @@ const FilesDataGrid = memo(
     }
 
     return (
-      <Box sx={{ width: '100%', minHeight: 240, height: Math.min(480, 56 + rows.length * 64) }}>
+      <Box sx={{ width: '100%', minHeight: 240, height: Math.min(520, 56 + rows.length * 72) }}>
         <DataGrid
           rows={rows}
           columns={columns}
           density='compact'
           disableRowSelectionOnClick
           getRowHeight={() => 'auto'}
+          getRowClassName={({ row }) => (row.viewed ? 'viewed-row' : '')}
           pageSizeOptions={[25, 50, 100]}
-          initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
+          initialState={{
+            pagination: { paginationModel: { pageSize: 25 } },
+            sorting: fileHasEpisodeText ? { sortModel: [{ field: 'episode', sort: 'asc' }] } : undefined,
+          }}
           sx={{
             border: 0,
-            '& .MuiDataGrid-cell': { py: 0.75, alignItems: 'flex-start' },
+            '& .viewed-row': { bgcolor: 'action.selected' },
+            '& .MuiDataGrid-cell': { py: 1, alignItems: 'center' },
+            '& .MuiDataGrid-cell[data-field="actions"]': { alignItems: 'flex-start' },
           }}
         />
       </Box>

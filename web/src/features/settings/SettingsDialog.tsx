@@ -9,6 +9,7 @@ import FormHelperText from '@mui/material/FormHelperText'
 import Tab from '@mui/material/Tab'
 import Tabs from '@mui/material/Tabs'
 import useMediaQuery from '@mui/material/useMediaQuery'
+import { useTheme } from '@mui/material/styles'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { BTSets } from 'shared/api/types'
@@ -19,6 +20,7 @@ import { GST_RUNTIME_QUERY_KEY, useGStreamerRuntime } from 'shared/lib/gstreamer
 import { notifySettingsChanged } from 'shared/lib/settingsEvents'
 import { clearTMDBCache } from 'shared/lib/torrentHelpers'
 import { queryMax } from 'shared/theme/breakpoints'
+import { getThemeColors } from 'shared/theme/colors'
 import AppDialog from 'shared/ui/AppDialog'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
@@ -170,11 +172,13 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   }
 
   const footerButtonSx = isMobile ? { minHeight: 44, px: 2.5 } : undefined
+  const theme = useTheme()
+  const settingsColors = getThemeColors(theme.palette.mode === 'dark' ? 'dark' : 'light').settingsDialog
 
   return (
     <AppDialog open={open} onClose={onClose} fullWidth maxWidth='md'>
       <DialogTitle>{t('Settings')}</DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{ bgcolor: settingsColors.contentBG }}>
         {loading ? (
           <Box sx={{ display: 'grid', placeItems: 'center', py: 6 }}>
             <CircularProgress />
@@ -186,7 +190,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               onChange={(_, v) => setTab(v as SettingsTab)}
               variant='scrollable'
               scrollButtons='auto'
-              sx={{ borderBottom: 1, borderColor: 'divider' }}
+              sx={{ borderBottom: 1, borderColor: settingsColors.separatorColor, mx: { xs: -1, sm: -1.5 } }}
             >
               {visibleTabs.map(item => (
                 <Tab key={item.id} value={item.id} label={item.label} sx={isMobile ? { minHeight: 44 } : undefined} />
@@ -250,7 +254,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
           </>
         )}
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
+      <DialogActions sx={{ px: 3, pb: 2, bgcolor: settingsColors.footerBG }}>
         <Button onClick={onClose} disabled={saving} sx={footerButtonSx} autoFocus>
           {t('Cancel')}
         </Button>
