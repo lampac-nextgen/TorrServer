@@ -9,7 +9,7 @@ export function useTorrentDetail(hash: string | undefined, initial?: TorrentStat
     queryFn: () => getTorrent(hash!),
     enabled: Boolean(hash),
     initialData: initial,
-    refetchInterval: () => (document.hidden ? 5000 : 1000),
+    refetchInterval: () => (document.hidden ? 5000 : 2000),
     retry: 1,
   })
 }

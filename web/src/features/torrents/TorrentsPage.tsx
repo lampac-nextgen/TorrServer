@@ -1,11 +1,17 @@
 import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
-import { Button, Spinner } from '@heroui/react'
-import { CloudOff, FolderPlus, SearchX } from 'lucide-react'
+import { Button, Input, Label, Spinner, TextField } from '@heroui/react'
+import { useQueryClient } from '@tanstack/react-query'
+import { CheckSquare, CloudOff, FolderPlus, ListMusic, Search, SearchX, Trash2, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
+import { playlistAllUrl } from 'shared/api/extras'
+import { dropTorrent, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
+import { listContinueWatching, removeContinueWatching } from 'shared/lib/continueWatching'
+import DialogErrorBoundary from 'shared/ui/DialogErrorBoundary'
+import { useOptionalAppToast } from 'shared/ui/Toast'
 
 import TorrentCard from './TorrentCard'
 
@@ -48,16 +54,33 @@ function prefersReducedMotion(): boolean {
 
 export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCategory }: TorrentsPageProps) {
   const { t } = useTranslation()
+  const toast = useOptionalAppToast()
+  const queryClient = useQueryClient()
   const gridRef = useRef<HTMLDivElement>(null)
   const [detailsTorrent, setDetailsTorrent] = useState<TorrentStat | null>(null)
   const [editingTorrent, setEditingTorrent] = useState<TorrentStat | null>(null)
+  const [libraryQuery, setLibraryQuery] = useState('')
+  const [selectionMode, setSelectionMode] = useState(false)
+  const [selectedHashes, setSelectedHashes] = useState<Set<string>>(() => new Set())
+  const [continueTick, setContinueTick] = useState(0)
 
-  const { data: torrents, isLoading, isError, refetch } = useTorrentsQuery()
+  const { data: torrents, isLoading, isError, error, refetch } = useTorrentsQuery()
 
-  const visibleTorrents = useMemo(
-    () => (torrents ? sortTorrents(torrents, sortABC, sortCategory) : []),
-    [torrents, sortABC, sortCategory],
-  )
+  const visibleTorrents = useMemo(() => {
+    const sorted = torrents ? sortTorrents(torrents, sortABC, sortCategory) : []
+    const q = libraryQuery.trim().toLowerCase()
+    if (!q) return sorted
+    return sorted.filter(torrent => {
+      const hay = `${torrent.title || ''} ${torrent.name || ''} ${torrent.category || ''} ${torrent.hash}`.toLowerCase()
+      return hay.includes(q)
+    })
+  }, [torrents, sortABC, sortCategory, libraryQuery])
+
+  const continueEntries = useMemo(() => {
+    void continueTick
+    const hashes = new Set((torrents || []).map(item => item.hash))
+    return listContinueWatching(hashes).slice(0, 6)
+  }, [torrents, continueTick])
 
   useGSAP(
     () => {
@@ -73,7 +96,82 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
         clearProps: 'opacity,transform',
       })
     },
-    { scope: gridRef, dependencies: [visibleTorrents.length, sortABC, sortCategory] },
+    { scope: gridRef, dependencies: [visibleTorrents.length, sortABC, sortCategory, libraryQuery] },
+  )
+
+  const toggleSelect = (hash: string) => {
+    setSelectedHashes(prev => {
+      const next = new Set(prev)
+      if (next.has(hash)) next.delete(hash)
+      else next.add(hash)
+      return next
+    })
+  }
+
+  const exitSelection = () => {
+    setSelectionMode(false)
+    setSelectedHashes(new Set())
+  }
+
+  const runBulk = async (action: 'drop' | 'delete') => {
+    const hashes = [...selectedHashes]
+    if (!hashes.length) return
+    const mutate = action === 'drop' ? dropTorrent : removeTorrent
+    try {
+      await Promise.all(hashes.map(hash => mutate(hash)))
+      await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
+      toast?.showToast({
+        message: action === 'drop' ? t('DropTorrent') : t('Delete'),
+        severity: 'success',
+      })
+      exitSelection()
+    } catch {
+      toast?.showToast({ message: t('Error'), severity: 'error' })
+    }
+  }
+
+  const toolbar = (
+    <div className='sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b border-border/60 bg-background/95 px-3 py-2 backdrop-blur-md sm:px-4'>
+      <TextField
+        aria-label={t('LibrarySearch', { defaultValue: 'Search library' })}
+        value={libraryQuery}
+        onChange={setLibraryQuery}
+        className='min-w-0 flex-1 sm:max-w-xs'
+      >
+        <Label className='sr-only'>{t('LibrarySearch', { defaultValue: 'Search library' })}</Label>
+        <Input placeholder={t('LibrarySearch', { defaultValue: 'Search library' })} />
+      </TextField>
+      <Button
+        size='sm'
+        variant={selectionMode ? 'primary' : 'secondary'}
+        onPress={() => (selectionMode ? exitSelection() : setSelectionMode(true))}
+      >
+        <CheckSquare className='size-4' aria-hidden />
+        {selectionMode
+          ? t('Cancel')
+          : t('Select', { defaultValue: 'Select' })}
+      </Button>
+      <Button
+        size='sm'
+        variant='secondary'
+        onPress={() => window.open(playlistAllUrl(), '_blank')}
+        aria-label={t('DownloadAllPlaylists', { defaultValue: 'Download all playlists' })}
+      >
+        <ListMusic className='size-4' aria-hidden />
+        <span className='hidden sm:inline'>{t('DownloadAllPlaylists', { defaultValue: 'All playlists' })}</span>
+      </Button>
+      {selectionMode && selectedHashes.size > 0 ? (
+        <>
+          <Button size='sm' variant='outline' onPress={() => void runBulk('drop')}>
+            {t('DropTorrent')} ({selectedHashes.size})
+          </Button>
+          <Button size='sm' variant='danger' onPress={() => void runBulk('delete')}>
+            <Trash2 className='size-4' aria-hidden />
+            {t('Delete')} ({selectedHashes.size})
+          </Button>
+        </>
+      ) : null}
+    </div>
   )
 
   if (isLoading) {
@@ -90,12 +188,16 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
   }
 
   if (isError) {
+    const status = (error as { response?: { status?: number } } | null)?.response?.status
+    const unauthorized = status === 401 || status === 403
     return (
       <div className='grid min-h-[60vh] place-items-center p-6 text-center'>
         <div className='flex flex-col items-center gap-3'>
           <CloudOff size={44} strokeWidth={1.25} className='text-muted' />
           <p className='text-lg font-semibold text-foreground'>
-            {t('NoServerConnection', { defaultValue: 'No connection to server' })}
+            {unauthorized
+              ? t('AuthRequired', { defaultValue: 'Authentication required' })
+              : t('NoServerConnection', { defaultValue: 'No connection to server' })}
           </p>
           <Button variant='primary' onPress={() => void refetch()}>
             {t('Retry', { defaultValue: 'Retry' })}
@@ -119,40 +221,103 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
     )
   }
 
-  if (!visibleTorrents.length) {
-    return (
-      <div className='grid min-h-[40vh] place-items-center p-6 text-center'>
-        <div className='flex flex-col items-center gap-3 text-muted'>
-          <SearchX size={36} strokeWidth={1.25} />
-          <p>{t('NoTorrentsInCategory')}</p>
-          {onClearCategory ? (
-            <Button variant='secondary' onPress={onClearCategory}>
-              {t('ShowAllTorrents', { defaultValue: 'Show all' })}
-            </Button>
-          ) : null}
-        </div>
-      </div>
-    )
-  }
-
   return (
     <>
-      <div ref={gridRef} className={POSTER_GRID_CLASS}>
-        {visibleTorrents.map(torrent => (
-          <TorrentCard key={torrent.hash} torrent={torrent} onSelect={setDetailsTorrent} onEdit={setEditingTorrent} />
-        ))}
-      </div>
+      {toolbar}
+
+      {continueEntries.length > 0 && !selectionMode && !libraryQuery ? (
+        <section className='border-b border-border/60 px-3 py-3 sm:px-4'>
+          <p className='mb-2 text-xs font-semibold uppercase tracking-wide text-muted'>
+            {t('ContinueWatching', { defaultValue: 'Continue watching' })}
+          </p>
+          <div className='flex gap-2 overflow-x-auto pb-1'>
+            {continueEntries.map(entry => {
+              const torrent = torrents.find(item => item.hash === entry.hash)
+              if (!torrent) return null
+              return (
+                <button
+                  key={`${entry.hash}:${entry.fileIndex}`}
+                  type='button'
+                  className='flex min-w-[220px] max-w-[280px] shrink-0 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-left hover-fine:bg-surface-secondary'
+                  onClick={() => setDetailsTorrent(torrent)}
+                >
+                  <div className='min-w-0 flex-1'>
+                    <p className='truncate text-sm font-semibold'>{entry.title}</p>
+                    <p className='truncate text-xs text-muted'>{entry.fileName}</p>
+                  </div>
+                  <span
+                    role='button'
+                    tabIndex={0}
+                    className='rounded-md p-1 text-muted hover-fine:bg-surface-tertiary hover-fine:text-foreground'
+                    aria-label={t('Clear')}
+                    onClick={event => {
+                      event.stopPropagation()
+                      removeContinueWatching(entry.hash, entry.fileIndex)
+                      setContinueTick(v => v + 1)
+                    }}
+                    onKeyDown={event => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        event.stopPropagation()
+                        removeContinueWatching(entry.hash, entry.fileIndex)
+                        setContinueTick(v => v + 1)
+                      }
+                    }}
+                  >
+                    <X className='size-4' aria-hidden />
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </section>
+      ) : null}
+
+      {!visibleTorrents.length ? (
+        <div className='grid min-h-[40vh] place-items-center p-6 text-center'>
+          <div className='flex flex-col items-center gap-3 text-muted'>
+            <SearchX size={36} strokeWidth={1.25} />
+            <p>{libraryQuery.trim() ? t('NoSearchResults', { defaultValue: 'No matches' }) : t('NoTorrentsInCategory')}</p>
+            {libraryQuery.trim() ? (
+              <Button variant='secondary' onPress={() => setLibraryQuery('')}>
+                <Search className='size-4' aria-hidden />
+                {t('Clear', { defaultValue: 'Clear' })}
+              </Button>
+            ) : onClearCategory ? (
+              <Button variant='secondary' onPress={onClearCategory}>
+                {t('ShowAllTorrents', { defaultValue: 'Show all' })}
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      ) : (
+        <div ref={gridRef} className={POSTER_GRID_CLASS}>
+          {visibleTorrents.map(torrent => (
+            <TorrentCard
+              key={torrent.hash}
+              torrent={torrent}
+              onSelect={setDetailsTorrent}
+              onEdit={setEditingTorrent}
+              selectionMode={selectionMode}
+              selected={selectedHashes.has(torrent.hash)}
+              onToggleSelect={toggleSelect}
+            />
+          ))}
+        </div>
+      )}
 
       {detailsTorrent ? (
         <Suspense fallback={lazyDialogFallback}>
-          <DetailsDialog
-            torrent={detailsTorrent}
-            onClose={() => setDetailsTorrent(null)}
-            onEdit={(torrent: TorrentStat) => {
-              setDetailsTorrent(null)
-              setEditingTorrent(torrent)
-            }}
-          />
+          <DialogErrorBoundary onClose={() => setDetailsTorrent(null)}>
+            <DetailsDialog
+              torrent={detailsTorrent}
+              onClose={() => setDetailsTorrent(null)}
+              onEdit={(torrent: TorrentStat) => {
+                setDetailsTorrent(null)
+                setEditingTorrent(torrent)
+              }}
+            />
+          </DialogErrorBoundary>
         </Suspense>
       ) : null}
 

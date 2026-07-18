@@ -410,5 +410,18 @@
   "Search.Seeders": "Сиды",
   "Search.Peers": "Пиры",
   "Search.Rutor": "RuTor",
-  "CopyMagnet": "Скопировать Magnet"
+  "CopyMagnet": "Скопировать Magnet",
+  "LibrarySearch": "Поиск в библиотеке",
+  "DownloadAllPlaylists": "Все плейлисты",
+  "ContinueWatching": "Продолжить просмотр",
+  "NoSearchResults": "Ничего не найдено",
+  "Select": "Выбрать",
+  "AuthRequired": "Требуется авторизация",
+  "SavedWithoutStorage": "Сохранено (хранилище без изменений)",
+  "StorageLoadFailed": "Не удалось загрузить настройки хранилища. Остальные настройки можно сохранить.",
+  "MediaInfo": "Медиаинфо",
+  "SpeedTest": "Тест скорости",
+  "NoData": "Нет данных",
+  "SpeedTestSize": "Размер теста",
+  "SpeedTestRun": "Запуск"
 }

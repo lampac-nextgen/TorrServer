@@ -15,6 +15,7 @@ import {
 import { Captions, Maximize, Minimize, Pause, Play, RotateCcw, RotateCw, Volume2, VolumeX, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { setViewedFile } from 'shared/api/viewed'
+import { rememberContinueWatching } from 'shared/lib/continueWatching'
 import { queryMax } from 'shared/theme/breakpoints'
 import { useModalOpen, useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { iconBtn } from 'shared/ui/controlClasses'
@@ -134,12 +135,19 @@ export default function VideoPlayer({
       if (!shouldPersistTimecode || hash == null || fileIndex == null) return
       try {
         await setViewedFile(hash, fileIndex, time)
+        rememberContinueWatching({
+          hash,
+          fileIndex,
+          title: title || hash,
+          fileName: title || String(fileIndex),
+          timecode: time,
+        })
         onViewedChangeRef.current?.()
       } catch {
         // ignore persistence errors — playback should continue
       }
     },
-    [fileIndex, hash, shouldPersistTimecode],
+    [fileIndex, hash, shouldPersistTimecode, title],
   )
 
   const flushTimecode = useCallback(() => {
@@ -456,8 +464,21 @@ export default function VideoPlayer({
                     src={hls ? undefined : videoSrc}
                     onTimeUpdate={handleTimeUpdate}
                     onLoadedMetadata={handleLoadedMetadata}
+                    onWaiting={() => setLoading(true)}
+                    onCanPlay={() => {
+                      setLoading(false)
+                      setMediaError(false)
+                    }}
+                    onPlaying={() => {
+                      setLoading(false)
+                      setPlaying(true)
+                    }}
                     onPlay={() => setPlaying(true)}
                     onPause={handlePause}
+                    onError={() => {
+                      setLoading(false)
+                      setMediaError(true)
+                    }}
                     className='block w-full'
                     style={{ maxHeight: isMobile ? 'calc(100dvh - 180px)' : '70vh' }}
                   >
@@ -482,7 +503,13 @@ export default function VideoPlayer({
                 <div className='flex flex-wrap items-center gap-2'>
                   <Tooltip>
                     <Tooltip.Trigger>
-                      <Button isIconOnly variant='ghost' className={chromeIconBtn} onPress={togglePlayPause}>
+                      <Button
+                        isIconOnly
+                        variant='ghost'
+                        className={chromeIconBtn}
+                        aria-label={playing ? t('Pause') : t('Play')}
+                        onPress={togglePlayPause}
+                      >
                         {playing ? <Pause aria-hidden /> : <Play aria-hidden />}
                       </Button>
                     </Tooltip.Trigger>
@@ -525,7 +552,13 @@ export default function VideoPlayer({
 
                   <Tooltip>
                     <Tooltip.Trigger>
-                      <Button isIconOnly variant='ghost' className={chromeIconBtn} onPress={toggleMute}>
+                      <Button
+                        isIconOnly
+                        variant='ghost'
+                        className={chromeIconBtn}
+                        aria-label={muted ? t('Unmute') : t('Mute')}
+                        onPress={toggleMute}
+                      >
                         {muted ? <VolumeX aria-hidden /> : <Volume2 aria-hidden />}
                       </Button>
                     </Tooltip.Trigger>
@@ -539,7 +572,7 @@ export default function VideoPlayer({
                     maxValue={100}
                     onChange={handleVolumeChange}
                     className='hidden w-24 sm:flex'
-                    aria-label={t('Mute')}
+                    aria-label={t('Volume', { defaultValue: 'Volume' })}
                   >
                     <Slider.Track>
                       <Slider.Fill />
@@ -586,6 +619,7 @@ export default function VideoPlayer({
                         isIconOnly
                         variant='ghost'
                         className={chromeIconBtn}
+                        aria-label={fullscreen ? t('ExitFullscreen') : t('Fullscreen')}
                         onPress={fullscreen ? exitFullscreen : enterFullscreen}
                       >
                         {fullscreen ? <Minimize aria-hidden /> : <Maximize aria-hidden />}

@@ -22,6 +22,11 @@ export const clearViewedFiles = async (hash: string): Promise<void> => {
   await axios.post(viewedHost(), { action: 'rem', hash, file_index: -1 })
 }
 
+/** Clear viewed mark for a single file (keeps other files' progress). */
+export const remViewedFile = async (hash: string, fileIndex: number): Promise<void> => {
+  await axios.post(viewedHost(), { action: 'rem', hash, file_index: fileIndex })
+}
+
 export const setViewedFile = async (hash: string, fileIndex: number, timecode = 0): Promise<void> => {
   await axios.post(viewedHost(), { action: 'set', hash, file_index: fileIndex, timecode })
 }

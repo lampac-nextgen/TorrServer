@@ -9,8 +9,11 @@ export const getTorrents = async (): Promise<TorrentStat[]> => {
   try {
     const { data } = await axios.post<TorrentStat[]>(torrentsHost(), { action: 'list' })
     return data
-  } catch {
-    throw new Error('Failed to load torrents')
+  } catch (err) {
+    const status = axios.isAxiosError(err) ? err.response?.status : undefined
+    const error = new Error('Failed to load torrents') as Error & { response?: { status?: number } }
+    if (status != null) error.response = { status }
+    throw error
   }
 }
 

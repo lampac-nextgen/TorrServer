@@ -5,6 +5,7 @@ import ptt from 'parse-torrent-title'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { PlayableFile } from 'shared/api/types'
+import { playlistAllUrl } from 'shared/api/extras'
 import { playlistTorrHost, streamHost } from 'shared/api/hosts'
 import { dropTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { clearViewedFiles } from 'shared/api/viewed'
@@ -113,14 +114,14 @@ function TorrentActions({
           await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
           onDropped?.()
         })
-        .catch(() => toast?.showToast({ message: t('PlaybackError'), severity: 'error' }))
+        .catch(() => toast?.showToast({ message: t('Error'), severity: 'error' }))
     } else if (pendingConfirm === 'clearViews') {
       void clearViewedFiles(hash)
         .then(() => {
           setViewedFileList(undefined)
           toast?.showToast({ message: t('RemoveViews'), severity: 'success' })
         })
-        .catch(() => toast?.showToast({ message: t('PlaybackError'), severity: 'error' }))
+        .catch(() => toast?.showToast({ message: t('Error'), severity: 'error' }))
     }
     setPendingConfirm(null)
   }
@@ -253,6 +254,13 @@ function TorrentActions({
               {t('CopyHash')}
             </Button>
           </ButtonGroup>
+          <Button
+            variant='tertiary'
+            onPress={() => window.open(playlistAllUrl({ category: undefined }), '_blank')}
+          >
+            <ListVideo aria-hidden />
+            {t('DownloadAllPlaylists', { defaultValue: 'All playlists' })}
+          </Button>
         </div>
       </div>
 

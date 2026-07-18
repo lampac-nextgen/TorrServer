@@ -17,6 +17,9 @@ export interface TorrentStat {
   category?: TorrentCategory
   poster?: string
   torrent_size?: number
+  loaded_size?: number
+  preloaded_bytes?: number
+  preload_size?: number
   download_speed?: number
   upload_speed?: number
   active_peers?: number
@@ -24,6 +27,7 @@ export interface TorrentStat {
   connected_seeders?: number
   timestamp?: number
   stat?: number
+  stat_string?: string
   data?: string
   file_stats?: TorrentFileStat[]
 }

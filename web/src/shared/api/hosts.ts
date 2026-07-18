@@ -8,6 +8,9 @@ export const cacheHost = () => `${torrserverHost}/cache`
 export const torrentUploadHost = () => `${torrserverHost}/torrent/upload`
 export const settingsHost = () => `${torrserverHost}/settings`
 export const streamHost = () => `${torrserverHost}/stream`
+export const playlistAllHost = () => `${torrserverHost}/playlistall/all.m3u`
+export const ffpHost = (hash: string, id: number | string) => `${torrserverHost}/ffp/${hash}/${id}`
+export const downloadTestHost = (sizeMb: number) => `${torrserverHost}/download/${sizeMb}`
 export const shutdownHost = () => `${torrserverHost}/shutdown`
 export const echoHost = () => `${torrserverHost}/echo`
 export const playlistTorrHost = streamHost

@@ -124,34 +124,52 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
   const resolvedTab: DetailsTab = activeTab ?? (playableFileList.length > 1 ? 'files' : 'overview')
 
   const cache = useUpdateCache(hash, {
-    fast: resolvedTab === 'overview' || resolvedTab === 'cache',
+    // Fast snake only on Cache tab; Overview mini-preview uses idle cadence.
+    fast: resolvedTab === 'cache',
   })
 
+  const seasonsFingerprint = useMemo(() => {
+    const seasons: number[] = []
+    playableFileList.forEach(({ path }) => {
+      const season = ptt.parse(path).season
+      if (season && !seasons.includes(season)) seasons.push(season)
+    })
+    seasons.sort((a, b) => a - b)
+    return seasons.join(',')
+  }, [playableFileList])
+
   useEffect(() => {
-    if (playableFileList && seasonList === null) {
-      const seasons: number[] = []
-      playableFileList.forEach(({ path }) => {
-        const season = ptt.parse(path).season
-        if (season && !seasons.includes(season)) seasons.push(season)
-      })
-      seasons.sort((a, b) => a - b)
-      if (seasons.length) setSelectedSeason(seasons[0])
-      setSeasonList(seasons)
-    }
-  }, [playableFileList, seasonList])
+    const seasons = seasonsFingerprint
+      ? seasonsFingerprint.split(',').map(Number).filter(n => Number.isFinite(n) && n > 0)
+      : []
+    setSeasonList(seasons)
+    setSelectedSeason(prev => {
+      if (seasons.length === 0) return undefined
+      if (prev != null && seasons.includes(prev)) return prev
+      return seasons[0]
+    })
+  }, [seasonsFingerprint])
 
   useEffect(() => {
     let cancelled = false
-    void listViewedFiles(hash).then(list => {
-      if (!cancelled) setViewedFileList(list)
-    })
+    void listViewedFiles(hash)
+      .then(list => {
+        if (!cancelled) setViewedFileList(list)
+      })
+      .catch(() => {
+        if (!cancelled) setViewedFileList(undefined)
+      })
     return () => {
       cancelled = true
     }
   }, [hash])
 
   const refreshViewed = useCallback(async () => {
-    setViewedFileList(await listViewedFiles(hash))
+    try {
+      setViewedFileList(await listViewedFiles(hash))
+    } catch {
+      setViewedFileList(undefined)
+    }
   }, [hash])
 
   const statusLabel = (value?: number) => {
@@ -201,7 +219,14 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
               <div className='flex flex-col gap-4 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-4 sm:flex-row sm:items-start'>
                 {poster ? (
                   <div className='mx-auto grid aspect-[2/3] w-full max-w-[120px] shrink-0 place-items-center overflow-hidden rounded-lg bg-surface-secondary sm:mx-0'>
-                    <img src={poster} alt='' className='h-full w-full object-cover' />
+                    <img
+                      src={poster}
+                      alt=''
+                      className='h-full w-full object-cover'
+                      onError={event => {
+                        event.currentTarget.style.display = 'none'
+                      }}
+                    />
                   </div>
                 ) : null}
 

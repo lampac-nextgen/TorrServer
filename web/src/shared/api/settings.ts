@@ -13,3 +13,8 @@ export const getSettings = async (signal?: AbortSignal): Promise<BTSets> => {
 export const setSettings = async (sets: BTSets): Promise<void> => {
   await axios.post(settingsHost(), { action: 'set', sets })
 }
+
+/** Restore BTSets to server defaults (`action: def`). */
+export const resetSettings = async (): Promise<void> => {
+  await axios.post(settingsHost(), { action: 'def' })
+}

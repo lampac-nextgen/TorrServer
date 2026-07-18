@@ -10,6 +10,11 @@ export function useTorrentsQuery(options?: { enabled?: boolean }): UseQueryResul
     queryFn: getTorrents,
     retry: 1,
     enabled: options?.enabled ?? true,
-    refetchInterval: () => (document.hidden ? 10_000 : 1000),
+    refetchInterval: () => {
+      if (document.hidden) return 10_000
+      // Details/settings/etc. open — ease off the list poll to cut server + battery load.
+      if (document.body.dataset.modalOpen === 'true') return 5_000
+      return 1000
+    },
   })
 }

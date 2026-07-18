@@ -1,13 +1,24 @@
-import { Button, Link, Modal, useMediaQuery } from '@heroui/react'
+import {
+  Button,
+  Link,
+  ListBox,
+  Modal,
+  Select,
+  Spinner,
+  useMediaQuery,
+} from '@heroui/react'
 import axios from 'axios'
-import { useEffect, useState } from 'react'
+import { Gauge, Heart, ExternalLink } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { runSpeedTest } from 'shared/api/extras'
 import { echoHost } from 'shared/api/hosts'
 import { publicUrl } from 'shared/lib/publicUrl'
 import { queryMax } from 'shared/theme/breakpoints'
 import AppDialog from 'shared/ui/AppDialog'
 import { DIALOG_SHEET_M } from 'shared/ui/dialogSizes'
+import { useOptionalAppToast } from 'shared/ui/Toast'
 
 import { CONTRIBUTORS } from './contributors'
 
@@ -16,29 +27,77 @@ export interface AboutDialogProps {
   onClose: () => void
 }
 
+/** Download sizes for `/download/:size` (path unit is MB). */
+const SPEED_TEST_SIZES_MB = [
+  { id: '10', mb: 10, label: '10 MB' },
+  { id: '100', mb: 100, label: '100 MB' },
+  { id: '1024', mb: 1024, label: '1 GB' },
+] as const
+
 function AboutLink({ name, href }: { name: string; href: string }) {
   return (
-    <Link href={href} target='_blank' rel='noopener noreferrer' className='block rounded-md px-1 py-1.5 text-sm'>
-      {name}
+    <Link
+      href={href}
+      target='_blank'
+      rel='noopener noreferrer'
+      className='flex items-center justify-between gap-2 rounded-md px-1 py-1.5 text-sm'
+    >
+      <span>{name}</span>
+      <ExternalLink className='size-3.5 shrink-0 text-muted' aria-hidden />
     </Link>
   )
 }
 
-/** About dialog: version, links, and Special Thanks contributor grid (parity with master, no Donate). */
+function contributorInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+  return name.slice(0, 2).toUpperCase()
+}
+
+/** About dialog: version, links, speedtest, and Special Thanks contributor grid (no Donate). */
 export default function AboutDialog({ open, onClose }: AboutDialogProps) {
   const { t } = useTranslation()
+  const toast = useOptionalAppToast()
   const isFullScreenBreakpoint = useMediaQuery(queryMax('dialog'))
   const isMobile = useMediaQuery(queryMax('mobile'))
   const [version, setVersion] = useState<string | null>(null)
+  const [speedTesting, setSpeedTesting] = useState(false)
+  const [speedResult, setSpeedResult] = useState<string | null>(null)
+  const [speedSizeId, setSpeedSizeId] = useState<(typeof SPEED_TEST_SIZES_MB)[number]['id']>('10')
+
+  const speedSizeMb = useMemo(
+    () => SPEED_TEST_SIZES_MB.find(option => option.id === speedSizeId)?.mb ?? 10,
+    [speedSizeId],
+  )
 
   useEffect(() => {
     if (!open) return
     setVersion(null)
+    setSpeedResult(null)
     axios
       .get(echoHost())
       .then(({ data }) => setVersion(String(data)))
       .catch(() => setVersion(''))
   }, [open])
+
+  const handleSpeedTest = async () => {
+    setSpeedTesting(true)
+    setSpeedResult(null)
+    try {
+      const result = await runSpeedTest(speedSizeMb)
+      const transferred =
+        result.bytes >= 1024 * 1024 * 1024
+          ? `${(result.bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
+          : `${(result.bytes / (1024 * 1024)).toFixed(1)} MB`
+      const label = `${result.mbps.toFixed(1)} Mbps · ${(result.elapsedMs / 1000).toFixed(1)}s · ${transferred}`
+      setSpeedResult(label)
+      toast?.showToast({ message: label, severity: 'success' })
+    } catch {
+      toast?.showToast({ message: t('Error'), severity: 'error' })
+    } finally {
+      setSpeedTesting(false)
+    }
+  }
 
   return (
     <AppDialog
@@ -75,20 +134,72 @@ export default function AboutDialog({ open, onClose }: AboutDialogProps) {
         </div>
 
         <div className='mt-3 rounded-lg border border-border bg-surface-secondary p-3'>
-          <p className='mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted'>{t('SpecialThanks')}</p>
-          <div className='grid grid-cols-1 gap-1 sm:grid-cols-2'>
-            {CONTRIBUTORS.map(person => (
-              <Link
-                key={person.url}
-                href={person.url}
-                target='_blank'
-                rel='noopener noreferrer'
-                className='rounded-md px-2 py-1.5 text-sm hover-fine:bg-surface'
-              >
-                {person.name}
-              </Link>
-            ))}
+          <p className='mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted'>
+            {t('SpeedTest', { defaultValue: 'Speed test' })}
+          </p>
+          <div className='flex flex-wrap items-center gap-2 px-1'>
+            <Select
+              aria-label={t('SpeedTestSize', { defaultValue: 'Test size' })}
+              selectedKey={speedSizeId}
+              onSelectionChange={key => {
+                if (key == null) return
+                setSpeedSizeId(String(key) as (typeof SPEED_TEST_SIZES_MB)[number]['id'])
+                setSpeedResult(null)
+              }}
+              className='w-[7.5rem] shrink-0'
+              isDisabled={speedTesting}
+            >
+              <Select.Trigger className='min-h-10'>
+                <Select.Value />
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover>
+                <ListBox>
+                  {SPEED_TEST_SIZES_MB.map(option => (
+                    <ListBox.Item key={option.id} id={option.id}>
+                      {option.label}
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+            </Select>
+            <Button size='sm' variant='secondary' isPending={speedTesting} onPress={() => void handleSpeedTest()}>
+              {({ isPending }) => (
+                <>
+                  {isPending ? <Spinner size='sm' color='current' /> : <Gauge aria-hidden />}
+                  {t('SpeedTestRun', { defaultValue: 'Run' })}
+                </>
+              )}
+            </Button>
+            {speedResult ? <span className='w-full text-sm tabular-nums text-muted sm:w-auto'>{speedResult}</span> : null}
           </div>
+        </div>
+
+        <div className='mt-3 rounded-lg border border-border bg-surface-secondary p-3'>
+          <p className='mb-3 flex items-center gap-1.5 px-1 text-xs font-semibold uppercase tracking-wide text-muted'>
+            <Heart className='size-3.5 fill-accent/25 text-accent' aria-hidden />
+            {t('SpecialThanks')}
+          </p>
+          <ul className='flex flex-wrap gap-2'>
+            {CONTRIBUTORS.map(person => (
+              <li key={person.url}>
+                <Link
+                  href={person.url}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='inline-flex items-center gap-2 rounded-full border border-border/80 bg-surface px-2 py-1 text-sm text-foreground shadow-sm transition-colors hover-fine:border-accent/40 hover-fine:bg-accent-soft/40'
+                >
+                  <span
+                    className='grid size-6 shrink-0 place-items-center rounded-full bg-accent-soft text-[10px] font-bold tracking-wide text-accent'
+                    aria-hidden
+                  >
+                    {contributorInitials(person.name)}
+                  </span>
+                  <span className='pr-0.5'>{person.name}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </Modal.Body>
       <Modal.Footer>

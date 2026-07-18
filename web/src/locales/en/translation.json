@@ -410,5 +410,18 @@
   "Search.Seeders": "Seeders",
   "Search.Peers": "Peers",
   "Search.Rutor": "RuTor",
-  "CopyMagnet": "Copy Magnet"
+  "CopyMagnet": "Copy Magnet",
+  "LibrarySearch": "Search library",
+  "DownloadAllPlaylists": "All playlists",
+  "ContinueWatching": "Continue watching",
+  "NoSearchResults": "No matches",
+  "Select": "Select",
+  "AuthRequired": "Authentication required",
+  "SavedWithoutStorage": "Saved (storage backends unchanged)",
+  "StorageLoadFailed": "Storage backends could not be loaded. Other settings can still be saved.",
+  "MediaInfo": "Media info",
+  "SpeedTest": "Speed test",
+  "NoData": "No probe data",
+  "SpeedTestSize": "Test size",
+  "SpeedTestRun": "Run"
 }

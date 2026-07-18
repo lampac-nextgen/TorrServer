@@ -15,6 +15,7 @@ import { THEME_MODES, useThemePreference } from 'shared/theme/useThemePreference
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import { TorrentsPage } from 'features/torrents'
 import { iconBtn } from 'shared/ui/controlClasses'
+import DialogErrorBoundary from 'shared/ui/DialogErrorBoundary'
 
 import BottomNav from './BottomNav'
 import Sidebar from './Sidebar'
@@ -81,7 +82,10 @@ export default function Shell() {
   const sidebarWidth = sidebarOpen ? SIDEBAR_OPEN_PX : SIDEBAR_COLLAPSED_PX
 
   useEffect(() => {
-    axios.get(echoHost()).then(({ data }) => setTorrServerVersion(String(data)))
+    axios
+      .get(echoHost())
+      .then(({ data }) => setTorrServerVersion(String(data)))
+      .catch(() => setTorrServerVersion(''))
   }, [])
 
   useEffect(() => {
@@ -252,35 +256,61 @@ export default function Shell() {
       {isMobile ? <BottomNav {...navProps} /> : null}
 
       <Suspense fallback={lazyDialogFallback}>
-        <AddDialog open={addOpen && !launchFiles} onClose={closeAdd} initialSource={launchSource} />
+        <DialogErrorBoundary onClose={closeAdd}>
+          <AddDialog open={addOpen && !launchFiles} onClose={closeAdd} initialSource={launchSource} />
+        </DialogErrorBoundary>
         {launchFiles ? (
-          <MultiAddDialog
-            files={launchFiles}
-            open
+          <DialogErrorBoundary
             onClose={() => {
               setLaunchFiles(null)
               setAddOpen(false)
             }}
-          />
+          >
+            <MultiAddDialog
+              files={launchFiles}
+              open
+              onClose={() => {
+                setLaunchFiles(null)
+                setAddOpen(false)
+              }}
+            />
+          </DialogErrorBoundary>
         ) : null}
-        <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
-        <SettingsDialog
-          open={settingsOpen}
+        <DialogErrorBoundary onClose={() => setSearchOpen(false)}>
+          <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
+        </DialogErrorBoundary>
+        <DialogErrorBoundary
           onClose={() => {
             setSettingsOpen(false)
             setSettingsInitialTab(undefined)
           }}
-          initialTab={settingsInitialTab}
-        />
-        <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
-        <CloseServerDialog open={closeServerOpen} onClose={() => setCloseServerOpen(false)} />
-        <RemoveAllDialog open={removeAllOpen} onClose={() => setRemoveAllOpen(false)} />
-        <CategoriesDrawer
-          open={categoriesOpen}
-          onClose={() => setCategoriesOpen(false)}
-          selectedCategory={globalCategoryFilter}
-          onSelectCategory={setGlobalCategoryFilter}
-        />
+        >
+          <SettingsDialog
+            open={settingsOpen}
+            onClose={() => {
+              setSettingsOpen(false)
+              setSettingsInitialTab(undefined)
+            }}
+            initialTab={settingsInitialTab}
+          />
+        </DialogErrorBoundary>
+        <DialogErrorBoundary onClose={() => setAboutOpen(false)}>
+          <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
+        </DialogErrorBoundary>
+        <DialogErrorBoundary onClose={() => setCloseServerOpen(false)}>
+          <CloseServerDialog open={closeServerOpen} onClose={() => setCloseServerOpen(false)} />
+        </DialogErrorBoundary>
+        <DialogErrorBoundary onClose={() => setRemoveAllOpen(false)}>
+          <RemoveAllDialog open={removeAllOpen} onClose={() => setRemoveAllOpen(false)} />
+        </DialogErrorBoundary>
+        <DialogErrorBoundary onClose={() => setCategoriesOpen(false)}>
+          <CategoriesDrawer
+            open={categoriesOpen}
+            onClose={() => setCategoriesOpen(false)}
+            selectedCategory={globalCategoryFilter}
+            onSelectCategory={setGlobalCategoryFilter}
+          />
+        </DialogErrorBoundary>
         {detectApplePlatform().isIOS && !isStandaloneApp ? <PWAInstallationGuide /> : null}
         {!detectApplePlatform().isIOS && !isStandaloneApp ? <AndroidInstallBanner /> : null}
       </Suspense>

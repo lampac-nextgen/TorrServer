@@ -3,9 +3,10 @@ import { memo, useMemo, useState, type ReactNode } from 'react'
 import ptt from 'parse-torrent-title'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { fetchFfp } from 'shared/api/extras'
 import { streamHost } from 'shared/api/hosts'
 import type { PlayableFile, TorrentFileStat } from 'shared/api/types'
-import { listViewedEntries, VIEWED_QUERY_KEY } from 'shared/api/viewed'
+import { listViewedEntries, remViewedFile, VIEWED_QUERY_KEY } from 'shared/api/viewed'
 import {
   gstreamerHeartbeatUrl,
   gstreamerMasterUrl,
@@ -15,6 +16,7 @@ import {
 import { useExternalPlayers } from 'shared/lib/externalPlayers'
 import { humanizeSize } from 'shared/lib/format'
 import { useSettingsQuery } from 'shared/hooks/useSettingsQuery'
+import { useOptionalAppToast } from 'shared/ui/Toast'
 import { findCaptionSrc } from 'features/player/usePlayLauncher'
 
 import FileRowActions from './FileRowActions'
@@ -58,7 +60,15 @@ function episodeBadge(episode?: number): string | null {
 }
 
 /** Streaming-style episode/file row — title + meta chips + compact action strip. */
-function EpisodeRow({ row, actions }: { row: FileRow; actions: ReactNode }) {
+function EpisodeRow({
+  row,
+  actions,
+  onUnmarkViewed,
+}: {
+  row: FileRow
+  actions: ReactNode
+  onUnmarkViewed?: () => void
+}) {
   const { t } = useTranslation()
   const badge = episodeBadge(row.episode)
   const title = row.episode != null ? row.name.replace(/^E\d+\s*[·.-]\s*/i, '').trim() || row.name : row.name
@@ -81,10 +91,15 @@ function EpisodeRow({ row, actions }: { row: FileRow; actions: ReactNode }) {
               {title}
             </p>
             {row.viewed ? (
-              <span className='inline-flex items-center gap-1 text-xs text-accent'>
+              <button
+                type='button'
+                className='inline-flex items-center gap-1 rounded-md text-xs text-accent hover-fine:underline'
+                onClick={onUnmarkViewed}
+              >
                 <CheckCircle2 className='size-3.5' aria-hidden />
                 {t('Viewed')}
-              </span>
+                <span className='text-muted'>· {t('Clear')}</span>
+              </button>
             ) : null}
           </div>
           <div className='mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted'>
@@ -114,6 +129,7 @@ const FilesDataGrid = memo(
     onViewedChange,
   }: FilesDataGridProps) => {
     const { t } = useTranslation()
+    const toast = useOptionalAppToast()
     const queryClient = useQueryClient()
     const [unsupportedPlayerKeys, setUnsupportedPlayerKeys] = useState<Record<string, boolean>>({})
     const gstRuntime = useGStreamerRuntime()
@@ -138,6 +154,36 @@ const FilesDataGrid = memo(
     const notifyViewedChange = () => {
       void queryClient.invalidateQueries({ queryKey: VIEWED_QUERY_KEY(hash) })
       onViewedChange?.()
+    }
+
+    const unmarkViewed = async (fileId: number) => {
+      try {
+        await remViewedFile(hash, fileId)
+        notifyViewedChange()
+      } catch {
+        toast?.showToast({ message: t('Error'), severity: 'error' })
+      }
+    }
+
+    const showFfp = async (fileId: number, fileName: string) => {
+      try {
+        const data = await fetchFfp(hash, fileId)
+        const video = data.streams?.find(stream => stream.codec_type === 'video')
+        const audio = data.streams?.find(stream => stream.codec_type === 'audio')
+        const duration = data.format?.duration || video?.duration
+        const parts = [
+          data.format?.format_name,
+          video ? `${video.codec_name || '?'}${video.width && video.height ? ` ${video.width}x${video.height}` : ''}` : null,
+          audio ? `a:${audio.codec_name || '?'}` : null,
+          duration ? `${Math.round(Number(duration))}s` : null,
+        ].filter(Boolean)
+        toast?.showToast({
+          message: `${fileName}: ${parts.join(' · ') || t('NoData', { defaultValue: 'No probe data' })}`,
+          severity: 'success',
+        })
+      } catch {
+        toast?.showToast({ message: t('Error'), severity: 'error' })
+      }
     }
 
     const preloadBuffer = (fileId: number) => void fetch(`${streamHost()}?link=${hash}&index=${fileId}&preload`)
@@ -214,6 +260,7 @@ const FilesDataGrid = memo(
           <EpisodeRow
             key={row.id}
             row={row}
+            onUnmarkViewed={row.viewed ? () => void unmarkViewed(row.id) : undefined}
             actions={
               <FileRowActions
                 preloadLabel={t('Preload')}
@@ -237,6 +284,7 @@ const FilesDataGrid = memo(
                 initialTimecode={timecodeByFile.get(row.id) ?? 0}
                 trackTimecode={trackTimecode}
                 onViewedChange={notifyViewedChange}
+                onProbeMedia={() => void showFfp(row.id, row.name)}
               />
             }
           />

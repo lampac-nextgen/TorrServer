@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { Cog, Film, HardDrive, Rss, SlidersHorizontal, Smartphone, Wifi } from 'lucide-react'
 
 import type { BTSets } from 'shared/api/types'
-import { getSettings, setSettings, SETTINGS_QUERY_KEY } from 'shared/api/settings'
+import { getSettings, setSettings, resetSettings, SETTINGS_QUERY_KEY } from 'shared/api/settings'
 import { getGstSettings, setGstSettings } from 'shared/api/gst'
 import {
   defaultStorageSettings,
@@ -77,6 +77,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
   const [gstConfig, setGstConfig] = useState<GStreamerConfig>(emptyGstConfig())
   const [gstDefaults, setGstDefaults] = useState<GStreamerConfig>(emptyGstConfig())
   const [storageBackends, setStorageBackends] = useState<StorageSettings>(defaultStorageSettings())
+  /** False when `/storage/settings` failed — Save still works for BTSets/GST; storage write is skipped. */
   const [storageLoadedOk, setStorageLoadedOk] = useState(false)
 
   const gstAvailable = Boolean(gstRuntime.built_in)
@@ -178,7 +179,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
   )
 
   const handleSave = async () => {
-    if (saving || !storageLoadedOk) return
+    if (saving) return
     setSaving(true)
     try {
       const sets: BTSets = {
@@ -188,7 +189,9 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
         PreloadCache: settings.PreloadCache ?? defaultSettings.PreloadCache,
       }
       await setSettings(sets)
-      await setStorageSettings(storageBackends)
+      if (storageLoadedOk) {
+        await setStorageSettings(storageBackends)
+      }
       if (gstAvailable) {
         await setGstSettings(gstConfig)
         await queryClient.invalidateQueries({ queryKey: [GST_RUNTIME_QUERY_KEY] })
@@ -196,8 +199,32 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
       clearTMDBCache()
       notifySettingsChanged()
       await queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEY })
-      toast?.showToast({ message: t('Saved'), severity: 'success' })
+      toast?.showToast({
+        message: storageLoadedOk
+          ? t('Saved')
+          : t('SavedWithoutStorage', { defaultValue: 'Saved (storage backends unchanged)' }),
+        severity: 'success',
+      })
       onClose()
+    } catch (err) {
+      toast?.showToast({ message: (err as Error).message || t('Error'), severity: 'error' })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleResetDefaults = async () => {
+    if (saving) return
+    setSaving(true)
+    try {
+      await resetSettings()
+      const ac = new AbortController()
+      await loadSettings(ac.signal)
+      await loadGstConfig(ac.signal)
+      clearTMDBCache()
+      notifySettingsChanged()
+      await queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEY })
+      toast?.showToast({ message: t('SettingsDialog.ResetToDefault'), severity: 'success' })
     } catch (err) {
       toast?.showToast({ message: (err as Error).message || t('Error'), severity: 'error' })
     } finally {
@@ -301,6 +328,13 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
 
             <Tabs.Panel id='storage' className={panelClassName}>
               <PanelFade>
+                {!storageLoadedOk && !loading ? (
+                  <Description className='mb-3 text-warning'>
+                    {t('StorageLoadFailed', {
+                      defaultValue: 'Storage backends could not be loaded. Other settings can still be saved.',
+                    })}
+                  </Description>
+                ) : null}
                 <StorageSettingsPanel backends={storageBackends} onBackendsChange={setStorageBackends} />
               </PanelFade>
             </Tabs.Panel>
@@ -343,13 +377,21 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
         )}
       </Modal.Body>
       <Modal.Footer>
+        <Button
+          onPress={() => void handleResetDefaults()}
+          isDisabled={loading || saving}
+          variant='outline'
+          className={footerButtonClassName}
+        >
+          {t('SettingsDialog.ResetToDefault')}
+        </Button>
         <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName} autoFocus>
           {t('Cancel')}
         </Button>
         <Button
           variant='primary'
           onPress={() => void handleSave()}
-          isDisabled={loading || saving || !storageLoadedOk}
+          isDisabled={loading || saving}
           className={footerButtonClassName}
         >
           {saving ? <Spinner size='sm' color='current' /> : t('Save')}

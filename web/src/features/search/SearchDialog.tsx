@@ -167,7 +167,12 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
         if (torznabOn && urls.length > 0) setSelectedTracker(-1)
         else if (rutorOn) setSelectedTracker('rutor')
       })
-      .catch(() => {})
+      .catch(() => {
+        if (ac.signal.aborted) return
+        setTrackers([])
+        setEnableTorznab(false)
+        setEnableRutor(false)
+      })
       .finally(() => {
         if (!ac.signal.aborted) setSettingsLoaded(true)
       })

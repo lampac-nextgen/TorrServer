@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { Button, ButtonGroup, Spinner, Tooltip } from '@heroui/react'
-import { Copy, Download, ExternalLink, Play } from 'lucide-react'
+import { Copy, Download, ExternalLink, Info, Play } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { ExternalPlayerLink } from 'shared/lib/externalPlayers'
 import { iconBtn } from 'shared/ui/controlClasses'
@@ -31,6 +31,7 @@ export interface FileRowActionsProps {
   initialTimecode?: number
   trackTimecode?: boolean
   onViewedChange?: () => void
+  onProbeMedia?: () => void
 }
 
 const playerBtn = 'min-h-10 shrink-0 px-2.5 font-medium'
@@ -58,6 +59,7 @@ export default function FileRowActions({
   initialTimecode = 0,
   trackTimecode = false,
   onViewedChange,
+  onProbeMedia,
 }: FileRowActionsProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
@@ -180,6 +182,24 @@ export default function FileRowActions({
         </Tooltip.Trigger>
         <Tooltip.Content>{preloadLabel}</Tooltip.Content>
       </Tooltip.Root>
+
+      {onProbeMedia ? (
+        <Tooltip.Root>
+          <Tooltip.Trigger>
+            <Button
+              variant='secondary'
+              size='sm'
+              isIconOnly
+              className={iconBtn}
+              aria-label={t('MediaInfo', { defaultValue: 'Media info' })}
+              onPress={onProbeMedia}
+            >
+              <Info aria-hidden />
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>{t('MediaInfo', { defaultValue: 'Media info' })}</Tooltip.Content>
+        </Tooltip.Root>
+      ) : null}
     </div>
   )
 }

@@ -104,12 +104,9 @@ export const useUpdateCache = (hash?: string, options?: UseUpdateCacheOptions) =
           setCache(next)
         })
         .catch(() => {
+          // Keep last good snapshot — wiping to {} flickers the snake empty on transient errors.
           if (!componentIsMounted.current || cancelled) return
-          if (cacheVisualEqual(cacheRef.current, {})) return
-          lastChangeAt.current = Date.now()
-          pollMs.current = fast ? CACHE_POLL_ACTIVE_MS : CACHE_POLL_IDLE_MS
-          cacheRef.current = {}
-          setCache({})
+          pollMs.current = CACHE_POLL_IDLE_MS
         })
         .finally(() => {
           inFlight.current = false
