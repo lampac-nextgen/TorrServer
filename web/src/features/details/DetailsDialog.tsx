@@ -15,6 +15,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import Typography from '@mui/material/Typography'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import CloseIcon from '@mui/icons-material/Close'
+import EditIcon from '@mui/icons-material/Edit'
 import ImageNotSupportedIcon from '@mui/icons-material/ImageNotSupported'
 import { useTranslation } from 'react-i18next'
 import type { PlayableFile, TorrentFileStat, TorrentStat } from 'shared/api/types'
@@ -37,6 +38,7 @@ import TorrentCache from './TorrentCache'
 export interface DetailsDialogProps {
   torrent: TorrentStat
   onClose: () => void
+  onEdit?: (torrent: TorrentStat) => void
 }
 
 const toPlayableFile = (file: TorrentFileStat): PlayableFile => ({
@@ -95,7 +97,7 @@ function StatWidget({ label, value }: { label: string; value: string }) {
   )
 }
 
-export default function DetailsDialog({ torrent: initialTorrent, onClose }: DetailsDialogProps) {
+export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit }: DetailsDialogProps) {
   const { t } = useTranslation()
   const fullScreen = useMediaQuery(queryMax('dialog'))
   useSyncModalOpen(true)
@@ -194,6 +196,15 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose }: Deta
           <Typography variant='h6' component='span' noWrap sx={{ flex: 1 }}>
             {t('TorrentDetails')}
           </Typography>
+          {onEdit ? (
+            <IconButton
+              aria-label={t('EditTorrent')}
+              onClick={() => onEdit(torrent)}
+              edge='end'
+            >
+              <EditIcon />
+            </IconButton>
+          ) : null}
           <IconButton aria-label={t('Close', { defaultValue: 'Close' })} onClick={onClose} edge='end'>
             <CloseIcon />
           </IconButton>

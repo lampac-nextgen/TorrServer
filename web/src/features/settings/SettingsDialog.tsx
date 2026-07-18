@@ -15,6 +15,12 @@ import { useTranslation } from 'react-i18next'
 import type { BTSets } from 'shared/api/types'
 import { getSettings, setSettings } from 'shared/api/settings'
 import { getGstSettings, setGstSettings } from 'shared/api/gst'
+import {
+  defaultStorageSettings,
+  getStorageSettings,
+  setStorageSettings,
+  type StorageSettings,
+} from 'shared/api/storage'
 import defaultSettings from 'shared/settings/defaults'
 import { GST_RUNTIME_QUERY_KEY, useGStreamerRuntime } from 'shared/lib/gstreamer'
 import { notifySettingsChanged } from 'shared/lib/settingsEvents'
@@ -60,6 +66,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const [cacheSizeMb, setCacheSizeMb] = useState(defaultSettings.CacheSize ?? 64)
   const [gstConfig, setGstConfig] = useState<GStreamerConfig>(emptyGstConfig())
   const [gstDefaults, setGstDefaults] = useState<GStreamerConfig>(emptyGstConfig())
+  const [storageBackends, setStorageBackends] = useState<StorageSettings>(defaultStorageSettings())
 
   const gstAvailable = Boolean(gstRuntime.built_in)
   const isGstTab = tab === 'gstreamer'
@@ -100,6 +107,15 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
     }
   }, [])
 
+  const loadStorageBackends = useCallback(async (signal?: AbortSignal) => {
+    try {
+      const prefs = await getStorageSettings(signal)
+      setStorageBackends(prefs)
+    } catch {
+      setStorageBackends(defaultStorageSettings())
+    }
+  }, [])
+
   const updateSettingsPartial: import('shared/api/types').SettingsUpdater = partial => {
     setLocalSettings(prev => ({ ...prev, ...partial }))
   }
@@ -108,7 +124,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
     if (!open) return
     const ac = new AbortController()
     setLoading(true)
-    Promise.all([loadSettings(ac.signal), loadGstConfig(ac.signal)])
+    Promise.all([loadSettings(ac.signal), loadGstConfig(ac.signal), loadStorageBackends(ac.signal)])
       .catch(() => {
         toast?.showToast({ message: t('Error'), severity: 'error' })
       })
@@ -116,7 +132,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
         if (!ac.signal.aborted) setLoading(false)
       })
     return () => ac.abort()
-  }, [open, loadSettings, loadGstConfig, t, toast])
+  }, [open, loadSettings, loadGstConfig, loadStorageBackends, t, toast])
 
   const updateSetting = useCallback(<K extends keyof BTSets>(key: K, value: BTSets[K]) => {
     setLocalSettings(prev => ({ ...prev, [key]: value }))
@@ -155,6 +171,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
           PreloadCache: settings.PreloadCache ?? defaultSettings.PreloadCache,
         }
         await setSettings(sets)
+        await setStorageSettings(storageBackends)
         clearTMDBCache()
         notifySettingsChanged()
         await queryClient.invalidateQueries({ queryKey: ['settings'] })
@@ -226,7 +243,12 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
             </TabPanel>
 
             <TabPanel active={tab} tab='storage'>
-              <StorageSettingsPanel settings={settings} onBoolSwitch={handleBoolSwitch} />
+              <StorageSettingsPanel
+                settings={settings}
+                onBoolSwitch={handleBoolSwitch}
+                backends={storageBackends}
+                onBackendsChange={setStorageBackends}
+              />
             </TabPanel>
 
             <TabPanel active={tab} tab='app'>

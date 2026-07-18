@@ -7,10 +7,13 @@ import Dialog from '@mui/material/Dialog'
 import DialogContent from '@mui/material/DialogContent'
 import DialogTitle from '@mui/material/DialogTitle'
 import IconButton from '@mui/material/IconButton'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
 import Slider from '@mui/material/Slider'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import useMediaQuery from '@mui/material/useMediaQuery'
+import ClosedCaptionIcon from '@mui/icons-material/ClosedCaption'
 import CloseIcon from '@mui/icons-material/Close'
 import FullscreenIcon from '@mui/icons-material/Fullscreen'
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit'
@@ -62,6 +65,13 @@ function formatTime(seconds: number): string {
   return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
 }
 
+type SubtitleTrackInfo = { id: number; name?: string; lang?: string }
+
+const subtitleLabel = (track: SubtitleTrackInfo) => {
+  const parts = [track.name, track.lang].filter(Boolean)
+  return parts.length ? parts.join(' · ') : `Subtitle ${track.id}`
+}
+
 export default function VideoPlayer({
   videoSrc,
   downloadSrc = videoSrc,
@@ -90,6 +100,9 @@ export default function VideoPlayer({
   const [muted, setMuted] = useState(false)
   const [volume, setVolume] = useState(1)
   const [fullscreen, setFullscreen] = useState(false)
+  const [subtitleTracks, setSubtitleTracks] = useState<SubtitleTrackInfo[]>([])
+  const [subtitleTrack, setSubtitleTrack] = useState(-1)
+  const [subtitleAnchor, setSubtitleAnchor] = useState<HTMLElement | null>(null)
 
   useSyncModalOpen(open)
 
@@ -121,12 +134,32 @@ export default function VideoPlayer({
     let hlsPlayer: Hls | null = null
     let nativeHls = false
     setLoading(true)
+    setSubtitleTracks([])
+    setSubtitleTrack(-1)
 
     if (Hls.isSupported()) {
       hlsPlayer = new Hls()
       hlsRef.current = hlsPlayer
       hlsPlayer.on(Hls.Events.MANIFEST_PARSED, () => {
+        const tracks = (hlsPlayer?.subtitleTracks || []).map((track, id) => ({
+          id,
+          name: track.name,
+          lang: track.lang,
+        }))
+        setSubtitleTracks(tracks)
+        setSubtitleTrack(hlsPlayer?.subtitleTrack ?? -1)
         video.play().catch(() => {})
+      })
+      hlsPlayer.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, () => {
+        const tracks = (hlsPlayer?.subtitleTracks || []).map((track, id) => ({
+          id,
+          name: track.name,
+          lang: track.lang,
+        }))
+        setSubtitleTracks(tracks)
+      })
+      hlsPlayer.on(Hls.Events.SUBTITLE_TRACK_SWITCH, (_, data) => {
+        setSubtitleTrack(data.id)
       })
       hlsPlayer.on(Hls.Events.ERROR, (_, data) => {
         if (!data.fatal) return
@@ -159,6 +192,8 @@ export default function VideoPlayer({
         video.removeAttribute('src')
         video.load()
       }
+      setSubtitleTracks([])
+      setSubtitleTrack(-1)
     }
   }, [hls, open, videoElement, videoSrc])
 
@@ -218,6 +253,16 @@ export default function VideoPlayer({
   const enterFull = () => videoRef.current?.requestFullscreen()
   const exitFull = () => document.exitFullscreen()
 
+  const changeSubtitleTrack = (index: number) => {
+    const hlsPlayer = hlsRef.current
+    if (hlsPlayer) {
+      hlsPlayer.subtitleDisplay = index >= 0
+      hlsPlayer.subtitleTrack = index
+    }
+    setSubtitleTrack(index)
+    setSubtitleAnchor(null)
+  }
+
   const openPlayer = () => {
     setLoading(true)
     setMediaError(false)
@@ -227,6 +272,7 @@ export default function VideoPlayer({
   const closePlayer = () => {
     setOpen(false)
     setMediaError(false)
+    setSubtitleAnchor(null)
     onClose?.()
   }
 
@@ -321,6 +367,37 @@ export default function VideoPlayer({
                 </IconButton>
               </Tooltip>
               <Slider value={volume * 100} onChange={handleVolume} size='small' sx={{ width: 100 }} />
+              {subtitleTracks.length > 0 ? (
+                <>
+                  <Tooltip title={t('Subtitles', { defaultValue: 'Subtitles' })}>
+                    <IconButton
+                      size='small'
+                      color={subtitleTrack >= 0 ? 'secondary' : 'default'}
+                      onClick={e => setSubtitleAnchor(e.currentTarget)}
+                    >
+                      <ClosedCaptionIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Menu
+                    anchorEl={subtitleAnchor}
+                    open={Boolean(subtitleAnchor)}
+                    onClose={() => setSubtitleAnchor(null)}
+                  >
+                    <MenuItem selected={subtitleTrack === -1} onClick={() => changeSubtitleTrack(-1)}>
+                      {t('Off', { defaultValue: 'Off' })}
+                    </MenuItem>
+                    {subtitleTracks.map(track => (
+                      <MenuItem
+                        key={track.id}
+                        selected={subtitleTrack === track.id}
+                        onClick={() => changeSubtitleTrack(track.id)}
+                      >
+                        {subtitleLabel(track)}
+                      </MenuItem>
+                    ))}
+                  </Menu>
+                </>
+              ) : null}
               <Box sx={{ flexGrow: 1 }} />
               <Tooltip title={fullscreen ? t('ExitFullscreen') : t('Fullscreen')}>
                 <IconButton onClick={fullscreen ? exitFull : enterFull} size='small'>

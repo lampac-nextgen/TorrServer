@@ -18,6 +18,7 @@ import TorrentCardActions from './TorrentCardActions'
 export interface TorrentCardProps {
   torrent: TorrentStat
   onSelect: (torrent: TorrentStat) => void
+  onEdit?: (torrent: TorrentStat) => void
 }
 
 function statusColor(stat?: number): 'default' | 'primary' | 'success' | 'warning' | 'info' {
@@ -63,7 +64,7 @@ function StatCell({ label, value }: { label: string; value: string }) {
   )
 }
 
-export default function TorrentCard({ torrent, onSelect }: TorrentCardProps) {
+export default function TorrentCard({ torrent, onSelect, onEdit }: TorrentCardProps) {
   const { t } = useTranslation()
   const theme = useTheme()
   const isMobile = useMediaQuery(queryMax('mobile'))
@@ -189,7 +190,11 @@ export default function TorrentCard({ torrent, onSelect }: TorrentCardProps) {
             p: { xs: 1, sm: 0 },
           }}
         >
-          <TorrentCardActions torrent={torrent} onDetails={() => onSelect(torrent)} />
+          <TorrentCardActions
+            torrent={torrent}
+            onDetails={() => onSelect(torrent)}
+            onEdit={onEdit ? () => onEdit(torrent) : undefined}
+          />
         </Box>
       </Stack>
     </Card>

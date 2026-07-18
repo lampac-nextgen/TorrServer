@@ -38,6 +38,23 @@ export const addTorrent = async (input: AddTorrentInput): Promise<void> => {
   })
 }
 
+export interface UpdateTorrentInput {
+  hash: string
+  title?: string
+  category?: string
+  poster?: string
+}
+
+export const updateTorrent = async (input: UpdateTorrentInput): Promise<void> => {
+  await axios.post(torrentsHost(), {
+    action: 'set',
+    hash: input.hash,
+    title: input.title || undefined,
+    category: input.category || undefined,
+    poster: input.poster ?? '',
+  })
+}
+
 export const dropTorrent = async (hash: string): Promise<void> => {
   await axios.post(torrentsHost(), { action: 'drop', hash })
 }

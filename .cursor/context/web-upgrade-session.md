@@ -3,7 +3,7 @@
 **Saved:** 2026-07-18  
 **Transcript:** [Web MUI production](98d7e6a7-6a2f-4721-ae12-0e4a1c6657ef)  
 **Branch (typical):** `feature/web-upgrade`  
-**Phase:** **Modern greenfield product** — Material UI 9.2 + MUI X 9.10 Community
+**Phase:** **New TorrServer web** — Material UI 9.2 + MUI X 9.10 Community (rewrite-first)
 
 Use this file + skill `.cursor/skills/torrserver-web/` to continue.
 
@@ -12,9 +12,11 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue.
 ## Doctrine
 
 - Live tree only: `app/` + `features/` + `shared/` + `locales/`
-- Source of truth: server HTTP contracts + product UX — **never** port legacy UI
-- Frame work as complete modern product, not legacy parity
+- **This is a new product UI** — not “finish the migration branch”
+- **Master = feature/behavior contract** only (`git show master:…`) — never port legacy UI/styles
+- **Branch code is not an anchor** — full rewrite of any file is OK and preferred over legacy-shaped patches
 - Prefer `shared/api/*` + React Query hooks
+- Audit → gaps → modern fix
 
 ---
 
@@ -24,7 +26,7 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue.
 |-------|--------|
 | Runtime | React 19 + Vite **8.1** (Rolldown/Oxc) + TypeScript **6.0** + Vitest **4** |
 | UI | `@mui/material@9.2` + Emotion (no styled-components) |
-| Theme | `createAppTheme()` — `cssVariables` + `colorSchemes` + `useColorScheme` / `forceThemeRerender` |
+| Theme | `createAppTheme()` — modern MatriX palette (green-ink dark, not legacy gray) |
 | MUI X | data-grid / charts / tree-view / date-pickers **@9.10** Community |
 | Architecture | `app/` + `features/` + `shared/` only |
 | Ship | `yarn typecheck && yarn lint && yarn test && yarn build` → `go run gen_web.go --clean` |
@@ -32,26 +34,20 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue.
 
 ---
 
-## Done (modern plan 2026-07-18)
+## Audit backlog (in progress)
 
-- Doctrine locked in skill / PROMPT / session
-- `shared/api`: torrents (add/drop/wipe/upload), settings, viewed, search, gst
-- Hooks: `useTorrentsQuery`, `useTorrentDetail`, `useSettingsQuery`, `useLocalPref`
-- Single torrents poll; Details via React Query
-- Modern `TorrentCard` (poster/status/speeds/peers)
-- AddDialog TMDB poster picker; Search posters + explicit Add
-- Settings composed panels + SSL/retrackers/encrypt/LPD/protocol/FS knobs
-- Clipboard via `navigator.clipboard`; player prefs reactive
-- Removed `react-copy-to-clipboard`
-- Ship gate green + embed updated
+- P0: Edit torrent metadata (`action: set`) + storage backends `/storage/settings`
+- P1: Add hash dedup + auto title/posters; Search TMDB poster fallback
+- P1: GStreamer audio tracks; HLS subtitles in VideoPlayer
+- Hygiene: no ghost `style/`
 
 ---
 
-## Optional later
+## Done (recent)
 
-- Soften remaining react-hooks warnings (non-blocking)
-- Split oversized `mui` chunk further after more lazy X usage
-- Feature UI tests beyond shared lib coverage
+- Cards + cardAction rail; collapsible sidebar; details seasons/files polish
+- SettingSwitch ListItem pattern; MatriX theme rewrite (green-ink dark)
+- Shared API torrents/settings/viewed/search/gst; RQ hooks for torrents/detail
 
 ---
 

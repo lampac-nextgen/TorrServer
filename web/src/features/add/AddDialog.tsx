@@ -18,7 +18,14 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useDropzone } from 'react-dropzone'
 import { addTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
-import { checkTorrentSource, getMoviePosters, shortenTitleForPosterSearch } from 'shared/lib/torrentHelpers'
+import {
+  checkTorrentSource,
+  getMoviePosters,
+  parseSourceInfoHash,
+  parseTorrentTitle,
+  shortenTitleForPosterSearch,
+} from 'shared/lib/torrentHelpers'
+import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
 import { queryMax } from 'shared/theme/breakpoints'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import AppDialog from 'shared/ui/AppDialog'
@@ -47,7 +54,11 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
   const [postersLoading, setPostersLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [multiFiles, setMultiFiles] = useState<File[] | null>(null)
+  const [hashExists, setHashExists] = useState(false)
   const posterRequestRef = useRef(0)
+  const titleTouchedRef = useRef(false)
+
+  const { data: torrents } = useTorrentsQuery()
 
   useSyncModalOpen(open && !multiFiles)
 
@@ -61,7 +72,52 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
     setCategory('')
     setPoster('')
     setPosterOptions([])
+    setHashExists(false)
+    titleTouchedRef.current = false
   }
+
+  useEffect(() => {
+    const trimmed = source.trim()
+    if (!open || !trimmed || !checkTorrentSource(trimmed)) {
+      setHashExists(false)
+      return undefined
+    }
+
+    let cancelled = false
+    const timer = window.setTimeout(() => {
+      void parseSourceInfoHash(trimmed).then(infoHash => {
+        if (cancelled || !infoHash) {
+          if (!cancelled) setHashExists(false)
+          return
+        }
+        const exists = (torrents || []).some(t => t.hash?.toLowerCase() === infoHash.toLowerCase())
+        setHashExists(exists)
+      })
+    }, 300)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [open, source, torrents])
+
+  useEffect(() => {
+    const trimmed = source.trim()
+    if (!open || !trimmed || !checkTorrentSource(trimmed) || titleTouchedRef.current) return undefined
+
+    let cancelled = false
+    const timer = window.setTimeout(() => {
+      parseTorrentTitle(trimmed, ({ parsedTitle }) => {
+        if (cancelled || !parsedTitle || titleTouchedRef.current) return
+        setTitle(parsedTitle)
+      })
+    }, 350)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [open, source])
 
   const handleFiles = useCallback((files: File[]) => {
     if (!files.length) return
@@ -111,6 +167,10 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
       })
       return
     }
+    if (hashExists) {
+      toast?.showToast({ message: t('AddDialog.HashExists'), severity: 'warning' })
+      return
+    }
 
     setSaving(true)
     try {
@@ -157,7 +217,8 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
             multiline
             minRows={2}
             label={t('AddDialog.TorrentSourceLink')}
-            helperText={t('AddDialog.TorrentSourceOptions')}
+            helperText={hashExists ? t('AddDialog.HashExists') : t('AddDialog.TorrentSourceOptions')}
+            error={hashExists}
             value={source}
             onChange={e => setSource(e.target.value)}
             disabled={saving}
@@ -168,7 +229,10 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
             label={t('AddDialog.TitleBlank')}
             helperText={t('AddDialog.CustomTorrentTitleHelperText')}
             value={title}
-            onChange={e => setTitle(e.target.value)}
+            onChange={e => {
+              titleTouchedRef.current = true
+              setTitle(e.target.value)
+            }}
             disabled={saving}
           />
 
@@ -263,7 +327,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
         <Button
           variant='contained'
           onClick={() => void handleAdd()}
-          disabled={saving || !source.trim()}
+          disabled={saving || !source.trim() || hashExists}
           sx={footerButtonSx}
         >
           {saving ? <CircularProgress size={20} color='inherit' /> : t('Add')}

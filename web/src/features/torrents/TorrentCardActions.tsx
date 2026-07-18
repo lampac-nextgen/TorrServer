@@ -1,10 +1,14 @@
-import { useMemo, useState, type MouseEvent } from 'react'
+import { useMemo, useRef, useState, type MouseEvent } from 'react'
+import axios from 'axios'
+import AudiotrackIcon from '@mui/icons-material/Audiotrack'
 import CloseIcon from '@mui/icons-material/Close'
 import DeleteIcon from '@mui/icons-material/Delete'
+import EditIcon from '@mui/icons-material/Edit'
 import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
 import Button from '@mui/material/Button'
+import CircularProgress from '@mui/material/CircularProgress'
 import Dialog from '@mui/material/Dialog'
 import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
@@ -17,15 +21,11 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { PlayableFile, TorrentFileStat, TorrentStat } from 'shared/api/types'
 import { playlistTorrHost, streamHost } from 'shared/api/hosts'
-import {
-  dropTorrent,
-  getTorrent,
-  removeTorrent,
-  TORRENTS_QUERY_KEY,
-} from 'shared/api/torrents'
+import { dropTorrent, getTorrent, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import {
   gstreamerHeartbeatUrl,
   gstreamerMasterUrl,
+  gstreamerProbeUrl,
   shouldUseGStreamerPlayer,
   useGStreamerRuntime,
 } from 'shared/lib/gstreamer'
@@ -36,9 +36,12 @@ import VideoPlayer from 'features/player/VideoPlayer'
 export interface TorrentCardActionsProps {
   torrent: TorrentStat
   onDetails: () => void
+  onEdit?: () => void
 }
 
 type ConfirmKind = 'drop' | 'delete' | null
+
+type ProbeTrack = Record<string, unknown>
 
 const toPlayable = (file: TorrentFileStat): PlayableFile => ({
   id: file.id ?? file.Id ?? 0,
@@ -46,15 +49,39 @@ const toPlayable = (file: TorrentFileStat): PlayableFile => ({
   length: file.length ?? file.Length ?? 0,
 })
 
-export default function TorrentCardActions({ torrent, onDetails }: TorrentCardActionsProps) {
+const probeTrackValue = (track: ProbeTrack, key: string): unknown => {
+  const lower = key.toLowerCase()
+  const found = Object.keys(track).find(k => k.toLowerCase() === lower)
+  return found ? track[found] : undefined
+}
+
+const probeAudioTracks = (probe: { Tracks?: ProbeTrack[]; tracks?: ProbeTrack[] } | null | undefined) =>
+  (probe?.Tracks || probe?.tracks || []).filter(
+    track => String(probeTrackValue(track, 'Type') || '').toLowerCase() === 'audio',
+  )
+
+const audioTrackLabel = (track: ProbeTrack, index: number) => {
+  const lang = String(probeTrackValue(track, 'Language') || probeTrackValue(track, 'Lang') || '')
+  const codec = String(probeTrackValue(track, 'Codec') || probeTrackValue(track, 'CapsName') || '')
+  const title = String(probeTrackValue(track, 'Title') || '')
+  const parts = [`#${index}`, lang, codec, title].filter(Boolean)
+  return parts.join(' · ') || `Audio ${index}`
+}
+
+export default function TorrentCardActions({ torrent, onDetails, onEdit }: TorrentCardActionsProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
   const queryClient = useQueryClient()
   const gstRuntime = useGStreamerRuntime()
+  const audioCache = useRef<Record<number, ProbeTrack[]>>({})
 
   const [confirm, setConfirm] = useState<ConfirmKind>(null)
   const [playMenuAnchor, setPlayMenuAnchor] = useState<HTMLElement | null>(null)
+  const [audioMenuAnchor, setAudioMenuAnchor] = useState<HTMLElement | null>(null)
   const [playableFiles, setPlayableFiles] = useState<PlayableFile[]>([])
+  const [audioTracks, setAudioTracks] = useState<ProbeTrack[]>([])
+  const [pendingAudioFile, setPendingAudioFile] = useState<PlayableFile | null>(null)
+  const [resolvingAudio, setResolvingAudio] = useState(false)
   const [player, setPlayer] = useState<{
     src: string
     downloadSrc: string
@@ -73,19 +100,59 @@ export default function TorrentCardActions({ torrent, onDetails }: TorrentCardAc
     return stats.map(toPlayable).filter(f => isFilePlayable(f.path))
   }, [torrent.file_stats])
 
-  const openPlayerForFile = (file: PlayableFile) => {
+  const openPlayerForFile = (file: PlayableFile, audio = 0) => {
     const useHls = shouldUseGStreamerPlayer(file.path, gstRuntime)
     const stream = `${streamHost()}/${encodeURIComponent(
       file.path.split('\\').pop()!.split('/').pop()!,
     )}?link=${hash}&index=${file.id}&play`
     setPlayer({
-      src: useHls ? gstreamerMasterUrl(hash, file.id) : stream,
+      src: useHls ? gstreamerMasterUrl(hash, file.id, audio) : stream,
       downloadSrc: stream,
       title: file.path.split('/').pop() || displayName,
       hls: useHls,
       heartbeatSrc: useHls ? gstreamerHeartbeatUrl(hash) : undefined,
     })
     setPlayMenuAnchor(null)
+    setAudioMenuAnchor(null)
+    setPendingAudioFile(null)
+  }
+
+  const resolveAndPlay = async (file: PlayableFile, anchor?: HTMLElement | null) => {
+    const useHls = shouldUseGStreamerPlayer(file.path, gstRuntime)
+    if (!useHls) {
+      openPlayerForFile(file)
+      return
+    }
+
+    const cached = audioCache.current[file.id]
+    if (cached !== undefined) {
+      if (!cached.length) {
+        openPlayerForFile(file, 0)
+        return
+      }
+      setPendingAudioFile(file)
+      setAudioTracks(cached)
+      setAudioMenuAnchor(anchor || null)
+      return
+    }
+
+    setResolvingAudio(true)
+    try {
+      const { data } = await axios.get(gstreamerProbeUrl(hash, file.id))
+      const tracks = probeAudioTracks(data)
+      audioCache.current[file.id] = tracks
+      if (!tracks.length) {
+        openPlayerForFile(file, 0)
+        return
+      }
+      setPendingAudioFile(file)
+      setAudioTracks(tracks)
+      setAudioMenuAnchor(anchor || null)
+    } catch {
+      openPlayerForFile(file, 0)
+    } finally {
+      setResolvingAudio(false)
+    }
   }
 
   const handlePlayClick = async (event: MouseEvent<HTMLElement>) => {
@@ -96,11 +163,14 @@ export default function TorrentCardActions({ torrent, onDetails }: TorrentCardAc
         files = (detail.file_stats || []).map(toPlayable).filter(f => isFilePlayable(f.path))
       }
       if (!files.length) {
-        toast?.showToast({ message: t('NoPlayableFiles', { defaultValue: 'No playable files' }), severity: 'info' })
+        toast?.showToast({
+          message: t('NoPlayableFiles', { defaultValue: 'No playable files' }),
+          severity: 'info',
+        })
         return
       }
       if (files.length === 1) {
-        openPlayerForFile(files[0])
+        await resolveAndPlay(files[0], event.currentTarget)
         return
       }
       setPlayableFiles(files)
@@ -150,7 +220,17 @@ export default function TorrentCardActions({ torrent, onDetails }: TorrentCardAc
         <Button variant='cardAction' startIcon={<UnfoldMoreIcon />} onClick={onDetails}>
           {t('Details')}
         </Button>
-        <Button variant='cardAction' startIcon={<PlayArrowIcon />} onClick={e => void handlePlayClick(e)}>
+        {onEdit ? (
+          <Button variant='cardAction' startIcon={<EditIcon />} onClick={onEdit}>
+            {t('EditTorrent')}
+          </Button>
+        ) : null}
+        <Button
+          variant='cardAction'
+          startIcon={resolvingAudio ? <CircularProgress size={16} color='inherit' /> : <PlayArrowIcon />}
+          onClick={e => void handlePlayClick(e)}
+          disabled={resolvingAudio}
+        >
           {t('Play')}
         </Button>
         <Button variant='cardAction' startIcon={<PlaylistPlayIcon />} component='a' href={playlistLink}>
@@ -166,8 +246,33 @@ export default function TorrentCardActions({ torrent, onDetails }: TorrentCardAc
 
       <Menu anchorEl={playMenuAnchor} open={Boolean(playMenuAnchor)} onClose={() => setPlayMenuAnchor(null)}>
         {playableFiles.map(file => (
-          <MenuItem key={file.id} onClick={() => openPlayerForFile(file)}>
+          <MenuItem
+            key={file.id}
+            onClick={e => {
+              setPlayMenuAnchor(null)
+              void resolveAndPlay(file, e.currentTarget)
+            }}
+          >
             {file.path.split('/').pop() || file.path}
+          </MenuItem>
+        ))}
+      </Menu>
+
+      <Menu
+        anchorEl={audioMenuAnchor}
+        open={Boolean(audioMenuAnchor) && Boolean(pendingAudioFile)}
+        onClose={() => {
+          setAudioMenuAnchor(null)
+          setPendingAudioFile(null)
+        }}
+      >
+        {audioTracks.map((track, index) => (
+          <MenuItem
+            key={index}
+            onClick={() => pendingAudioFile && openPlayerForFile(pendingAudioFile, index)}
+          >
+            <AudiotrackIcon fontSize='small' sx={{ mr: 1 }} />
+            {audioTrackLabel(track, index)}
           </MenuItem>
         ))}
       </Menu>

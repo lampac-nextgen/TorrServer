@@ -23,9 +23,13 @@ description: >-
 - **Stack:** Material UI **9.2** + MUI X **9.10 Community** (Data Grid, Charts, Tree View, Date Pickers). Theme: `cssVariables` + `colorSchemes` + `useColorScheme`. No Pro/Premium license.
 - **No styled-components** — Emotion via MUI only.
 - **Greenfield only:** `web/src/{app,features,shared,locales,assets}` — no `components/`, `style/`, `utils/`, `icons/`, or legacy entry.
-- **Doctrine:** Source of truth is server HTTP contracts + product UX. Never port/copy UI from deleted legacy trees. Frame work as “complete modern product”, not “legacy parity”.
-- Prefer `shared/api/*` + React Query hooks over scattered `axios` in features.
-- `parse-torrent` + minimal `vite-plugin-node-polyfills` are allowed for MultiAdd hash/dedup only (not general lodash/react-measure).
+- **Doctrine (rewrite-first):**
+  - This is the **new TorrServer web** — modern product, not “finish the branch”.
+  - **Master = feature/behavior contract only** (`git show master:…`). Never port legacy UI/styles.
+  - **Current branch code is not an anchor.** If a file is raw or blocking, **rewrite it** — do not patch for patch’s sake.
+  - Prefer `shared/api/*` + React Query hooks over scattered `axios` in features.
+  - Audit → gaps → modern fix.
+- `parse-torrent` + minimal `vite-plugin-node-polyfills` are allowed for hash/dedup (not general lodash/react-measure).
 - Brand: **MatriX green**. File row: all actions visible. Snake/GStreamer contracts unchanged.
 - Adaptive shell + `ModalOpenProvider`. Donate removed. Safari **17+**.
 - Radix/shadcn — **cancelled**.
@@ -55,8 +59,7 @@ Always use `--clean`. Restart TorrServer + hard refresh (iOS PWA: remove/re-add 
 |------|--------|
 | Toast | `shared/ui/Toast` |
 | Torrents list query | `shared/hooks/useTorrentsQuery` |
-| Torrents desktop | `features/torrents/SimpleTorrentsDataGrid` |
-| Torrents mobile | `features/torrents/TorrentCard` |
+| Torrents list UX | `features/torrents/TorrentCard` (cards; DataGrid optional later) |
 | Search results | `features/search/SearchResultsGrid` |
 | Cache snake | `features/details/TorrentCache` + `shared/cache/*` |
 | Speed history | `features/details/SpeedCharts` |

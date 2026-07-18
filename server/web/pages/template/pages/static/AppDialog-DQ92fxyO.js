@@ -1,0 +1,1 @@
+import{I as e,Ut as t,Yt as n}from"./mui-GuNQITnr.js";import{r}from"./ModalOpenContext-BmUzfH3c.js";var i=n();function a({open:t,children:n,...a}){return r(!!t),(0,i.jsx)(e,{open:t,...a,children:n})}t(a)({});export{a as t};

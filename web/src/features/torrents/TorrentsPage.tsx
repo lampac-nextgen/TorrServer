@@ -14,6 +14,7 @@ import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
 import TorrentCard from './TorrentCard'
 
 const DetailsDialog = lazy(() => import('features/details/DetailsDialog'))
+const EditTorrentDialog = lazy(() => import('features/add/EditTorrentDialog'))
 
 export interface TorrentsPageProps {
   sortABC: boolean
@@ -39,6 +40,7 @@ function sortTorrents(torrents: TorrentStat[], sortABC: boolean, sortCategory: s
 export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsPageProps) {
   const { t } = useTranslation()
   const [selected, setSelected] = useState<TorrentStat | null>(null)
+  const [editing, setEditing] = useState<TorrentStat | null>(null)
 
   const { data: torrents, isLoading, isError } = useTorrentsQuery()
 
@@ -129,15 +131,31 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsP
     <>
       <Stack spacing={1} sx={{ p: { xs: 1, sm: 1.5, md: 2 }, pb: 2, bgcolor: 'background.default', minHeight: '100%' }}>
         {sorted.map(torrent => (
-          <TorrentCard key={torrent.hash} torrent={torrent} onSelect={setSelected} />
+          <TorrentCard
+            key={torrent.hash}
+            torrent={torrent}
+            onSelect={setSelected}
+            onEdit={setEditing}
+          />
         ))}
       </Stack>
 
       {selected ? (
         <Suspense fallback={null}>
-          <DetailsDialog torrent={selected} onClose={() => setSelected(null)} />
+          <DetailsDialog
+            torrent={selected}
+            onClose={() => setSelected(null)}
+            onEdit={torrent => {
+              setSelected(null)
+              setEditing(torrent)
+            }}
+          />
         </Suspense>
       ) : null}
+
+      <Suspense fallback={null}>
+        <EditTorrentDialog torrent={editing} open={Boolean(editing)} onClose={() => setEditing(null)} />
+      </Suspense>
     </>
   )
 }

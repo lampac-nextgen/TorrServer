@@ -28,6 +28,7 @@ import { getSettings } from 'shared/api/settings'
 import { addTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { queryMax } from 'shared/theme/breakpoints'
 import { formatSizeToClassicUnits, parseSizeToBytes } from 'shared/lib/format'
+import { getMoviePosters, shortenTitleForPosterSearch } from 'shared/lib/torrentHelpers'
 import AppDialog from 'shared/ui/AppDialog'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 import SearchResultsGrid from 'features/search/SearchResultsGrid'
@@ -72,7 +73,7 @@ const axiosErrorMessage = (err: unknown, fallback: string): string => {
 }
 
 export default function SearchDialog({ open, onClose }: SearchDialogProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()
   const toast = useOptionalAppToast()
   const isMobile = useMediaQuery(queryMax('mobile'))
@@ -204,10 +205,16 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
     setAdding(true)
     setAddingKey(key)
     try {
+      let poster = item.Poster || ''
+      if (!poster && item.Title) {
+        const query = shortenTitleForPosterSearch(item.Title) || item.Title
+        const urls = await getMoviePosters(query, i18n.language?.startsWith('ru') ? 'ru' : 'en')
+        poster = urls?.[0] || ''
+      }
       await addTorrent({
         link,
         title: item.Title,
-        poster: item.Poster || '',
+        poster,
       })
       await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
       setSuccessMsg(t('TorrentAdded'))

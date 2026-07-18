@@ -166,3 +166,17 @@ export const parseTorrentInfoHash = (file: File): Promise<string | null> =>
       else resolve(String(parsed.infoHash))
     })
   })
+
+/** Resolve infoHash from magnet / hash / torrent URL string. */
+export const parseSourceInfoHash = (source: string): Promise<string | null> =>
+  new Promise(resolve => {
+    const trimmed = source.trim()
+    if (!trimmed) {
+      resolve(null)
+      return
+    }
+    parseTorrent.remote(trimmed, (err, parsed) => {
+      if (err || !parsed?.infoHash) resolve(null)
+      else resolve(String(parsed.infoHash).toLowerCase())
+    })
+  })

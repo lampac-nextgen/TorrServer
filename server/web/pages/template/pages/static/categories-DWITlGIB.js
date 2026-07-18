@@ -1,0 +1,1 @@
+import{Yt as e,et as t,it as n,nt as r,tt as i}from"./mui-GuNQITnr.js";var a=e(),o=[{key:`movie`,name:`Movies`,icon:(0,a.jsx)(i,{})},{key:`tv`,name:`Series`,icon:(0,a.jsx)(n,{})},{key:`music`,name:`Music`,icon:(0,a.jsx)(t,{})},{key:`other`,name:`Other`,icon:(0,a.jsx)(r,{})}];export{o as t};
