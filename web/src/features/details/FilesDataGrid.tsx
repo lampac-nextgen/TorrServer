@@ -58,8 +58,8 @@ function episodeBadge(episode?: number): string | null {
 
 /**
  * Compact episode/file card used in the details Files list.
- * Mobile: tighter padding + single-line meta; actions fill width below the title.
- * Desktop (`sm+`): title row and action strip sit side-by-side.
+ * Mobile: single horizontal row (badge + title | Play + …) — no stacked full-width Play.
+ * Desktop (`sm+`): title row and action strip sit side-by-side with roomier padding.
  */
 function EpisodeRow({
   row,
@@ -76,13 +76,13 @@ function EpisodeRow({
 
   return (
     <div
-      className={`flex flex-col gap-2 rounded-xl border border-border bg-surface px-3 py-2.5 sm:flex-row sm:items-center sm:gap-4 sm:px-3.5 sm:py-3 ${
+      className={`flex items-center gap-2 rounded-lg border border-border bg-surface px-2.5 py-2 sm:gap-4 sm:rounded-xl sm:px-3.5 sm:py-3 ${
         row.viewed ? 'opacity-80' : 'border-l-[3px] border-l-accent'
       }`}
     >
-      <div className='flex min-w-0 flex-1 items-start gap-2.5 sm:gap-3'>
+      <div className='flex min-w-0 flex-1 items-center gap-2 sm:gap-3'>
         {badge ? (
-          <span className='mt-0.5 inline-flex h-8 min-w-10 shrink-0 items-center justify-center rounded-lg bg-accent-soft px-2 text-sm font-bold tabular-nums text-accent sm:h-9 sm:min-w-11'>
+          <span className='inline-flex h-8 min-w-9 shrink-0 items-center justify-center rounded-md bg-accent-soft px-1.5 text-xs font-bold tabular-nums text-accent sm:h-9 sm:min-w-11 sm:rounded-lg sm:px-2 sm:text-sm'>
             {badge}
           </span>
         ) : null}
@@ -103,14 +103,14 @@ function EpisodeRow({
               </button>
             ) : null}
           </div>
-          <p className='mt-0.5 truncate text-xs text-muted'>
+          <p className='mt-0.5 truncate text-[11px] leading-tight text-muted sm:text-xs'>
             {[row.season != null ? `${t('Season')} ${row.season}` : null, row.resolution, humanizeSize(row.size)]
               .filter(Boolean)
               .join(' · ')}
           </p>
         </div>
       </div>
-      <div className='w-full shrink-0 sm:ml-auto sm:w-auto'>{actions}</div>
+      <div className='shrink-0'>{actions}</div>
     </div>
   )
 }
@@ -230,7 +230,7 @@ const FilesDataGrid = memo(
     }
 
     return (
-      <div className='space-y-2.5'>
+      <div className='space-y-1.5 sm:space-y-2.5'>
         {rows.map(row => (
           <EpisodeRow
             key={row.id}

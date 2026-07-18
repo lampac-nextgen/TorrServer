@@ -30,8 +30,6 @@ export interface FileRowActionsProps {
 
 /** Desktop / tablet external-player chip — mid weight between Play and utilities. */
 const playerBtn = 'min-h-11 shrink-0 px-3 font-medium'
-/** Mobile equal-width chips under Play — `flex-1` + truncate so long labels never overflow. */
-const playerBtnMobile = 'min-h-11 min-w-0 flex-1 px-2 text-xs font-medium'
 
 const actionIcon = { ...iconAction, 'aria-hidden': true as const }
 const menuIcon = { ...iconMenu }
@@ -46,8 +44,8 @@ const moreBtn = `${iconBtn} text-muted hover-fine:text-foreground`
  * - Play is always primary and reachable (doctrine).
  * - External players stay on-screen (not only in a menu).
  * - Open / Copy / Preload / MediaInfo: one ghost ButtonGroup on desktop; `⋯` on mobile.
- * - Mobile uses two stacked rows (Play+More, then equal external chips) — never
- *   `overflow-x-auto`, which clipped VLC on narrow phones.
+ * - Mobile: one compact row (Play icon + external chips + More) — never a full-width
+ *   stacked Play that doubles row height.
  */
 export default function FileRowActions({
   preloadLabel,
@@ -81,20 +79,35 @@ export default function FileRowActions({
 
   const showOpenIcon = Boolean(showOpenLink && openLinkHref && playerSupported)
 
-  const playButton = (className: string) =>
+  const playButton = (className: string, iconOnly = false) =>
     playerSupported ? (
-      <Button variant='primary' size='sm' className={className} isPending={isPlayPending} onPress={onPlay}>
+      <Button
+        variant='primary'
+        size='sm'
+        isIconOnly={iconOnly}
+        className={className}
+        isPending={isPlayPending}
+        onPress={onPlay}
+        aria-label={t('Play')}
+      >
         {({ isPending }) => (
           <>
             {isPending ? <Spinner size='sm' color='current' /> : <Play {...iconMenu} fill='currentColor' aria-hidden />}
-            {t('Play')}
+            {iconOnly ? null : t('Play')}
           </>
         )}
       </Button>
     ) : showOpenLink && openLinkHref ? (
-      <Button variant='primary' size='sm' className={className} onPress={openExternal}>
+      <Button
+        variant='primary'
+        size='sm'
+        isIconOnly={iconOnly}
+        className={className}
+        onPress={openExternal}
+        aria-label={t('Play')}
+      >
         <Play {...iconMenu} fill='currentColor' aria-hidden />
-        {t('Play')}
+        {iconOnly ? null : t('Play')}
       </Button>
     ) : null
 
@@ -201,28 +214,22 @@ export default function FileRowActions({
 
   if (isMobile) {
     return (
-      <div className='flex w-full min-w-0 flex-col gap-1.5'>
-        <div className='flex w-full min-w-0 items-center gap-1.5'>
-          {playButton('min-h-11 min-w-0 flex-1 px-3')}
-          {secondaryMobile}
-        </div>
-        {externalPlayers.length > 0 ? (
-          <div className='flex w-full min-w-0 gap-1.5'>
-            {externalPlayers.map(player => (
-              <Button
-                key={player.label}
-                variant='secondary'
-                size='sm'
-                className={playerBtnMobile}
-                onPress={() => {
-                  window.location.href = player.href
-                }}
-              >
-                <span className='truncate'>{player.label}</span>
-              </Button>
-            ))}
-          </div>
-        ) : null}
+      <div className='flex shrink-0 items-center gap-1'>
+        {playButton(iconBtn, true)}
+        {externalPlayers.map(player => (
+          <Button
+            key={player.label}
+            variant='secondary'
+            size='sm'
+            className='min-h-11 max-w-[4.5rem] shrink-0 px-1.5 text-[11px] font-medium'
+            onPress={() => {
+              window.location.href = player.href
+            }}
+          >
+            <span className='truncate'>{player.label}</span>
+          </Button>
+        ))}
+        {secondaryMobile}
       </div>
     )
   }

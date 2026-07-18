@@ -442,11 +442,11 @@ export default function DetailsDialog({
                   />
                 </Tabs.Panel>
 
-                <Tabs.Panel id='files' className='min-h-0 flex-1 overflow-y-auto overscroll-contain pt-4'>
-                  <div className='rounded-xl bg-surface-secondary p-4'>
+                <Tabs.Panel id='files' className='min-h-0 flex-1 overflow-y-auto overscroll-contain pt-3 sm:pt-4'>
+                  <div className='sm:rounded-xl sm:bg-surface-secondary sm:p-4'>
                     {/* Reserve chip-row height while metadata loads or when multi-season — list won't jump. */}
                     {hasMultipleSeasons || isLoadingMetadata ? (
-                      <div className='mb-4 min-h-11'>
+                      <div className='mb-3 min-h-11 sm:mb-4'>
                         {hasMultipleSeasons ? (
                           <ToggleButtonGroup
                             selectionMode='single'
