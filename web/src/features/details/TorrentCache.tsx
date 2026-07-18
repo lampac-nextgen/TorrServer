@@ -5,6 +5,7 @@ import { priorityDebugLabel, resolveFocusVisibleCells, resolveFocusWindow } from
 import { drawSnake, hitTestSnakeCell, setupHiDpiCanvas } from 'shared/cache/drawSnake'
 import { resolvePieceMetrics, snakeSettings, type SnakeThemeMode } from 'shared/cache/snakeSettings'
 import { useCreateFocusMap } from 'shared/cache/useUpdateCache'
+import { humanizeSize } from 'shared/lib/format'
 import { useThemePreference } from 'shared/theme/useThemePreference'
 
 export type SnakeViewMode = 'detailed' | 'mini'
@@ -109,6 +110,18 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
     () => (cells.length > 0 ? cells : Array.from({ length: Math.max(piecesPerRow, 1) * emptyRowCount }, emptyCell)),
     [cells, piecesPerRow, emptyRowCount],
   )
+
+  const cacheAriaLabel = useMemo(() => {
+    const { Filled, Capacity } = cache
+    if (Filled != null && Capacity != null) {
+      return t('SnakeCacheSummary', {
+        filled: humanizeSize(Filled),
+        capacity: humanizeSize(Capacity),
+        defaultValue: `Cache ${humanizeSize(Filled)} of ${humanizeSize(Capacity)}`,
+      })
+    }
+    return t('Cache', { defaultValue: 'Cache' })
+  }, [cache, t])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -269,6 +282,8 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
         {piecesPerRow > 0 && canvasHeight > 0 ? (
           <canvas
             ref={canvasRef}
+            role='img'
+            aria-label={cacheAriaLabel}
             className='block max-w-full'
             onMouseMove={handleCanvasMove}
             onMouseLeave={() => setTooltip(null)}
@@ -276,6 +291,10 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
           />
         ) : null}
       </div>
+
+      {isMiniView ? (
+        <p className='mt-1.5 text-center text-[10px] uppercase tracking-wider text-muted/70'>{t('ScrollDown')}</p>
+      ) : null}
 
       {tooltip ? (
         <div

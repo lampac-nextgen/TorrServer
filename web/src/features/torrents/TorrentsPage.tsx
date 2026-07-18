@@ -1,7 +1,7 @@
 import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
-import { Button } from '@heroui/react'
+import { Button, Spinner } from '@heroui/react'
 import { CloudOff, FolderPlus, SearchX } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
@@ -12,6 +12,12 @@ import TorrentCard from './TorrentCard'
 const DetailsDialog = lazy(() => import('features/details/DetailsDialog'))
 const EditTorrentDialog = lazy(() => import('features/add/EditTorrentDialog'))
 
+const lazyDialogFallback = (
+  <div className='grid place-items-center p-4'>
+    <Spinner size='sm' />
+  </div>
+)
+
 export interface TorrentsPageProps {
   sortABC: boolean
   sortCategory: string
@@ -20,8 +26,7 @@ export interface TorrentsPageProps {
 }
 
 /** ~140–180px poster tiles by viewport: denser on phone, roomier on desktop. */
-const POSTER_GRID_CLASS =
-  'torrent-poster-grid grid min-h-full gap-3 p-3 pb-8 sm:gap-4 sm:p-4 md:gap-5 md:p-6'
+const POSTER_GRID_CLASS = 'torrent-poster-grid grid min-h-full gap-3 p-3 pb-8 sm:gap-4 sm:p-4 md:gap-5 md:p-6'
 const SKELETON_TILE_COUNT = 12
 
 function sortTorrents(torrents: TorrentStat[], sortABC: boolean, sortCategory: string): TorrentStat[] {
@@ -47,7 +52,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
   const [detailsTorrent, setDetailsTorrent] = useState<TorrentStat | null>(null)
   const [editingTorrent, setEditingTorrent] = useState<TorrentStat | null>(null)
 
-  const { data: torrents, isLoading, isError } = useTorrentsQuery()
+  const { data: torrents, isLoading, isError, refetch } = useTorrentsQuery()
 
   const visibleTorrents = useMemo(
     () => (torrents ? sortTorrents(torrents, sortABC, sortCategory) : []),
@@ -92,6 +97,9 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
           <p className='text-lg font-semibold text-foreground'>
             {t('NoServerConnection', { defaultValue: 'No connection to server' })}
           </p>
+          <Button variant='primary' onPress={() => void refetch()}>
+            {t('Retry', { defaultValue: 'Retry' })}
+          </Button>
         </div>
       </div>
     )
@@ -136,7 +144,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
       </div>
 
       {detailsTorrent ? (
-        <Suspense fallback={null}>
+        <Suspense fallback={lazyDialogFallback}>
           <DetailsDialog
             torrent={detailsTorrent}
             onClose={() => setDetailsTorrent(null)}
@@ -148,7 +156,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
         </Suspense>
       ) : null}
 
-      <Suspense fallback={null}>
+      <Suspense fallback={lazyDialogFallback}>
         <EditTorrentDialog
           torrent={editingTorrent}
           open={Boolean(editingTorrent)}

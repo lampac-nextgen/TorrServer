@@ -63,11 +63,19 @@ export default function Sidebar({
         isIconOnly={collapsed}
         aria-label={item.label}
         aria-current={item.active ? 'true' : undefined}
-        className={`w-full justify-start gap-3 rounded-xl px-3 py-2.5 text-app-rail-foreground hover-fine:bg-white/10 ${
-          collapsed ? 'justify-center px-2' : ''
-        } ${item.active ? 'bg-white/15' : ''}`}
+        className={
+          collapsed
+            ? `mx-auto inline-flex size-10 shrink-0 items-center justify-center rounded-xl p-0 text-app-rail-foreground hover-fine:bg-white/10 [&_svg]:m-0 [&_svg]:block ${
+                item.active ? 'bg-white/15' : ''
+              }`
+            : `w-full justify-start gap-3 rounded-xl px-3 py-2.5 text-app-rail-foreground hover-fine:bg-white/10 ${
+                item.active ? 'bg-white/15' : ''
+              }`
+        }
       >
-        {item.icon}
+        <span className='inline-flex size-5 shrink-0 items-center justify-center [&>svg]:m-0 [&>svg]:block [&>svg]:size-5'>
+          {item.icon}
+        </span>
         {!collapsed ? <span className='truncate text-sm font-medium'>{item.label}</span> : null}
       </Button>
     )

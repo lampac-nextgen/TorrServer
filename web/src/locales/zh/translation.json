@@ -37,7 +37,7 @@
   "Close": "关闭",
   "CloseServer?": "你想关闭服务器吗？",
   "CloseServer": "关闭",
-  "CopyHash": "复制磁力链接",
+  "CopyHash": "复制哈希",
   "CopyLink": "复制链接",
   "Data": "数据",
   "DebugMode": "优先级标记",
@@ -84,6 +84,7 @@
   "NasReleases": "NAS 版本",
   "None": "没有任何",
   "NoTorrentsAdded": "没有添加种子",
+  "NoServerConnection": "无法连接服务器",
   "Offline": "离线",
   "OK": "确定",
   "OpenLink": "打开链接",
@@ -122,7 +123,11 @@
   },
   "Releases": "TorrServer发行版",
   "RemoveAll": "全部删除",
+  "Retry": "重试",
   "RemoveViews": "移除视图状态",
+  "Reload": "重新加载",
+  "SomethingWentWrong": "出错了",
+  "UnexpectedError": "意外错误",
   "Resolution": "分辨率",
   "Save": "保存",
   "Saved": "已保存",
@@ -364,7 +369,10 @@
     "ImageURLHint": "TMDB图片的基础URL。图片路径自动添加（默认：https://image.tmdb.org）",
     "ImageURLRu": "TMDB图片URL（俄罗斯）",
     "ImageURLRuHint": "俄罗斯用户的替代图片URL。图片路径自动添加（默认：https://imagetmdb.com）",
-    "APIKeyPlaceholder": "输入您的 TMDB API 密钥"
+    "APIKeyPlaceholder": "输入您的 TMDB API 密钥",
+    "APIURLPlaceholder": "https://api.themoviedb.org/3",
+    "ImageURLPlaceholder": "https://image.tmdb.org",
+    "ImageURLRuPlaceholder": "https://imagetmdb.com"
   },
   "TurnOff": "关闭",
   "Uncategorized": "未分类",
@@ -379,6 +387,7 @@
   "ConfirmRemoveAll": "将从数据库中永久删除所有种子，此操作无法撤销。",
   "ConfirmRemoveViews": "清除此种子的所有已观看标记？",
   "SnakeFocusRange": "块 {{start}}–{{end}}",
+  "SnakeCacheSummary": "已缓存 {{filled}} / {{capacity}}",
   "SnakeTooltipBucket": "块 {{start}}–{{end}} · {{fill}}%",
   "SnakeTooltipPiece": "块 #{{id}} · {{fill}}%",
   "HTTPS": "HTTPS",
@@ -403,5 +412,6 @@
   "Search.AllTrackers": "所有 Tracker",
   "Search.Seeders": "做种数",
   "Search.Peers": "连接数",
-  "Search.Rutor": "RuTor"
+  "Search.Rutor": "RuTor",
+  "CopyMagnet": "复制磁力链接"
 }

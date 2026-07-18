@@ -2,7 +2,7 @@ import { Button } from '@heroui/react'
 import { Folder, FolderOpen } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { PlayableFile } from 'shared/api/types'
+import type { PlayableFile, TorrentFileStat } from 'shared/api/types'
 
 import FilesDataGrid from './FilesDataGrid'
 
@@ -12,6 +12,8 @@ interface FileBrowserProps {
   selectedSeason?: number
   seasonAmount?: number[] | null
   hash: string
+  allFileStats?: TorrentFileStat[]
+  onViewedChange?: () => void
 }
 
 interface DirectoryNode {
@@ -104,6 +106,8 @@ export default function FileBrowser({
   selectedSeason,
   seasonAmount,
   hash,
+  allFileStats,
+  onViewedChange,
 }: FileBrowserProps) {
   const { t } = useTranslation()
   const tree = useMemo(() => buildDirectoryTree(playableFileList), [playableFileList])
@@ -145,6 +149,8 @@ export default function FileBrowser({
         selectedSeason={selectedSeason}
         seasonAmount={seasonAmount}
         hash={hash}
+        allFileStats={allFileStats}
+        onViewedChange={onViewedChange}
       />
     </div>
   )

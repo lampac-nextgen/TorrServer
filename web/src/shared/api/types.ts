@@ -179,7 +179,9 @@ export interface PlayableFile {
 }
 
 export interface ViewedFileEntry {
+  hash?: string
   file_index: number
+  timecode?: number
   [key: string]: unknown
 }
 

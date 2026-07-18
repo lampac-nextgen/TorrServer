@@ -208,7 +208,7 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
           {t('AddNewTorrent')} ({visibleFiles.length}
           {skippedCount > 0 ? ` · ${skippedCount} ${t('TorrentInDb')}` : ''})
         </Modal.Heading>
-        <Modal.CloseTrigger />
+        <Modal.CloseTrigger aria-label={t('Close')} />
       </Modal.Header>
       <Modal.Body>
         {enriching ? (

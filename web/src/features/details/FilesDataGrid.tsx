@@ -1,9 +1,11 @@
 import { CheckCircle2 } from 'lucide-react'
 import { memo, useMemo, useState, type ReactNode } from 'react'
 import ptt from 'parse-torrent-title'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { streamHost } from 'shared/api/hosts'
-import type { PlayableFile } from 'shared/api/types'
+import type { PlayableFile, TorrentFileStat } from 'shared/api/types'
+import { listViewedEntries, VIEWED_QUERY_KEY } from 'shared/api/viewed'
 import {
   gstreamerHeartbeatUrl,
   gstreamerMasterUrl,
@@ -12,6 +14,8 @@ import {
 } from 'shared/lib/gstreamer'
 import { useExternalPlayers } from 'shared/lib/externalPlayers'
 import { humanizeSize } from 'shared/lib/format'
+import { useSettingsQuery } from 'shared/hooks/useSettingsQuery'
+import { findCaptionSrc } from 'features/player/usePlayLauncher'
 
 import FileRowActions from './FileRowActions'
 
@@ -30,6 +34,8 @@ export interface FilesDataGridProps {
   selectedSeason?: number
   seasonAmount?: number[] | null
   hash: string
+  allFileStats?: TorrentFileStat[]
+  onViewedChange?: () => void
 }
 
 interface FileRow {
@@ -98,11 +104,41 @@ function EpisodeRow({ row, actions }: { row: FileRow; actions: ReactNode }) {
 }
 
 const FilesDataGrid = memo(
-  ({ playableFileList, viewedFileList, selectedSeason, seasonAmount, hash }: FilesDataGridProps) => {
+  ({
+    playableFileList,
+    viewedFileList,
+    selectedSeason,
+    seasonAmount,
+    hash,
+    allFileStats = [],
+    onViewedChange,
+  }: FilesDataGridProps) => {
     const { t } = useTranslation()
+    const queryClient = useQueryClient()
     const [unsupportedPlayerKeys, setUnsupportedPlayerKeys] = useState<Record<string, boolean>>({})
     const gstRuntime = useGStreamerRuntime()
     const { buildExternalPlayers, shouldShowOpenLink } = useExternalPlayers()
+    const { data: settings } = useSettingsQuery()
+    const trackTimecode = Boolean(settings?.TrackTimecode)
+
+    const { data: viewedEntries = [] } = useQuery({
+      queryKey: VIEWED_QUERY_KEY(hash),
+      queryFn: () => listViewedEntries(hash),
+      enabled: trackTimecode,
+    })
+
+    const timecodeByFile = useMemo(() => {
+      const map = new Map<number, number>()
+      for (const entry of viewedEntries) {
+        map.set(entry.file_index, entry.timecode ?? 0)
+      }
+      return map
+    }, [viewedEntries])
+
+    const notifyViewedChange = () => {
+      void queryClient.invalidateQueries({ queryKey: VIEWED_QUERY_KEY(hash) })
+      onViewedChange?.()
+    }
 
     const preloadBuffer = (fileId: number) => void fetch(`${streamHost()}?link=${hash}&index=${fileId}&preload`)
 
@@ -193,6 +229,14 @@ const FilesDataGrid = memo(
                 showOpenLink={shouldShowOpenLink}
                 copyText={row.fullLink}
                 externalPlayers={buildExternalPlayers(row.fullLink)}
+                hash={hash}
+                fileIndex={row.id}
+                captionSrc={
+                  findCaptionSrc({ id: row.id, path: row.path, length: row.size }, allFileStats, hash) || undefined
+                }
+                initialTimecode={timecodeByFile.get(row.id) ?? 0}
+                trackTimecode={trackTimecode}
+                onViewedChange={notifyViewedChange}
               />
             }
           />
@@ -205,7 +249,9 @@ const FilesDataGrid = memo(
     prev.selectedSeason === next.selectedSeason &&
     prev.playableFileList === next.playableFileList &&
     prev.viewedFileList === next.viewedFileList &&
-    prev.seasonAmount === next.seasonAmount,
+    prev.seasonAmount === next.seasonAmount &&
+    prev.allFileStats === next.allFileStats &&
+    prev.onViewedChange === next.onViewedChange,
 )
 
 export default FilesDataGrid

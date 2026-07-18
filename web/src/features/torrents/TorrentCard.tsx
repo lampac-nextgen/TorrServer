@@ -3,6 +3,7 @@ import { Chip, useMediaQuery } from '@heroui/react'
 import { ImageOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
+import { getPeerString, humanizeSize, humanizeSpeed } from 'shared/lib/format'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import { GETTING_INFO, PRELOAD, WORKING } from 'shared/torrent/states'
 
@@ -121,9 +122,15 @@ export default function TorrentCard({ torrent, onSelect, onEdit }: TorrentCardPr
         </div>
       </div>
 
-      <h3 className='line-clamp-2 px-0.5 text-sm font-semibold leading-snug text-foreground' title={title}>
-        {title}
-      </h3>
+      <div className='min-w-0 px-0.5'>
+        <h3 className='line-clamp-2 text-sm font-semibold leading-snug text-foreground' title={title}>
+          {title}
+        </h3>
+        <p className='mt-0.5 truncate text-xs tabular-nums text-muted' title={title}>
+          {humanizeSize(torrent.torrent_size)} · ↓{humanizeSpeed(torrent.download_speed)} ·{' '}
+          {getPeerString(torrent) ?? '—'}
+        </p>
+      </div>
     </article>
   )
 }

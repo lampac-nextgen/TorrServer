@@ -11,7 +11,7 @@ import {
   ToggleButtonGroup,
   useMediaQuery,
 } from '@heroui/react'
-import { ArrowDown, ArrowUp, SearchX } from 'lucide-react'
+import { AlertCircle, ArrowDown, ArrowUp, SearchX } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import axios, { isAxiosError } from 'axios'
 import { useTranslation } from 'react-i18next'
@@ -30,11 +30,7 @@ import { useOptionalAppToast } from 'shared/ui/Toast'
 
 import SearchResultsGrid from './SearchResultsGrid'
 import { beginSearchRequest, isCurrentSearch } from './searchRequest'
-import {
-  flattenTorznabCategories,
-  staticTorznabCategoryOptions,
-  type TorznabCategoryOption,
-} from './torznabCategories'
+import { flattenTorznabCategories, staticTorznabCategoryOptions, type TorznabCategoryOption } from './torznabCategories'
 
 export interface SearchDialogProps {
   open: boolean
@@ -101,6 +97,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
   const [loadingMore, setLoadingMore] = useState(false)
   const [capsCategories, setCapsCategories] = useState<TorznabCapsCategory[] | null>(null)
   const [capsLoading, setCapsLoading] = useState(false)
+  const [searchError, setSearchError] = useState<string | null>(null)
 
   const userSortedRef = useRef(false)
   const searchAbortRef = useRef<AbortController | null>(null)
@@ -112,11 +109,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
   const showAllTrackers = hasTorznab
   const showCategorySelect = hasTorznab && selectedTracker !== 'rutor'
   const showLoadMore =
-    !loading &&
-    hasMore &&
-    typeof selectedTracker === 'number' &&
-    selectedTracker >= 0 &&
-    results.length > 0
+    !loading && hasMore && typeof selectedTracker === 'number' && selectedTracker >= 0 && results.length > 0
 
   const categoryOptions: TorznabCategoryOption[] = useMemo(() => {
     const allLabel = t('Torznab.AllCategories')
@@ -201,6 +194,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
     else {
       setLoading(true)
       setSearched(true)
+      setSearchError(null)
       setResults([])
       setPageOffset(0)
       setHasMore(false)
@@ -272,7 +266,12 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
     } catch (err) {
       if (axios.isCancel(err) || (isAxiosError(err) && err.code === 'ERR_CANCELED')) return
       if (!isCurrentSearch(gen, searchGenRef.current, ac.signal)) return
-      toast?.showToast({ message: axiosErrorMessage(err, t('Torznab.SearchFailed')), severity: 'error' })
+      const message = axiosErrorMessage(err, t('Torznab.SearchFailed'))
+      if (!append) {
+        setResults([])
+        setSearchError(message)
+      }
+      toast?.showToast({ message, severity: 'error' })
     } finally {
       if (gen === searchGenRef.current) {
         if (append) setLoadingMore(false)
@@ -357,6 +356,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
   }, [results, sortField, sortDirection])
 
   const emptyMessage = (() => {
+    if (searchError) return null
     if (!settingsLoaded) return null
     if (!hasAnySource) {
       if (enableTorznab && trackers.length === 0) return t('Torznab.NoIndexersConfigured')
@@ -386,88 +386,88 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
     >
       <Modal.Header>
         <Modal.Heading>{t('Torznab.SearchTorrents')}</Modal.Heading>
-        <Modal.CloseTrigger />
+        <Modal.CloseTrigger aria-label={t('Close')} />
       </Modal.Header>
       <Modal.Body>
         <div className='sticky top-0 z-10 -mx-1 bg-surface px-1 pb-4 pt-1'>
           <div className='flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end'>
-          <Select
-            selectedKey={trackerKey}
-            onSelectionChange={key => {
-              const value = String(key)
-              setSelectedTracker(value === 'rutor' ? 'rutor' : Number(value))
-            }}
-            isDisabled={!hasAnySource}
-            className='sm:min-w-[180px]'
-          >
-            <Label>{t('Search.Tracker')}</Label>
-            <Select.Trigger>
-              <Select.Value />
-              <Select.Indicator />
-            </Select.Trigger>
-            <Select.Popover>
-              <ListBox>
-                {showAllTrackers ? <ListBox.Item id='-1'>{t('Search.AllTrackers')}</ListBox.Item> : null}
-                {hasRutor ? <ListBox.Item id='rutor'>{t('Search.Rutor')}</ListBox.Item> : null}
-                {hasTorznab
-                  ? trackers.map((tracker, index) => (
-                      <ListBox.Item key={`${tracker.Host}-${tracker.Key}`} id={String(index)}>
-                        {tracker.Name || tracker.Host}
-                      </ListBox.Item>
-                    ))
-                  : null}
-              </ListBox>
-            </Select.Popover>
-          </Select>
-
-          {showCategorySelect ? (
             <Select
-              selectedKey={category}
-              onSelectionChange={key => handleCategoryChange(String(key))}
-              isDisabled={!hasAnySource || capsLoading}
+              selectedKey={trackerKey}
+              onSelectionChange={key => {
+                const value = String(key)
+                setSelectedTracker(value === 'rutor' ? 'rutor' : Number(value))
+              }}
+              isDisabled={!hasAnySource}
               className='sm:min-w-[180px]'
             >
-              <Label>{t('Torznab.Category')}</Label>
+              <Label>{t('Search.Tracker')}</Label>
               <Select.Trigger>
                 <Select.Value />
                 <Select.Indicator />
               </Select.Trigger>
               <Select.Popover>
                 <ListBox>
-                  {categoryOptions.map(option => (
-                    <ListBox.Item key={option.id || 'all'} id={option.id}>
-                      <span style={option.indent ? { paddingLeft: `${option.indent * 1}rem` } : undefined}>
-                        {option.name}
-                      </span>
-                    </ListBox.Item>
-                  ))}
+                  {showAllTrackers ? <ListBox.Item id='-1'>{t('Search.AllTrackers')}</ListBox.Item> : null}
+                  {hasRutor ? <ListBox.Item id='rutor'>{t('Search.Rutor')}</ListBox.Item> : null}
+                  {hasTorznab
+                    ? trackers.map((tracker, index) => (
+                        <ListBox.Item key={`${tracker.Host}-${tracker.Key}`} id={String(index)}>
+                          {tracker.Name || tracker.Host}
+                        </ListBox.Item>
+                      ))
+                    : null}
                 </ListBox>
               </Select.Popover>
             </Select>
-          ) : null}
 
-          <TextField
-            value={query}
-            onChange={setQuery}
-            isDisabled={!hasAnySource}
-            className='flex-1'
-            onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
-              if (e.key === 'Enter') void handleSearch()
-            }}
-          >
-            <Label>{t('Search.QueryLabel')}</Label>
-            <Input placeholder={t('Torznab.SearchMoviesShows')} />
-          </TextField>
+            {showCategorySelect ? (
+              <Select
+                selectedKey={category}
+                onSelectionChange={key => handleCategoryChange(String(key))}
+                isDisabled={!hasAnySource || capsLoading}
+                className='sm:min-w-[180px]'
+              >
+                <Label>{t('Torznab.Category')}</Label>
+                <Select.Trigger>
+                  <Select.Value />
+                  <Select.Indicator />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    {categoryOptions.map(option => (
+                      <ListBox.Item key={option.id || 'all'} id={option.id}>
+                        <span style={option.indent ? { paddingLeft: `${option.indent * 1}rem` } : undefined}>
+                          {option.name}
+                        </span>
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
+              </Select>
+            ) : null}
 
-          <Button
-            variant='primary'
-            onPress={() => void handleSearch()}
-            isDisabled={loading || !hasAnySource || !query.trim()}
-            className={footerButtonClassName}
-          >
-            {loading ? <Spinner size='sm' color='current' /> : t('Search')}
-          </Button>
-        </div>
+            <TextField
+              value={query}
+              onChange={setQuery}
+              isDisabled={!hasAnySource}
+              className='flex-1'
+              onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
+                if (e.key === 'Enter') void handleSearch()
+              }}
+            >
+              <Label>{t('Search.QueryLabel')}</Label>
+              <Input placeholder={t('Torznab.SearchMoviesShows')} />
+            </TextField>
+
+            <Button
+              variant='primary'
+              onPress={() => void handleSearch()}
+              isDisabled={loading || !hasAnySource || !query.trim()}
+              className={footerButtonClassName}
+            >
+              {loading ? <Spinner size='sm' color='current' /> : t('Search')}
+            </Button>
+          </div>
         </div>
 
         {searched && sortedResults.length > 0 ? (
@@ -497,6 +497,16 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
           {loading ? (
             <div className='grid place-items-center py-16'>
               <Spinner size='lg' />
+            </div>
+          ) : null}
+
+          {!loading && searchError ? (
+            <div className='flex flex-col items-center gap-3 py-16 text-center'>
+              <AlertCircle className='size-8 text-danger' aria-hidden />
+              <p className='text-muted'>{searchError}</p>
+              <Button variant='primary' onPress={() => void runSearch()} className={footerButtonClassName}>
+                {t('Retry', { defaultValue: 'Retry' })}
+              </Button>
             </div>
           ) : null}
 

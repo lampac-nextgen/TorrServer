@@ -11,7 +11,7 @@ import {
   TextField,
   useMediaQuery,
 } from '@heroui/react'
-import { Check, UploadCloud } from 'lucide-react'
+import { UploadCloud } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useQueryClient } from '@tanstack/react-query'
@@ -33,6 +33,7 @@ import { DIALOG_SHEET_M } from 'shared/ui/dialogSizes'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
 import MultiAddDialog from './MultiAddDialog'
+import PosterPicker from './PosterPicker'
 
 export interface AddDialogProps {
   open: boolean
@@ -193,6 +194,8 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
     }
   }
 
+  const trimmedSource = source.trim()
+  const sourceInvalid = Boolean(trimmedSource) && !checkTorrentSource(trimmedSource)
   const footerButtonClassName = isMobile ? 'min-h-11 px-4' : undefined
 
   if (multiFiles) {
@@ -218,13 +221,24 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
     >
       <Modal.Header>
         <Modal.Heading>{t('AddNewTorrent')}</Modal.Heading>
-        <Modal.CloseTrigger />
+        <Modal.CloseTrigger aria-label={t('Close')} />
       </Modal.Header>
       <Modal.Body className='space-y-4'>
-        <TextField value={source} onChange={setSource} isInvalid={hashExists} isDisabled={saving}>
+        <TextField
+          value={source}
+          onChange={setSource}
+          isInvalid={hashExists || sourceInvalid}
+          isDisabled={saving}
+        >
           <Label>{t('AddDialog.TorrentSourceLink')}</Label>
           <TextArea rows={2} autoFocus />
-          <Description>{hashExists ? t('AddDialog.HashExists') : t('AddDialog.TorrentSourceOptions')}</Description>
+          <Description>
+            {hashExists
+              ? t('AddDialog.HashExists')
+              : sourceInvalid
+                ? t('AddDialog.WrongTorrentSource')
+                : t('AddDialog.TorrentSourceOptions')}
+          </Description>
         </TextField>
 
         <div
@@ -279,31 +293,13 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
               {t('AddDialog.AddPosterLinkInput')}
               {postersLoading ? '…' : ''}
             </Description>
-            {posterOptions.length > 0 ? (
-              <div className='mb-3 flex gap-2 overflow-x-auto pb-1'>
-                {posterOptions.map(url => {
-                  const selected = poster === url
-                  return (
-                    <button
-                      key={url}
-                      type='button'
-                      onClick={() => setPoster(url)}
-                      aria-pressed={selected}
-                      className={`relative h-24 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
-                        selected ? 'border-accent' : 'border-border hover:border-accent/50'
-                      }`}
-                    >
-                      <img src={url} alt='' className='h-full w-full object-cover' />
-                      {selected ? (
-                        <span className='absolute right-1 top-1 grid size-4 place-items-center rounded-full bg-accent text-accent-foreground'>
-                          <Check className='size-3' aria-hidden />
-                        </span>
-                      ) : null}
-                    </button>
-                  )
-                })}
-              </div>
-            ) : null}
+            <PosterPicker
+              poster={poster}
+              posterOptions={posterOptions}
+              onSelect={setPoster}
+              disabled={saving}
+              layout='scroll'
+            />
             <TextField value={poster} onChange={setPoster} isDisabled={saving}>
               <Label>{t('AddDialog.AddPosterLinkInput')}</Label>
               <Input />
@@ -318,7 +314,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
         <Button
           variant='primary'
           onPress={() => void handleAdd()}
-          isDisabled={saving || !source.trim() || hashExists}
+          isDisabled={saving || !trimmedSource || hashExists || sourceInvalid}
           className={footerButtonClassName}
         >
           {saving ? <Spinner size='sm' color='current' /> : t('Add')}

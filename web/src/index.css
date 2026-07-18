@@ -153,3 +153,26 @@ body[data-immersive='true'] .ts-bottom-nav {
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   }
 }
+
+/**
+ * HeroUI `.button svg` gets `-mx-0.5 my-0.5 sm:my-1` for text+icon rows.
+ * That margin pulls lucide icons off-center (top-left) in icon-only buttons.
+ * Unlayered so we beat HeroUI's `@layer` utilities; cover both breakpoints.
+ */
+.button--icon-only {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.button--icon-only svg:not([data-slot='spinner'] svg, [data-slot='link-icon'] svg) {
+  display: block;
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  .button--icon-only svg:not([data-slot='spinner'] svg, [data-slot='link-icon'] svg) {
+    margin: 0;
+  }
+}

@@ -49,6 +49,12 @@ function PanelFade({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)
   useGSAP(() => {
     if (!ref.current) return
+    const reduced =
+      typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduced) {
+      gsap.set(ref.current, { opacity: 1, y: 0 })
+      return
+    }
     gsap.fromTo(ref.current, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.22, ease: 'power2.out' })
   }, [])
   return <div ref={ref}>{children}</div>
@@ -220,7 +226,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
     >
       <Modal.Header>
         <Modal.Heading>{t('SettingsDialog.Settings')}</Modal.Heading>
-        <Modal.CloseTrigger />
+        <Modal.CloseTrigger aria-label={t('Close')} />
       </Modal.Header>
       <Modal.Body
         className={

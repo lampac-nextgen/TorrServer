@@ -10,6 +10,6 @@ export function useTorrentsQuery(options?: { enabled?: boolean }): UseQueryResul
     queryFn: getTorrents,
     retry: 1,
     enabled: options?.enabled ?? true,
-    refetchInterval: () => (document.hidden ? 5000 : 1000),
+    refetchInterval: () => (document.hidden ? 10_000 : 1000),
   })
 }

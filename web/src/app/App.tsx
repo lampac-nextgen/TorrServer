@@ -7,6 +7,7 @@ import { ModalOpenProvider } from 'shared/ui/ModalOpenContext'
 import { AppSnackbarProvider } from 'shared/ui/Toast'
 
 import Shell from './Shell'
+import PwaUpdateToast from 'features/pwa/PwaUpdateToast'
 
 /** One-time migration of the pre-rewrite `themeMode` localStorage key. */
 function migrateLegacyThemeKey() {
@@ -33,6 +34,7 @@ export default function App() {
     <ModalOpenProvider>
       <AppSnackbarProvider>
         <Shell />
+        <PwaUpdateToast />
         <Toaster
           richColors
           closeButton

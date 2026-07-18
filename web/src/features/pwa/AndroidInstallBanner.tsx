@@ -52,11 +52,7 @@ export default function AndroidInstallBanner() {
 
       <p className='mb-3 text-sm text-muted'>{t('PWAGuide.AndroidDescription')}</p>
 
-      <Button
-        variant='primary'
-        className='mb-1 min-h-11 w-full gap-2'
-        onPress={() => void promptInstall()}
-      >
+      <Button variant='primary' className='mb-1 min-h-11 w-full gap-2' onPress={() => void promptInstall()}>
         <Download className='size-4' aria-hidden />
         {t('PWAGuide.Install')}
       </Button>

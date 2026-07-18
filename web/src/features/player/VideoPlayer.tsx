@@ -12,8 +12,9 @@ import {
   useMediaQuery,
   useOverlayState,
 } from '@heroui/react'
-import { Captions, Maximize, Minimize, Pause, Play, Volume2, VolumeX, X } from 'lucide-react'
+import { Captions, Maximize, Minimize, Pause, Play, RotateCcw, RotateCw, Volume2, VolumeX, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { setViewedFile } from 'shared/api/viewed'
 import { queryMax } from 'shared/theme/breakpoints'
 import { useModalOpen, useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { iconBtn } from 'shared/ui/controlClasses'
@@ -31,6 +32,12 @@ export interface VideoPlayerProps {
   inlineTriggerPrimary?: boolean
   initiallyOpen?: boolean
   onClose?: () => void
+  captionSrc?: string
+  hash?: string
+  fileIndex?: number
+  initialTimecode?: number
+  trackTimecode?: boolean
+  onViewedChange?: () => void
 }
 
 interface SubtitleTrackInfo {
@@ -40,6 +47,9 @@ interface SubtitleTrackInfo {
 }
 
 const HEARTBEAT_INTERVAL_MS = 30_000
+const SEEK_STEP_SEC = 10
+const TIMECODE_SAVE_INTERVAL_MS = 5_000
+const TIMECODE_RESUME_MARGIN_SEC = 5
 
 function nativeMimeType(url: string): string {
   switch (url.split('?')[0].split('.').pop()?.toLowerCase()) {
@@ -81,6 +91,12 @@ export default function VideoPlayer({
   inlineTriggerPrimary = false,
   initiallyOpen = false,
   onClose,
+  captionSrc,
+  hash,
+  fileIndex,
+  initialTimecode = 0,
+  trackTimecode = false,
+  onViewedChange,
 }: VideoPlayerProps) {
   const { t } = useTranslation()
   const isMobile = useMediaQuery(queryMax('dialog'))
@@ -89,6 +105,9 @@ export default function VideoPlayer({
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const hlsInstanceRef = useRef<Hls | null>(null)
   const onNotSupportedRef = useRef(onNotSupported)
+  const lastTimecodeSaveRef = useRef(0)
+  const resumeAppliedRef = useRef(false)
+  const onViewedChangeRef = useRef(onViewedChange)
 
   const [open, setOpen] = useState(initiallyOpen)
   const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null)
@@ -104,12 +123,38 @@ export default function VideoPlayer({
   const [activeSubtitleTrack, setActiveSubtitleTrack] = useState(-1)
   const [subtitleMenuOpen, setSubtitleMenuOpen] = useState(false)
 
+  const shouldPersistTimecode = Boolean(hash && fileIndex != null && trackTimecode)
+
+  useEffect(() => {
+    onViewedChangeRef.current = onViewedChange
+  }, [onViewedChange])
+
+  const saveTimecode = useCallback(
+    async (time: number) => {
+      if (!shouldPersistTimecode || hash == null || fileIndex == null) return
+      try {
+        await setViewedFile(hash, fileIndex, time)
+        onViewedChangeRef.current?.()
+      } catch {
+        // ignore persistence errors — playback should continue
+      }
+    },
+    [fileIndex, hash, shouldPersistTimecode],
+  )
+
+  const flushTimecode = useCallback(() => {
+    const video = videoRef.current
+    if (!video || !shouldPersistTimecode) return
+    void saveTimecode(video.currentTime)
+  }, [saveTimecode, shouldPersistTimecode])
+
   const closePlayer = useCallback(() => {
+    flushTimecode()
     setOpen(false)
     setMediaError(false)
     setSubtitleMenuOpen(false)
     onClose?.()
-  }, [onClose])
+  }, [flushTimecode, onClose])
 
   const overlayState = useOverlayState({
     isOpen: open,
@@ -129,6 +174,13 @@ export default function VideoPlayer({
   useEffect(() => {
     onNotSupportedRef.current = onNotSupported
   }, [onNotSupported])
+
+  useEffect(() => {
+    if (!open) {
+      resumeAppliedRef.current = false
+      lastTimecodeSaveRef.current = 0
+    }
+  }, [open])
 
   // Hide the bottom-nav chrome behind the video on small screens.
   useEffect(() => {
@@ -224,21 +276,83 @@ export default function VideoPlayer({
     return () => document.removeEventListener('fullscreenchange', onFullscreenChange)
   }, [])
 
-  const togglePlayPause = () => {
+  const seekRelative = useCallback((deltaSec: number) => {
+    const video = videoRef.current
+    if (!video) return
+    const next = Math.min(Math.max(0, video.currentTime + deltaSec), video.duration || Infinity)
+    video.currentTime = next
+    setCurrentTime(next)
+  }, [])
+
+  const togglePlayPause = useCallback(() => {
     const video = videoRef.current
     if (!video) return
     if (video.paused) video.play()
     else video.pause()
-  }
+  }, [])
+
+  useEffect(() => {
+    if (!open) return undefined
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        (target instanceof HTMLElement && target.isContentEditable)
+      ) {
+        return
+      }
+
+      if (event.key === ' ' || event.code === 'Space') {
+        event.preventDefault()
+        togglePlayPause()
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault()
+        seekRelative(-SEEK_STEP_SEC)
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault()
+        seekRelative(SEEK_STEP_SEC)
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [open, seekRelative, togglePlayPause])
 
   const handleTimeUpdate = () => {
-    if (videoRef.current) setCurrentTime(videoRef.current.currentTime)
+    const video = videoRef.current
+    if (!video) return
+    setCurrentTime(video.currentTime)
+    if (!shouldPersistTimecode) return
+    const now = Date.now()
+    if (now - lastTimecodeSaveRef.current < TIMECODE_SAVE_INTERVAL_MS) return
+    lastTimecodeSaveRef.current = now
+    void saveTimecode(video.currentTime)
   }
 
   const handleLoadedMetadata = () => {
-    if (!videoRef.current) return
-    setDuration(videoRef.current.duration)
+    const video = videoRef.current
+    if (!video) return
+    const videoDuration = video.duration
+    setDuration(videoDuration)
     setLoading(false)
+    if (
+      !resumeAppliedRef.current &&
+      trackTimecode &&
+      initialTimecode > TIMECODE_RESUME_MARGIN_SEC &&
+      initialTimecode < videoDuration - TIMECODE_RESUME_MARGIN_SEC
+    ) {
+      video.currentTime = initialTimecode
+      setCurrentTime(initialTimecode)
+      resumeAppliedRef.current = true
+    }
+  }
+
+  const handlePause = () => {
+    setPlaying(false)
+    flushTimecode()
   }
 
   const handleSeek = (value: number | number[]) => {
@@ -343,10 +457,12 @@ export default function VideoPlayer({
                     onTimeUpdate={handleTimeUpdate}
                     onLoadedMetadata={handleLoadedMetadata}
                     onPlay={() => setPlaying(true)}
-                    onPause={() => setPlaying(false)}
+                    onPause={handlePause}
                     className='block w-full'
                     style={{ maxHeight: isMobile ? 'calc(100dvh - 180px)' : '70vh' }}
-                  />
+                  >
+                    {!hls && captionSrc ? <track kind='captions' src={captionSrc} default /> : null}
+                  </video>
                   {loading ? (
                     <div className='absolute inset-0 grid place-items-center bg-black/40'>
                       <Spinner size='lg' className='text-white' />
@@ -366,16 +482,41 @@ export default function VideoPlayer({
                 <div className='flex flex-wrap items-center gap-2'>
                   <Tooltip>
                     <Tooltip.Trigger>
-                      <Button
-                        isIconOnly
-                        variant='ghost'
-                        className={chromeIconBtn}
-                        onPress={togglePlayPause}
-                      >
+                      <Button isIconOnly variant='ghost' className={chromeIconBtn} onPress={togglePlayPause}>
                         {playing ? <Pause className='size-4' /> : <Play className='size-4' />}
                       </Button>
                     </Tooltip.Trigger>
                     <Tooltip.Content>{playing ? t('Pause') : t('Play')}</Tooltip.Content>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <Tooltip.Trigger>
+                      <Button
+                        isIconOnly
+                        variant='ghost'
+                        className={chromeIconBtn}
+                        aria-label={t('Rewind-10-Sec')}
+                        onPress={() => seekRelative(-SEEK_STEP_SEC)}
+                      >
+                        <RotateCcw className='size-4' />
+                      </Button>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>{t('Rewind-10-Sec')}</Tooltip.Content>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <Tooltip.Trigger>
+                      <Button
+                        isIconOnly
+                        variant='ghost'
+                        className={chromeIconBtn}
+                        aria-label={t('Forward-10-Sec')}
+                        onPress={() => seekRelative(SEEK_STEP_SEC)}
+                      >
+                        <RotateCw className='size-4' />
+                      </Button>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>{t('Forward-10-Sec')}</Tooltip.Content>
                   </Tooltip>
 
                   <span className='min-w-[100px] text-xs tabular-nums text-white/80'>
@@ -384,12 +525,7 @@ export default function VideoPlayer({
 
                   <Tooltip>
                     <Tooltip.Trigger>
-                      <Button
-                        isIconOnly
-                        variant='ghost'
-                        className={chromeIconBtn}
-                        onPress={toggleMute}
-                      >
+                      <Button isIconOnly variant='ghost' className={chromeIconBtn} onPress={toggleMute}>
                         {muted ? <VolumeX className='size-4' /> : <Volume2 className='size-4' />}
                       </Button>
                     </Tooltip.Trigger>

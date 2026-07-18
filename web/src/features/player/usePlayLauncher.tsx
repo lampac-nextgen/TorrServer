@@ -4,9 +4,12 @@ import { Button, Modal, useOverlayState } from '@heroui/react'
 import { Music2 } from 'lucide-react'
 import ptt from 'parse-torrent-title'
 import { useTranslation } from 'react-i18next'
-import type { PlayableFile, TorrentFileStat } from 'shared/api/types'
+import { useQueryClient } from '@tanstack/react-query'
+import type { BTSets, PlayableFile, TorrentFileStat } from 'shared/api/types'
 import { streamHost } from 'shared/api/hosts'
+import { SETTINGS_QUERY_KEY } from 'shared/api/settings'
 import { getTorrent } from 'shared/api/torrents'
+import { listViewedEntries, VIEWED_QUERY_KEY } from 'shared/api/viewed'
 import { humanizeSize } from 'shared/lib/format'
 import {
   gstreamerHeartbeatUrl,
@@ -31,6 +34,11 @@ interface ActivePlayer {
   title: string
   hls: boolean
   heartbeatSrc?: string
+  captionSrc?: string
+  hash: string
+  fileIndex: number
+  initialTimecode: number
+  trackTimecode: boolean
 }
 
 export const toPlayableFile = (file: TorrentFileStat): PlayableFile => ({
@@ -60,6 +68,21 @@ const audioTrackLabel = (track: ProbeTrack, index: number): string => {
 
 const fileBaseName = (path: string): string => path.split('\\').pop()?.split('/').pop() || path
 
+const fileStreamUrl = (hash: string, file: Pick<PlayableFile, 'id' | 'path'>): string =>
+  `${streamHost()}/${encodeURIComponent(fileBaseName(file.path))}?link=${hash}&index=${file.id}&play`
+
+export const findCaptionSrc = (file: PlayableFile, allFiles: TorrentFileStat[], hash: string): string => {
+  const base = file.path.replace(/\.[^/.]+$/, '')
+  const caption = allFiles.find(candidate => {
+    const path = candidate.path ?? candidate.Path ?? ''
+    const id = candidate.id ?? candidate.Id ?? -1
+    return id !== file.id && path.startsWith(base) && /\.(srt|vtt)$/i.test(path)
+  })
+  if (!caption) return ''
+  const captionFile = toPlayableFile(caption)
+  return fileStreamUrl(hash, captionFile)
+}
+
 /** Parses a file's episode code ("S01E03") and title from its path, falling back to the raw name. */
 const fileEpisodeInfo = (path: string, index: number): { code: string; title: string } => {
   const name = fileBaseName(path)
@@ -78,6 +101,7 @@ export interface UsePlayLauncherArgs {
   displayName: string
   /** Playable files already known from a loaded torrent detail — falls back to fetching the torrent if empty. */
   knownPlayableFiles: PlayableFile[]
+  onViewedChange?: () => void
 }
 
 /**
@@ -85,12 +109,14 @@ export interface UsePlayLauncherArgs {
  * tracks for GStreamer-backed files, and opens the video player. Shared between the grid card's
  * quick-play button and the details dialog so both stay in sync.
  */
-export function usePlayLauncher({ hash, displayName, knownPlayableFiles }: UsePlayLauncherArgs) {
+export function usePlayLauncher({ hash, displayName, knownPlayableFiles, onViewedChange }: UsePlayLauncherArgs) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
+  const queryClient = useQueryClient()
   const gstRuntime = useGStreamerRuntime()
   /** Per-file audio-track probe results, cached for the lifetime of this hook instance. */
   const audioProbeCache = useRef<Record<number, ProbeTrack[]>>({})
+  const allTorrentFilesRef = useRef<TorrentFileStat[]>([])
 
   const [playableFiles, setPlayableFiles] = useState<PlayableFile[]>([])
   const [audioTracks, setAudioTracks] = useState<ProbeTrack[]>([])
@@ -103,9 +129,32 @@ export function usePlayLauncher({ hash, displayName, knownPlayableFiles }: UsePl
 
   useSyncModalOpen(filePickerState.isOpen || audioPickerState.isOpen)
 
-  const openPlayer = (file: PlayableFile, audioIndex = 0) => {
+  const trackTimecode = Boolean(queryClient.getQueryData<BTSets>(SETTINGS_QUERY_KEY)?.TrackTimecode)
+
+  const notifyViewedChange = () => {
+    void queryClient.invalidateQueries({ queryKey: VIEWED_QUERY_KEY(hash) })
+    onViewedChange?.()
+  }
+
+  const ensureAllTorrentFiles = async (): Promise<TorrentFileStat[]> => {
+    if (allTorrentFilesRef.current.length) return allTorrentFilesRef.current
+    const detail = await getTorrent(hash)
+    allTorrentFilesRef.current = detail.file_stats || []
+    return allTorrentFilesRef.current
+  }
+
+  const resolveInitialTimecode = async (fileIndex: number): Promise<number> => {
+    if (!trackTimecode) return 0
+    const entries = await listViewedEntries(hash)
+    return entries.find(entry => entry.file_index === fileIndex)?.timecode ?? 0
+  }
+
+  const openPlayer = async (file: PlayableFile, audioIndex = 0) => {
     const useHls = shouldUseGStreamerPlayer(file.path, gstRuntime)
-    const directStream = `${streamHost()}/${encodeURIComponent(fileBaseName(file.path))}?link=${hash}&index=${file.id}&play`
+    const directStream = fileStreamUrl(hash, file)
+    const allFiles = await ensureAllTorrentFiles()
+    const captionSrc = findCaptionSrc(file, allFiles, hash)
+    const initialTimecode = await resolveInitialTimecode(file.id)
 
     setActivePlayer({
       src: useHls ? gstreamerMasterUrl(hash, file.id, audioIndex) : directStream,
@@ -113,6 +162,11 @@ export function usePlayLauncher({ hash, displayName, knownPlayableFiles }: UsePl
       title: fileBaseName(file.path) || displayName,
       hls: useHls,
       heartbeatSrc: useHls ? gstreamerHeartbeatUrl(hash) : undefined,
+      captionSrc: captionSrc || undefined,
+      hash,
+      fileIndex: file.id,
+      initialTimecode,
+      trackTimecode,
     })
     filePickerState.close()
     audioPickerState.close()
@@ -122,14 +176,14 @@ export function usePlayLauncher({ hash, displayName, knownPlayableFiles }: UsePl
   const resolveAndPlay = async (file: PlayableFile) => {
     const useHls = shouldUseGStreamerPlayer(file.path, gstRuntime)
     if (!useHls) {
-      openPlayer(file)
+      await openPlayer(file)
       return
     }
 
     const cachedTracks = audioProbeCache.current[file.id]
     if (cachedTracks !== undefined) {
       if (!cachedTracks.length) {
-        openPlayer(file, 0)
+        await openPlayer(file, 0)
         return
       }
       setPendingAudioFile(file)
@@ -144,14 +198,14 @@ export function usePlayLauncher({ hash, displayName, knownPlayableFiles }: UsePl
       const tracks = extractAudioTracks(data)
       audioProbeCache.current[file.id] = tracks
       if (!tracks.length) {
-        openPlayer(file, 0)
+        await openPlayer(file, 0)
         return
       }
       setPendingAudioFile(file)
       setAudioTracks(tracks)
       audioPickerState.open()
     } catch {
-      openPlayer(file, 0)
+      await openPlayer(file, 0)
     } finally {
       setResolvingAudio(false)
     }
@@ -162,7 +216,10 @@ export function usePlayLauncher({ hash, displayName, knownPlayableFiles }: UsePl
       let candidates = knownPlayableFiles
       if (!candidates.length) {
         const detail = await getTorrent(hash)
-        candidates = (detail.file_stats || []).map(toPlayableFile).filter(file => isFilePlayable(file.path))
+        allTorrentFilesRef.current = detail.file_stats || []
+        candidates = allTorrentFilesRef.current.map(toPlayableFile).filter(file => isFilePlayable(file.path))
+      } else if (!allTorrentFilesRef.current.length) {
+        await ensureAllTorrentFiles()
       }
       if (!candidates.length) {
         toast?.showToast({ message: t('NoPlayableFiles'), severity: 'info' })
@@ -228,7 +285,7 @@ export function usePlayLauncher({ hash, displayName, knownPlayableFiles }: UsePl
                       key={index}
                       variant='ghost'
                       className='justify-start gap-2'
-                      onPress={() => pendingAudioFile && openPlayer(pendingAudioFile, index)}
+                      onPress={() => pendingAudioFile && void openPlayer(pendingAudioFile, index)}
                     >
                       <Music2 size={16} />
                       {audioTrackLabel(track, index)}
@@ -250,6 +307,12 @@ export function usePlayLauncher({ hash, displayName, knownPlayableFiles }: UsePl
               downloadSrc={activePlayer.downloadSrc}
               hls={activePlayer.hls}
               heartbeatSrc={activePlayer.heartbeatSrc}
+              captionSrc={activePlayer.captionSrc}
+              hash={activePlayer.hash}
+              fileIndex={activePlayer.fileIndex}
+              initialTimecode={activePlayer.initialTimecode}
+              trackTimecode={activePlayer.trackTimecode}
+              onViewedChange={notifyViewedChange}
               onClose={() => setActivePlayer(null)}
             />
           </Suspense>

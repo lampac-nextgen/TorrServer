@@ -24,9 +24,16 @@ export interface FileRowActionsProps {
   showOpenLink?: boolean
   copyText: string
   externalPlayers: ExternalPlayerLink[]
+  hash?: string
+  fileIndex?: number
+  captionSrc?: string
+  initialTimecode?: number
+  trackTimecode?: boolean
+  onViewedChange?: () => void
 }
 
-const iconBtn = 'min-h-10 min-w-10 shrink-0'
+const iconBtn =
+  'inline-flex min-h-10 min-w-10 shrink-0 items-center justify-center p-0 [&_svg]:m-0 [&_svg]:block'
 const playerBtn = 'min-h-10 shrink-0 px-2.5 font-medium'
 
 /**
@@ -46,6 +53,12 @@ export default function FileRowActions({
   showOpenLink,
   copyText,
   externalPlayers,
+  hash,
+  fileIndex,
+  captionSrc,
+  initialTimecode = 0,
+  trackTimecode = false,
+  onViewedChange,
 }: FileRowActionsProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
@@ -79,6 +92,12 @@ export default function FileRowActions({
             onNotSupported={onPlayerNotSupported}
             inlineTrigger
             inlineTriggerPrimary
+            hash={hash}
+            fileIndex={fileIndex}
+            captionSrc={captionSrc}
+            initialTimecode={initialTimecode}
+            trackTimecode={trackTimecode}
+            onViewedChange={onViewedChange}
           />
         </Suspense>
       ) : showOpenLink && openLinkHref ? (

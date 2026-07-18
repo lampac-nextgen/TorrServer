@@ -37,7 +37,7 @@
   "Close": "Închide",
   "CloseServer?": "Doriți să opriți serverul?",
   "CloseServer": "Oprire",
-  "CopyHash": "Copiați Magnetul",
+  "CopyHash": "Copiază hash",
   "CopyLink": "Copiați Link-ul",
   "Data": "Date",
   "DebugMode": "Descărcați prioritățile",
@@ -84,6 +84,7 @@
   "NasReleases": "Lansări pentru NAS",
   "None": "Nimic",
   "NoTorrentsAdded": "Nu s-au adăugat torrente",
+  "NoServerConnection": "Fără conexiune la server",
   "Offline": "Offline",
   "OK": "OK",
   "OpenLink": "Deschide link-ul",
@@ -122,7 +123,11 @@
   },
   "Releases": "Lansări TorrServer",
   "RemoveAll": "Ștergeți tot",
+  "Retry": "Reîncearcă",
   "RemoveViews": "Șterge starea de vizualizare",
+  "Reload": "Reîncarcă",
+  "SomethingWentWrong": "Ceva nu a mers bine",
+  "UnexpectedError": "Eroare neașteptată",
   "Resolution": "Rezoluție",
   "Save": "Salvați",
   "Saved": "Salvat",
@@ -365,7 +370,10 @@
     "ImageURLHint": "URL de bază pentru imaginile TMDB. Sursele imaginilor sunt adăugate automat (implicit: https://image.tmdb.org)",
     "ImageURLRu": "URL imagine TMDB (Rusia)",
     "ImageURLRuHint": "URL alternativ de imagine pentru utilizatorii ruși. Sursele imaginilor sunt adăugate automat (implicit: https://imagetmdb.com)",
-    "APIKeyPlaceholder": "Introdu cheia API TMDB"
+    "APIKeyPlaceholder": "Introdu cheia API TMDB",
+    "APIURLPlaceholder": "https://api.themoviedb.org/3",
+    "ImageURLPlaceholder": "https://image.tmdb.org",
+    "ImageURLRuPlaceholder": "https://imagetmdb.com"
   },
   "TurnOff": "Oprire",
   "Uncategorized": "Necategorizat",
@@ -380,6 +388,7 @@
   "ConfirmRemoveAll": "Toate torrentele vor fi șterse definitiv din baza de date. Acțiunea este ireversibilă.",
   "ConfirmRemoveViews": "Ștergeți toate marcajele vizionate?",
   "SnakeFocusRange": "piese {{start}}–{{end}}",
+  "SnakeCacheSummary": "{{filled}} din {{capacity}} în cache",
   "SnakeTooltipBucket": "piese {{start}}–{{end}} · {{fill}}%",
   "SnakeTooltipPiece": "piesă #{{id}} · {{fill}}%",
   "HTTPS": "HTTPS",
@@ -404,5 +413,6 @@
   "Search.AllTrackers": "Toate trackerele",
   "Search.Seeders": "Seederi",
   "Search.Peers": "Peeri",
-  "Search.Rutor": "RuTor"
+  "Search.Rutor": "RuTor",
+  "CopyMagnet": "Copiază Magnet"
 }

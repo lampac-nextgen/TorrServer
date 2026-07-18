@@ -1,5 +1,5 @@
 import { Button, Input, Label, ListBox, Modal, Select, Spinner, TextField, useMediaQuery } from '@heroui/react'
-import { Check, Film } from 'lucide-react'
+import { Film } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
@@ -12,6 +12,8 @@ import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import AppDialog from 'shared/ui/AppDialog'
 import { DIALOG_SHEET_M } from 'shared/ui/dialogSizes'
 import { useOptionalAppToast } from 'shared/ui/Toast'
+
+import PosterPicker from './PosterPicker'
 
 export interface EditTorrentDialogProps {
   torrent: TorrentStat | null
@@ -101,7 +103,7 @@ export default function EditTorrentDialog({ torrent, open, onClose }: EditTorren
     >
       <Modal.Header>
         <Modal.Heading>{t('EditTorrent')}</Modal.Heading>
-        <Modal.CloseTrigger />
+        <Modal.CloseTrigger aria-label={t('Close')} />
       </Modal.Header>
       <Modal.Body className='space-y-4'>
         <p className='truncate font-mono text-xs text-muted'>{torrent?.hash}</p>
@@ -145,30 +147,13 @@ export default function EditTorrentDialog({ torrent, open, onClose }: EditTorren
               {t('AddDialog.AddPosterLinkInput')}
               {postersLoading ? '…' : ''}
             </p>
-            <div className='flex flex-wrap gap-2'>
-              {posterOptions.map(url => {
-                const selected = poster === url
-                return (
-                  <button
-                    key={url}
-                    type='button'
-                    onClick={() => setPoster(url)}
-                    aria-pressed={selected}
-                    disabled={saving}
-                    className={`relative h-[108px] w-[72px] overflow-hidden rounded-lg border-2 transition-colors ${
-                      selected ? 'border-accent' : 'border-border hover:border-accent/50'
-                    }`}
-                  >
-                    <img src={url} alt='' className='h-full w-full object-cover' />
-                    {selected ? (
-                      <span className='absolute right-1 top-1 grid size-4 place-items-center rounded-full bg-accent text-accent-foreground'>
-                        <Check className='size-3' aria-hidden />
-                      </span>
-                    ) : null}
-                  </button>
-                )
-              })}
-            </div>
+            <PosterPicker
+              poster={poster}
+              posterOptions={posterOptions}
+              onSelect={setPoster}
+              disabled={saving}
+              layout='wrap'
+            />
           </div>
         ) : null}
       </Modal.Body>

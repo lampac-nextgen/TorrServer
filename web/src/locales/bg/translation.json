@@ -37,7 +37,7 @@
   "Close": "Затвори",
   "CloseServer?": "Искате ли да изключите сървъра?",
   "CloseServer": "Изключи",
-  "CopyHash": "Копиране магнит",
+  "CopyHash": "Копиране на хеш",
   "CopyLink": "Копиране линк",
   "Data": "Данни",
   "DebugMode": "Приоритети при изтегляне",
@@ -84,6 +84,7 @@
   "NasReleases": "NAS издания",
   "None": "Нито един",
   "NoTorrentsAdded": "Няма добавени торенти",
+  "NoServerConnection": "Няма връзка със сървъра",
   "Offline": "Извън линия",
   "OK": "OK",
   "OpenLink": "Отвори линк",
@@ -122,7 +123,11 @@
   },
   "Releases": "TorrServer издания",
   "RemoveAll": "Премахнете всички",
+  "Retry": "Повтори",
   "RemoveViews": "Премахни подробности за прегледите",
+  "Reload": "Презареди",
+  "SomethingWentWrong": "Нещо се обърка",
+  "UnexpectedError": "Неочаквана грешка",
   "Resolution": "Резолюция",
   "Save": "Запис",
   "Saved": "Запазено",
@@ -362,7 +367,10 @@
     "ImageURLHint": "Базов URL за TMDB изображения. Пътищата на изображенията се добавят автоматично (по подразбиране: https://image.tmdb.org)",
     "ImageURLRu": "TMDB Изображение URL (Русия)",
     "ImageURLRuHint": "Алтернативен URL за изображения за руски потребители. Пътищата на изображенията се добавят автоматично (по подразбиране: https://imagetmdb.com)",
-    "APIKeyPlaceholder": "Въведете вашия TMDB API ключ"
+    "APIKeyPlaceholder": "Въведете вашия TMDB API ключ",
+    "APIURLPlaceholder": "https://api.themoviedb.org/3",
+    "ImageURLPlaceholder": "https://image.tmdb.org",
+    "ImageURLRuPlaceholder": "https://imagetmdb.com"
   },
   "TurnOff": "Изключване",
   "Uncategorized": "Некатегоризиран",
@@ -377,6 +385,7 @@
   "ConfirmRemoveAll": "Всички торенти ще бъдат окончателно изтрити от базата данни. Действието е необратимо.",
   "ConfirmRemoveViews": "Изчистване на всички маркери за преглед?",
   "SnakeFocusRange": "блокове {{start}}–{{end}}",
+  "SnakeCacheSummary": "{{filled}} от {{capacity}} в кеша",
   "SnakeTooltipBucket": "блокове {{start}}–{{end}} · {{fill}}%",
   "SnakeTooltipPiece": "блок #{{id}} · {{fill}}%",
   "HTTPS": "HTTPS",
@@ -401,5 +410,6 @@
   "Search.AllTrackers": "Всички тракери",
   "Search.Seeders": "Сийдъри",
   "Search.Peers": "Пирс",
-  "Search.Rutor": "RuTor"
+  "Search.Rutor": "RuTor",
+  "CopyMagnet": "Копиране на Magnet"
 }

@@ -24,7 +24,7 @@ export default function CloseServerDialog({ open, onClose }: CloseServerDialogPr
           <Power className='size-5' aria-hidden />
         </Modal.Icon>
         <Modal.Heading>{t('CloseServer?')}</Modal.Heading>
-        <Modal.CloseTrigger />
+        <Modal.CloseTrigger aria-label={t('Close')} />
       </Modal.Header>
       <Modal.Body>{t('ConfirmCloseServer')}</Modal.Body>
       <Modal.Footer>

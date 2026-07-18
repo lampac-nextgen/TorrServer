@@ -9,7 +9,7 @@ import {
   useOverlayState,
 } from '@heroui/react'
 import { Pencil, X } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import ptt from 'parse-torrent-title'
 import { useTranslation } from 'react-i18next'
 import type { PlayableFile, TorrentFileStat, TorrentStat } from 'shared/api/types'
@@ -100,10 +100,8 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
   const [viewedFileList, setViewedFileList] = useState<number[] | undefined>()
   const [seasonList, setSeasonList] = useState<number[] | null>(null)
   const [selectedSeason, setSelectedSeason] = useState<number | undefined>()
-  const [isDetailedCacheView, setIsDetailedCacheView] = useState(false)
   const [isSnakeDebugMode, setIsSnakeDebugMode] = useLocalBoolPref('isSnakeDebugMode')
 
-  const cache = useUpdateCache(hash)
   const {
     poster,
     title,
@@ -124,6 +122,10 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
 
   // Multi-file / series: default to Content so Play / Copy / external players are visible up front.
   const resolvedTab: DetailsTab = activeTab ?? (playableFileList.length > 1 ? 'files' : 'overview')
+
+  const cache = useUpdateCache(hash, {
+    fast: resolvedTab === 'overview' || resolvedTab === 'cache',
+  })
 
   useEffect(() => {
     if (playableFileList && seasonList === null) {
@@ -146,6 +148,10 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
     return () => {
       cancelled = true
     }
+  }, [hash])
+
+  const refreshViewed = useCallback(async () => {
+    setViewedFileList(await listViewedFiles(hash))
   }, [hash])
 
   const statusLabel = (value?: number) => {
@@ -176,7 +182,13 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
             <Modal.Header className='flex items-center gap-2'>
               <Modal.Heading className='min-w-0 flex-1 truncate'>{t('TorrentDetails')}</Modal.Heading>
               {onEdit ? (
-                <Button isIconOnly variant='ghost' className={iconBtn} aria-label={t('EditTorrent')} onPress={() => onEdit(torrent)}>
+                <Button
+                  isIconOnly
+                  variant='ghost'
+                  className={iconBtn}
+                  aria-label={t('EditTorrent')}
+                  onPress={() => onEdit(torrent)}
+                >
                   <Pencil className='size-4' />
                 </Button>
               ) : null}
@@ -233,14 +245,7 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                   <div className='rounded-xl border border-border bg-surface-secondary p-4'>
                     <div className='mb-3 flex items-center justify-between gap-2'>
                       <p className='text-sm font-semibold text-muted'>{t('Cache')}</p>
-                      <Button
-                        size='sm'
-                        variant='ghost'
-                        onPress={() => {
-                          setIsDetailedCacheView(true)
-                          setActiveTab('cache')
-                        }}
-                      >
+                      <Button size='sm' variant='ghost' onPress={() => setActiveTab('cache')}>
                         {t('DetailedCacheView.button')}
                       </Button>
                     </div>
@@ -254,6 +259,7 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                     playableFileList={playableFileList}
                     viewedFileList={viewedFileList}
                     setViewedFileList={setViewedFileList}
+                    onViewedChange={refreshViewed}
                     onDropped={onClose}
                     onShowFiles={() => setActiveTab('files')}
                   />
@@ -291,6 +297,8 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                           viewedFileList={viewedFileList}
                           selectedSeason={selectedSeason}
                           seasonAmount={seasonList}
+                          allFileStats={fileStats}
+                          onViewedChange={refreshViewed}
                         />
                       </>
                     )}
@@ -300,34 +308,17 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                 <Tabs.Panel id='cache' className='space-y-4 pt-4'>
                   <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
                     <p className='text-sm font-semibold text-muted'>{t('Cache')}</p>
-                    <div className='flex flex-wrap items-center gap-3'>
-                      <Button
-                        size='sm'
-                        variant={isDetailedCacheView ? 'primary' : 'secondary'}
-                        onPress={() => setIsDetailedCacheView(current => !current)}
-                      >
-                        {isDetailedCacheView
-                          ? t('CacheViewCompact', { defaultValue: 'Compact' })
-                          : t('DetailedCacheView.button')}
-                      </Button>
-                      {isDetailedCacheView ? (
-                        <Checkbox isSelected={isSnakeDebugMode} onChange={setIsSnakeDebugMode}>
-                          <Checkbox.Content>
-                            <Checkbox.Control>
-                              <Checkbox.Indicator />
-                            </Checkbox.Control>
-                            {t('SnakeDebug', { defaultValue: 'Debug pieces' })}
-                          </Checkbox.Content>
-                        </Checkbox>
-                      ) : null}
-                    </div>
+                    <Checkbox isSelected={isSnakeDebugMode} onChange={setIsSnakeDebugMode}>
+                      <Checkbox.Content>
+                        <Checkbox.Control>
+                          <Checkbox.Indicator />
+                        </Checkbox.Control>
+                        {t('SnakeDebug', { defaultValue: 'Debug pieces' })}
+                      </Checkbox.Content>
+                    </Checkbox>
                   </div>
 
-                  <TorrentCache
-                    cache={cache}
-                    mode={isDetailedCacheView ? 'detailed' : 'mini'}
-                    isSnakeDebugMode={isSnakeDebugMode}
-                  />
+                  <TorrentCache cache={cache} mode='detailed' isSnakeDebugMode={isSnakeDebugMode} />
                 </Tabs.Panel>
               </Tabs.Root>
             </Modal.Body>

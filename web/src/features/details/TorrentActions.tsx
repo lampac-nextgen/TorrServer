@@ -1,6 +1,6 @@
 import { useMemo, memo, useState } from 'react'
 import { Button, ButtonGroup, Modal, Separator, useOverlayState } from '@heroui/react'
-import { EyeOff, ExternalLink, ListVideo, Loader2, Magnet, Play, Settings, Trash2, Copy } from 'lucide-react'
+import { EyeOff, ExternalLink, Hash, ListVideo, Loader2, Magnet, Play, Settings, Trash2, Copy } from 'lucide-react'
 import ptt from 'parse-torrent-title'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
@@ -20,6 +20,7 @@ export interface TorrentActionsProps {
   name?: string
   title?: string
   setViewedFileList: (list?: number[]) => void
+  onViewedChange?: () => void
   onDropped?: () => void
   onShowFiles?: () => void
 }
@@ -33,6 +34,7 @@ function TorrentActions({
   name,
   title,
   setViewedFileList,
+  onViewedChange,
   onDropped,
   onShowFiles,
 }: TorrentActionsProps) {
@@ -61,6 +63,7 @@ function TorrentActions({
     hash,
     displayName,
     knownPlayableFiles: playableFileList || [],
+    onViewedChange,
   })
 
   /** Only offer app deep links when there's exactly one obvious file to hand off — otherwise Play's file picker covers it. */
@@ -98,6 +101,15 @@ function TorrentActions({
   const copyMagnetLink = async () => {
     try {
       await navigator.clipboard.writeText(magnetLink)
+      toast?.showToast({ message: t('Copied'), severity: 'success' })
+    } catch {
+      toast?.showToast({ message: t('Error'), severity: 'error' })
+    }
+  }
+
+  const copyInfoHash = async () => {
+    try {
+      await navigator.clipboard.writeText(hash)
       toast?.showToast({ message: t('Copied'), severity: 'success' })
     } catch {
       toast?.showToast({ message: t('Error'), severity: 'error' })
@@ -215,6 +227,10 @@ function TorrentActions({
           ) : null}
           <Button variant='secondary' onPress={() => void copyMagnetLink()}>
             <Magnet className='size-4' aria-hidden />
+            {t('CopyMagnet')}
+          </Button>
+          <Button variant='secondary' onPress={() => void copyInfoHash()}>
+            <Hash className='size-4' aria-hidden />
             {t('CopyHash')}
           </Button>
         </div>

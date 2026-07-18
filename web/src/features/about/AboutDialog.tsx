@@ -50,7 +50,7 @@ export default function AboutDialog({ open, onClose }: AboutDialogProps) {
     >
       <Modal.Header>
         <Modal.Heading>{t('About')}</Modal.Heading>
-        <Modal.CloseTrigger />
+        <Modal.CloseTrigger aria-label={t('Close')} />
       </Modal.Header>
       <Modal.Body>
         <div className='flex flex-col items-center gap-3 pb-2 pt-1 text-center'>

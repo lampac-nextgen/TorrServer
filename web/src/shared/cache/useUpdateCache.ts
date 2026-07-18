@@ -44,7 +44,16 @@ const cacheVisualEqual = (a: TorrentCache, b: TorrentCache) =>
   readersFingerprint(a.Readers) === readersFingerprint(b.Readers) &&
   piecesFingerprint(a.Pieces) === piecesFingerprint(b.Pieces)
 
-export const useUpdateCache = (hash?: string) => {
+export interface UseUpdateCacheOptions {
+  /** When false, polling stops. Defaults to true when hash is set. */
+  enabled?: boolean
+  /** When false, never uses the 100ms active cadence (idle/slow only). Default true. */
+  fast?: boolean
+}
+
+export const useUpdateCache = (hash?: string, options?: UseUpdateCacheOptions) => {
+  const enabled = options?.enabled ?? true
+  const fast = options?.fast ?? true
   const [cache, setCache] = useState<TorrentCache>({})
   const componentIsMounted = useRef(true)
   const timerID = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -61,12 +70,13 @@ export const useUpdateCache = (hash?: string) => {
   )
 
   useEffect(() => {
-    if (!hash) {
+    if (!hash || !enabled) {
       if (timerID.current) clearTimeout(timerID.current)
       return undefined
     }
 
     let cancelled = false
+    pollMs.current = fast ? CACHE_POLL_ACTIVE_MS : CACHE_POLL_IDLE_MS
 
     const scheduleNext = () => {
       if (cancelled) return
@@ -83,13 +93,13 @@ export const useUpdateCache = (hash?: string) => {
           if (!componentIsMounted.current || cancelled) return
           const next = (data || {}) as TorrentCache
           if (cacheVisualEqual(cacheRef.current, next)) {
-            if (Date.now() - lastChangeAt.current >= CACHE_IDLE_AFTER_MS) {
+            if (fast && Date.now() - lastChangeAt.current >= CACHE_IDLE_AFTER_MS) {
               pollMs.current = CACHE_POLL_IDLE_MS
             }
             return
           }
           lastChangeAt.current = Date.now()
-          pollMs.current = CACHE_POLL_ACTIVE_MS
+          pollMs.current = fast ? CACHE_POLL_ACTIVE_MS : CACHE_POLL_IDLE_MS
           cacheRef.current = next
           setCache(next)
         })
@@ -97,7 +107,7 @@ export const useUpdateCache = (hash?: string) => {
           if (!componentIsMounted.current || cancelled) return
           if (cacheVisualEqual(cacheRef.current, {})) return
           lastChangeAt.current = Date.now()
-          pollMs.current = CACHE_POLL_ACTIVE_MS
+          pollMs.current = fast ? CACHE_POLL_ACTIVE_MS : CACHE_POLL_IDLE_MS
           cacheRef.current = {}
           setCache({})
         })
@@ -114,7 +124,7 @@ export const useUpdateCache = (hash?: string) => {
         if (timerID.current) clearTimeout(timerID.current)
         return
       }
-      pollMs.current = CACHE_POLL_ACTIVE_MS
+      pollMs.current = fast ? CACHE_POLL_ACTIVE_MS : CACHE_POLL_IDLE_MS
       fetchCache()
     }
     document.addEventListener('visibilitychange', onVisibility)
@@ -124,7 +134,7 @@ export const useUpdateCache = (hash?: string) => {
       if (timerID.current) clearTimeout(timerID.current)
       document.removeEventListener('visibilitychange', onVisibility)
     }
-  }, [hash])
+  }, [hash, enabled, fast])
 
   return cache
 }

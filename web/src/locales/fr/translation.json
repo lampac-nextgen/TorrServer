@@ -37,7 +37,7 @@
   "Close": "Fermer",
   "CloseServer?": "Voulez-vous éteindre le serveur ?",
   "CloseServer": "Éteindre",
-  "CopyHash": "Copier le Magnet",
+  "CopyHash": "Copier le hash",
   "CopyLink": "Copier le lien",
   "Data": "Données",
   "DebugMode": "Priorités de téléchargement",
@@ -84,6 +84,7 @@
   "NasReleases": "Versions NAS",
   "None": "Aucun",
   "NoTorrentsAdded": "Aucun torrent ajouté",
+  "NoServerConnection": "Pas de connexion au serveur",
   "Offline": "Hors ligne",
   "OK": "OK",
   "OpenLink": "Ouvrir le lien",
@@ -122,7 +123,11 @@
   },
   "Releases": "Versions de TorrServer",
   "RemoveAll": "Tout supprimer",
+  "Retry": "Réessayer",
   "RemoveViews": "Supprimer les états de visualisation",
+  "Reload": "Recharger",
+  "SomethingWentWrong": "Une erreur s'est produite",
+  "UnexpectedError": "Erreur inattendue",
   "Resolution": "Résolution",
   "Save": "Enregistrer",
   "Saved": "Enregistré",
@@ -364,7 +369,10 @@
     "ImageURLHint": "URL de base pour les images TMDB. Les chemins d'image sont ajoutés automatiquement (par défaut : https://image.tmdb.org)",
     "ImageURLRu": "URL d'image TMDB (Russie)",
     "ImageURLRuHint": "URL d'image alternative pour les utilisateurs russes. Les chemins d'image sont ajoutés automatiquement (par défaut : https://imagetmdb.com)",
-    "APIKeyPlaceholder": "Entrez votre clé API TMDB"
+    "APIKeyPlaceholder": "Entrez votre clé API TMDB",
+    "APIURLPlaceholder": "https://api.themoviedb.org/3",
+    "ImageURLPlaceholder": "https://image.tmdb.org",
+    "ImageURLRuPlaceholder": "https://imagetmdb.com"
   },
   "TurnOff": "Éteindre",
   "Uncategorized": "Non catégorisé",
@@ -379,6 +387,7 @@
   "ConfirmRemoveAll": "Tous les torrents seront définitivement supprimés de la base de données. Action irréversible.",
   "ConfirmRemoveViews": "Effacer tous les marqueurs de visionnage ?",
   "SnakeFocusRange": "pièces {{start}}–{{end}}",
+  "SnakeCacheSummary": "{{filled}} sur {{capacity}} en cache",
   "SnakeTooltipBucket": "pièces {{start}}–{{end}} · {{fill}}%",
   "SnakeTooltipPiece": "pièce #{{id}} · {{fill}}%",
   "HTTPS": "HTTPS",
@@ -403,5 +412,6 @@
   "Search.AllTrackers": "Tous les trackers",
   "Search.Seeders": "Sources",
   "Search.Peers": "Pairs",
-  "Search.Rutor": "RuTor"
+  "Search.Rutor": "RuTor",
+  "CopyMagnet": "Copier le Magnet"
 }

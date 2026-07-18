@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { Button } from '@heroui/react'
+import i18n from 'shared/i18n'
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -15,7 +16,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
   state: ErrorBoundaryState = { hasError: false }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, message: error?.message || 'Unexpected error' }
+    return { hasError: true, message: error?.message || i18n.t('UnexpectedError') }
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
@@ -31,10 +32,10 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
 
     return (
       <div className='grid min-h-dvh place-items-center gap-4 bg-background p-6 text-center'>
-        <h1 className='m-0 text-2xl font-semibold text-foreground'>Something went wrong</h1>
+        <h1 className='m-0 text-2xl font-semibold text-foreground'>{i18n.t('SomethingWentWrong')}</h1>
         {this.state.message ? <p className='m-0 max-w-md text-sm text-muted'>{this.state.message}</p> : null}
         <Button variant='primary' onPress={this.handleReload}>
-          Reload
+          {i18n.t('Reload')}
         </Button>
       </div>
     )

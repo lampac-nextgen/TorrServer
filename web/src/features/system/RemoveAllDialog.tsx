@@ -32,7 +32,7 @@ export default function RemoveAllDialog({ open, onClose }: RemoveAllDialogProps)
           <Trash2 className='size-5' aria-hidden />
         </Modal.Icon>
         <Modal.Heading>{t('DeleteTorrents?')}</Modal.Heading>
-        <Modal.CloseTrigger />
+        <Modal.CloseTrigger aria-label={t('Close')} />
       </Modal.Header>
       <Modal.Body>{t('ConfirmRemoveAll')}</Modal.Body>
       <Modal.Footer>

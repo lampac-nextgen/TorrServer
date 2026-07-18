@@ -37,7 +37,7 @@
   "Close": "Закрити",
   "CloseServer?": "Хочете вимкнути сервер?",
   "CloseServer": "Вимк. сервер",
-  "CopyHash": "Скопіювати Magnet",
+  "CopyHash": "Скопіювати хеш",
   "CopyLink": "Копіювати",
   "Data": "Дані",
   "DebugMode": "Мітки пріоритетів",
@@ -84,6 +84,7 @@
   "NasReleases": "Релізи для NAS",
   "None": "Жодного",
   "NoTorrentsAdded": "Немає торентів",
+  "NoServerConnection": "Немає з'єднання з сервером",
   "Offline": "Сервер не доступний",
   "OK": "OK",
   "OpenLink": "Відкрити",
@@ -122,7 +123,11 @@
   },
   "Releases": "Релізи TorrServer",
   "RemoveAll": "Видалити все",
+  "Retry": "Повторити",
   "RemoveViews": "Видалити перегляди",
+  "Reload": "Перезавантажити",
+  "SomethingWentWrong": "Щось пішло не так",
+  "UnexpectedError": "Несподівана помилка",
   "Resolution": "Дозволи",
   "Save": "Зберегти",
   "Saved": "Збережено",
@@ -362,7 +367,10 @@
     "ImageURLHint": "Базовий URL для зображень TMDB. Шляхи зображень додаються автоматично (за замовчуванням: https://image.tmdb.org)",
     "ImageURLRu": "TMDB URL зображень (Росія)",
     "ImageURLRuHint": "Альтернативний URL зображень для російських користувачів. Шляхи зображень додаються автоматично (за замовчуванням: https://imagetmdb.com)",
-    "APIKeyPlaceholder": "Введіть ваш TMDB API-ключ"
+    "APIKeyPlaceholder": "Введіть ваш TMDB API-ключ",
+    "APIURLPlaceholder": "https://api.themoviedb.org/3",
+    "ImageURLPlaceholder": "https://image.tmdb.org",
+    "ImageURLRuPlaceholder": "https://imagetmdb.com"
   },
   "TurnOff": "Виключити",
   "Uncategorized": "Без категорії",
@@ -377,6 +385,7 @@
   "ConfirmRemoveAll": "Усі торенти буде безповоротно видалено з бази даних. Дію не можна відмінити.",
   "ConfirmRemoveViews": "Очистити всі позначки перегляду для цього торренту?",
   "SnakeFocusRange": "блоки {{start}}–{{end}}",
+  "SnakeCacheSummary": "{{filled}} з {{capacity}} у кеші",
   "SnakeTooltipBucket": "блоки {{start}}–{{end}} · {{fill}}%",
   "SnakeTooltipPiece": "блок #{{id}} · {{fill}}%",
   "HTTPS": "HTTPS",
@@ -401,5 +410,6 @@
   "Search.AllTrackers": "Всі трекери",
   "Search.Seeders": "Сіди",
   "Search.Peers": "Піри",
-  "Search.Rutor": "RuTor"
+  "Search.Rutor": "RuTor",
+  "CopyMagnet": "Скопіювати Magnet"
 }
