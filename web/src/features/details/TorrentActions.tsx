@@ -1,13 +1,14 @@
+import { useMemo, memo, useState } from 'react'
 import { Button, ButtonGroup, Modal, Separator, useOverlayState } from '@heroui/react'
-import { EyeOff, ListVideo, Loader2, Magnet, Play, Trash2 } from 'lucide-react'
-import { memo, useState } from 'react'
+import { EyeOff, ExternalLink, ListVideo, Loader2, Magnet, Play, Trash2 } from 'lucide-react'
 import ptt from 'parse-torrent-title'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { PlayableFile } from 'shared/api/types'
-import { playlistTorrHost } from 'shared/api/hosts'
+import { playlistTorrHost, streamHost } from 'shared/api/hosts'
 import { dropTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { clearViewedFiles } from 'shared/api/viewed'
+import { useExternalPlayers } from 'shared/lib/externalPlayers'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 import { usePlayLauncher } from 'features/player/usePlayLauncher'
 
@@ -59,6 +60,17 @@ function TorrentActions({
     knownPlayableFiles: playableFileList || [],
   })
 
+  /** Only offer app deep links when there's exactly one obvious file to hand off — otherwise Play's file picker covers it. */
+  const { buildExternalPlayers } = useExternalPlayers()
+  const externalPlayers = useMemo(() => {
+    if (playableFileList?.length !== 1) return []
+    const file = playableFileList[0]
+    const fileName = file.path.split('\\').pop()?.split('/').pop() || file.path
+    const link = `${streamHost()}/${encodeURIComponent(fileName)}?link=${hash}&index=${file.id}&play`
+    const fullLink = new URL(link, window.location.href).toString()
+    return buildExternalPlayers(fullLink)
+  }, [playableFileList, hash, buildExternalPlayers])
+
   const runPendingConfirm = () => {
     if (pendingConfirm === 'drop') {
       void dropTorrent(hash)
@@ -92,14 +104,35 @@ function TorrentActions({
 
   return (
     <div className='space-y-4'>
-      <Button variant='primary' size='lg' className='w-full sm:w-auto' isDisabled={resolvingAudio} onPress={handlePlay}>
-        {resolvingAudio ? (
-          <Loader2 className='size-4 animate-spin' aria-hidden />
-        ) : (
-          <Play className='size-4' fill='currentColor' aria-hidden />
-        )}
-        {t('Play')}
-      </Button>
+      <div className='flex flex-wrap gap-2'>
+        <Button
+          variant='primary'
+          size='lg'
+          className='w-full sm:w-auto'
+          isDisabled={resolvingAudio}
+          onPress={handlePlay}
+        >
+          {resolvingAudio ? (
+            <Loader2 className='size-4 animate-spin' aria-hidden />
+          ) : (
+            <Play className='size-4' fill='currentColor' aria-hidden />
+          )}
+          {t('Play')}
+        </Button>
+        {externalPlayers.map(player => (
+          <Button
+            key={player.label}
+            variant='secondary'
+            size='lg'
+            onPress={() => {
+              window.location.href = player.href
+            }}
+          >
+            <ExternalLink className='size-4' aria-hidden />
+            {player.label}
+          </Button>
+        ))}
+      </div>
 
       {hasPartialProgress ? (
         <div className='rounded-xl border border-border bg-surface-secondary p-4'>

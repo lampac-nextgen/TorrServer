@@ -86,7 +86,6 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
 
   const variant = isMiniView ? 'mini' : 'default'
   const baseSettings = snakeSettings[theme][variant]
-  const { cacheMaxHeight } = baseSettings
 
   const { pieceSize, gap } = useMemo(
     () => resolvePieceMetrics(baseSettings, containerWidth, isMiniView, cells.length),
@@ -151,6 +150,8 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
   ])
 
   useEffect(() => {
+    /** The mini preview never scrolls internally (see render below), so there's nothing to follow. */
+    if (isMiniView) return
     if (!scrollWrapperRef.current || !piecesPerRow || cellStride <= 0) return
     if (!isFollowingPlayhead.current) return
     const focusWindow = resolveFocusWindow(cache, visibleCellBudget)
@@ -165,9 +166,10 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
     if (rowTop < viewTop || rowTop + cellStride > viewBottom) {
       el.scrollTop = Math.max(0, rowTop - el.clientHeight / 3)
     }
-  }, [cache, visibleCellBudget, focusModel.windowStart, piecesPerRow, cellStride, drawCells])
+  }, [cache, visibleCellBudget, focusModel.windowStart, piecesPerRow, cellStride, drawCells, isMiniView])
 
   useEffect(() => {
+    if (isMiniView) return
     const el = scrollWrapperRef.current
     if (!el) return
     const pauseFollowing = () => {
@@ -186,7 +188,7 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
       el.removeEventListener('touchstart', pauseFollowing)
       el.removeEventListener('pointerdown', pauseFollowing)
     }
-  }, [containerWidth])
+  }, [containerWidth, isMiniView])
 
   const formatTooltipText = useCallback(
     (cell: CacheMapItem) => {
@@ -242,10 +244,10 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
     <div ref={rootRef} className='relative flex w-full min-w-0 flex-col'>
       <div
         ref={scrollWrapperRef}
-        className={`relative w-full min-w-0 overflow-auto overscroll-contain rounded-lg border border-border bg-surface-secondary p-2 ${
-          isMiniView ? 'grid max-h-[420px] justify-center' : 'max-h-[min(70dvh,640px)]'
+        className={`relative w-full min-w-0 rounded-lg border border-border bg-surface-secondary p-2 ${
+          isMiniView ? 'grid max-h-[420px] justify-center overflow-hidden' : 'max-h-[min(70dvh,640px)] overflow-auto'
         }`}
-        style={{ WebkitOverflowScrolling: 'touch' }}
+        style={isMiniView ? undefined : { WebkitOverflowScrolling: 'touch' }}
       >
         {piecesPerRow > 0 && canvasHeight > 0 ? (
           <canvas
@@ -272,10 +274,6 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
         <p className='mt-2 self-center text-xs uppercase tracking-wide text-muted'>
           {t('SnakeFocusRange', { start: focusModel.windowStart, end: focusModel.windowEnd })}
         </p>
-      ) : null}
-
-      {isMiniView && cacheMaxHeight != null && canvasHeight >= cacheMaxHeight ? (
-        <p className='mt-2 self-center text-xs uppercase tracking-wide text-muted'>{t('ScrollDown')}</p>
       ) : null}
     </div>
   )

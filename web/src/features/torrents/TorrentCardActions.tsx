@@ -7,6 +7,7 @@ import type { TorrentStat } from 'shared/api/types'
 import { playlistTorrHost, streamHost } from 'shared/api/hosts'
 import { dropTorrent, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { useExternalPlayers } from 'shared/lib/externalPlayers'
+import { filesFromMetadata } from 'shared/torrent/fileMetadata'
 import { isFilePlayable } from 'shared/torrent/playable'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 import { toPlayableFile, usePlayLauncher } from 'features/player/usePlayLauncher'
@@ -38,9 +39,9 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
 
   const knownPlayableFiles = useMemo(() => {
     const stats = torrent.file_stats
-    if (!stats?.length) return []
-    return stats.map(toPlayableFile).filter(file => isFilePlayable(file.path))
-  }, [torrent.file_stats])
+    const files = stats?.length ? stats.map(toPlayableFile) : filesFromMetadata(torrent.data)
+    return files.filter(file => isFilePlayable(file.path))
+  }, [torrent.file_stats, torrent.data])
 
   const { handlePlay, resolvingAudio, playerModals } = usePlayLauncher({ hash, displayName, knownPlayableFiles })
 

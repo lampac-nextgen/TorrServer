@@ -93,7 +93,13 @@ export default function EditTorrentDialog({ torrent, open, onClose }: EditTorren
   const footerButtonClassName = isMobile ? 'min-h-11 px-4' : undefined
 
   return (
-    <AppDialog open={open && Boolean(torrent)} onClose={onClose} size='md' fullScreen={isMobile}>
+    <AppDialog
+      open={open && Boolean(torrent)}
+      onClose={onClose}
+      size='md'
+      fullScreen={isMobile}
+      dialogStyle={isMobile ? undefined : { minWidth: '38rem', maxWidth: '46rem' }}
+    >
       <Modal.Header>
         <Modal.Heading>{t('EditTorrent')}</Modal.Heading>
         <Modal.CloseTrigger />

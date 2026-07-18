@@ -209,7 +209,13 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
   }
 
   return (
-    <AppDialog open={open} onClose={onClose} size='md' fullScreen={isMobile}>
+    <AppDialog
+      open={open}
+      onClose={onClose}
+      size='md'
+      fullScreen={isMobile}
+      dialogStyle={isMobile ? undefined : { minWidth: '38rem', maxWidth: '46rem' }}
+    >
       <Modal.Header>
         <Modal.Heading>{t('AddNewTorrent')}</Modal.Heading>
         <Modal.CloseTrigger />

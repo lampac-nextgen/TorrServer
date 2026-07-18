@@ -220,7 +220,16 @@
     "UseDisk": "Use disk cache",
     "StorageSettings": "Storage",
     "RateLimitHint": "0 = unlimited",
-    "StoreSettingsInJson": "Store settings in JSON"
+    "StoreSettingsInJson": "Store settings in JSON",
+    "SectionCache": "Cache",
+    "SectionStreaming": "Prefetch & streaming",
+    "SectionDiskCache": "Disk cache",
+    "SectionProtocols": "Protocols",
+    "SectionUploadEncryption": "Upload & encryption",
+    "SectionConnection": "Connection",
+    "SectionDiscovery": "Network discovery",
+    "SectionSearchSources": "Search sources",
+    "SectionDisplayPerformance": "Display & performance"
   },
   "Size": "Size",
   "SpecialThanks": "Special Thanks",

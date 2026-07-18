@@ -26,12 +26,21 @@ export const detectApplePlatform = (): { isMac: boolean; isIOS: boolean } => {
   }
 
   const userAgent = navigator.userAgent || ''
-  const platform = (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform || ''
+  const uaDataPlatform =
+    (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform || ''
+  /** Deprecated but still populated by every Chromium/WebKit/Gecko build ("MacIntel", "iPhone", …) — a reliable
+   *  fallback for browsers that report a reduced/generic `userAgent` string. */
+  const legacyPlatform = navigator.platform || ''
+  const isMacUA = /Macintosh|Mac OS X/i.test(userAgent)
+  const isMacPlatform = uaDataPlatform.toLowerCase().includes('mac') || /Mac/i.test(legacyPlatform)
 
-  const isMac = userAgent.includes('Macintosh') || (platform && platform.toLowerCase().includes('mac'))
-  const isIOS = /iPad|iPhone|iPod/.test(userAgent) || (userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1)
+  const isMac = isMacUA || isMacPlatform
+  const isIOS =
+    /iPad|iPhone|iPod/i.test(userAgent) ||
+    /iPad|iPhone|iPod/i.test(legacyPlatform) ||
+    (isMacUA && navigator.maxTouchPoints > 1)
 
-  return { isMac: Boolean(isMac), isIOS }
+  return { isMac: Boolean(isMac), isIOS: Boolean(isIOS) }
 }
 
 export const isAppleDevice = (): boolean => {

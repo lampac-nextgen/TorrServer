@@ -1,8 +1,11 @@
+import { Clapperboard } from 'lucide-react'
 import { Description, Label, Link, Switch } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
 
 import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
 import { isAppleDevice, isDesktop, isMacOS } from 'shared/lib/platform'
+
+import SettingsSection from './SettingsSection'
 
 const PLAYER_KEYS = {
   vlc: 'isVlcUsed',
@@ -23,7 +26,7 @@ function PlayerSwitch({
   onChange: (checked: boolean) => void
 }) {
   return (
-    <div className='flex min-h-12 items-start justify-between gap-4 py-2.5'>
+    <div className='flex min-h-12 items-start justify-between gap-4'>
       <div className='min-w-0 flex-1 pr-4'>
         <Label>{label}</Label>
         <Description>{helper}</Description>
@@ -52,54 +55,51 @@ export default function MobilePlayersSection() {
   const [isIinaUsed, setIsIinaUsed] = useLocalBoolPref(PLAYER_KEYS.iina)
 
   return (
-    <div className='mt-6'>
-      <p className='mb-1 text-xs font-semibold uppercase tracking-wide text-muted'>
-        {t('SettingsDialog.MobileAppSettings')}
-      </p>
-      <Description className='mb-3'>{t('SettingsDialog.MobileAppInstantHint')}</Description>
+    <SettingsSection
+      icon={<Clapperboard />}
+      title={t('SettingsDialog.MobileAppSettings')}
+      description={t('SettingsDialog.MobileAppInstantHint')}
+    >
+      <PlayerSwitch
+        label={t('SettingsDialog.UseVLC')}
+        helper={t('SettingsDialog.UseVLCHint')}
+        checked={isVlcUsed}
+        onChange={setIsVlcUsed}
+      />
+      {isDesktopPlatform ? (
+        <Description className='-mt-2'>
+          {t('SettingsDialog.UseVLCDesktopHintPrefix')}{' '}
+          <Link href='https://github.com/northsea4/vlc-protocol' target='_blank' rel='noopener noreferrer'>
+            vlc-protocol-handler
+          </Link>
+        </Description>
+      ) : null}
 
-      <div className='divide-y divide-separator border-y border-separator'>
-        <PlayerSwitch
-          label={t('SettingsDialog.UseVLC')}
-          helper={t('SettingsDialog.UseVLCHint')}
-          checked={isVlcUsed}
-          onChange={setIsVlcUsed}
-        />
-        {isDesktopPlatform ? (
-          <Description className='py-2 pr-8'>
-            {t('SettingsDialog.UseVLCDesktopHintPrefix')}{' '}
-            <Link href='https://github.com/northsea4/vlc-protocol' target='_blank' rel='noopener noreferrer'>
-              vlc-protocol-handler
-            </Link>
-          </Description>
-        ) : null}
-
-        {isApple ? (
-          <>
-            <PlayerSwitch
-              label={t('SettingsDialog.UseInfuse')}
-              helper={t('SettingsDialog.UseInfuseHint')}
-              checked={isInfuseUsed}
-              onChange={setIsInfuseUsed}
-            />
-            <PlayerSwitch
-              label={t('SettingsDialog.UseSenPlayer')}
-              helper={t('SettingsDialog.UseSenPlayerHint')}
-              checked={isSenPlayerUsed}
-              onChange={setIsSenPlayerUsed}
-            />
-          </>
-        ) : null}
-
-        {isMac ? (
+      {isApple ? (
+        <>
           <PlayerSwitch
-            label={t('SettingsDialog.UseIINA')}
-            helper={t('SettingsDialog.UseIINAHint')}
-            checked={isIinaUsed}
-            onChange={setIsIinaUsed}
+            label={t('SettingsDialog.UseInfuse')}
+            helper={t('SettingsDialog.UseInfuseHint')}
+            checked={isInfuseUsed}
+            onChange={setIsInfuseUsed}
           />
-        ) : null}
-      </div>
-    </div>
+          <PlayerSwitch
+            label={t('SettingsDialog.UseSenPlayer')}
+            helper={t('SettingsDialog.UseSenPlayerHint')}
+            checked={isSenPlayerUsed}
+            onChange={setIsSenPlayerUsed}
+          />
+        </>
+      ) : null}
+
+      {isMac ? (
+        <PlayerSwitch
+          label={t('SettingsDialog.UseIINA')}
+          helper={t('SettingsDialog.UseIINAHint')}
+          checked={isIinaUsed}
+          onChange={setIsIinaUsed}
+        />
+      ) : null}
+    </SettingsSection>
   )
 }

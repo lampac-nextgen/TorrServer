@@ -2,10 +2,12 @@ import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
 import { Button, Modal, useOverlayState } from '@heroui/react'
 import { Music2 } from 'lucide-react'
+import ptt from 'parse-torrent-title'
 import { useTranslation } from 'react-i18next'
 import type { PlayableFile, TorrentFileStat } from 'shared/api/types'
 import { streamHost } from 'shared/api/hosts'
 import { getTorrent } from 'shared/api/torrents'
+import { humanizeSize } from 'shared/lib/format'
 import {
   gstreamerHeartbeatUrl,
   gstreamerMasterUrl,
@@ -56,6 +58,19 @@ const audioTrackLabel = (track: ProbeTrack, index: number): string => {
 }
 
 const fileBaseName = (path: string): string => path.split('\\').pop()?.split('/').pop() || path
+
+/** Parses a file's episode code ("S01E03") and title from its path, falling back to the raw name. */
+const fileEpisodeInfo = (path: string, index: number): { code: string; title: string } => {
+  const name = fileBaseName(path)
+  const parsed = ptt.parse(name)
+  const season = Number(parsed.season)
+  const episode = Number(parsed.episode)
+  const code = `${season ? `S${String(season).padStart(2, '0')}` : ''}${
+    episode ? `E${String(episode).padStart(2, '0')}` : ''
+  }`
+  const title = parsed.title || name.replace(/\.[^/.]+$/, '')
+  return { code: code || `#${index + 1}`, title }
+}
 
 export interface UsePlayLauncherArgs {
   hash: string
@@ -166,22 +181,31 @@ export function usePlayLauncher({ hash, displayName, knownPlayableFiles }: UsePl
       <>
         <Modal state={filePickerState}>
           <Modal.Backdrop isDismissable>
-            <Modal.Container size='sm'>
-              <Modal.Dialog aria-label={t('Play')}>
+            <Modal.Container size='md'>
+              <Modal.Dialog aria-label={t('Play')} className='sm:min-w-[28rem]'>
                 <Modal.Header>
                   <Modal.Heading>{t('Play')}</Modal.Heading>
                 </Modal.Header>
-                <Modal.Body className='flex flex-col gap-1'>
-                  {playableFiles.map(file => (
-                    <Button
-                      key={file.id}
-                      variant='ghost'
-                      className='justify-start'
-                      onPress={() => void resolveAndPlay(file)}
-                    >
-                      {fileBaseName(file.path)}
-                    </Button>
-                  ))}
+                <Modal.Body className='flex max-h-[60vh] flex-col gap-1.5 overflow-y-auto'>
+                  {playableFiles.map((file, index) => {
+                    const { code, title } = fileEpisodeInfo(file.path, index)
+                    return (
+                      <Button
+                        key={file.id}
+                        variant='ghost'
+                        className='h-auto flex-col items-start gap-0.5 py-2.5'
+                        onPress={() => void resolveAndPlay(file)}
+                      >
+                        <span className='flex w-full items-center gap-2 text-sm font-medium'>
+                          <span className='shrink-0 rounded bg-accent/15 px-1.5 py-0.5 text-xs font-semibold text-accent'>
+                            {code}
+                          </span>
+                          <span className='truncate'>{title}</span>
+                        </span>
+                        <span className='text-xs text-muted'>{humanizeSize(file.length)}</span>
+                      </Button>
+                    )
+                  })}
                 </Modal.Body>
               </Modal.Dialog>
             </Modal.Container>

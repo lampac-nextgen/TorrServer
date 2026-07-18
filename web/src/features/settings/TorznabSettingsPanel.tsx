@@ -1,11 +1,13 @@
+import { useState } from 'react'
+import { Plus, Rss, Trash2 } from 'lucide-react'
 import { Button, Input, Label, Spinner, TextField } from '@heroui/react'
 import axios from 'axios'
-import { Plus, Trash2 } from 'lucide-react'
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { BTSets, TorznabUrl } from 'shared/api/types'
 import { torznabTestHost } from 'shared/api/hosts'
+
+import SettingsSection from './SettingsSection'
 
 export interface TorznabSettingsPanelProps {
   settings: BTSets
@@ -55,35 +57,40 @@ export default function TorznabSettingsPanel({ settings, onUpdate, footerButtonC
   }
 
   return (
-    <div className='space-y-5'>
+    <div className='space-y-6'>
       {urls.length > 0 ? (
-        <ul className='space-y-2'>
-          {urls.map((url, index) => (
-            <li
-              key={`${url.Host}-${url.Key}-${index}`}
-              className='flex items-start justify-between gap-3 rounded-lg border border-border bg-surface-secondary px-3 py-2.5'
-            >
-              <div className='min-w-0'>
-                <p className='truncate font-medium text-foreground'>{url.Name || url.Host}</p>
-                <p className='truncate text-sm text-muted'>
-                  {url.Host} &middot; {t('Torznab.APIKey')}: {url.Key.slice(0, 5)}&hellip;
-                </p>
-              </div>
-              <Button
-                isIconOnly
-                variant='ghost'
-                aria-label={t('Delete')}
-                onPress={() => handleRemove(index)}
-                className='min-h-11 min-w-11 shrink-0'
+        <SettingsSection icon={<Rss />} title={t('Torznab.Tab')}>
+          <ul className='space-y-2'>
+            {urls.map((url, index) => (
+              <li
+                key={`${url.Host}-${url.Key}-${index}`}
+                className='flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2.5'
               >
-                <Trash2 className='size-4' />
-              </Button>
-            </li>
-          ))}
-        </ul>
+                <span className='grid size-9 shrink-0 place-items-center rounded-full bg-accent/10 text-accent'>
+                  <Rss className='size-4' />
+                </span>
+                <div className='min-w-0 flex-1'>
+                  <p className='truncate font-medium text-foreground'>{url.Name || url.Host}</p>
+                  <p className='truncate text-sm text-muted'>
+                    {url.Host} &middot; {t('Torznab.APIKey')}: {url.Key.slice(0, 5)}&hellip;
+                  </p>
+                </div>
+                <Button
+                  isIconOnly
+                  variant='ghost'
+                  aria-label={t('Delete')}
+                  onPress={() => handleRemove(index)}
+                  className='min-h-11 min-w-11 shrink-0'
+                >
+                  <Trash2 className='size-4' />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </SettingsSection>
       ) : null}
 
-      <div className='space-y-3 rounded-lg border border-border bg-surface-secondary p-4'>
+      <SettingsSection title={t('Torznab.AddServer')}>
         <TextField value={newName} onChange={setNewName}>
           <Label>{t('Torznab.NameOptional')}</Label>
           <Input />
@@ -101,7 +108,7 @@ export default function TorznabSettingsPanel({ settings, onUpdate, footerButtonC
 
         <div className='flex flex-col gap-2 sm:flex-row'>
           <Button
-            variant='secondary'
+            variant='outline'
             onPress={() => void handleTest()}
             isDisabled={!newHost || !newKey || testing}
             className={footerButtonClassName}
@@ -118,7 +125,7 @@ export default function TorznabSettingsPanel({ settings, onUpdate, footerButtonC
             {t('Torznab.AddServer')}
           </Button>
         </div>
-      </div>
+      </SettingsSection>
     </div>
   )
 }

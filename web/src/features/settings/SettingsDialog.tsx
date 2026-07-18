@@ -1,5 +1,7 @@
 import { Button, Description, Modal, Spinner, Tabs, useMediaQuery } from '@heroui/react'
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useGSAP } from '@gsap/react'
+import gsap from 'gsap'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Cog, Film, HardDrive, Rss, SlidersHorizontal, Smartphone, Wifi } from 'lucide-react'
@@ -37,6 +39,17 @@ export interface SettingsDialogProps {
 }
 
 type SettingsTab = 'primary' | 'network' | 'features' | 'storage' | 'app' | 'gstreamer' | 'torznab'
+
+/** Fades + slides in freshly-mounted tab content — `Tabs.Panel` only mounts the selected tab, so this
+ *  re-runs on every switch without any extra wiring. */
+function PanelFade({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useGSAP(() => {
+    if (!ref.current) return
+    gsap.fromTo(ref.current, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.22, ease: 'power2.out' })
+  }, [])
+  return <div ref={ref}>{children}</div>
+}
 
 /** Tabbed server settings dialog — full-screen on mobile, persists via BTSets + GST + storage-backend APIs. */
 export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
@@ -200,82 +213,102 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
           >
             <Tabs.List
               aria-label={t('SettingsDialog.Settings')}
-              className={isMobile ? 'overflow-x-auto' : 'w-56 shrink-0'}
+              className={isMobile ? 'overflow-x-auto' : 'w-60 shrink-0'}
             >
               {visibleTabs.map(item => (
                 <Tabs.Tab
                   key={item.id}
                   id={item.id}
-                  className={isMobile ? 'min-h-11 whitespace-nowrap' : 'min-h-10 justify-start gap-2.5 px-3 text-left'}
+                  className={
+                    isMobile
+                      ? 'min-h-11 whitespace-nowrap'
+                      : 'min-h-10 items-start justify-start gap-2.5 px-3 py-2 text-left'
+                  }
                 >
-                  {!isMobile ? item.icon : null}
-                  <span className='truncate'>{item.label}</span>
+                  {!isMobile ? <span className='mt-0.5'>{item.icon}</span> : null}
+                  <span className={isMobile ? 'truncate' : 'text-wrap leading-snug'}>{item.label}</span>
                 </Tabs.Tab>
               ))}
             </Tabs.List>
 
             <Tabs.Panel id='primary' className={panelClassName}>
-              <PrimarySettingsPanel
-                settings={settings}
-                cacheSizeMb={cacheSizeMb}
-                onCacheSizeMb={setCacheSizeMb}
-                onUpdate={updateSetting}
-                onBoolSwitch={handleBoolSwitch}
-              />
+              <PanelFade>
+                <PrimarySettingsPanel
+                  settings={settings}
+                  cacheSizeMb={cacheSizeMb}
+                  onCacheSizeMb={setCacheSizeMb}
+                  onUpdate={updateSetting}
+                  onBoolSwitch={handleBoolSwitch}
+                />
+              </PanelFade>
             </Tabs.Panel>
 
             <Tabs.Panel id='network' className={panelClassName}>
-              <NetworkSettingsPanel
-                settings={settings}
-                boolChecked={boolChecked}
-                onUpdate={updateSetting}
-                onBoolSwitch={handleBoolSwitch}
-              />
+              <PanelFade>
+                <NetworkSettingsPanel
+                  settings={settings}
+                  boolChecked={boolChecked}
+                  onUpdate={updateSetting}
+                  onBoolSwitch={handleBoolSwitch}
+                />
+              </PanelFade>
             </Tabs.Panel>
 
             <Tabs.Panel id='features' className={panelClassName}>
-              <FeaturesSettingsPanel
-                settings={settings}
-                boolChecked={boolChecked}
-                onUpdate={updateSetting}
-                onBoolSwitch={handleBoolSwitch}
-              />
+              <PanelFade>
+                <FeaturesSettingsPanel
+                  settings={settings}
+                  boolChecked={boolChecked}
+                  onUpdate={updateSetting}
+                  onBoolSwitch={handleBoolSwitch}
+                />
+              </PanelFade>
             </Tabs.Panel>
 
             <Tabs.Panel id='storage' className={panelClassName}>
-              <StorageSettingsPanel
-                settings={settings}
-                onBoolSwitch={handleBoolSwitch}
-                backends={storageBackends}
-                onBackendsChange={setStorageBackends}
-              />
+              <PanelFade>
+                <StorageSettingsPanel
+                  settings={settings}
+                  onBoolSwitch={handleBoolSwitch}
+                  backends={storageBackends}
+                  onBackendsChange={setStorageBackends}
+                />
+              </PanelFade>
             </Tabs.Panel>
 
             <Tabs.Panel id='app' className={panelClassName}>
-              <Description className='mb-4'>{t('SettingsDialog.AppTabHint')}</Description>
-              <TMDBSettingsSection settings={settings} updateSettings={updateSettingsPartial} />
-              <MobilePlayersSection />
+              <PanelFade>
+                <Description className='mb-4'>{t('SettingsDialog.AppTabHint')}</Description>
+                <div className='space-y-6'>
+                  <TMDBSettingsSection settings={settings} updateSettings={updateSettingsPartial} />
+                  <MobilePlayersSection />
+                </div>
+              </PanelFade>
             </Tabs.Panel>
 
             {gstAvailable ? (
               <Tabs.Panel id='gstreamer' className={panelClassName}>
-                <GStreamerSettingsPanel config={gstConfig} onChange={setGstConfig} />
-                <Button
-                  className='mt-4'
-                  variant='secondary'
-                  onPress={() => setGstConfig({ ...emptyGstConfig(), ...gstDefaults })}
-                >
-                  {t('SettingsDialog.ResetToDefault')}
-                </Button>
+                <PanelFade>
+                  <GStreamerSettingsPanel config={gstConfig} onChange={setGstConfig} />
+                  <Button
+                    className='mt-4'
+                    variant='secondary'
+                    onPress={() => setGstConfig({ ...emptyGstConfig(), ...gstDefaults })}
+                  >
+                    {t('SettingsDialog.ResetToDefault')}
+                  </Button>
+                </PanelFade>
               </Tabs.Panel>
             ) : null}
 
             <Tabs.Panel id='torznab' className={panelClassName}>
-              <TorznabSettingsPanel
-                settings={settings}
-                onUpdate={updateSetting}
-                footerButtonClassName={footerButtonClassName}
-              />
+              <PanelFade>
+                <TorznabSettingsPanel
+                  settings={settings}
+                  onUpdate={updateSetting}
+                  footerButtonClassName={footerButtonClassName}
+                />
+              </PanelFade>
             </Tabs.Panel>
           </Tabs.Root>
         )}

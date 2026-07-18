@@ -18,6 +18,7 @@ import { useUpdateCache } from 'shared/cache/useUpdateCache'
 import { useTorrentDetail } from 'shared/hooks/useTorrentDetail'
 import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
 import { getPeerString, humanizeSize, humanizeSpeed, removeRedundantCharacters } from 'shared/lib/format'
+import { filesFromMetadata } from 'shared/torrent/fileMetadata'
 import { isFilePlayable } from 'shared/torrent/playable'
 import { CLOSED, GETTING_INFO, IN_DB, PRELOAD, WORKING } from 'shared/torrent/states'
 import { queryMax } from 'shared/theme/breakpoints'
@@ -111,12 +112,13 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
     upload_speed: uploadSpeed,
     torrent_size: torrentSize,
     file_stats: fileStats,
+    data,
   } = torrent
 
-  const playableFileList = useMemo(
-    () => fileStats?.map(toPlayableFile).filter(({ path }) => isFilePlayable(path)),
-    [fileStats],
-  )
+  const playableFileList = useMemo(() => {
+    const files = fileStats?.length ? fileStats.map(toPlayableFile) : filesFromMetadata(data)
+    return files.filter(({ path }) => isFilePlayable(path))
+  }, [fileStats, data])
 
   useEffect(() => {
     if (playableFileList && seasonList === null) {

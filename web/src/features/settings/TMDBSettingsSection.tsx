@@ -1,7 +1,10 @@
+import { Film } from 'lucide-react'
 import { Description, Input, Label, TextField } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
 
 import type { BTSets, SettingsUpdater, TMDBSettingsConfig } from 'shared/api/types'
+
+import SettingsSection from './SettingsSection'
 
 interface TMDBSettingsSectionProps {
   settings?: BTSets
@@ -42,21 +45,18 @@ export default function TMDBSettingsSection({ settings, updateSettings }: TMDBSe
   ]
 
   return (
-    <div>
-      <p className='mb-3 text-xs font-semibold uppercase tracking-wide text-muted'>{t('TMDB.Settings')}</p>
-      <div className='space-y-4'>
-        {fields.map(({ field, label, hint, placeholder }) => (
-          <TextField
-            key={field}
-            value={String(tmdb[field] ?? (field === 'APIKey' ? '' : placeholder))}
-            onChange={value => handleChange(field, value)}
-          >
-            <Label>{label}</Label>
-            <Input placeholder={placeholder} />
-            <Description>{hint}</Description>
-          </TextField>
-        ))}
-      </div>
-    </div>
+    <SettingsSection icon={<Film />} title={t('TMDB.Settings')}>
+      {fields.map(({ field, label, hint, placeholder }) => (
+        <TextField
+          key={field}
+          value={String(tmdb[field] ?? (field === 'APIKey' ? '' : placeholder))}
+          onChange={value => handleChange(field, value)}
+        >
+          <Label>{label}</Label>
+          <Input placeholder={placeholder} />
+          <Description>{hint}</Description>
+        </TextField>
+      ))}
+    </SettingsSection>
   )
 }

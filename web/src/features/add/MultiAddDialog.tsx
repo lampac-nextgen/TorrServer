@@ -196,7 +196,13 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
   const addableCount = visibleFiles.filter(({ item }) => item.status !== 'success').length
 
   return (
-    <AppDialog open={open} onClose={onClose} size='md' fullScreen={isMobile}>
+    <AppDialog
+      open={open}
+      onClose={onClose}
+      size='md'
+      fullScreen={isMobile}
+      dialogStyle={isMobile ? undefined : { minWidth: '40rem', maxWidth: '52rem' }}
+    >
       <Modal.Header>
         <Modal.Heading>
           {t('AddNewTorrent')} ({visibleFiles.length}
