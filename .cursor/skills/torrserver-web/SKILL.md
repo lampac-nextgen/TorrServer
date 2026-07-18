@@ -22,8 +22,8 @@ description: >-
   - Note: TypeScript **7** exists on npm, but `typescript-eslint` currently peers `<6.1` — stay on TS 6 until the ESLint stack catches up.
 - **Stack:** Material UI **9.2** + MUI X **9.10 Community** (Data Grid, Charts, Tree View, Date Pickers). Theme: `cssVariables` + `colorSchemes` + `useColorScheme`. No Pro/Premium license.
 - **No styled-components** — Emotion via MUI only.
-- **No legacy polyfill/tooling:** no `vite-plugin-node-polyfills`, `react-measure`, `parse-torrent`, or lodash.
 - **Greenfield only:** `web/src/{app,features,shared,locales,assets}` — no `components/`, `style/`, `utils/`, or legacy entry.
+- `parse-torrent` + minimal `vite-plugin-node-polyfills` are allowed for MultiAdd hash/dedup only (not general lodash/react-measure).
 - Brand: **MatriX green**. File row: all actions visible. Snake/GStreamer contracts unchanged.
 - Adaptive shell + `ModalOpenProvider`. Donate removed. Safari **17+**.
 - Radix/shadcn — **cancelled**.

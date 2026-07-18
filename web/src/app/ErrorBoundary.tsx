@@ -1,6 +1,4 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
-import Button from '@mui/material/Button'
-import Typography from '@mui/material/Typography'
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -11,6 +9,7 @@ interface ErrorBoundaryState {
   message?: string
 }
 
+/** Plain HTML fallback — sits outside ThemeProvider. */
 export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state: ErrorBoundaryState = { hasError: false }
 
@@ -38,19 +37,26 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
           padding: 24,
           textAlign: 'center',
           gap: 16,
+          fontFamily: 'system-ui, sans-serif',
         }}
       >
-        <Typography variant='h5' component='h1'>
-          Something went wrong
-        </Typography>
-        {this.state.message && (
-          <Typography variant='body2' color='text.secondary'>
-            {this.state.message}
-          </Typography>
-        )}
-        <Button variant='contained' color='primary' onClick={this.handleReload}>
+        <h1 style={{ margin: 0, fontSize: '1.5rem' }}>Something went wrong</h1>
+        {this.state.message ? <p style={{ margin: 0, color: '#666', maxWidth: 480 }}>{this.state.message}</p> : null}
+        <button
+          type='button'
+          onClick={this.handleReload}
+          style={{
+            padding: '10px 20px',
+            borderRadius: 8,
+            border: 'none',
+            background: '#00a572',
+            color: '#fff',
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
           Reload
-        </Button>
+        </button>
       </div>
     )
   }

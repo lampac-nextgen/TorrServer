@@ -21,6 +21,7 @@ import { echoHost } from 'shared/api/hosts'
 import { getTorrents } from 'shared/api/torrents'
 import useChangeLanguage from 'shared/lib/useChangeLanguage'
 import useLaunchHandler from 'shared/lib/useLaunchHandler'
+import { detectApplePlatform, isStandaloneApp } from 'shared/lib/platform'
 import { queryMax } from 'shared/theme/breakpoints'
 import { THEME_MODES, useThemePreference } from 'shared/theme/useThemePreference'
 import { TorrentsPage } from 'features/torrents'
@@ -36,6 +37,7 @@ const AboutDialog = lazy(() => import('features/about/AboutDialog'))
 const CloseServerDialog = lazy(() => import('features/system/CloseServerDialog'))
 const RemoveAllDialog = lazy(() => import('features/system/RemoveAllDialog'))
 const CategoriesDrawer = lazy(() => import('features/categories/CategoriesDrawer'))
+const PWAInstallationGuide = lazy(() => import('features/pwa/PWAInstallationGuide'))
 
 const LANG_CYCLE = ['en', 'ru', 'ua', 'zh', 'bg', 'fr', 'ro'] as const
 
@@ -225,7 +227,7 @@ export default function Shell() {
           pb: isMobile ? 'calc(90px + env(safe-area-inset-bottom, 0px))' : 0,
         }}
       >
-        <TorrentsPage sortABC={sortABC} sortCategory={globalCategoryFilter} />
+        <TorrentsPage sortABC={sortABC} sortCategory={globalCategoryFilter} onAdd={() => setAddOpen(true)} />
       </Box>
 
       {isMobile && <BottomNav {...navProps} />}
@@ -253,6 +255,7 @@ export default function Shell() {
           selectedCategory={globalCategoryFilter}
           onSelectCategory={setGlobalCategoryFilter}
         />
+        {detectApplePlatform().isIOS && !isStandaloneApp ? <PWAInstallationGuide /> : null}
       </Suspense>
     </Box>
   )

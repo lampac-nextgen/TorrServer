@@ -18,7 +18,7 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue.
 | Theme | `createAppTheme()` — `cssVariables` + `colorSchemes` + `useColorScheme` / `forceThemeRerender` |
 | MUI X | data-grid / charts / tree-view / date-pickers **@9.10** Community |
 | Architecture | `app/` + `features/` + `shared/` only (legacy `components/` deleted) |
-| Ship | `yarn typecheck && yarn test && yarn build` → `go run gen_web.go --clean` |
+| Ship | `yarn typecheck && yarn lint && yarn test && yarn build` → `go run gen_web.go --clean` |
 | Browsers | Safari **17+** |
 
 ---
@@ -30,17 +30,23 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue.
 - Torrents DataGrid / cards; Search DataGrid; Details FileBrowser + SpeedCharts + **TorrentCache snake**
 - Settings / Add / Player / About / system dialogs under `features/`
 - vite aliases: `app`, `features`, `shared`, `locales` only
+- **Wave 2026-07-18 shipped:**
+  - Settings App tab: TMDB + mobile external player toggles (VLC/Infuse/SenPlayer/IINA)
+  - GStreamer settings panel depth + echo host
+  - Details `TorrentActions`: magnet, M3U Full/FromLatest, clear viewed, drop
+  - MultiAdd: parse-torrent hash/dedup, TMDB posters, skip existing
+  - AddDialog source validation via `checkTorrentSource`
+  - PWA install guide (iOS, non-standalone) lazy in Shell
+  - Empty torrents CTA → Add; ErrorBoundary plain HTML outside theme
+  - `parse-torrent` + minimal node polyfills allowed for MultiAdd only
 
 ---
 
 ## Optional follow-ups
 
-- TMDB settings + mobile player toggles (VLC/Infuse/…)
-- TorrentFunctions in details (magnet, M3U, clear viewed)
-- MultiAdd: parse-torrent hash/dedup, posters, single-file path
-- PWA install guide (iOS)
-- ErrorBoundary inside ThemeProvider
-- Remove unused deps (`react-measure`, maybe `parse-torrent`)
+- Deeper AddDialog (poster picker / edit-hash) if parity still thin
+- i18n: promote `defaultValue` keys into all 7 locale files
+- Soften remaining `react-hooks/set-state-in-effect` / purity warns (non-blocking)
 - Split oversized `mui` chunk only after lazy-loading keeps X off the critical path
 - Exhaustive-deps warnings in FilesDataGrid / SimpleTorrentsDataGrid
 
@@ -49,7 +55,6 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue.
 - Circular mui↔mui-x manualChunks TDZ crash
 - share_target enctype in webmanifest
 - Lazy DetailsDialog; launch handler; drop unused LocalizationProvider; dedupe categories
-
 
 ---
 

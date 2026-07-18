@@ -2,6 +2,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
 /// <reference types="vitest/config" />
 
@@ -22,7 +23,13 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: './',
-    plugins: [react()],
+    plugins: [
+      react(),
+      nodePolyfills({
+        include: ['buffer', 'stream', 'util', 'path'],
+        globals: { Buffer: true, global: true, process: true },
+      }),
+    ],
     resolve: {
       alias: {
         '@': path.resolve(rootDir, 'src'),
@@ -54,12 +61,10 @@ export default defineConfig(({ mode }) => {
       assetsDir: 'static',
       emptyOutDir: true,
       sourcemap: false,
-      // Safari 17+ / Chrome 117+ (project floor); Vite 8 default is older baseline.
       target: ['chrome117', 'firefox121', 'safari17', 'edge121'],
       chunkSizeWarningLimit: 1300,
       rolldownOptions: {
         output: {
-          // Keep MUI (+ X) in one chunk to avoid circular TDZ across chunks.
           codeSplitting: {
             groups: [
               { name: 'hls', test: /node_modules[/\\]hls\.js/ },

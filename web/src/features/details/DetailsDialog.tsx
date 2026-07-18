@@ -5,9 +5,7 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Checkbox from '@mui/material/Checkbox'
 import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
-import DialogContentText from '@mui/material/DialogContentText'
 import DialogTitle from '@mui/material/DialogTitle'
 import Divider from '@mui/material/Divider'
 import FormControlLabel from '@mui/material/FormControlLabel'
@@ -19,7 +17,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import ImageNotSupportedIcon from '@mui/icons-material/ImageNotSupported'
 import { useTranslation } from 'react-i18next'
 import { getTorrent } from 'shared/api/torrents'
-import { torrentsHost, viewedHost } from 'shared/api/hosts'
+import { viewedHost } from 'shared/api/hosts'
 import type { PlayableFile, TorrentFileStat, TorrentStat, ViewedFileEntry } from 'shared/api/types'
 import { useUpdateCache } from 'shared/cache/useUpdateCache'
 import { getPeerString, humanizeSize, humanizeSpeed, removeRedundantCharacters } from 'shared/lib/format'
@@ -28,10 +26,10 @@ import { isFilePlayable } from 'shared/torrent/playable'
 import { CLOSED, GETTING_INFO, IN_DB, PRELOAD, WORKING } from 'shared/torrent/states'
 import { queryMax } from 'shared/theme/breakpoints'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
-import { useOptionalAppToast } from 'shared/ui/Toast'
 
 import FileBrowser from './FileBrowser'
 import SpeedCharts from './SpeedCharts'
+import TorrentActions from './TorrentActions'
 import TorrentCache from './TorrentCache'
 
 export interface DetailsDialogProps {
@@ -70,7 +68,6 @@ function StatWidget({ label, value }: { label: string; value: string }) {
 
 export default function DetailsDialog({ torrent: initialTorrent, onClose }: DetailsDialogProps) {
   const { t } = useTranslation()
-  const toast = useOptionalAppToast()
   const fullScreen = useMediaQuery(queryMax('dialog'))
   useSyncModalOpen(true)
 
@@ -78,7 +75,6 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose }: Deta
   const [viewedFileList, setViewedFileList] = useState<number[] | undefined>()
   const [seasonAmount, setSeasonAmount] = useState<number[] | null>(null)
   const [selectedSeason, setSelectedSeason] = useState<number | undefined>()
-  const [confirmDrop, setConfirmDrop] = useState(false)
   const [isDetailedCacheView, setIsDetailedCacheView] = useState(false)
   const [isSnakeDebugMode, setIsSnakeDebugMode] = useState(() => readLocalBool('isSnakeDebugMode'))
 
@@ -179,17 +175,6 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose }: Deta
     return lastDotShouldBeAdded ? `${newNameString}.` : newNameString
   }
 
-  const handleDrop = () => {
-    axios
-      .post(torrentsHost(), { action: 'drop', hash })
-      .then(() => {
-        toast?.showToast({ message: t('DropTorrent'), severity: 'success' })
-        onClose()
-      })
-      .catch(() => toast?.showToast({ message: t('PlaybackError'), severity: 'error' }))
-      .finally(() => setConfirmDrop(false))
-  }
-
   const loading = stat === GETTING_INFO || stat === IN_DB
 
   return (
@@ -252,6 +237,18 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose }: Deta
 
             <Divider />
 
+            <TorrentActions
+              hash={hash}
+              name={name}
+              title={title}
+              playableFileList={playableFileList}
+              viewedFileList={viewedFileList}
+              setViewedFileList={setViewedFileList}
+              onDropped={onClose}
+            />
+
+            <Divider />
+
             <Stack
               direction={{ xs: 'column', sm: 'row' }}
               spacing={1}
@@ -286,9 +283,6 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose }: Deta
                     label={t('SnakeDebug', { defaultValue: 'Debug pieces' })}
                   />
                 ) : null}
-                <Button variant='contained' color='error' onClick={() => setConfirmDrop(true)}>
-                  {t('DropTorrent')}
-                </Button>
               </Stack>
             </Stack>
 
@@ -359,21 +353,6 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose }: Deta
             )}
           </Stack>
         </DialogContent>
-      </Dialog>
-
-      <Dialog open={confirmDrop} onClose={() => setConfirmDrop(false)}>
-        <DialogTitle>{t('DropTorrent')}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>{t('ConfirmDropTorrent')}</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button autoFocus onClick={() => setConfirmDrop(false)} variant='outlined'>
-            {t('Cancel')}
-          </Button>
-          <Button onClick={handleDrop} variant='contained' color='error'>
-            {t('OK')}
-          </Button>
-        </DialogActions>
       </Dialog>
     </>
   )

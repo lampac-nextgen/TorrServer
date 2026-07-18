@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import axios from 'axios'
 import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
-import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
@@ -30,16 +29,21 @@ import { gstSettingsHost, settingsHost, torznabTestHost } from 'shared/api/hosts
 import defaultSettings from 'shared/settings/defaults'
 import { GST_RUNTIME_QUERY_KEY, useGStreamerRuntime } from 'shared/lib/gstreamer'
 import { notifySettingsChanged } from 'shared/lib/settingsEvents'
+import { clearTMDBCache } from 'shared/lib/torrentHelpers'
 import { queryMax } from 'shared/theme/breakpoints'
 import AppDialog from 'shared/ui/AppDialog'
 import { useOptionalAppToast } from 'shared/ui/Toast'
+
+import GStreamerSettingsPanel, { emptyGstConfig, type GStreamerConfig } from './GStreamerSettingsPanel'
+import MobilePlayersSection from './MobilePlayersSection'
+import TMDBSettingsSection from './TMDBSettingsSection'
 
 export interface SettingsDialogProps {
   open: boolean
   onClose: () => void
 }
 
-type SettingsTab = 'primary' | 'network' | 'features' | 'storage' | 'gstreamer' | 'torznab'
+type SettingsTab = 'primary' | 'network' | 'features' | 'storage' | 'app' | 'gstreamer' | 'torznab'
 
 const touchTargetSx = {
   minHeight: 44,
@@ -86,14 +90,6 @@ function SettingSwitch({
   )
 }
 
-interface GstConfig {
-  TranscodeAVI?: boolean
-  TranscodeH264?: boolean
-  TranscodeH265?: boolean
-  HardwareAcceleration?: boolean
-  [key: string]: unknown
-}
-
 export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
@@ -106,8 +102,8 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const [saving, setSaving] = useState(false)
   const [settings, setSettings] = useState<BTSets>({ ...defaultSettings })
   const [cacheSizeMb, setCacheSizeMb] = useState(defaultSettings.CacheSize ?? 64)
-  const [gstConfig, setGstConfig] = useState<GstConfig>({})
-  const [gstDefaults, setGstDefaults] = useState<GstConfig>({})
+  const [gstConfig, setGstConfig] = useState<GStreamerConfig>(emptyGstConfig())
+  const [gstDefaults, setGstDefaults] = useState<GStreamerConfig>(emptyGstConfig())
 
   const [newTorznabHost, setNewTorznabHost] = useState('')
   const [newTorznabKey, setNewTorznabKey] = useState('')
@@ -124,6 +120,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
       { id: 'network', label: t('Network', { defaultValue: 'Network' }) },
       { id: 'features', label: t('SettingsDialog.AdditionalSettings', { defaultValue: 'Features' }) },
       { id: 'storage', label: t('SettingsDialog.StorageSettings', { defaultValue: 'Storage' }) },
+      { id: 'app', label: t('SettingsDialog.Tabs.App', { defaultValue: 'App' }) },
     ]
     if (gstAvailable) {
       tabs.push({ id: 'gstreamer', label: t('GStreamer.Tab', { defaultValue: 'GStreamer' }) })
@@ -151,9 +148,13 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
     if (!response.ok) return
     const data = await response.json()
     if (!data.built_in) return
-    setGstConfig(data.config || {})
-    setGstDefaults(data.defaults || {})
+    setGstConfig({ ...emptyGstConfig(), ...(data.config || {}) })
+    setGstDefaults({ ...emptyGstConfig(), ...(data.defaults || {}) })
   }, [])
+
+  const updateSettingsPartial: import('shared/api/types').SettingsUpdater = partial => {
+    setSettings(prev => ({ ...prev, ...partial }))
+  }
 
   useEffect(() => {
     if (!open) return
@@ -256,6 +257,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
           PreloadCache: settings.PreloadCache ?? defaultSettings.PreloadCache,
         }
         await axios.post(settingsHost(), { action: 'set', sets })
+        clearTMDBCache()
         notifySettingsChanged()
         await queryClient.invalidateQueries({ queryKey: ['settings'] })
       }
@@ -500,59 +502,22 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               />
             </TabPanel>
 
+            <TabPanel active={tab} tab='app'>
+              <FormHelperText sx={{ mb: 2, mt: 0 }}>{t('SettingsDialog.AppTabHint')}</FormHelperText>
+              <TMDBSettingsSection settings={settings} updateSettings={updateSettingsPartial} />
+              <MobilePlayersSection />
+            </TabPanel>
+
             {gstAvailable ? (
               <TabPanel active={tab} tab='gstreamer'>
-                <Alert severity='success' sx={{ mb: 2 }}>
-                  {t('GStreamer.RuntimeAvailable', { defaultValue: 'GStreamer runtime is available' })}
-                </Alert>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={Boolean(gstConfig.TranscodeAVI)}
-                      onChange={e => setGstConfig(prev => ({ ...prev, TranscodeAVI: e.target.checked }))}
-                      sx={touchTargetSx}
-                    />
-                  }
-                  label={t('GStreamer.TranscodeAVI', { defaultValue: 'Transcode AVI' })}
-                  labelPlacement='start'
-                  sx={{ ml: 0, width: '100%', justifyContent: 'space-between', mr: 0, mb: 1 }}
-                />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={Boolean(gstConfig.TranscodeH264)}
-                      onChange={e => setGstConfig(prev => ({ ...prev, TranscodeH264: e.target.checked }))}
-                      sx={touchTargetSx}
-                    />
-                  }
-                  label={t('GStreamer.TranscodeH264', { defaultValue: 'Transcode H.264' })}
-                  labelPlacement='start'
-                  sx={{ ml: 0, width: '100%', justifyContent: 'space-between', mr: 0, mb: 1 }}
-                />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={Boolean(gstConfig.TranscodeH265)}
-                      onChange={e => setGstConfig(prev => ({ ...prev, TranscodeH265: e.target.checked }))}
-                      sx={touchTargetSx}
-                    />
-                  }
-                  label={t('GStreamer.TranscodeH265', { defaultValue: 'Transcode H.265' })}
-                  labelPlacement='start'
-                  sx={{ ml: 0, width: '100%', justifyContent: 'space-between', mr: 0, mb: 1 }}
-                />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={Boolean(gstConfig.HardwareAcceleration ?? gstDefaults.HardwareAcceleration)}
-                      onChange={e => setGstConfig(prev => ({ ...prev, HardwareAcceleration: e.target.checked }))}
-                      sx={touchTargetSx}
-                    />
-                  }
-                  label={t('GStreamer.HardwareAcceleration', { defaultValue: 'Hardware acceleration' })}
-                  labelPlacement='start'
-                  sx={{ ml: 0, width: '100%', justifyContent: 'space-between', mr: 0, mb: 1 }}
-                />
+                <GStreamerSettingsPanel config={gstConfig} onChange={setGstConfig} />
+                <Button
+                  sx={{ mt: 2 }}
+                  variant='outlined'
+                  onClick={() => setGstConfig({ ...emptyGstConfig(), ...gstDefaults })}
+                >
+                  {t('Reset', { defaultValue: 'Reset to defaults' })}
+                </Button>
               </TabPanel>
             ) : null}
 

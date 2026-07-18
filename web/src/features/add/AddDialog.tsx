@@ -19,6 +19,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useDropzone } from 'react-dropzone'
 import { torrentsHost } from 'shared/api/hosts'
+import { checkTorrentSource } from 'shared/lib/torrentHelpers'
 import { queryMax } from 'shared/theme/breakpoints'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import AppDialog from 'shared/ui/AppDialog'
@@ -77,6 +78,13 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
   const handleAdd = async () => {
     const trimmed = source.trim()
     if (!trimmed) return
+    if (!checkTorrentSource(trimmed)) {
+      toast?.showToast({
+        message: t('AddDialog.InvalidSource', { defaultValue: 'Invalid magnet, hash, or torrent link' }),
+        severity: 'error',
+      })
+      return
+    }
 
     setSaving(true)
     try {

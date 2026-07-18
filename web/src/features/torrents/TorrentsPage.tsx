@@ -1,5 +1,7 @@
 import { lazy, Suspense, useMemo, useState } from 'react'
 import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import ButtonBase from '@mui/material/ButtonBase'
 import Card from '@mui/material/Card'
 import CardActionArea from '@mui/material/CardActionArea'
 import CardContent from '@mui/material/CardContent'
@@ -7,7 +9,7 @@ import Skeleton from '@mui/material/Skeleton'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import CloudOffIcon from '@mui/icons-material/CloudOff'
-import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import CreateNewFolderOutlinedIcon from '@mui/icons-material/CreateNewFolderOutlined'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
@@ -23,6 +25,7 @@ const DetailsDialog = lazy(() => import('features/details/DetailsDialog'))
 export interface TorrentsPageProps {
   sortABC: boolean
   sortCategory: string
+  onAdd?: () => void
 }
 
 function sortTorrents(torrents: TorrentStat[], sortABC: boolean, sortCategory: string) {
@@ -40,7 +43,7 @@ function sortTorrents(torrents: TorrentStat[], sortABC: boolean, sortCategory: s
   })
 }
 
-export default function TorrentsPage({ sortABC, sortCategory }: TorrentsPageProps) {
+export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsPageProps) {
   const { t } = useTranslation()
   const isMobile = useMediaQuery(queryMax('mobile'))
   const [selected, setSelected] = useState<TorrentStat | null>(null)
@@ -106,8 +109,30 @@ export default function TorrentsPage({ sortABC, sortCategory }: TorrentsPageProp
           color: 'text.secondary',
         }}
       >
-        <FolderOpenIcon sx={{ fontSize: 48, mb: 1, opacity: 0.6 }} />
-        <Typography variant='h6'>{t('AddFirstTorrent', { defaultValue: 'Add your first torrent' })}</Typography>
+        <ButtonBase
+          onClick={onAdd}
+          disabled={!onAdd}
+          sx={{
+            display: 'grid',
+            placeItems: 'center',
+            gap: 1.5,
+            p: 3,
+            borderRadius: 2,
+            border: 1,
+            borderColor: 'divider',
+            borderStyle: 'dashed',
+            minWidth: 240,
+            minHeight: 160,
+          }}
+        >
+          <CreateNewFolderOutlinedIcon sx={{ fontSize: 48, opacity: 0.7 }} color='primary' />
+          <Typography variant='h6' color='text.primary'>
+            {t('NoTorrentsAdded', { defaultValue: 'No torrents added' })}
+          </Typography>
+          <Button variant='contained' component='span'>
+            {t('AddFirstTorrent', { defaultValue: 'Add your first torrent' })}
+          </Button>
+        </ButtonBase>
       </Box>
     )
   }
