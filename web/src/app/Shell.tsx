@@ -174,15 +174,24 @@ export default function Shell() {
           </HeaderIconButton>
         ) : null}
 
-        <h1 className={`flex min-w-0 flex-1 items-center gap-2 truncate font-semibold ${isShortViewport ? 'text-base' : 'text-lg'}`}>
+        <h1
+          className={`flex min-w-0 flex-1 items-center gap-2 truncate font-semibold ${isShortViewport ? 'text-base' : 'text-lg'}`}
+          title={torrServerVersion ? `TorrServer ${torrServerVersion}` : 'TorrServer'}
+        >
           <span className='truncate'>
-            TorrServer <span className='font-normal text-app-header-foreground/70'>{torrServerVersion}</span>
+            TorrServer
+            {!isMobile && torrServerVersion ? (
+              <span className='font-normal text-app-header-foreground/70'>
+                {' '}
+                {torrServerVersion.includes('-') ? torrServerVersion.split('-')[0] : torrServerVersion}
+              </span>
+            ) : null}
           </span>
           {categoryFilterLabel ? (
             <button
               type='button'
               onClick={() => setGlobalCategoryFilter('all')}
-              className='inline-flex min-h-10 shrink-0 items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium hover-fine:bg-white/25'
+              className='inline-flex min-h-11 shrink-0 items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium hover-fine:bg-white/25'
               aria-label={t('ClearCategoryFilter')}
             >
               <span className='max-w-[9rem] truncate'>{categoryFilterLabel}</span>

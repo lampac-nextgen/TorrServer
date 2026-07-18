@@ -137,9 +137,10 @@ body[data-immersive='true'] .ts-bottom-nav {
   padding-left: calc(1.5rem + env(safe-area-inset-left, 0px));
 }
 
-/* Poster library density: tighter tiles on phone, roomier on desktop (BP.mobile=700, BP.list2=1100). */
+/* Poster library density: ~2 cols on phone, denser on tablet+, roomier on desktop. */
 .torrent-poster-grid {
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  /* ~168px min → typically 2 columns on iPhone portrait (~390px). */
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
 }
 
 @media (min-width: 700px) {

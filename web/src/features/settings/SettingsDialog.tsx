@@ -83,15 +83,52 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
   const gstAvailable = Boolean(gstRuntime.built_in)
 
   const visibleTabs = useMemo(() => {
-    const tabs: { id: SettingsTab; label: string; icon: ReactNode }[] = [
-      { id: 'primary', label: t('SettingsDialog.Tabs.Main'), icon: <SlidersHorizontal size={17} /> },
-      { id: 'network', label: t('SettingsDialog.Tabs.Network'), icon: <Wifi size={17} /> },
-      { id: 'features', label: t('SettingsDialog.AdditionalSettings'), icon: <Cog size={17} /> },
-      { id: 'storage', label: t('SettingsDialog.StorageSettings'), icon: <HardDrive size={17} /> },
-      { id: 'app', label: t('SettingsDialog.Tabs.App'), icon: <Smartphone size={17} /> },
+    const tabs: { id: SettingsTab; label: string; shortLabel: string; icon: ReactNode }[] = [
+      {
+        id: 'primary',
+        label: t('SettingsDialog.Tabs.Main'),
+        shortLabel: t('SettingsDialog.Tabs.Main'),
+        icon: <SlidersHorizontal size={17} />,
+      },
+      {
+        id: 'network',
+        label: t('SettingsDialog.Tabs.Network'),
+        shortLabel: t('SettingsDialog.Tabs.Network'),
+        icon: <Wifi size={17} />,
+      },
+      {
+        id: 'features',
+        label: t('SettingsDialog.AdditionalSettings'),
+        shortLabel: t('SettingsDialog.Tabs.AdvancedShort'),
+        icon: <Cog size={17} />,
+      },
+      {
+        id: 'storage',
+        label: t('SettingsDialog.StorageSettings'),
+        shortLabel: t('SettingsDialog.Tabs.StorageShort'),
+        icon: <HardDrive size={17} />,
+      },
+      {
+        id: 'app',
+        label: t('SettingsDialog.Tabs.App'),
+        shortLabel: t('SettingsDialog.Tabs.App'),
+        icon: <Smartphone size={17} />,
+      },
     ]
-    if (gstAvailable) tabs.push({ id: 'gstreamer', label: t('GStreamer.Tab'), icon: <Film size={17} /> })
-    tabs.push({ id: 'torznab', label: t('Torznab.Tab'), icon: <Rss size={17} /> })
+    if (gstAvailable) {
+      tabs.push({
+        id: 'gstreamer',
+        label: t('GStreamer.Tab'),
+        shortLabel: t('GStreamer.Tab'),
+        icon: <Film size={17} />,
+      })
+    }
+    tabs.push({
+      id: 'torznab',
+      label: t('Torznab.Tab'),
+      shortLabel: t('Torznab.Tab'),
+      icon: <Rss size={17} />,
+    })
     return tabs
   }, [gstAvailable, t])
 
@@ -286,12 +323,14 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
                   id={item.id}
                   className={
                     isMobile
-                      ? 'min-h-11 whitespace-nowrap'
+                      ? 'min-h-11 shrink-0 gap-1.5 whitespace-nowrap px-2.5'
                       : 'min-h-10 items-start justify-start gap-2.5 px-3 py-2 text-left'
                   }
                 >
-                  {!isMobile ? <span className='mt-0.5'>{item.icon}</span> : null}
-                  <span className={isMobile ? 'truncate' : 'text-wrap leading-snug'}>{item.label}</span>
+                  <span className={isMobile ? 'shrink-0' : 'mt-0.5'}>{item.icon}</span>
+                  <span className={isMobile ? 'text-sm' : 'text-wrap leading-snug'}>
+                    {isMobile ? item.shortLabel : item.label}
+                  </span>
                 </Tabs.Tab>
               ))}
             </Tabs.List>
@@ -378,23 +417,31 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
           </Tabs.Root>
         )}
       </Modal.Body>
-      <Modal.Footer>
-        <Button
-          onPress={() => void handleResetDefaults()}
-          isDisabled={loading || saving}
-          variant='outline'
-          className={footerButtonClassName}
-        >
-          {t('SettingsDialog.ResetToDefault')}
-        </Button>
-        <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName} autoFocus>
-          {t('Cancel')}
-        </Button>
+      <Modal.Footer
+        className={
+          isMobile
+            ? 'flex flex-col-reverse gap-2 sm:flex-row sm:justify-end'
+            : undefined
+        }
+      >
+        <div className={isMobile ? 'grid grid-cols-2 gap-2' : 'contents'}>
+          <Button
+            onPress={() => void handleResetDefaults()}
+            isDisabled={loading || saving}
+            variant='outline'
+            className={footerButtonClassName}
+          >
+            {t('SettingsDialog.ResetToDefault')}
+          </Button>
+          <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName} autoFocus>
+            {t('Cancel')}
+          </Button>
+        </div>
         <Button
           variant='primary'
           onPress={() => void handleSave()}
           isDisabled={loading || saving}
-          className={footerButtonClassName}
+          className={isMobile ? `${footerButtonClassName || ''} w-full`.trim() : footerButtonClassName}
         >
           {saving ? <Spinner size='sm' color='current' /> : t('Save')}
         </Button>

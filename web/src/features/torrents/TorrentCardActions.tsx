@@ -79,7 +79,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
   }
 
   const overlayButtonClass =
-    'inline-flex h-10 w-10 min-h-10 min-w-10 items-center justify-center rounded-full bg-black/55 p-0 text-white backdrop-blur-sm hover-fine:bg-accent [&_svg]:m-0 [&_svg]:block'
+    'inline-flex h-11 w-11 min-h-11 min-w-11 items-center justify-center rounded-full bg-black/55 p-0 text-white backdrop-blur-sm hover-fine:bg-accent [&_svg]:m-0 [&_svg]:block'
 
   return (
     <>

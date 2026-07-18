@@ -203,7 +203,7 @@ export default function TorrentCard({
       </div>
 
       <div className='min-w-0 px-0.5'>
-        <h3 className='line-clamp-2 text-sm font-semibold leading-snug text-foreground' title={title}>
+        <h3 className='line-clamp-3 text-xs font-semibold leading-snug text-foreground sm:line-clamp-2 sm:text-sm' title={title}>
           {title}
         </h3>
         <div className='mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] leading-none text-muted sm:text-xs'>

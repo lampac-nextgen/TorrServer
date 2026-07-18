@@ -208,7 +208,9 @@
       "AdditionalDisabled": "(включіть ПРО-режим)",
       "App": "Застосунок",
       "Main": "Основні",
-      "Network": "Мережа"
+      "Network": "Мережа",
+      "AdvancedShort": "Додатково",
+      "StorageShort": "Сховище"
     },
     "TorrentDisconnectTimeout": "Час очікування відключення торрента",
     "TorrentsSavePath": "Шлях для збереження кешу",
@@ -457,5 +459,7 @@
   "CollapseSidebar": "Collapse sidebar",
   "ExpandSidebar": "Expand sidebar",
   "Volume": "Volume",
-  "PwaUpdateAvailable": "Update available"
+  "PwaUpdateAvailable": "Update available",
+  "FilterLibrary": "Фільтр бібліотеки",
+  "TorrentFiles": "Файли"
 }

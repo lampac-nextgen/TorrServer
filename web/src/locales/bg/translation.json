@@ -208,7 +208,9 @@
       "AdditionalDisabled": "(разрешете ПРО режим)",
       "App": "Приложение",
       "Main": "Основен",
-      "Network": "Мрежа"
+      "Network": "Мрежа",
+      "AdvancedShort": "Допълнителни",
+      "StorageShort": "Хранилище"
     },
     "TorrentDisconnectTimeout": "Време на изчакване на връзката с торенти",
     "TorrentsSavePath": "Път за запазване на торенти",
@@ -457,5 +459,7 @@
   "CollapseSidebar": "Collapse sidebar",
   "ExpandSidebar": "Expand sidebar",
   "Volume": "Volume",
-  "PwaUpdateAvailable": "Update available"
+  "PwaUpdateAvailable": "Update available",
+  "FilterLibrary": "Филтър на библиотеката",
+  "TorrentFiles": "Файлове"
 }

@@ -45,6 +45,7 @@ function ExternalPlayersGroup({
       key={player.label}
       variant='secondary'
       size={size}
+      className='min-h-11'
       onPress={() => {
         window.location.href = player.href
       }}

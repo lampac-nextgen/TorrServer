@@ -45,9 +45,9 @@ type DetailsTab = 'overview' | 'files' | 'cache'
 
 function StatWidget({ label, value }: { label: string; value: string }) {
   return (
-    <div className='min-w-[104px] flex-1 rounded-lg border border-border bg-surface-secondary px-3 py-2 text-center'>
-      <span className='block text-xs leading-tight text-muted'>{label}</span>
-      <span className='mt-1 block break-words text-base font-bold tabular-nums text-foreground' title={value}>
+    <div className='min-w-0 flex-1 rounded-lg border border-border bg-surface-secondary px-2.5 py-2 text-center sm:min-w-[104px] sm:px-3'>
+      <span className='block text-[11px] leading-tight text-muted sm:text-xs'>{label}</span>
+      <span className='mt-1 block break-words text-sm font-bold tabular-nums text-foreground sm:text-base' title={value}>
         {value || '—'}
       </span>
     </div>
@@ -254,7 +254,15 @@ export default function DetailsDialog({
                     {cache.Filled != null && cache.Capacity != null ? (
                       <StatWidget
                         label={t('CacheFilled')}
-                        value={`${humanizeSize(cache.Filled)} / ${humanizeSize(cache.Capacity)}`}
+                        value={(() => {
+                          const filled = cache.Filled
+                          const capacity = cache.Capacity
+                          const shown = Math.min(filled, capacity)
+                          const over = filled > capacity
+                          return over
+                            ? `${humanizeSize(shown)} / ${humanizeSize(capacity)} · ${Math.round((filled / capacity) * 100)}%`
+                            : `${humanizeSize(filled)} / ${humanizeSize(capacity)}`
+                        })()}
                       />
                     ) : null}
                   </div>
@@ -262,10 +270,16 @@ export default function DetailsDialog({
               </div>
 
               <Tabs.Root selectedKey={resolvedTab} onSelectionChange={key => setActiveTab(String(key) as DetailsTab)}>
-                <Tabs.List aria-label={t('TorrentDetails')}>
-                  <Tabs.Tab id='overview'>{t('Overview')}</Tabs.Tab>
-                  <Tabs.Tab id='files'>{t('TorrentContent')}</Tabs.Tab>
-                  <Tabs.Tab id='cache'>{t('Cache')}</Tabs.Tab>
+                <Tabs.List aria-label={t('TorrentDetails')} className='overflow-x-auto'>
+                  <Tabs.Tab id='overview' className='min-h-11 shrink-0'>
+                    {t('Overview')}
+                  </Tabs.Tab>
+                  <Tabs.Tab id='files' className='min-h-11 shrink-0' aria-label={t('TorrentContent')}>
+                    {t('TorrentFiles')}
+                  </Tabs.Tab>
+                  <Tabs.Tab id='cache' className='min-h-11 shrink-0'>
+                    {t('Cache')}
+                  </Tabs.Tab>
                 </Tabs.List>
 
                 <Tabs.Panel id='overview' className='space-y-4 pt-4'>

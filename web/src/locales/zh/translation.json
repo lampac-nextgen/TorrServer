@@ -208,7 +208,9 @@
       "AdditionalDisabled": "（启用专业模式）",
       "App": "应用程序",
       "Main": "主要",
-      "Network": "网络"
+      "Network": "网络",
+      "AdvancedShort": "高级",
+      "StorageShort": "存储"
     },
     "TorrentDisconnectTimeout": "种子断开超时",
     "TorrentsSavePath": "种子缓存保存路径",
@@ -457,5 +459,7 @@
   "CollapseSidebar": "Collapse sidebar",
   "ExpandSidebar": "Expand sidebar",
   "Volume": "Volume",
-  "PwaUpdateAvailable": "Update available"
+  "PwaUpdateAvailable": "Update available",
+  "FilterLibrary": "筛选库",
+  "TorrentFiles": "文件"
 }

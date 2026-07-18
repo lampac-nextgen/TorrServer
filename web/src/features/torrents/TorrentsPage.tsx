@@ -1,7 +1,7 @@
 import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
-import { Button, Input, Label, Spinner, TextField } from '@heroui/react'
+import { Button, Input, Label, Spinner, TextField, useMediaQuery } from '@heroui/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { CheckSquare, CloudOff, FolderPlus, ListMusic, Search, SearchX, Trash2, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -10,6 +10,8 @@ import { playlistAllUrl } from 'shared/api/extras'
 import { dropTorrent, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
 import { listContinueWatching, removeContinueWatching } from 'shared/lib/continueWatching'
+import { queryMax } from 'shared/theme/breakpoints'
+import { iconBtn } from 'shared/ui/controlClasses'
 import DialogErrorBoundary from 'shared/ui/DialogErrorBoundary'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
@@ -32,7 +34,7 @@ export interface TorrentsPageProps {
 }
 
 /** ~140–180px poster tiles by viewport: denser on phone, roomier on desktop. */
-const POSTER_GRID_CLASS = 'torrent-poster-grid grid min-h-full gap-3 p-3 pb-8 sm:gap-4 sm:p-4 md:gap-5 md:p-6'
+const POSTER_GRID_CLASS = 'torrent-poster-grid grid min-h-full gap-4 p-4 pb-8 sm:gap-4 sm:p-4 md:gap-5 md:p-6'
 const SKELETON_TILE_COUNT = 12
 
 function sortTorrents(torrents: TorrentStat[], sortABC: boolean, sortCategory: string): TorrentStat[] {
@@ -56,11 +58,13 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
   const queryClient = useQueryClient()
+  const isMobile = useMediaQuery(queryMax('mobile'))
   const gridRef = useRef<HTMLDivElement>(null)
   const [detailsTorrent, setDetailsTorrent] = useState<TorrentStat | null>(null)
   const [resumePlay, setResumePlay] = useState<{ fileIndex: number; timecode: number } | null>(null)
   const [editingTorrent, setEditingTorrent] = useState<TorrentStat | null>(null)
   const [libraryQuery, setLibraryQuery] = useState('')
+  const [libraryFilterOpen, setLibraryFilterOpen] = useState(false)
   const [selectionMode, setSelectionMode] = useState(false)
   const [selectedHashes, setSelectedHashes] = useState<Set<string>>(() => new Set())
   const [continueTick, setContinueTick] = useState(0)
@@ -131,30 +135,59 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
     }
   }
 
+  const showLibraryFilter = !isMobile || libraryFilterOpen || Boolean(libraryQuery.trim())
+
   const toolbar = (
     <div className='sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b border-border/60 bg-background/95 px-3 py-2 backdrop-blur-md sm:px-4'>
-      <TextField
-        aria-label={t('LibrarySearch')}
-        value={libraryQuery}
-        onChange={setLibraryQuery}
-        className='min-w-0 flex-1 sm:max-w-xs'
-      >
-        <Label className='sr-only'>{t('LibrarySearch')}</Label>
-        <Input placeholder={t('LibrarySearch')} />
-      </TextField>
+      {showLibraryFilter ? (
+        <TextField
+          aria-label={t('FilterLibrary')}
+          value={libraryQuery}
+          onChange={setLibraryQuery}
+          className='min-w-0 flex-1 sm:max-w-xs'
+          autoFocus={isMobile && libraryFilterOpen}
+        >
+          <Label className='sr-only'>{t('FilterLibrary')}</Label>
+          <Input placeholder={t('FilterLibrary')} />
+        </TextField>
+      ) : (
+        <Button
+          isIconOnly
+          variant='secondary'
+          className={iconBtn}
+          aria-label={t('FilterLibrary')}
+          onPress={() => setLibraryFilterOpen(true)}
+        >
+          <Search className='size-5' aria-hidden />
+        </Button>
+      )}
+      {isMobile && showLibraryFilter && libraryQuery ? (
+        <Button
+          isIconOnly
+          variant='ghost'
+          className={iconBtn}
+          aria-label={t('Clear')}
+          onPress={() => {
+            setLibraryQuery('')
+            setLibraryFilterOpen(false)
+          }}
+        >
+          <X className='size-5' aria-hidden />
+        </Button>
+      ) : null}
       <Button
         size='sm'
         variant={selectionMode ? 'primary' : 'secondary'}
+        className='min-h-11'
         onPress={() => (selectionMode ? exitSelection() : setSelectionMode(true))}
       >
         <CheckSquare className='size-4' aria-hidden />
-        {selectionMode
-          ? t('Cancel')
-          : t('Select')}
+        {selectionMode ? t('Cancel') : t('Select')}
       </Button>
       <Button
         size='sm'
         variant='secondary'
+        className='min-h-11'
         onPress={() => window.open(playlistAllUrl(), '_blank')}
         aria-label={t('DownloadAllPlaylists')}
       >
@@ -163,10 +196,10 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
       </Button>
       {selectionMode && selectedHashes.size > 0 ? (
         <>
-          <Button size='sm' variant='outline' onPress={() => void runBulk('drop')}>
+          <Button size='sm' variant='outline' className='min-h-11' onPress={() => void runBulk('drop')}>
             {t('DropTorrent')} ({selectedHashes.size})
           </Button>
-          <Button size='sm' variant='danger' onPress={() => void runBulk('delete')}>
+          <Button size='sm' variant='danger' className='min-h-11' onPress={() => void runBulk('delete')}>
             <Trash2 className='size-4' aria-hidden />
             {t('Delete')} ({selectedHashes.size})
           </Button>

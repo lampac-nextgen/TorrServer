@@ -20,7 +20,7 @@ export interface FileRowActionsProps {
   onProbeMedia?: () => void
 }
 
-const playerBtn = 'min-h-10 shrink-0 px-2.5 font-medium'
+const playerBtn = 'min-h-11 shrink-0 px-3 font-medium'
 
 /**
  * Per-file actions: primary Play (via shared launcher), external players, then icon Copy/Preload/Info.
@@ -69,7 +69,7 @@ export default function FileRowActions({
         <Button
           variant='primary'
           size='sm'
-          className='min-h-10 shrink-0 px-3'
+          className='min-h-11 shrink-0 px-3'
           isPending={isPlayPending}
           onPress={onPlay}
         >
@@ -84,7 +84,7 @@ export default function FileRowActions({
         <Button
           variant='primary'
           size='sm'
-          className='min-h-10 shrink-0 px-3'
+          className='min-h-11 shrink-0 px-3'
           onPress={() => window.open(openLinkHref, '_blank', 'noopener,noreferrer')}
         >
           <Play fill='currentColor' aria-hidden />

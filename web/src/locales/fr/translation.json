@@ -208,7 +208,9 @@
       "AdditionalDisabled": "(activer le mode PRO)",
       "App": "Application",
       "Main": "Principal",
-      "Network": "Réseau"
+      "Network": "Réseau",
+      "AdvancedShort": "Avancé",
+      "StorageShort": "Stockage"
     },
     "TorrentDisconnectTimeout": "Délai de déconnexion du torrent",
     "TorrentsSavePath": "Chemin de sauvegarde des torrents",
@@ -457,5 +459,7 @@
   "CollapseSidebar": "Collapse sidebar",
   "ExpandSidebar": "Expand sidebar",
   "Volume": "Volume",
-  "PwaUpdateAvailable": "Update available"
+  "PwaUpdateAvailable": "Update available",
+  "FilterLibrary": "Filtrer la bibliothèque",
+  "TorrentFiles": "Fichiers"
 }

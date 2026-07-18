@@ -208,7 +208,9 @@
       "AdditionalDisabled": "(enable PRO mode)",
       "App": "Application",
       "Main": "Main",
-      "Network": "Network"
+      "Network": "Network",
+      "AdvancedShort": "Advanced",
+      "StorageShort": "Storage"
     },
     "TorrentDisconnectTimeout": "Torrent Disconnect Timeout",
     "TorrentsSavePath": "Torrents Save Path",
@@ -457,5 +459,7 @@
   "CollapseSidebar": "Collapse sidebar",
   "ExpandSidebar": "Expand sidebar",
   "Volume": "Volume",
-  "PwaUpdateAvailable": "Update available"
+  "PwaUpdateAvailable": "Update available",
+  "FilterLibrary": "Filter library",
+  "TorrentFiles": "Files"
 }

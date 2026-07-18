@@ -208,7 +208,9 @@
       "AdditionalDisabled": "(activează modul PRO)",
       "App": "Aplicație",
       "Main": "Meniu Principal",
-      "Network": "Rețea"
+      "Network": "Rețea",
+      "AdvancedShort": "Avansat",
+      "StorageShort": "Stocare"
     },
     "TorrentDisconnectTimeout": "Timp de expirare pentru deconectarea torrentului",
     "TorrentsSavePath": "Calea de salvare a torrentelor",
@@ -457,5 +459,7 @@
   "CollapseSidebar": "Collapse sidebar",
   "ExpandSidebar": "Expand sidebar",
   "Volume": "Volume",
-  "PwaUpdateAvailable": "Update available"
+  "PwaUpdateAvailable": "Update available",
+  "FilterLibrary": "Filtrează biblioteca",
+  "TorrentFiles": "Fișiere"
 }
