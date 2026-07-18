@@ -21,6 +21,7 @@ import { notifySettingsChanged } from 'shared/lib/settingsEvents'
 import { clearTMDBCache } from 'shared/lib/torrentHelpers'
 import { queryMax } from 'shared/theme/breakpoints'
 import AppDialog from 'shared/ui/AppDialog'
+import { DIALOG_SETTINGS } from 'shared/ui/dialogSizes'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
 import FeaturesSettingsPanel from './FeaturesSettingsPanel'
@@ -77,7 +78,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
   const visibleTabs = useMemo(() => {
     const tabs: { id: SettingsTab; label: string; icon: ReactNode }[] = [
       { id: 'primary', label: t('SettingsDialog.Tabs.Main'), icon: <SlidersHorizontal size={17} /> },
-      { id: 'network', label: t('Network'), icon: <Wifi size={17} /> },
+      { id: 'network', label: t('SettingsDialog.Tabs.Network'), icon: <Wifi size={17} /> },
       { id: 'features', label: t('SettingsDialog.AdditionalSettings'), icon: <Cog size={17} /> },
       { id: 'storage', label: t('SettingsDialog.StorageSettings'), icon: <HardDrive size={17} /> },
       { id: 'app', label: t('SettingsDialog.Tabs.App'), icon: <Smartphone size={17} /> },
@@ -200,13 +201,13 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
       onClose={onClose}
       size='lg'
       fullScreen={isFullScreenBreakpoint}
-      dialogStyle={isMobile ? undefined : { minWidth: '48rem', maxWidth: '56rem' }}
+      dialogStyle={isMobile ? undefined : DIALOG_SETTINGS}
     >
       <Modal.Header>
         <Modal.Heading>{t('SettingsDialog.Settings')}</Modal.Heading>
         <Modal.CloseTrigger />
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body className={loading ? undefined : isMobile ? undefined : 'min-h-[min(60dvh,32rem)]'}>
         {loading ? (
           <div className='grid place-items-center py-16'>
             <Spinner size='lg' />

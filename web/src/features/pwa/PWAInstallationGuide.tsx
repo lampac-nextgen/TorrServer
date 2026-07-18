@@ -52,7 +52,14 @@ export default function PWAInstallationGuide() {
       <div className='mb-2 grid grid-cols-[50px_1fr_auto] items-center gap-3'>
         <img src={publicUrl('icon.png')} width={50} height={50} alt='' className='rounded-lg' />
         <p className='text-base font-semibold'>{t('PWAGuide.Header')}</p>
-        <Button isIconOnly size='sm' variant='ghost' aria-label={t('Close')} onPress={dismiss}>
+        <Button
+          isIconOnly
+          size='sm'
+          variant='ghost'
+          aria-label={t('Close')}
+          onPress={dismiss}
+          className='min-h-10 min-w-10'
+        >
           <X className='size-4' />
         </Button>
       </div>

@@ -263,9 +263,8 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
       <div
         ref={scrollWrapperRef}
         className={`relative w-full min-w-0 rounded-lg border border-border bg-surface-secondary p-2 ${
-          isMiniView ? 'grid max-h-[420px] justify-center overflow-hidden' : 'max-h-[min(70dvh,640px)] overflow-auto'
+          isMiniView ? 'grid max-h-[420px] justify-center overflow-hidden' : 'min-w-0'
         }`}
-        style={isMiniView ? undefined : { WebkitOverflowScrolling: 'touch' }}
       >
         {piecesPerRow > 0 && canvasHeight > 0 ? (
           <canvas

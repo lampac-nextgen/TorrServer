@@ -1,5 +1,5 @@
 import { Button, Spinner, useMediaQuery } from '@heroui/react'
-import { Film, Users } from 'lucide-react'
+import { Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import type { SearchResultItem } from 'shared/api/types'
@@ -15,8 +15,8 @@ interface SearchResultsGridProps {
 }
 
 /**
- * Search results as a dense list/table — Torznab/Rutor rarely ship posters, so a poster grid
- * wastes space on empty Film placeholders. Optional poster thumb stays when present.
+ * Dense list/table of Torznab/Rutor results — no Film/poster placeholders (covers aren't
+ * available until a torrent is added). Fixed table layout avoids horizontal scroll.
  */
 export default function SearchResultsGrid({
   results,
@@ -41,7 +41,6 @@ export default function SearchResultsGrid({
               key={key}
               className={`flex gap-3 rounded-xl border border-border bg-surface p-3 ${busy ? 'border-accent/40 bg-accent-soft/30' : ''}`}
             >
-              <PosterThumb poster={item.Poster} />
               <div className='min-w-0 flex-1'>
                 <div className='mb-1 flex flex-wrap items-center gap-1.5'>
                   {item.Tracker ? (
@@ -80,15 +79,14 @@ export default function SearchResultsGrid({
   }
 
   return (
-    <div className={`overflow-auto rounded-xl border border-border ${adding ? 'opacity-90' : ''}`}>
-      <table className='w-full min-w-[640px] border-collapse text-sm'>
+    <div className={`w-full overflow-x-hidden rounded-xl border border-border ${adding ? 'opacity-90' : ''}`}>
+      <table className='w-full table-fixed border-collapse text-sm'>
         <thead className='bg-surface-tertiary text-left text-xs uppercase tracking-wide text-muted'>
           <tr>
-            <th className='w-12 px-3 py-2.5' />
             <th className='px-3 py-2.5'>{t('Name')}</th>
             <th className='w-28 px-3 py-2.5'>{t('Size')}</th>
-            <th className='w-24 px-3 py-2.5'>{t('Seeders')}</th>
-            <th className='w-24 px-3 py-2.5'>{t('Peers')}</th>
+            <th className='w-24 px-3 py-2.5'>{t('Search.Seeders')}</th>
+            <th className='w-24 px-3 py-2.5'>{t('Search.Peers')}</th>
             <th className='w-28 px-3 py-2.5' />
           </tr>
         </thead>
@@ -102,9 +100,6 @@ export default function SearchResultsGrid({
                 key={key}
                 className={`border-t border-border ${busy ? 'bg-accent-soft/40' : 'hover:bg-surface-secondary/80'}`}
               >
-                <td className='px-3 py-2.5 align-middle'>
-                  <PosterThumb poster={item.Poster} />
-                </td>
                 <td className='px-3 py-2.5 align-top'>
                   <div className='flex flex-col gap-1'>
                     {item.Tracker ? (
@@ -112,7 +107,7 @@ export default function SearchResultsGrid({
                         {item.Tracker}
                       </span>
                     ) : null}
-                    <span className='break-words leading-snug text-foreground' title={item.Title}>
+                    <span className='line-clamp-3 break-words leading-snug text-foreground' title={item.Title}>
                       {item.Title || '—'}
                     </span>
                   </div>
@@ -136,17 +131,6 @@ export default function SearchResultsGrid({
           })}
         </tbody>
       </table>
-    </div>
-  )
-}
-
-function PosterThumb({ poster }: { poster?: string }) {
-  if (poster) {
-    return <img src={poster} alt='' className='h-14 w-10 shrink-0 rounded-md object-cover' loading='lazy' />
-  }
-  return (
-    <div className='grid h-14 w-10 shrink-0 place-items-center rounded-md bg-surface-tertiary'>
-      <Film className='size-4 text-muted' aria-hidden />
     </div>
   )
 }

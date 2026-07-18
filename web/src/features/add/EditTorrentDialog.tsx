@@ -10,6 +10,7 @@ import { getMoviePosters, shortenTitleForPosterSearch } from 'shared/lib/torrent
 import { queryMax } from 'shared/theme/breakpoints'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import AppDialog from 'shared/ui/AppDialog'
+import { DIALOG_SHEET_M } from 'shared/ui/dialogSizes'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
@@ -99,7 +100,7 @@ export default function EditTorrentDialog({ torrent, open, onClose }: EditTorren
       onClose={onClose}
       size='md'
       fullScreen={isFullScreenBreakpoint}
-      dialogStyle={isMobile ? undefined : { minWidth: '38rem', maxWidth: '46rem' }}
+      dialogStyle={isMobile ? undefined : DIALOG_SHEET_M}
     >
       <Modal.Header>
         <Modal.Heading>{t('EditTorrent')}</Modal.Heading>

@@ -23,7 +23,6 @@
   "AddFromLink": "Adăugați Torrent",
   "AddNewTorrent": "Adăugați un torrent nou",
   "All": "Toate",
-  "AllTrackers": "Toate Trackerele",
   "ApiDocs": "Documentație API",
   "B": "B",
   "bps": "bps",
@@ -121,7 +120,6 @@
   "RemoveAll": "Ștergeți tot",
   "RemoveViews": "Șterge starea de vizualizare",
   "Resolution": "Rezoluție",
-  "Rutor": "RuTor",
   "Save": "Salvați",
   "ScrollDown": "derulați în jos",
   "Search": "Căutare",
@@ -200,7 +198,8 @@
       "Additional": "Suplimentar",
       "AdditionalDisabled": "(activează modul PRO)",
       "App": "Aplicație",
-      "Main": "Meniu Principal"
+      "Main": "Meniu Principal",
+      "Network": "Rețea"
     },
     "TorrentDisconnectTimeout": "Timp de expirare pentru deconectarea torrentului",
     "TorrentsSavePath": "Calea de salvare a torrentelor",
@@ -280,7 +279,10 @@
     "HostHint": "Jackett: …/indexers/all/results/torznab/ — Prowlarr: http://localhost:9696/1. TorrServer appends /api when needed.",
     "NoIndexersConfigured": "Torznab is enabled but no indexers are configured. Add a Host URL and API key below.",
     "NoSearchSources": "No search sources enabled. Turn on RuTor and/or Torznab in Settings → Search.",
-    "Tab": "Torznab"
+    "Tab": "Torznab",
+    "AllCategories": "Toate categoriile",
+    "Category": "Categorie",
+    "LoadMore": "Încarcă mai mult"
   },
   "GStreamer": {
     "X264Ultrafast": "Use x264 ultrafast preset",
@@ -352,7 +354,6 @@
     "ImageURLRu": "URL imagine TMDB (Rusia)",
     "ImageURLRuHint": "URL alternativ de imagine pentru utilizatorii ruși. Sursele imaginilor sunt adăugate automat (implicit: https://imagetmdb.com)"
   },
-  "Tracker": "Tracker",
   "TurnOff": "Oprire",
   "Uncategorized": "Necategorizat",
   "UploadSpeed": "Viteza de Upload",
@@ -372,20 +373,23 @@
   "TorrFS": "TorrServer FS",
   "NoTorrentsInCategory": "Niciun torrent în această categorie",
   "ShowAllTorrents": "Afișează tot",
-  "SortByDate": "Sort by date",
-  "SortByName": "Sort by name",
+  "SortByDate": "Sortare după dată",
+  "SortByName": "Sortare după nume",
   "Menu": "Meniu",
   "Theme": "Temă",
   "ThemeLight": "Luminos",
   "ThemeDark": "Întunecat",
   "ThemeAuto": "Automat",
   "Language": "Limbă",
-  "Back": "Back",
+  "Back": "Înapoi",
   "DLNA": "Server media DLNA",
-  "AddFirstTorrent": "Add your first torrent",
-  "Network": "Network",
-  "NoResults": "No results",
-  "SearchQuery": "Search query",
-  "Seeders": "Seeders",
-  "TorrentAdded": "Torrent added"
+  "AddFirstTorrent": "Adăugați primul torrent",
+  "Search.QueryLabel": "Interogare de căutare",
+  "Search.NoResults": "Niciun rezultat",
+  "Search.TorrentAdded": "Torrent adăugat",
+  "Search.Tracker": "Tracker",
+  "Search.AllTrackers": "Toate trackerele",
+  "Search.Seeders": "Seederi",
+  "Search.Peers": "Peeri",
+  "Search.Rutor": "RuTor"
 }

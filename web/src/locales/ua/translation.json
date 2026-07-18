@@ -23,7 +23,6 @@
   "AddFromLink": "Додати торент",
   "AddNewTorrent": "Додати новий торент",
   "All": "Усе",
-  "AllTrackers": "Всі трекери",
   "ApiDocs": "Документація API",
   "B": "Б",
   "bps": "біт/c",
@@ -121,7 +120,6 @@
   "RemoveAll": "Видалити все",
   "RemoveViews": "Видалити перегляди",
   "Resolution": "Дозволи",
-  "Rutor": "RuTor",
   "Save": "Зберегти",
   "ScrollDown": "прокрутіть вних",
   "Search": "Пошук",
@@ -200,7 +198,8 @@
       "Additional": "Додаткові",
       "AdditionalDisabled": "(включіть ПРО-режим)",
       "App": "Застосунок",
-      "Main": "Основні"
+      "Main": "Основні",
+      "Network": "Мережа"
     },
     "TorrentDisconnectTimeout": "Час очікування відключення торрента",
     "TorrentsSavePath": "Шлях для збереження кешу",
@@ -280,7 +279,10 @@
     "HostHint": "Jackett: …/indexers/all/results/torznab/ — Prowlarr: http://localhost:9696/1. TorrServer appends /api when needed.",
     "NoIndexersConfigured": "Torznab is enabled but no indexers are configured. Add a Host URL and API key below.",
     "NoSearchSources": "No search sources enabled. Turn on RuTor and/or Torznab in Settings → Search.",
-    "Tab": "Torznab"
+    "Tab": "Torznab",
+    "AllCategories": "Всі категорії",
+    "Category": "Категорія",
+    "LoadMore": "Завантажити ще"
   },
   "GStreamer": {
     "Tab": "GStreamer",
@@ -351,7 +353,6 @@
     "ImageURLRu": "TMDB URL зображень (Росія)",
     "ImageURLRuHint": "Альтернативний URL зображень для російських користувачів. Шляхи зображень додаються автоматично (за замовчуванням: https://imagetmdb.com)"
   },
-  "Tracker": "Трекер",
   "TurnOff": "Виключити",
   "Uncategorized": "Без категорії",
   "UploadSpeed": "Швидкість відвантаження",
@@ -371,20 +372,23 @@
   "TorrFS": "TorrServer FS",
   "NoTorrentsInCategory": "У цій категорії немає торентів",
   "ShowAllTorrents": "Показати всі",
-  "SortByDate": "Sort by date",
-  "SortByName": "Sort by name",
+  "SortByDate": "Сортувати за датою",
+  "SortByName": "Сортувати за назвою",
   "Menu": "Меню",
   "Theme": "Тема",
   "ThemeLight": "Світла",
   "ThemeDark": "Темна",
   "ThemeAuto": "Авто",
   "Language": "Мова",
-  "Back": "Back",
+  "Back": "Назад",
   "DLNA": "DLNA-медиасервер",
-  "AddFirstTorrent": "Add your first torrent",
-  "Network": "Network",
-  "NoResults": "No results",
-  "SearchQuery": "Search query",
-  "Seeders": "Seeders",
-  "TorrentAdded": "Torrent added"
+  "AddFirstTorrent": "Додайте перший торент",
+  "Search.QueryLabel": "Пошуковий запит",
+  "Search.NoResults": "Немає результатів",
+  "Search.TorrentAdded": "Торент додано",
+  "Search.Tracker": "Трекер",
+  "Search.AllTrackers": "Всі трекери",
+  "Search.Seeders": "Сіди",
+  "Search.Peers": "Піри",
+  "Search.Rutor": "RuTor"
 }

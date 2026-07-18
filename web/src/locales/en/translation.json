@@ -23,7 +23,6 @@
   "AddFromLink": "Add Torrent",
   "AddNewTorrent": "Add new torrent",
   "All": "All",
-  "AllTrackers": "All Trackers",
   "ApiDocs": "API Docs",
   "B": "B",
   "bps": "bps",
@@ -121,7 +120,6 @@
   "RemoveAll": "Remove All",
   "RemoveViews": "Remove View States",
   "Resolution": "Resolution",
-  "Rutor": "RuTor",
   "Save": "Save",
   "ScrollDown": "scroll down",
   "Search": "Search",
@@ -200,7 +198,8 @@
       "Additional": "Additional",
       "AdditionalDisabled": "(enable PRO mode)",
       "App": "Application",
-      "Main": "Main"
+      "Main": "Main",
+      "Network": "Network"
     },
     "TorrentDisconnectTimeout": "Torrent Disconnect Timeout",
     "TorrentsSavePath": "Torrents Save Path",
@@ -254,13 +253,15 @@
   "TorrentStatus": "Torrent Status",
   "TorrentWorking": "Active",
   "Torznab": {
-    "AddServer": "Add Server",
+    "AllCategories": "All categories",
+    "Category": "Category",
     "APIKey": "API Key",
     "ConnectionSuccessful": "Connection successful",
     "EnableSearchViaTorznab": "Enable search via Torznab indexers (e.g. Jackett, Prowlarr)",
     "EnableTorznabSearch": "Enable Torznab Search",
     "FailedToAddTorrent": "Failed to add torrent",
     "HostHint": "Jackett: …/indexers/all/results/torznab/ — Prowlarr: http://localhost:9696/1. TorrServer appends /api when needed.",
+    "LoadMore": "Load more",
     "NameOptional": "Name (Optional)",
     "NoIndexersConfigured": "Torznab is enabled but no indexers are configured. Add a Host URL and API key below.",
     "NoLinkFound": "No link found",
@@ -351,7 +352,6 @@
     "ImageURLRu": "TMDB Image URL (Russia)",
     "ImageURLRuHint": "Alternative image URL for Russian users. Image paths are added automatically (default: https://imagetmdb.com)"
   },
-  "Tracker": "Tracker",
   "TurnOff": "Turn Off",
   "Uncategorized": "Uncategorized",
   "UploadSpeed": "Upload speed",
@@ -382,9 +382,12 @@
   "Back": "Back",
   "DLNA": "DLNA Media Server",
   "AddFirstTorrent": "Add your first torrent",
-  "Network": "Network",
-  "NoResults": "No results",
-  "SearchQuery": "Search query",
-  "Seeders": "Seeders",
-  "TorrentAdded": "Torrent added"
+  "Search.QueryLabel": "Search query",
+  "Search.NoResults": "No results",
+  "Search.TorrentAdded": "Torrent added",
+  "Search.Tracker": "Tracker",
+  "Search.AllTrackers": "All Trackers",
+  "Search.Seeders": "Seeders",
+  "Search.Peers": "Peers",
+  "Search.Rutor": "RuTor"
 }

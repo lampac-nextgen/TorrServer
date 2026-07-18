@@ -140,6 +140,20 @@ export interface OfflineAwareProps {
   isLoading?: boolean
 }
 
+export interface TorznabCapsCategory {
+  id: string
+  name: string
+  subcategories?: TorznabCapsCategory[]
+}
+
+export interface TorznabCapsResponse {
+  limits: {
+    max: number
+    default: number
+  }
+  categories: TorznabCapsCategory[]
+}
+
 /** Torznab / Rutor search result row */
 export interface SearchResultItem {
   Title?: string

@@ -23,7 +23,6 @@
   "AddFromLink": "Ajouter un torrent",
   "AddNewTorrent": "Ajouter un nouveau torrent",
   "All": "Tous",
-  "AllTrackers": "Tous les trackers",
   "ApiDocs": "Documentation API",
   "B": "o",
   "bps": "bit/s",
@@ -121,7 +120,6 @@
   "RemoveAll": "Tout supprimer",
   "RemoveViews": "Supprimer les états de visualisation",
   "Resolution": "Résolution",
-  "Rutor": "RuTor",
   "Save": "Enregistrer",
   "ScrollDown": "défiler vers le bas",
   "Search": "Rechercher",
@@ -200,7 +198,8 @@
       "Additional": "Supplémentaire",
       "AdditionalDisabled": "(activer le mode PRO)",
       "App": "Application",
-      "Main": "Principal"
+      "Main": "Principal",
+      "Network": "Réseau"
     },
     "TorrentDisconnectTimeout": "Délai de déconnexion du torrent",
     "TorrentsSavePath": "Chemin de sauvegarde des torrents",
@@ -280,7 +279,10 @@
     "HostHint": "Jackett: …/indexers/all/results/torznab/ — Prowlarr: http://localhost:9696/1. TorrServer appends /api when needed.",
     "NoIndexersConfigured": "Torznab is enabled but no indexers are configured. Add a Host URL and API key below.",
     "NoSearchSources": "No search sources enabled. Turn on RuTor and/or Torznab in Settings → Search.",
-    "Tab": "Torznab"
+    "Tab": "Torznab",
+    "AllCategories": "Toutes les catégories",
+    "Category": "Catégorie",
+    "LoadMore": "Charger plus"
   },
   "GStreamer": {
     "Tab": "GStreamer",
@@ -351,7 +353,6 @@
     "ImageURLRu": "URL d'image TMDB (Russie)",
     "ImageURLRuHint": "URL d'image alternative pour les utilisateurs russes. Les chemins d'image sont ajoutés automatiquement (par défaut : https://imagetmdb.com)"
   },
-  "Tracker": "Tracker",
   "TurnOff": "Éteindre",
   "Uncategorized": "Non catégorisé",
   "UploadSpeed": "Vitesse de téléversement",
@@ -371,20 +372,23 @@
   "TorrFS": "TorrServer FS",
   "NoTorrentsInCategory": "Aucun torrent dans cette catégorie",
   "ShowAllTorrents": "Tout afficher",
-  "SortByDate": "Sort by date",
-  "SortByName": "Sort by name",
+  "SortByDate": "Trier par date",
+  "SortByName": "Trier par nom",
   "Menu": "Menu",
   "Theme": "Thème",
   "ThemeLight": "Clair",
   "ThemeDark": "Sombre",
   "ThemeAuto": "Auto",
   "Language": "Langue",
-  "Back": "Back",
+  "Back": "Retour",
   "DLNA": "Serveur multimédia DLNA",
-  "AddFirstTorrent": "Add your first torrent",
-  "Network": "Network",
-  "NoResults": "No results",
-  "SearchQuery": "Search query",
-  "Seeders": "Seeders",
-  "TorrentAdded": "Torrent added"
+  "AddFirstTorrent": "Ajoutez votre premier torrent",
+  "Search.QueryLabel": "Requête de recherche",
+  "Search.NoResults": "Aucun résultat",
+  "Search.TorrentAdded": "Torrent ajouté",
+  "Search.Tracker": "Tracker",
+  "Search.AllTrackers": "Tous les trackers",
+  "Search.Seeders": "Sources",
+  "Search.Peers": "Pairs",
+  "Search.Rutor": "RuTor"
 }

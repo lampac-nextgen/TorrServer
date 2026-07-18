@@ -55,6 +55,23 @@ type torznabError struct {
 	Description string `xml:"description,attr"`
 }
 
+type CapsCategory struct {
+	ID      string         `xml:"id,attr"`
+	Name    string         `xml:"name,attr"`
+	Subcats []CapsCategory `xml:"subcat"`
+}
+
+type CapsLimits struct {
+	Max     int `xml:"max,attr"`
+	Default int `xml:"default,attr"`
+}
+
+type Caps struct {
+	XMLName    xml.Name       `xml:"caps"`
+	Limits     CapsLimits     `xml:"limits"`
+	Categories []CapsCategory `xml:"categories>category"`
+}
+
 // normalizeHost turns a configured Torznab base into an API URL ending in /api.
 // Paths that already end with /api or /api/ are left as-is (minus trailing slash handling).
 func normalizeHost(host string) (*url.URL, error) {
@@ -91,7 +108,7 @@ func normalizeHost(host string) (*url.URL, error) {
 	return u, nil
 }
 
-func Search(ctx context.Context, query string, index int) []*models.TorrentDetails {
+func Search(ctx context.Context, query string, index int, cat string, offset, limit int) []*models.TorrentDetails {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -99,11 +116,16 @@ func Search(ctx context.Context, query string, index int) []*models.TorrentDetai
 		return nil
 	}
 
+	searchOffset := offset
+	if index < 0 {
+		searchOffset = 0
+	}
+
 	var allResults []*models.TorrentDetails
 	if index >= 0 && index < len(settings.BTsets.TorznabUrls) {
 		config := settings.BTsets.TorznabUrls[index]
 		if config.Host != "" && config.Key != "" {
-			return searchOne(ctx, config.Host, config.Key, query, indexerLabel(config))
+			return searchOne(ctx, config.Host, config.Key, query, indexerLabel(config), cat, searchOffset, limit)
 		}
 		return nil
 	}
@@ -112,7 +134,7 @@ func Search(ctx context.Context, query string, index int) []*models.TorrentDetai
 		if config.Host == "" || config.Key == "" {
 			continue
 		}
-		results := searchOne(ctx, config.Host, config.Key, query, indexerLabel(config))
+		results := searchOne(ctx, config.Host, config.Key, query, indexerLabel(config), cat, searchOffset, limit)
 		if results != nil {
 			allResults = append(allResults, results...)
 		}
@@ -133,7 +155,7 @@ func indexerLabel(config settings.TorznabConfig) string {
 	return config.Host
 }
 
-func searchOne(ctx context.Context, host, key, query, label string) []*models.TorrentDetails {
+func searchOne(ctx context.Context, host, key, query, label, cat string, offset, limit int) []*models.TorrentDetails {
 	u, err := normalizeHost(host)
 	if err != nil {
 		log.TLogln("Error parsing Torznab host:", err)
@@ -144,6 +166,15 @@ func searchOne(ctx context.Context, host, key, query, label string) []*models.To
 	q.Set("apikey", key)
 	q.Set("t", "search")
 	q.Set("q", query)
+	if cat != "" {
+		q.Set("cat", cat)
+	}
+	if offset > 0 {
+		q.Set("offset", strconv.Itoa(offset))
+	}
+	if limit > 0 {
+		q.Set("limit", strconv.Itoa(limit))
+	}
 	u.RawQuery = q.Encode()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
@@ -238,14 +269,14 @@ func searchOne(ctx context.Context, host, key, query, label string) []*models.To
 	return results
 }
 
-func Test(ctx context.Context, host, key string) error {
+func FetchCaps(ctx context.Context, host, key string) (*Caps, error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
 	u, err := normalizeHost(host)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	q := u.Query()
@@ -255,38 +286,47 @@ func Test(ctx context.Context, host, key string) error {
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("status: %s", resp.Status)
+		return nil, fmt.Errorf("status: %s", resp.Status)
 	}
 
+	return ParseCapsBytes(body)
+}
+
+func ParseCapsBytes(body []byte) (*Caps, error) {
 	if errMsg := parseTorznabError(body); errMsg != "" {
-		return fmt.Errorf("api error: %s", errMsg)
+		return nil, fmt.Errorf("api error: %s", errMsg)
 	}
 
-	var probe torznabError
-	if err := xml.Unmarshal(body, &probe); err != nil {
-		return fmt.Errorf("invalid xml response: %v", err)
+	var caps Caps
+	if err := xml.Unmarshal(body, &caps); err != nil {
+		return nil, fmt.Errorf("invalid xml response: %v", err)
 	}
 
-	if probe.XMLName.Local != "caps" {
-		return fmt.Errorf("unexpected xml root: %s", probe.XMLName.Local)
+	if caps.XMLName.Local != "caps" {
+		return nil, fmt.Errorf("unexpected xml root: %s", caps.XMLName.Local)
 	}
 
-	return nil
+	return &caps, nil
+}
+
+func Test(ctx context.Context, host, key string) error {
+	_, err := FetchCaps(ctx, host, key)
+	return err
 }
 
 func parseTorznabError(body []byte) string {

@@ -23,7 +23,6 @@
   "AddFromLink": "添加种子",
   "AddNewTorrent": "添加新种子",
   "All": "全部",
-  "AllTrackers": "所有Tracker",
   "ApiDocs": "API 文档",
   "B": "B",
   "bps": "bps",
@@ -121,7 +120,6 @@
   "RemoveAll": "全部删除",
   "RemoveViews": "移除视图状态",
   "Resolution": "分辨率",
-  "Rutor": "RuTor",
   "Save": "保存",
   "ScrollDown": "向下滚动",
   "Search": "搜索",
@@ -200,7 +198,8 @@
       "Additional": "附加",
       "AdditionalDisabled": "（启用专业模式）",
       "App": "应用程序",
-      "Main": "主要"
+      "Main": "主要",
+      "Network": "网络"
     },
     "TorrentDisconnectTimeout": "种子断开超时",
     "TorrentsSavePath": "种子缓存保存路径",
@@ -280,7 +279,10 @@
     "HostHint": "Jackett: …/indexers/all/results/torznab/ — Prowlarr: http://localhost:9696/1. TorrServer appends /api when needed.",
     "NoIndexersConfigured": "Torznab is enabled but no indexers are configured. Add a Host URL and API key below.",
     "NoSearchSources": "No search sources enabled. Turn on RuTor and/or Torznab in Settings → Search.",
-    "Tab": "Torznab"
+    "Tab": "Torznab",
+    "AllCategories": "所有分类",
+    "Category": "分类",
+    "LoadMore": "加载更多"
   },
   "GStreamer": {
     "Tab": "GStreamer",
@@ -351,7 +353,6 @@
     "ImageURLRu": "TMDB图片URL（俄罗斯）",
     "ImageURLRuHint": "俄罗斯用户的替代图片URL。图片路径自动添加（默认：https://imagetmdb.com）"
   },
-  "Tracker": "Tracker",
   "TurnOff": "关闭",
   "Uncategorized": "未分类",
   "UploadSpeed": "上传速度",
@@ -371,20 +372,23 @@
   "TorrFS": "TorrServer FS",
   "NoTorrentsInCategory": "此分类下没有种子",
   "ShowAllTorrents": "显示全部",
-  "SortByDate": "Sort by date",
-  "SortByName": "Sort by name",
+  "SortByDate": "按日期排序",
+  "SortByName": "按名称排序",
   "Menu": "菜单",
   "Theme": "主题",
   "ThemeLight": "浅色",
   "ThemeDark": "深色",
   "ThemeAuto": "自动",
   "Language": "语言",
-  "Back": "Back",
+  "Back": "返回",
   "DLNA": "DLNA媒体服务器",
-  "AddFirstTorrent": "Add your first torrent",
-  "Network": "Network",
-  "NoResults": "No results",
-  "SearchQuery": "Search query",
-  "Seeders": "Seeders",
-  "TorrentAdded": "Torrent added"
+  "AddFirstTorrent": "添加您的第一个种子",
+  "Search.QueryLabel": "搜索关键词",
+  "Search.NoResults": "无结果",
+  "Search.TorrentAdded": "种子已添加",
+  "Search.Tracker": "Tracker",
+  "Search.AllTrackers": "所有 Tracker",
+  "Search.Seeders": "做种数",
+  "Search.Peers": "连接数",
+  "Search.Rutor": "RuTor"
 }

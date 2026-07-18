@@ -29,6 +29,7 @@ import {
 import { queryMax } from 'shared/theme/breakpoints'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import AppDialog from 'shared/ui/AppDialog'
+import { DIALOG_SHEET_M } from 'shared/ui/dialogSizes'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
@@ -185,7 +186,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
         poster: poster || '',
       })
       await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
-      toast?.showToast({ message: t('TorrentAdded'), severity: 'success' })
+      toast?.showToast({ message: t('Search.TorrentAdded'), severity: 'success' })
       resetForm()
       onClose()
     } catch {
@@ -216,7 +217,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
       onClose={onClose}
       size='md'
       fullScreen={isFullScreenBreakpoint}
-      dialogStyle={isMobile ? undefined : { minWidth: '38rem', maxWidth: '46rem' }}
+      dialogStyle={isMobile ? undefined : DIALOG_SHEET_M}
     >
       <Modal.Header>
         <Modal.Heading>{t('AddNewTorrent')}</Modal.Heading>

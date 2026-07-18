@@ -17,18 +17,24 @@ import axios, { isAxiosError } from 'axios'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
 
-import type { SearchResultItem, TorznabUrl } from 'shared/api/types'
-import { searchRutor, searchTorznab } from 'shared/api/search'
+import type { SearchResultItem, TorznabCapsCategory, TorznabUrl } from 'shared/api/types'
+import { fetchTorznabCaps, searchRutor, searchTorznab } from 'shared/api/search'
 import { getSettings } from 'shared/api/settings'
 import { addTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { queryMax } from 'shared/theme/breakpoints'
 import { formatSizeToClassicUnits, parseSizeToBytes } from 'shared/lib/format'
 import { getMoviePosters, shortenTitleForPosterSearch } from 'shared/lib/torrentHelpers'
 import AppDialog from 'shared/ui/AppDialog'
+import { DIALOG_SHEET_L } from 'shared/ui/dialogSizes'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
 import SearchResultsGrid from './SearchResultsGrid'
 import { beginSearchRequest, isCurrentSearch } from './searchRequest'
+import {
+  flattenTorznabCategories,
+  staticTorznabCategoryOptions,
+  type TorznabCategoryOption,
+} from './torznabCategories'
 
 export interface SearchDialogProps {
   open: boolean
@@ -88,6 +94,13 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
   const [sortField, setSortField] = useState<SortField>('seeds')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [settingsLoaded, setSettingsLoaded] = useState(false)
+  const [category, setCategory] = useState('')
+  const [pageOffset, setPageOffset] = useState(0)
+  const [pageLimit, setPageLimit] = useState(100)
+  const [hasMore, setHasMore] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [capsCategories, setCapsCategories] = useState<TorznabCapsCategory[] | null>(null)
+  const [capsLoading, setCapsLoading] = useState(false)
 
   const userSortedRef = useRef(false)
   const searchAbortRef = useRef<AbortController | null>(null)
@@ -97,6 +110,54 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
   const hasRutor = enableRutor
   const hasAnySource = hasTorznab || hasRutor
   const showAllTrackers = hasTorznab
+  const showCategorySelect = hasTorznab && selectedTracker !== 'rutor'
+  const showLoadMore =
+    !loading &&
+    hasMore &&
+    typeof selectedTracker === 'number' &&
+    selectedTracker >= 0 &&
+    results.length > 0
+
+  const categoryOptions: TorznabCategoryOption[] = useMemo(() => {
+    const allLabel = t('Torznab.AllCategories')
+    if (typeof selectedTracker === 'number' && selectedTracker >= 0 && capsCategories?.length) {
+      return flattenTorznabCategories(capsCategories, allLabel)
+    }
+    return staticTorznabCategoryOptions(allLabel)
+  }, [capsCategories, selectedTracker, t])
+
+  useEffect(() => {
+    setCategory('')
+    setPageOffset(0)
+    setHasMore(false)
+  }, [selectedTracker])
+
+  useEffect(() => {
+    if (!open || typeof selectedTracker !== 'number' || selectedTracker < 0) {
+      setCapsCategories(null)
+      setCapsLoading(false)
+      return
+    }
+
+    const ac = new AbortController()
+    setCapsLoading(true)
+    fetchTorznabCaps(selectedTracker, ac.signal)
+      .then(caps => {
+        if (ac.signal.aborted) return
+        setCapsCategories(caps.categories || [])
+        const nextLimit = caps.limits?.default || caps.limits?.max || 100
+        setPageLimit(nextLimit > 0 ? nextLimit : 100)
+      })
+      .catch(() => {
+        if (ac.signal.aborted) return
+        setCapsCategories(null)
+      })
+      .finally(() => {
+        if (!ac.signal.aborted) setCapsLoading(false)
+      })
+
+    return () => ac.abort()
+  }, [open, selectedTracker])
 
   useEffect(() => {
     if (!open) return
@@ -127,19 +188,29 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
     [],
   )
 
-  const handleSearch = async () => {
+  const runSearch = async (opts?: { append?: boolean; categoryOverride?: string; offsetOverride?: number }) => {
     const q = query.trim()
     if (!q || !hasAnySource) return
 
+    const append = opts?.append ?? false
+    const searchCategory = opts?.categoryOverride ?? category
+    const searchOffset = opts?.offsetOverride ?? 0
     const { ac, gen } = beginSearchRequest(searchAbortRef, searchGenRef)
-    setLoading(true)
-    setSearched(true)
-    setResults([])
+
+    if (append) setLoadingMore(true)
+    else {
+      setLoading(true)
+      setSearched(true)
+      setResults([])
+      setPageOffset(0)
+      setHasMore(false)
+    }
 
     try {
       if (selectedTracker === -1) {
         const requests: Promise<SearchResultItem[]>[] = []
-        if (hasTorznab) requests.push(searchTorznab(q, undefined, ac.signal))
+        const torznabOpts = searchCategory ? { cat: searchCategory, signal: ac.signal } : { signal: ac.signal }
+        if (hasTorznab) requests.push(searchTorznab(q, torznabOpts))
         if (hasRutor) requests.push(searchRutor(q, ac.signal))
         if (requests.length === 0) {
           if (isCurrentSearch(gen, searchGenRef.current, ac.signal)) {
@@ -164,6 +235,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
         }
         const merged = mergeSearchResults(...lists)
         setResults(merged)
+        setHasMore(false)
         if (!userSortedRef.current && merged.length > 0) {
           setSortField('seeds')
           setSortDirection('desc')
@@ -175,21 +247,52 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
       if (selectedTracker === 'rutor') {
         next = await searchRutor(q, ac.signal)
       } else if (typeof selectedTracker === 'number') {
-        next = await searchTorznab(q, selectedTracker, ac.signal)
+        next = await searchTorznab(q, {
+          index: selectedTracker,
+          cat: searchCategory || undefined,
+          offset: searchOffset,
+          limit: pageLimit,
+          signal: ac.signal,
+        })
       }
       if (!isCurrentSearch(gen, searchGenRef.current, ac.signal)) return
-      setResults(next)
-      if (!userSortedRef.current && next.length > 0) {
-        setSortField('seeds')
-        setSortDirection('desc')
+
+      if (append) {
+        setResults(prev => mergeSearchResults(prev, next))
+        setPageOffset(searchOffset)
+      } else {
+        setResults(next)
+        setPageOffset(0)
+        if (!userSortedRef.current && next.length > 0) {
+          setSortField('seeds')
+          setSortDirection('desc')
+        }
       }
+      setHasMore(typeof selectedTracker === 'number' && selectedTracker >= 0 && next.length >= pageLimit)
     } catch (err) {
       if (axios.isCancel(err) || (isAxiosError(err) && err.code === 'ERR_CANCELED')) return
       if (!isCurrentSearch(gen, searchGenRef.current, ac.signal)) return
       toast?.showToast({ message: axiosErrorMessage(err, t('Torznab.SearchFailed')), severity: 'error' })
     } finally {
-      if (gen === searchGenRef.current) setLoading(false)
+      if (gen === searchGenRef.current) {
+        if (append) setLoadingMore(false)
+        else setLoading(false)
+      }
     }
+  }
+
+  const handleSearch = () => void runSearch()
+
+  const handleLoadMore = () => {
+    const nextOffset = pageOffset + pageLimit
+    void runSearch({ append: true, offsetOverride: nextOffset })
+  }
+
+  const handleCategoryChange = (value: string) => {
+    setCategory(value)
+    setPageOffset(0)
+    setHasMore(false)
+    if (searched && query.trim()) void runSearch({ categoryOverride: value })
   }
 
   const handleAdd = async (item: SearchResultItem) => {
@@ -208,7 +311,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
       }
       await addTorrent({ link, title: item.Title, poster })
       await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
-      toast?.showToast({ message: t('TorrentAdded'), severity: 'success' })
+      toast?.showToast({ message: t('Search.TorrentAdded'), severity: 'success' })
     } catch {
       toast?.showToast({ message: t('Error'), severity: 'error' })
     } finally {
@@ -260,7 +363,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
       return t('Torznab.NoSearchSources')
     }
     if (loading) return null
-    if (searched && results.length === 0) return t('NoResults')
+    if (searched && results.length === 0) return t('Search.NoResults')
     return null
   })()
 
@@ -274,13 +377,19 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
   const trackerKey = selectedTracker === 'rutor' ? 'rutor' : String(selectedTracker)
 
   return (
-    <AppDialog open={open} onClose={onClose} size='lg' fullScreen={isFullScreenBreakpoint}>
+    <AppDialog
+      open={open}
+      onClose={onClose}
+      size='lg'
+      fullScreen={isFullScreenBreakpoint}
+      dialogStyle={isMobile ? undefined : DIALOG_SHEET_L}
+    >
       <Modal.Header>
         <Modal.Heading>{t('Torznab.SearchTorrents')}</Modal.Heading>
         <Modal.CloseTrigger />
       </Modal.Header>
       <Modal.Body>
-        <div className='flex flex-col gap-2 pb-4 pt-1 sm:flex-row sm:items-end'>
+        <div className='flex flex-col gap-2 pb-4 pt-1 sm:flex-row sm:flex-wrap sm:items-end'>
           <Select
             selectedKey={trackerKey}
             onSelectionChange={key => {
@@ -290,15 +399,15 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
             isDisabled={!hasAnySource}
             className='sm:min-w-[180px]'
           >
-            <Label>{t('Tracker')}</Label>
+            <Label>{t('Search.Tracker')}</Label>
             <Select.Trigger>
               <Select.Value />
               <Select.Indicator />
             </Select.Trigger>
             <Select.Popover>
               <ListBox>
-                {showAllTrackers ? <ListBox.Item id='-1'>{t('AllTrackers')}</ListBox.Item> : null}
-                {hasRutor ? <ListBox.Item id='rutor'>{t('Rutor')}</ListBox.Item> : null}
+                {showAllTrackers ? <ListBox.Item id='-1'>{t('Search.AllTrackers')}</ListBox.Item> : null}
+                {hasRutor ? <ListBox.Item id='rutor'>{t('Search.Rutor')}</ListBox.Item> : null}
                 {hasTorznab
                   ? trackers.map((tracker, index) => (
                       <ListBox.Item key={`${tracker.Host}-${tracker.Key}`} id={String(index)}>
@@ -310,6 +419,32 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
             </Select.Popover>
           </Select>
 
+          {showCategorySelect ? (
+            <Select
+              selectedKey={category}
+              onSelectionChange={key => handleCategoryChange(String(key))}
+              isDisabled={!hasAnySource || capsLoading}
+              className='sm:min-w-[180px]'
+            >
+              <Label>{t('Torznab.Category')}</Label>
+              <Select.Trigger>
+                <Select.Value />
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover>
+                <ListBox>
+                  {categoryOptions.map(option => (
+                    <ListBox.Item key={option.id || 'all'} id={option.id}>
+                      <span style={option.indent ? { paddingLeft: `${option.indent * 1}rem` } : undefined}>
+                        {option.name}
+                      </span>
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+            </Select>
+          ) : null}
+
           <TextField
             value={query}
             onChange={setQuery}
@@ -319,7 +454,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
               if (e.key === 'Enter') void handleSearch()
             }}
           >
-            <Label>{t('SearchQuery')}</Label>
+            <Label>{t('Search.QueryLabel')}</Label>
             <Input placeholder={t('Torznab.SearchMoviesShows')} />
           </TextField>
 
@@ -371,14 +506,28 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
           ) : null}
 
           {!loading && sortedResults.length > 0 ? (
-            <SearchResultsGrid
-              results={sortedResults}
-              adding={adding}
-              addingKey={addingKey}
-              resultDedupeKey={resultDedupeKey}
-              formatSize={item => formatSizeToClassicUnits(parseSizeToBytes(item.Size || '0'))}
-              onAdd={item => void handleAdd(item)}
-            />
+            <>
+              <SearchResultsGrid
+                results={sortedResults}
+                adding={adding}
+                addingKey={addingKey}
+                resultDedupeKey={resultDedupeKey}
+                formatSize={item => formatSizeToClassicUnits(parseSizeToBytes(item.Size || '0'))}
+                onAdd={item => void handleAdd(item)}
+              />
+              {showLoadMore ? (
+                <div className='mt-4 flex justify-center'>
+                  <Button
+                    variant='secondary'
+                    onPress={() => handleLoadMore()}
+                    isDisabled={loadingMore}
+                    className={footerButtonClassName}
+                  >
+                    {loadingMore ? <Spinner size='sm' color='current' /> : t('Torznab.LoadMore')}
+                  </Button>
+                </div>
+              ) : null}
+            </>
           ) : null}
         </div>
       </Modal.Body>

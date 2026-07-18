@@ -17,6 +17,7 @@ import {
 import { queryMax } from 'shared/theme/breakpoints'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import AppDialog from 'shared/ui/AppDialog'
+import { DIALOG_SHEET_M } from 'shared/ui/dialogSizes'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
@@ -182,10 +183,10 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
     }
 
     if (failureCount === 0) {
-      toast?.showToast({ message: t('TorrentAdded'), severity: 'success' })
+      toast?.showToast({ message: t('Search.TorrentAdded'), severity: 'success' })
       onClose()
     } else if (successCount > 0) {
-      toast?.showToast({ message: t('TorrentAdded'), severity: 'warning' })
+      toast?.showToast({ message: t('Search.TorrentAdded'), severity: 'warning' })
     } else {
       toast?.showToast({ message: t('Error'), severity: 'error' })
     }
@@ -202,7 +203,7 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
       onClose={onClose}
       size='md'
       fullScreen={isFullScreenBreakpoint}
-      dialogStyle={isMobile ? undefined : { minWidth: '40rem', maxWidth: '52rem' }}
+      dialogStyle={isMobile ? undefined : DIALOG_SHEET_M}
     >
       <Modal.Header>
         <Modal.Heading>

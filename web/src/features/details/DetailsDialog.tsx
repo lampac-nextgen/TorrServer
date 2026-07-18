@@ -8,7 +8,7 @@ import {
   useMediaQuery,
   useOverlayState,
 } from '@heroui/react'
-import { ImageOff, Pencil, X } from 'lucide-react'
+import { Pencil, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import ptt from 'parse-torrent-title'
 import { useTranslation } from 'react-i18next'
@@ -23,6 +23,7 @@ import { isFilePlayable } from 'shared/torrent/playable'
 import { CLOSED, GETTING_INFO, IN_DB, PRELOAD, WORKING } from 'shared/torrent/states'
 import { queryMax } from 'shared/theme/breakpoints'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
+import { DIALOG_SHEET_L } from 'shared/ui/dialogSizes'
 
 import FileBrowser from './FileBrowser'
 import SpeedCharts from './SpeedCharts'
@@ -170,7 +171,7 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
         <Modal.Container size={isFullScreen ? 'full' : 'lg'} scroll='inside'>
           {/* Inline style: HeroUI's size ceiling + our collapse-prevention floor (index.css) live in CSS
               layers, so a plain width utility can lose to them regardless of specificity — see AppDialog. */}
-          <Modal.Dialog style={isFullScreen ? undefined : { minWidth: '46rem', maxWidth: '64rem' }}>
+          <Modal.Dialog style={isFullScreen ? undefined : DIALOG_SHEET_L}>
             <Modal.Header className='flex items-center gap-2'>
               <Modal.Heading className='min-w-0 flex-1 truncate'>{t('TorrentDetails')}</Modal.Heading>
               {onEdit ? (
@@ -185,43 +186,36 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
 
             <Modal.Body className='gap-4'>
               <div className='flex flex-col gap-4 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-4 sm:flex-row sm:items-start'>
-                <div className='mx-auto grid aspect-[2/3] w-full max-w-[160px] shrink-0 place-items-center overflow-hidden rounded-lg bg-surface-secondary sm:mx-0'>
-                  {poster ? (
+                {poster ? (
+                  <div className='mx-auto grid aspect-[2/3] w-full max-w-[120px] shrink-0 place-items-center overflow-hidden rounded-lg bg-surface-secondary sm:mx-0'>
                     <img src={poster} alt='' className='h-full w-full object-cover' />
-                  ) : (
-                    <ImageOff className='size-12 opacity-40' aria-hidden />
-                  )}
-                </div>
+                  </div>
+                ) : null}
 
                 <div className='min-w-0 flex-1'>
                   <h2 className='mb-1 break-words text-lg font-bold text-foreground'>{displayTitle}</h2>
                   {subtitle ? <p className='mb-3 text-sm text-muted'>{subtitle}</p> : null}
 
-                  <div className='flex flex-wrap gap-2'>
+                  <div className='grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'>
                     <StatWidget label={t('DownloadSpeed')} value={humanizeSpeed(downloadSpeed)} />
                     <StatWidget label={t('UploadSpeed')} value={humanizeSpeed(uploadSpeed)} />
                     <StatWidget label={t('Peers')} value={getPeerString(torrent) || '—'} />
                     <StatWidget label={t('Size')} value={humanizeSize(torrentSize)} />
                     <StatWidget label={t('Status', { defaultValue: 'Status' })} value={statusLabel(stat)} />
                     {category ? <StatWidget label={t('Category')} value={category} /> : null}
+                    {cache.PiecesCount != null ? (
+                      <StatWidget label={t('PiecesCount')} value={String(cache.PiecesCount)} />
+                    ) : null}
+                    {cache.PiecesLength != null ? (
+                      <StatWidget label={t('PiecesLength')} value={humanizeSize(cache.PiecesLength)} />
+                    ) : null}
+                    {cache.Filled != null && cache.Capacity != null ? (
+                      <StatWidget
+                        label={t('CacheFilled', { defaultValue: 'Cache' })}
+                        value={`${humanizeSize(cache.Filled)} / ${humanizeSize(cache.Capacity)}`}
+                      />
+                    ) : null}
                   </div>
-
-                  {cache.PiecesCount != null || cache.PiecesLength != null || cache.Capacity != null ? (
-                    <div className='mt-2 flex flex-wrap gap-2'>
-                      {cache.PiecesCount != null ? (
-                        <StatWidget label={t('PiecesCount')} value={String(cache.PiecesCount)} />
-                      ) : null}
-                      {cache.PiecesLength != null ? (
-                        <StatWidget label={t('PiecesLength')} value={humanizeSize(cache.PiecesLength)} />
-                      ) : null}
-                      {cache.Filled != null && cache.Capacity != null ? (
-                        <StatWidget
-                          label={t('CacheFilled', { defaultValue: 'Cache' })}
-                          value={`${humanizeSize(cache.Filled)} / ${humanizeSize(cache.Capacity)}`}
-                        />
-                      ) : null}
-                    </div>
-                  ) : null}
                 </div>
               </div>
 

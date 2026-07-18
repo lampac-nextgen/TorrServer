@@ -23,7 +23,6 @@
   "AddFromLink": "Добавете торент",
   "AddNewTorrent": "Добавете нов торент",
   "All": "Всичко",
-  "AllTrackers": "Всичке тракери",
   "ApiDocs": "Документация на API",
   "B": "B",
   "bps": "bps",
@@ -121,7 +120,6 @@
   "RemoveAll": "Премахнете всички",
   "RemoveViews": "Премахни подробности за прегледите",
   "Resolution": "Резолюция",
-  "Rutor": "RuTor",
   "Save": "Запис",
   "ScrollDown": "превърти надолу",
   "Search": "Търсене",
@@ -200,7 +198,8 @@
       "Additional": "Допълнителен",
       "AdditionalDisabled": "(разрешете ПРО режим)",
       "App": "Приложение",
-      "Main": "Основен"
+      "Main": "Основен",
+      "Network": "Мрежа"
     },
     "TorrentDisconnectTimeout": "Време на изчакване на връзката с торенти",
     "TorrentsSavePath": "Път за запазване на торенти",
@@ -280,7 +279,10 @@
     "HostHint": "Jackett: …/indexers/all/results/torznab/ — Prowlarr: http://localhost:9696/1. TorrServer appends /api when needed.",
     "NoIndexersConfigured": "Torznab is enabled but no indexers are configured. Add a Host URL and API key below.",
     "NoSearchSources": "No search sources enabled. Turn on RuTor and/or Torznab in Settings → Search.",
-    "Tab": "Torznab"
+    "Tab": "Torznab",
+    "AllCategories": "Всички категории",
+    "Category": "Категория",
+    "LoadMore": "Зареди още"
   },
   "GStreamer": {
     "Tab": "GStreamer",
@@ -351,7 +353,6 @@
     "ImageURLRu": "TMDB Изображение URL (Русия)",
     "ImageURLRuHint": "Алтернативен URL за изображения за руски потребители. Пътищата на изображенията се добавят автоматично (по подразбиране: https://imagetmdb.com)"
   },
-  "Tracker": "Тракер",
   "TurnOff": "Изключване",
   "Uncategorized": "Некатегоризиран",
   "UploadSpeed": "Скорост на качване",
@@ -371,20 +372,23 @@
   "TorrFS": "TorrServer FS",
   "NoTorrentsInCategory": "Няма торенти в тази категория",
   "ShowAllTorrents": "Покажи всички",
-  "SortByDate": "Sort by date",
-  "SortByName": "Sort by name",
+  "SortByDate": "Сортиране по дата",
+  "SortByName": "Сортиране по име",
   "Menu": "Меню",
   "Theme": "Тема",
   "ThemeLight": "Светла",
   "ThemeDark": "Тъмна",
   "ThemeAuto": "Автоматична",
   "Language": "Език",
-  "Back": "Back",
+  "Back": "Назад",
   "DLNA": "DLNA Media Server",
-  "AddFirstTorrent": "Add your first torrent",
-  "Network": "Network",
-  "NoResults": "No results",
-  "SearchQuery": "Search query",
-  "Seeders": "Seeders",
-  "TorrentAdded": "Torrent added"
+  "AddFirstTorrent": "Добавете първия си торент",
+  "Search.QueryLabel": "Заявка за търсене",
+  "Search.NoResults": "Няма резултати",
+  "Search.TorrentAdded": "Торентът е добавен",
+  "Search.Tracker": "Трекер",
+  "Search.AllTrackers": "Всички тракери",
+  "Search.Seeders": "Сийдъри",
+  "Search.Peers": "Пирс",
+  "Search.Rutor": "RuTor"
 }
