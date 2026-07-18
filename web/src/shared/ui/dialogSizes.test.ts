@@ -20,7 +20,7 @@ describe('dialogSizes', () => {
   })
 
   it('exports player normal and expanded sizes', () => {
-    expect(PLAYER_DIALOG_NORMAL.width).toBe('min(92vw, 56rem)')
-    expect(PLAYER_DIALOG_EXPANDED.width).toBe(DIALOG_SHEET_L.width)
+    expect(PLAYER_DIALOG_NORMAL.width).toBe('min(94vw, 64rem)')
+    expect(PLAYER_DIALOG_EXPANDED.width).toBe('min(96vw, 80rem)')
   })
 })

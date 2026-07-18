@@ -96,11 +96,17 @@ const supportsNativeHls = (video: HTMLVideoElement): boolean =>
   Boolean(video.canPlayType('application/vnd.apple.mpegurl') || video.canPlayType('application/x-mpegURL'))
 
 function formatDuration(seconds: number): string {
-  if (!Number.isFinite(seconds)) return '00:00:00'
+  if (!Number.isFinite(seconds) || seconds < 0) return '--:--:--'
   const h = Math.floor(seconds / 3600)
   const m = Math.floor((seconds % 3600) / 60)
   const s = Math.floor(seconds % 60)
   return [h, m, s].map(unit => unit.toString().padStart(2, '0')).join(':')
+}
+
+function readFiniteDuration(video: HTMLVideoElement | null): number {
+  if (!video) return 0
+  const d = video.duration
+  return Number.isFinite(d) && d > 0 ? d : 0
 }
 
 const subtitleLabel = (track: SubtitleTrackInfo): string =>
@@ -190,9 +196,15 @@ export default function VideoPlayer({
   const videoMaxHeight = isMobile
     ? 'calc(100dvh - 2rem)'
     : expanded
-      ? 'min(78dvh, calc(100dvh - 7rem))'
-      : 'min(56dvh, 28rem)'
+      ? 'min(82dvh, calc(100dvh - 5rem))'
+      : 'min(62dvh, 36rem)'
 
+  const syncDuration = useCallback((fromVideo?: HTMLVideoElement | null, hint?: number) => {
+    const hinted = hint != null && Number.isFinite(hint) && hint > 0 ? hint : 0
+    const fromEl = readFiniteDuration(fromVideo ?? videoRef.current)
+    const next = Math.max(hinted, fromEl)
+    if (next > 0) setDuration(prev => (Math.abs(prev - next) > 0.25 ? next : prev))
+  }, [])
   useEffect(() => {
     setPlaybackSrc(videoSrc)
   }, [videoSrc])
@@ -307,7 +319,12 @@ export default function VideoPlayer({
         syncSubtitleTracks()
         setActiveSubtitleTrack(hlsPlayer?.subtitleTrack ?? -1)
         video.playbackRate = playbackRate
+        syncDuration(video)
         video.play().catch(() => {})
+      })
+      hlsPlayer.on(Hls.Events.LEVEL_LOADED, (_event, data) => {
+        const total = data.details?.totalduration
+        if (typeof total === 'number') syncDuration(video, total)
       })
       hlsPlayer.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, syncSubtitleTracks)
       hlsPlayer.on(Hls.Events.SUBTITLE_TRACK_SWITCH, (_event, data) => setActiveSubtitleTrack(data.id))
@@ -349,7 +366,7 @@ export default function VideoPlayer({
     }
     // playbackRate applied on manifest; remount only when source changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hls, open, videoElement, playbackSrc])
+  }, [hls, open, videoElement, playbackSrc, syncDuration])
 
   useEffect(() => {
     if (!open || !heartbeatSrc) return undefined
@@ -495,14 +512,14 @@ export default function VideoPlayer({
   const handleLoadedMetadata = () => {
     const video = videoRef.current
     if (!video) return
-    const videoDuration = video.duration
-    setDuration(videoDuration)
+    syncDuration(video)
+    const videoDuration = readFiniteDuration(video) || duration
     setBuffered(bufferedEnd(video))
     setLoading(false)
     video.playbackRate = playbackRate
 
     const pending = pendingSeekRef.current
-    if (pending != null && pending > 0 && pending < videoDuration - 1) {
+    if (pending != null && pending > 0 && (videoDuration <= 0 || pending < videoDuration - 1)) {
       video.currentTime = pending
       setCurrentTime(pending)
       pendingSeekRef.current = null
@@ -514,6 +531,7 @@ export default function VideoPlayer({
       !resumeAppliedRef.current &&
       trackTimecode &&
       initialTimecode > TIMECODE_RESUME_MARGIN_SEC &&
+      videoDuration > 0 &&
       initialTimecode < videoDuration - TIMECODE_RESUME_MARGIN_SEC
     ) {
       video.currentTime = initialTimecode
@@ -521,6 +539,8 @@ export default function VideoPlayer({
       resumeAppliedRef.current = true
     }
   }
+
+  const handleDurationChange = () => syncDuration(videoRef.current)
 
   const handleProgress = () => setBuffered(bufferedEnd(videoRef.current))
 
@@ -611,9 +631,11 @@ export default function VideoPlayer({
     revealChrome()
   }
 
-  const chromeIconBtn = `${iconBtn} text-white hover-fine:bg-white/10`
+  const chromeIconBtn =
+    `${iconBtn} size-9 min-h-9 min-w-9 rounded-full text-white/90 hover-fine:bg-white/12 hover-fine:text-white`
   const showChrome = chromeVisible || !playing || mediaError
   const bufferedPct = duration > 0 ? Math.min(100, (buffered / duration) * 100) : 0
+  const playedPct = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0
 
   return (
     <>
@@ -636,14 +658,17 @@ export default function VideoPlayer({
         ))}
 
       <Modal state={overlayState}>
-        <Modal.Backdrop isDismissable={!fullscreen}>
-          <Modal.Container size={isMobile ? 'full' : 'lg'} scroll='inside' className={isMobile ? undefined : 'p-4'}>
-            <Modal.Dialog className='overflow-hidden bg-black text-white' style={dialogStyle}>
-              <Modal.Body className='gap-0 bg-black p-0'>
+        <Modal.Backdrop isDismissable={!fullscreen} className='bg-black/70 backdrop-blur-sm'>
+          <Modal.Container size={isMobile ? 'full' : 'lg'} scroll='inside' className={isMobile ? undefined : 'p-5 sm:p-6'}>
+            <Modal.Dialog
+              className='overflow-hidden border border-white/10 bg-[#0a0e0c] text-white shadow-2xl shadow-black/50'
+              style={dialogStyle}
+            >
+              <Modal.Body className='gap-0 p-0'>
                 <div
                   ref={shellRef}
-                  className='relative w-full bg-black'
-                  style={{ minHeight: isMobile ? 240 : expanded ? 420 : 320 }}
+                  className='relative w-full overflow-hidden bg-black'
+                  style={{ aspectRatio: isMobile ? undefined : '16 / 9' }}
                   onPointerMove={onShellPointerMove}
                   onPointerDown={revealChrome}
                 >
@@ -654,10 +679,12 @@ export default function VideoPlayer({
                     onTimeUpdate={handleTimeUpdate}
                     onProgress={handleProgress}
                     onLoadedMetadata={handleLoadedMetadata}
+                    onDurationChange={handleDurationChange}
                     onWaiting={() => setLoading(true)}
                     onCanPlay={() => {
                       setLoading(false)
                       setMediaError(false)
+                      syncDuration(videoRef.current)
                     }}
                     onPlaying={() => {
                       setLoading(false)
@@ -670,19 +697,32 @@ export default function VideoPlayer({
                       setLoading(false)
                       setMediaError(true)
                     }}
-                    className='block w-full cursor-pointer bg-black'
-                    style={{ maxHeight: videoMaxHeight, minHeight: isMobile ? 200 : 280 }}
+                    className='block h-full w-full cursor-pointer bg-black object-contain'
+                    style={{ maxHeight: videoMaxHeight, minHeight: isMobile ? 220 : undefined }}
                   >
                     {!hls && captionSrc ? <track kind='captions' src={captionSrc} default /> : null}
                   </video>
 
                   {loading ? (
-                    <div className='pointer-events-none absolute inset-0 grid place-items-center bg-black/45'>
-                      <div className='flex flex-col items-center gap-2'>
-                        <Spinner size='lg' className='text-white' />
-                        <p className='text-sm text-white/80'>{t('Buffering', { defaultValue: 'Buffering…' })}</p>
+                    <div className='pointer-events-none absolute inset-0 grid place-items-center bg-black/50'>
+                      <div className='flex flex-col items-center gap-2.5 rounded-2xl border border-white/10 bg-black/40 px-5 py-4 backdrop-blur-md'>
+                        <Spinner size='lg' className='text-accent' />
+                        <p className='text-sm font-medium text-white/85'>{t('Buffering', { defaultValue: 'Buffering…' })}</p>
                       </div>
                     </div>
+                  ) : null}
+
+                  {!playing && !loading && !mediaError && showChrome ? (
+                    <button
+                      type='button'
+                      className='absolute inset-0 z-[5] grid place-items-center bg-transparent'
+                      onClick={togglePlayPause}
+                      aria-label={t('Play')}
+                    >
+                      <span className='flex size-[4.25rem] items-center justify-center rounded-full border border-white/25 bg-white/15 text-white shadow-lg shadow-black/40 backdrop-blur-md transition hover-fine:scale-105 hover-fine:bg-accent/90 hover-fine:text-accent-foreground'>
+                        <Play className='size-8 translate-x-0.5' fill='currentColor' aria-hidden />
+                      </span>
+                    </button>
                   ) : null}
 
                   {mediaError ? (
@@ -705,14 +745,19 @@ export default function VideoPlayer({
                   ) : null}
 
                   <div
-                    className={`pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-black/80 to-transparent px-3 pb-10 pt-3 transition-opacity duration-300 ${
+                    className={`pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-black/75 via-black/20 to-transparent px-4 pb-16 pt-3.5 transition-opacity duration-300 ${
                       showChrome ? 'opacity-100' : 'opacity-0'
                     }`}
                   >
-                    <div className='pointer-events-auto flex items-center gap-2'>
-                      <p className='min-w-0 flex-1 truncate text-sm font-medium text-white' title={title || t('Play')}>
-                        {title || t('Play')}
-                      </p>
+                    <div className='pointer-events-auto flex items-start gap-3'>
+                      <div className='min-w-0 flex-1'>
+                        <p className='text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45'>
+                          {t('Play')}
+                        </p>
+                        <p className='mt-0.5 truncate text-sm font-semibold text-white drop-shadow' title={title || t('Play')}>
+                          {title || t('Play')}
+                        </p>
+                      </div>
                       <Button
                         isIconOnly
                         variant='ghost'
@@ -726,258 +771,272 @@ export default function VideoPlayer({
                   </div>
 
                   <div
-                    className={`absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/90 via-black/55 to-transparent px-3 pb-3 pt-12 transition-opacity duration-300 ${
+                    className={`absolute inset-x-0 bottom-0 z-10 px-3 pb-3 pt-20 transition-opacity duration-300 ${
                       showChrome ? 'opacity-100' : 'pointer-events-none opacity-0'
                     }`}
                   >
-                    <div className='relative mb-2'>
-                      <div
-                        className='pointer-events-none absolute inset-y-0 left-0 rounded-full bg-white/25'
-                        style={{ width: `${bufferedPct}%` }}
-                      />
-                      <Slider
-                        value={currentTime}
-                        maxValue={duration || 0}
-                        onChange={handleSeek}
-                        aria-label={t('Seconds')}
-                        className='relative'
-                      >
-                        <Slider.Track className='bg-white/15'>
-                          <Slider.Fill className='bg-accent' />
-                          <Slider.Thumb />
-                        </Slider.Track>
-                      </Slider>
-                    </div>
+                    <div className='rounded-2xl border border-white/10 bg-black/55 px-3 py-2.5 shadow-2xl shadow-black/40 backdrop-blur-xl'>
+                      <div className='group relative mb-2.5 px-0.5'>
+                        <div className='pointer-events-none absolute inset-y-[7px] left-0 right-0 h-1 overflow-hidden rounded-full bg-white/15 group-hover:inset-y-[6px] group-hover:h-1.5'>
+                          <div className='absolute inset-y-0 left-0 bg-white/30' style={{ width: `${bufferedPct}%` }} />
+                          <div className='absolute inset-y-0 left-0 bg-accent' style={{ width: `${playedPct}%` }} />
+                        </div>
+                        <Slider
+                          value={currentTime}
+                          maxValue={duration > 0 ? duration : Math.max(currentTime, 1)}
+                          onChange={handleSeek}
+                          aria-label={t('Seconds')}
+                          className='relative'
+                        >
+                          <Slider.Track className='h-1 bg-transparent group-hover:h-1.5'>
+                            <Slider.Fill className='bg-transparent' />
+                            <Slider.Thumb className='size-3 border-0 bg-white shadow-md after:hidden' />
+                          </Slider.Track>
+                        </Slider>
+                      </div>
 
-                    <div className='flex flex-wrap items-center gap-1.5'>
-                      <Tooltip>
-                        <Tooltip.Trigger>
-                          <Button
-                            isIconOnly
-                            variant='ghost'
-                            className={chromeIconBtn}
-                            aria-label={playing ? t('Pause') : t('Play')}
-                            onPress={togglePlayPause}
+                      <div className='flex flex-wrap items-center gap-x-2 gap-y-1.5'>
+                        <div className='flex items-center gap-0.5'>
+                          <Tooltip>
+                            <Tooltip.Trigger>
+                              <Button
+                                isIconOnly
+                                variant='ghost'
+                                className={chromeIconBtn}
+                                aria-label={playing ? t('Pause') : t('Play')}
+                                onPress={togglePlayPause}
+                              >
+                                {playing ? <Pause aria-hidden /> : <Play fill='currentColor' aria-hidden />}
+                              </Button>
+                            </Tooltip.Trigger>
+                            <Tooltip.Content>{playing ? t('Pause') : t('Play')}</Tooltip.Content>
+                          </Tooltip>
+
+                          <Tooltip>
+                            <Tooltip.Trigger>
+                              <Button
+                                isIconOnly
+                                variant='ghost'
+                                className={chromeIconBtn}
+                                aria-label={t('Rewind-10-Sec')}
+                                onPress={() => seekRelative(-SEEK_STEP_SEC)}
+                              >
+                                <RotateCcw aria-hidden />
+                              </Button>
+                            </Tooltip.Trigger>
+                            <Tooltip.Content>{t('Rewind-10-Sec')}</Tooltip.Content>
+                          </Tooltip>
+
+                          <Tooltip>
+                            <Tooltip.Trigger>
+                              <Button
+                                isIconOnly
+                                variant='ghost'
+                                className={chromeIconBtn}
+                                aria-label={t('Forward-10-Sec')}
+                                onPress={() => seekRelative(SEEK_STEP_SEC)}
+                              >
+                                <RotateCw aria-hidden />
+                              </Button>
+                            </Tooltip.Trigger>
+                            <Tooltip.Content>{t('Forward-10-Sec')}</Tooltip.Content>
+                          </Tooltip>
+
+                          <span className='ml-1 min-w-[7.5rem] text-xs tabular-nums tracking-wide text-white/75'>
+                            {formatDuration(currentTime)}
+                            <span className='text-white/35'> / </span>
+                            {formatDuration(duration)}
+                          </span>
+                        </div>
+
+                        <div className='mx-1 hidden h-4 w-px bg-white/15 sm:block' />
+
+                        <div className='flex items-center gap-0.5'>
+                          <Tooltip>
+                            <Tooltip.Trigger>
+                              <Button
+                                isIconOnly
+                                variant='ghost'
+                                className={chromeIconBtn}
+                                aria-label={muted ? t('Unmute') : t('Mute')}
+                                onPress={toggleMute}
+                              >
+                                {muted ? <VolumeX aria-hidden /> : <Volume2 aria-hidden />}
+                              </Button>
+                            </Tooltip.Trigger>
+                            <Tooltip.Content>{muted ? t('Unmute') : t('Mute')}</Tooltip.Content>
+                          </Tooltip>
+
+                          <Slider
+                            value={volume * 100}
+                            maxValue={100}
+                            onChange={handleVolumeChange}
+                            className='hidden w-24 sm:flex'
+                            aria-label={t('Volume', { defaultValue: 'Volume' })}
                           >
-                            {playing ? <Pause aria-hidden /> : <Play aria-hidden />}
-                          </Button>
-                        </Tooltip.Trigger>
-                        <Tooltip.Content>{playing ? t('Pause') : t('Play')}</Tooltip.Content>
-                      </Tooltip>
+                            <Slider.Track className='h-1 bg-white/15'>
+                              <Slider.Fill className='bg-accent' />
+                              <Slider.Thumb className='size-3 border-0 bg-white after:hidden' />
+                            </Slider.Track>
+                          </Slider>
 
-                      <Tooltip>
-                        <Tooltip.Trigger>
-                          <Button
-                            isIconOnly
-                            variant='ghost'
-                            className={chromeIconBtn}
-                            aria-label={t('Rewind-10-Sec')}
-                            onPress={() => seekRelative(-SEEK_STEP_SEC)}
-                          >
-                            <RotateCcw aria-hidden />
-                          </Button>
-                        </Tooltip.Trigger>
-                        <Tooltip.Content>{t('Rewind-10-Sec')}</Tooltip.Content>
-                      </Tooltip>
-
-                      <Tooltip>
-                        <Tooltip.Trigger>
-                          <Button
-                            isIconOnly
-                            variant='ghost'
-                            className={chromeIconBtn}
-                            aria-label={t('Forward-10-Sec')}
-                            onPress={() => seekRelative(SEEK_STEP_SEC)}
-                          >
-                            <RotateCw aria-hidden />
-                          </Button>
-                        </Tooltip.Trigger>
-                        <Tooltip.Content>{t('Forward-10-Sec')}</Tooltip.Content>
-                      </Tooltip>
-
-                      <span className='min-w-[100px] px-1 text-xs tabular-nums text-white/80'>
-                        {formatDuration(currentTime)} / {formatDuration(duration)}
-                      </span>
-
-                      <Tooltip>
-                        <Tooltip.Trigger>
-                          <Button
-                            isIconOnly
-                            variant='ghost'
-                            className={chromeIconBtn}
-                            aria-label={muted ? t('Unmute') : t('Mute')}
-                            onPress={toggleMute}
-                          >
-                            {muted ? <VolumeX aria-hidden /> : <Volume2 aria-hidden />}
-                          </Button>
-                        </Tooltip.Trigger>
-                        <Tooltip.Content>{muted ? t('Unmute') : t('Mute')}</Tooltip.Content>
-                      </Tooltip>
-
-                      <Slider
-                        value={volume * 100}
-                        maxValue={100}
-                        onChange={handleVolumeChange}
-                        className='hidden w-24 sm:flex'
-                        aria-label={t('Volume', { defaultValue: 'Volume' })}
-                      >
-                        <Slider.Track className='bg-white/15'>
-                          <Slider.Fill className='bg-accent' />
-                          <Slider.Thumb />
-                        </Slider.Track>
-                      </Slider>
-
-                      {canSwitchAudio ? (
-                        <Popover isOpen={audioMenuOpen} onOpenChange={setAudioMenuOpen}>
-                          <Popover.Trigger>
-                            <Button
-                              isIconOnly
-                              variant='ghost'
-                              className={chromeIconBtn}
-                              aria-label={t('SelectAudioTrack', { defaultValue: 'Select audio track' })}
-                            >
-                              <Music2 aria-hidden />
-                            </Button>
-                          </Popover.Trigger>
-                          <Popover.Content className='max-h-72 w-72 overflow-y-auto p-1'>
-                            {audioTracks.map((track, index) => {
-                              const { title: trackTitle, meta } = formatAudioTrackDisplay(track, index)
-                              const selected = index === activeAudioIndex
-                              return (
+                          {canSwitchAudio ? (
+                            <Popover isOpen={audioMenuOpen} onOpenChange={setAudioMenuOpen}>
+                              <Popover.Trigger>
                                 <Button
-                                  key={index}
-                                  variant={selected ? 'secondary' : 'ghost'}
-                                  className='h-auto w-full justify-start gap-2 py-2'
-                                  onPress={() => switchAudioTrack(index)}
+                                  isIconOnly
+                                  variant='ghost'
+                                  className={chromeIconBtn}
+                                  aria-label={t('SelectAudioTrack', { defaultValue: 'Select audio track' })}
                                 >
-                                  <span className='min-w-0 flex-1 text-left'>
-                                    <span className='block truncate text-sm font-medium'>{trackTitle}</span>
-                                    {meta ? <span className='mt-0.5 block truncate text-xs text-muted'>{meta}</span> : null}
-                                  </span>
+                                  <Music2 aria-hidden />
                                 </Button>
-                              )
-                            })}
-                          </Popover.Content>
-                        </Popover>
-                      ) : null}
+                              </Popover.Trigger>
+                              <Popover.Content className='max-h-72 w-72 overflow-y-auto border border-white/10 bg-neutral-950/95 p-1 backdrop-blur-xl'>
+                                {audioTracks.map((track, index) => {
+                                  const { title: trackTitle, meta } = formatAudioTrackDisplay(track, index)
+                                  const selected = index === activeAudioIndex
+                                  return (
+                                    <Button
+                                      key={index}
+                                      variant={selected ? 'secondary' : 'ghost'}
+                                      className='h-auto w-full justify-start gap-2 py-2'
+                                      onPress={() => switchAudioTrack(index)}
+                                    >
+                                      <span className='min-w-0 flex-1 text-left'>
+                                        <span className='block truncate text-sm font-medium'>{trackTitle}</span>
+                                        {meta ? (
+                                          <span className='mt-0.5 block truncate text-xs text-muted'>{meta}</span>
+                                        ) : null}
+                                      </span>
+                                    </Button>
+                                  )
+                                })}
+                              </Popover.Content>
+                            </Popover>
+                          ) : null}
 
-                      {subtitleTracks.length > 0 ? (
-                        <Popover isOpen={subtitleMenuOpen} onOpenChange={setSubtitleMenuOpen}>
-                          <Popover.Trigger>
-                            <Button
-                              isIconOnly
-                              variant={activeSubtitleTrack >= 0 ? 'primary' : 'ghost'}
-                              className={activeSubtitleTrack >= 0 ? iconBtn : chromeIconBtn}
-                              aria-label={t('GStreamer.Subtitles', { defaultValue: 'Subtitles' })}
-                            >
-                              <Captions aria-hidden />
-                            </Button>
-                          </Popover.Trigger>
-                          <Popover.Content>
-                            <ListBox
-                              selectedKeys={[String(activeSubtitleTrack)]}
-                              onSelectionChange={keys => {
-                                const value = [...keys][0]
-                                switchSubtitleTrack(value == null ? -1 : Number(value))
-                              }}
-                            >
-                              <ListBox.Item id='-1'>{t('None')}</ListBox.Item>
-                              {subtitleTracks.map(track => (
-                                <ListBox.Item key={track.id} id={String(track.id)}>
-                                  {subtitleLabel(track)}
-                                </ListBox.Item>
+                          {subtitleTracks.length > 0 ? (
+                            <Popover isOpen={subtitleMenuOpen} onOpenChange={setSubtitleMenuOpen}>
+                              <Popover.Trigger>
+                                <Button
+                                  isIconOnly
+                                  variant={activeSubtitleTrack >= 0 ? 'primary' : 'ghost'}
+                                  className={activeSubtitleTrack >= 0 ? iconBtn : chromeIconBtn}
+                                  aria-label={t('GStreamer.Subtitles', { defaultValue: 'Subtitles' })}
+                                >
+                                  <Captions aria-hidden />
+                                </Button>
+                              </Popover.Trigger>
+                              <Popover.Content className='border border-white/10 bg-neutral-950/95 backdrop-blur-xl'>
+                                <ListBox
+                                  selectedKeys={[String(activeSubtitleTrack)]}
+                                  onSelectionChange={keys => {
+                                    const value = [...keys][0]
+                                    switchSubtitleTrack(value == null ? -1 : Number(value))
+                                  }}
+                                >
+                                  <ListBox.Item id='-1'>{t('None')}</ListBox.Item>
+                                  {subtitleTracks.map(track => (
+                                    <ListBox.Item key={track.id} id={String(track.id)}>
+                                      {subtitleLabel(track)}
+                                    </ListBox.Item>
+                                  ))}
+                                </ListBox>
+                              </Popover.Content>
+                            </Popover>
+                          ) : null}
+
+                          <Popover isOpen={rateMenuOpen} onOpenChange={setRateMenuOpen}>
+                            <Popover.Trigger>
+                              <Button
+                                isIconOnly
+                                variant='ghost'
+                                className={chromeIconBtn}
+                                aria-label={t('PlaybackSpeed', { defaultValue: 'Playback speed' })}
+                              >
+                                <Gauge aria-hidden />
+                              </Button>
+                            </Popover.Trigger>
+                            <Popover.Content className='min-w-[8rem] border border-white/10 bg-neutral-950/95 p-1 backdrop-blur-xl'>
+                              {PLAYBACK_RATES.map(rate => (
+                                <Button
+                                  key={rate}
+                                  variant={rate === playbackRate ? 'secondary' : 'ghost'}
+                                  className='w-full justify-start'
+                                  onPress={() => applyPlaybackRate(rate)}
+                                >
+                                  {rate === 1 ? '1×' : `${rate}×`}
+                                </Button>
                               ))}
-                            </ListBox>
-                          </Popover.Content>
-                        </Popover>
-                      ) : null}
+                            </Popover.Content>
+                          </Popover>
+                        </div>
 
-                      <Popover isOpen={rateMenuOpen} onOpenChange={setRateMenuOpen}>
-                        <Popover.Trigger>
-                          <Button
-                            isIconOnly
-                            variant='ghost'
-                            className={chromeIconBtn}
-                            aria-label={t('PlaybackSpeed', { defaultValue: 'Playback speed' })}
-                          >
-                            <Gauge aria-hidden />
-                          </Button>
-                        </Popover.Trigger>
-                        <Popover.Content className='min-w-[8rem] p-1'>
-                          {PLAYBACK_RATES.map(rate => (
-                            <Button
-                              key={rate}
-                              variant={rate === playbackRate ? 'secondary' : 'ghost'}
-                              className='w-full justify-start'
-                              onPress={() => applyPlaybackRate(rate)}
-                            >
-                              {rate === 1 ? '1×' : `${rate}×`}
-                            </Button>
-                          ))}
-                        </Popover.Content>
-                      </Popover>
+                        <div className='ml-auto flex items-center gap-0.5'>
+                          {showPip ? (
+                            <Tooltip>
+                              <Tooltip.Trigger>
+                                <Button
+                                  isIconOnly
+                                  variant={pipActive ? 'primary' : 'ghost'}
+                                  className={pipActive ? iconBtn : chromeIconBtn}
+                                  aria-label={t('PictureInPicture', { defaultValue: 'Picture in picture' })}
+                                  onPress={() => void togglePiP()}
+                                >
+                                  <PictureInPicture2 aria-hidden />
+                                </Button>
+                              </Tooltip.Trigger>
+                              <Tooltip.Content>
+                                {t('PictureInPicture', { defaultValue: 'Picture in picture' })}
+                              </Tooltip.Content>
+                            </Tooltip>
+                          ) : null}
 
-                      <div className='flex-1' />
-
-                      {showPip ? (
-                        <Tooltip>
-                          <Tooltip.Trigger>
-                            <Button
-                              isIconOnly
-                              variant={pipActive ? 'primary' : 'ghost'}
-                              className={pipActive ? iconBtn : chromeIconBtn}
-                              aria-label={t('PictureInPicture', { defaultValue: 'Picture in picture' })}
-                              onPress={() => void togglePiP()}
-                            >
-                              <PictureInPicture2 aria-hidden />
-                            </Button>
-                          </Tooltip.Trigger>
-                          <Tooltip.Content>{t('PictureInPicture', { defaultValue: 'Picture in picture' })}</Tooltip.Content>
-                        </Tooltip>
-                      ) : null}
-
-                      {!isMobile ? (
-                        <Tooltip>
-                          <Tooltip.Trigger>
-                            <Button
-                              isIconOnly
-                              variant='ghost'
-                              className={chromeIconBtn}
-                              aria-label={
-                                expanded
+                          {!isMobile ? (
+                            <Tooltip>
+                              <Tooltip.Trigger>
+                                <Button
+                                  isIconOnly
+                                  variant='ghost'
+                                  className={chromeIconBtn}
+                                  aria-label={
+                                    expanded
+                                      ? t('CollapsePlayer', { defaultValue: 'Collapse player' })
+                                      : t('ExpandPlayer', { defaultValue: 'Expand player' })
+                                  }
+                                  onPress={() => {
+                                    setExpanded(prev => !prev)
+                                    revealChrome()
+                                  }}
+                                >
+                                  {expanded ? <Minimize2 aria-hidden /> : <Maximize2 aria-hidden />}
+                                </Button>
+                              </Tooltip.Trigger>
+                              <Tooltip.Content>
+                                {expanded
                                   ? t('CollapsePlayer', { defaultValue: 'Collapse player' })
-                                  : t('ExpandPlayer', { defaultValue: 'Expand player' })
-                              }
-                              onPress={() => {
-                                setExpanded(prev => !prev)
-                                revealChrome()
-                              }}
-                            >
-                              {expanded ? <Minimize2 aria-hidden /> : <Maximize2 aria-hidden />}
-                            </Button>
-                          </Tooltip.Trigger>
-                          <Tooltip.Content>
-                            {expanded
-                              ? t('CollapsePlayer', { defaultValue: 'Collapse player' })
-                              : t('ExpandPlayer', { defaultValue: 'Expand player' })}
-                          </Tooltip.Content>
-                        </Tooltip>
-                      ) : null}
+                                  : t('ExpandPlayer', { defaultValue: 'Expand player' })}
+                              </Tooltip.Content>
+                            </Tooltip>
+                          ) : null}
 
-                      <Tooltip>
-                        <Tooltip.Trigger>
-                          <Button
-                            isIconOnly
-                            variant='ghost'
-                            className={chromeIconBtn}
-                            aria-label={fullscreen ? t('ExitFullscreen') : t('Fullscreen')}
-                            onPress={fullscreen ? exitFullscreen : enterFullscreen}
-                          >
-                            {fullscreen ? <Minimize aria-hidden /> : <Maximize aria-hidden />}
-                          </Button>
-                        </Tooltip.Trigger>
-                        <Tooltip.Content>{fullscreen ? t('ExitFullscreen') : t('Fullscreen')}</Tooltip.Content>
-                      </Tooltip>
+                          <Tooltip>
+                            <Tooltip.Trigger>
+                              <Button
+                                isIconOnly
+                                variant='ghost'
+                                className={chromeIconBtn}
+                                aria-label={fullscreen ? t('ExitFullscreen') : t('Fullscreen')}
+                                onPress={fullscreen ? exitFullscreen : enterFullscreen}
+                              >
+                                {fullscreen ? <Minimize aria-hidden /> : <Maximize aria-hidden />}
+                              </Button>
+                            </Tooltip.Trigger>
+                            <Tooltip.Content>{fullscreen ? t('ExitFullscreen') : t('Fullscreen')}</Tooltip.Content>
+                          </Tooltip>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

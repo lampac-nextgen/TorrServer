@@ -17,16 +17,18 @@ export const DIALOG_SHEET_M: CSSProperties = {
   width: 'min(92vw, 48rem)',
 }
 
-/** Default player window — wider rectangle than HeroUI `lg`, not near-fullscreen. */
+/** Default player window — wide 16:9-friendly rectangle (not a tiny square). */
 export const PLAYER_DIALOG_NORMAL: CSSProperties = {
-  minWidth: 'min(92vw, 56rem)',
-  maxWidth: 'min(92vw, 56rem)',
-  width: 'min(92vw, 56rem)',
+  minWidth: 'min(94vw, 64rem)',
+  maxWidth: 'min(94vw, 64rem)',
+  width: 'min(94vw, 64rem)',
 }
 
-/** Expanded player sheet — matches Details/Search sheet L. */
+/** Expanded player sheet — near-viewport cinema width. */
 export const PLAYER_DIALOG_EXPANDED: CSSProperties = {
-  ...DIALOG_SHEET_L,
+  minWidth: 'min(96vw, 80rem)',
+  maxWidth: 'min(96vw, 80rem)',
+  width: 'min(96vw, 80rem)',
 }
 
 /** Sheet L + stable height so short tabs (Storage) don't collapse the window. */
