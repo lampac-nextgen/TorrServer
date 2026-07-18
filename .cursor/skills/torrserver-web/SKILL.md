@@ -23,7 +23,7 @@ description: >-
 - **Doctrine:** new web client to TorrServer API — rewrite UI freely; server/API = feature/behavior contract only; never port old visuals.
 - Prefer `shared/api/*` + React Query hooks.
 - Brand accent OK; streaming poster library; Safari **17+**.
-- Donate removed. Adaptive shell + `ModalOpenProvider`.
+- Donate restored (dialog + snackbar + nav). Adaptive shell + `ModalOpenProvider`.
 - Snake/GStreamer contracts unchanged. File row: primary actions reachable.
 
 ## Layout

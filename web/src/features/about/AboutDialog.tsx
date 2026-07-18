@@ -1,6 +1,6 @@
 import { Button, Link, ListBox, Modal, Select, Spinner, useMediaQuery } from '@heroui/react'
 import axios from 'axios'
-import { Activity, Gauge, Heart, SquareArrowOutUpRight } from 'lucide-react'
+import { Activity, CreditCard, Gauge, Heart, SquareArrowOutUpRight } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -20,6 +20,7 @@ export interface AboutDialogProps {
   open: boolean
   onClose: () => void
   onOpenServerStatus?: () => void
+  onOpenDonate?: () => void
 }
 
 /** Download sizes for `/download/:size` (path unit is MB). */
@@ -49,8 +50,8 @@ function contributorInitials(name: string): string {
   return name.slice(0, 2).toUpperCase()
 }
 
-/** About dialog: version, links, speedtest, and Special Thanks contributor grid (no Donate). */
-export default function AboutDialog({ open, onClose, onOpenServerStatus }: AboutDialogProps) {
+/** About dialog: version, links, speedtest, Donate entry, and Special Thanks contributor grid. */
+export default function AboutDialog({ open, onClose, onOpenServerStatus, onOpenDonate }: AboutDialogProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
   const isFullScreenBreakpoint = useDialogFullScreen()
@@ -144,6 +145,25 @@ export default function AboutDialog({ open, onClose, onOpenServerStatus }: About
             >
               <Activity {...iconMenu} aria-hidden />
               {t('ServerStatus')}
+            </Button>
+          </div>
+        </div>
+
+        <div className='mt-3 rounded-lg border border-border bg-surface-secondary p-3'>
+          <p className='mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted'>{t('Donate')}</p>
+          <div className='px-1'>
+            <Button
+              size='sm'
+              variant='secondary'
+              className='min-h-10 gap-2'
+              onPress={() => {
+                onClose()
+                onOpenDonate?.()
+              }}
+              isDisabled={!onOpenDonate}
+            >
+              <CreditCard {...iconMenu} aria-hidden />
+              {t('Support')}
             </Button>
           </div>
         </div>

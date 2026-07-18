@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Button, Tooltip } from '@heroui/react'
-import { Activity, FolderPlus, Info, Layers, Power, Search, Settings, Trash2 } from 'lucide-react'
+import { Activity, CreditCard, FolderPlus, Info, Layers, Power, Search, Settings, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { iconNav } from 'shared/ui/iconProps'
@@ -30,6 +30,7 @@ export default function Sidebar({
   onCategories,
   onSettings,
   onAbout,
+  onDonate,
   onServerStatus,
   onCloseServer,
   onRemoveAll,
@@ -55,6 +56,7 @@ export default function Sidebar({
     { key: 'status', label: t('ServerStatus'), icon: <Activity {...iconNav} />, onClick: onServerStatus, disabled },
     { key: 'settings', label: t('nav.Settings'), icon: <Settings {...iconNav} />, onClick: onSettings, disabled },
     { key: 'about', label: t('About'), icon: <Info {...iconNav} />, onClick: onAbout },
+    { key: 'donate', label: t('Donate'), icon: <CreditCard {...iconNav} />, onClick: onDonate },
     { key: 'close', label: t('CloseServer'), icon: <Power {...iconNav} />, onClick: onCloseServer, disabled },
   ]
 

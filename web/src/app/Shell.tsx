@@ -30,6 +30,8 @@ const MultiAddDialog = lazy(() => import('features/add/MultiAddDialog'))
 const SearchDialog = lazy(() => import('features/search/SearchDialog'))
 const SettingsDialog = lazy(() => import('features/settings/SettingsDialog'))
 const AboutDialog = lazy(() => import('features/about/AboutDialog'))
+const DonateDialog = lazy(() => import('features/donate/DonateDialog'))
+const DonateSnackbar = lazy(() => import('features/donate/DonateSnackbar'))
 const CloseServerDialog = lazy(() => import('features/system/CloseServerDialog'))
 const RemoveAllDialog = lazy(() => import('features/system/RemoveAllDialog'))
 const ServerStatusDialog = lazy(() => import('features/system/ServerStatusDialog'))
@@ -84,6 +86,7 @@ export default function Shell() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settingsInitialTab, setSettingsInitialTab] = useState<SettingsDeepLinkTab | undefined>()
   const [aboutOpen, setAboutOpen] = useState(false)
+  const [donateOpen, setDonateOpen] = useState(false)
   const [categoriesOpen, setCategoriesOpen] = useState(false)
   const [closeServerOpen, setCloseServerOpen] = useState(false)
   const [removeAllOpen, setRemoveAllOpen] = useState(false)
@@ -157,6 +160,7 @@ export default function Shell() {
     onCategories: () => setCategoriesOpen(true),
     onSettings: () => setSettingsOpen(true),
     onAbout: () => setAboutOpen(true),
+    onDonate: () => setDonateOpen(true),
     onServerStatus: () => setServerStatusOpen(true),
     onCloseServer: () => setCloseServerOpen(true),
     onRemoveAll: () => setRemoveAllOpen(true),
@@ -320,7 +324,11 @@ export default function Shell() {
             open={aboutOpen}
             onClose={() => setAboutOpen(false)}
             onOpenServerStatus={() => setServerStatusOpen(true)}
+            onOpenDonate={() => setDonateOpen(true)}
           />
+        </DialogErrorBoundary>
+        <DialogErrorBoundary onClose={() => setDonateOpen(false)}>
+          <DonateDialog open={donateOpen} onClose={() => setDonateOpen(false)} />
         </DialogErrorBoundary>
         <DialogErrorBoundary onClose={() => setCloseServerOpen(false)}>
           <CloseServerDialog open={closeServerOpen} onClose={() => setCloseServerOpen(false)} />
@@ -338,6 +346,7 @@ export default function Shell() {
             onAdd={() => setAddOpen(true)}
             onSearch={() => setSearchOpen(true)}
             onAbout={() => setAboutOpen(true)}
+            onDonate={() => setDonateOpen(true)}
             onServerStatus={() => setServerStatusOpen(true)}
             onToggleTheme={cycleTheme}
           />
@@ -352,6 +361,7 @@ export default function Shell() {
         </DialogErrorBoundary>
         {detectApplePlatform().isIOS && !isStandaloneApp ? <PWAInstallationGuide /> : null}
         {!detectApplePlatform().isIOS && !isStandaloneApp ? <AndroidInstallBanner /> : null}
+        <DonateSnackbar onSupport={() => setDonateOpen(true)} />
       </Suspense>
       <NowPlayingBar />
     </div>

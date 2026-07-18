@@ -9,6 +9,7 @@ export interface ShellNavProps extends OfflineAwareProps {
   onCategories: () => void
   onSettings: () => void
   onAbout: () => void
+  onDonate: () => void
   onServerStatus: () => void
   onCloseServer: () => void
   onRemoveAll: () => void

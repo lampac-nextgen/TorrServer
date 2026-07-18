@@ -27,6 +27,8 @@
   "All": "Tous",
   "ApiDocs": "Documentation API",
   "B": "o",
+  "Donate": "Faire un don",
+  "Donate?": "Voulez-vous faire un don ?",
   "bps": "bit/s",
   "Buffer": "Tampon de préchargement / Cache",
   "BufferNote": "Définissez le cache de préchargement avant la lecture > 32 Mo dans les paramètres pour modifier la taille de préchargement",

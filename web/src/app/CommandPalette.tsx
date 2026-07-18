@@ -10,6 +10,7 @@ export interface CommandPaletteProps {
   onAdd: () => void
   onSearch: () => void
   onAbout: () => void
+  onDonate: () => void
   onServerStatus: () => void
   onToggleTheme: () => void
 }
@@ -27,6 +28,7 @@ export default function CommandPalette({
   onAdd,
   onSearch,
   onAbout,
+  onDonate,
   onServerStatus,
   onToggleTheme,
 }: CommandPaletteProps) {
@@ -85,8 +87,16 @@ export default function CommandPalette({
           onClose()
         },
       },
+      {
+        id: 'donate',
+        label: t('Donate'),
+        run: () => {
+          onDonate()
+          onClose()
+        },
+      },
     ]
-  }, [t, onAdd, onSearch, onAbout, onServerStatus, onToggleTheme, onClose])
+  }, [t, onAdd, onSearch, onAbout, onDonate, onServerStatus, onToggleTheme, onClose])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLocaleLowerCase()
