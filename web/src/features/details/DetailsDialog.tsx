@@ -270,17 +270,22 @@ export default function DetailsDialog({
               </div>
 
               <Tabs.Root selectedKey={resolvedTab} onSelectionChange={key => setActiveTab(String(key) as DetailsTab)}>
-                <Tabs.List aria-label={t('TorrentDetails')} className='overflow-x-auto'>
-                  <Tabs.Tab id='overview' className='min-h-11 shrink-0'>
-                    {t('Overview')}
-                  </Tabs.Tab>
-                  <Tabs.Tab id='files' className='min-h-11 shrink-0' aria-label={t('TorrentContent')}>
-                    {t('TorrentFiles')}
-                  </Tabs.Tab>
-                  <Tabs.Tab id='cache' className='min-h-11 shrink-0'>
-                    {t('Cache')}
-                  </Tabs.Tab>
-                </Tabs.List>
+                <Tabs.ListContainer className='w-full max-w-full'>
+                  <Tabs.List aria-label={t('TorrentDetails')}>
+                    <Tabs.Tab id='overview' className='min-h-11 w-auto shrink-0'>
+                      {t('Overview')}
+                      <Tabs.Indicator />
+                    </Tabs.Tab>
+                    <Tabs.Tab id='files' className='min-h-11 w-auto shrink-0' aria-label={t('TorrentContent')}>
+                      {t('TorrentFiles')}
+                      <Tabs.Indicator />
+                    </Tabs.Tab>
+                    <Tabs.Tab id='cache' className='min-h-11 w-auto shrink-0'>
+                      {t('Cache')}
+                      <Tabs.Indicator />
+                    </Tabs.Tab>
+                  </Tabs.List>
+                </Tabs.ListContainer>
 
                 <Tabs.Panel id='overview' className='space-y-4 pt-4'>
                   <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} />
