@@ -1,6 +1,6 @@
-import { useMemo, memo, useState } from 'react'
-import { Button, ButtonGroup, Modal, Separator, useOverlayState } from '@heroui/react'
-import { EyeOff, ExternalLink, Hash, ListVideo, Loader2, Magnet, Play, Settings, Trash2, Copy } from 'lucide-react'
+import { useMemo, memo, useState, type ReactNode } from 'react'
+import { Button, ButtonGroup, Modal, Separator, Spinner, useOverlayState } from '@heroui/react'
+import { EyeOff, ExternalLink, Hash, ListVideo, Magnet, Play, Settings, Trash2, Copy } from 'lucide-react'
 import ptt from 'parse-torrent-title'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
@@ -26,6 +26,33 @@ export interface TorrentActionsProps {
 }
 
 type PendingConfirm = 'drop' | 'clearViews' | null
+
+function ExternalPlayersGroup({
+  players,
+  size = 'md',
+}: {
+  players: { label: string; href: string }[]
+  size?: 'sm' | 'md' | 'lg'
+}) {
+  if (players.length === 0) return null
+
+  const buttons = players.map(player => (
+    <Button
+      key={player.label}
+      variant='secondary'
+      size={size}
+      onPress={() => {
+        window.location.href = player.href
+      }}
+    >
+      <ExternalLink aria-hidden />
+      {player.label}
+    </Button>
+  ))
+
+  if (players.length === 1) return buttons[0]
+  return <ButtonGroup>{buttons}</ButtonGroup>
+}
 
 function TorrentActions({
   hash,
@@ -127,15 +154,20 @@ function TorrentActions({
   }
 
   const hasPartialProgress = !isSingleFileTorrent && !!viewedFileList?.length
+  const playLabel: ReactNode =
+    !isSingleFileTorrent && (playableFileList?.length ?? 0) > 1
+      ? `${t('TorrentContent')} (${playableFileList!.length})`
+      : t('Play')
 
   return (
     <div className='space-y-4'>
-      <div className='flex flex-wrap gap-2'>
+      <div className='flex flex-wrap items-center gap-2'>
         <Button
           variant='primary'
           size='lg'
-          className='w-full sm:w-auto'
-          isDisabled={resolvingAudio}
+          fullWidth
+          className='sm:w-auto'
+          isPending={resolvingAudio}
           onPress={() => {
             // Series / multi-file: jump to the Content tab (per-file Play/Copy/external) instead of
             // opening a second file-picker modal — matches the legacy details UX.
@@ -146,31 +178,17 @@ function TorrentActions({
             handlePlay()
           }}
         >
-          {resolvingAudio ? (
-            <Loader2 className='size-4 animate-spin' aria-hidden />
-          ) : (
-            <Play className='size-4' fill='currentColor' aria-hidden />
+          {({ isPending }) => (
+            <>
+              {isPending ? <Spinner size='sm' color='current' /> : <Play fill='currentColor' aria-hidden />}
+              {playLabel}
+            </>
           )}
-          {!isSingleFileTorrent && (playableFileList?.length ?? 0) > 1
-            ? `${t('TorrentContent')} (${playableFileList!.length})`
-            : t('Play')}
         </Button>
-        {externalPlayers.map(player => (
-          <Button
-            key={player.label}
-            variant='secondary'
-            size='lg'
-            onPress={() => {
-              window.location.href = player.href
-            }}
-          >
-            <ExternalLink className='size-4' aria-hidden />
-            {player.label}
-          </Button>
-        ))}
+        <ExternalPlayersGroup players={externalPlayers} />
         {singleFileStream ? (
-          <Button variant='secondary' size='lg' onPress={() => void copyStreamLink()}>
-            <Copy className='size-4' aria-hidden />
+          <Button variant='secondary' onPress={() => void copyStreamLink()}>
+            <Copy aria-hidden />
             {t('CopyLink')}
           </Button>
         ) : null}
@@ -218,21 +236,23 @@ function TorrentActions({
 
       <div>
         <p className='mb-2 text-sm font-semibold text-muted'>{t('Info')}</p>
-        <div className='flex flex-wrap gap-2'>
+        <div className='flex flex-wrap items-center gap-2'>
           {isSingleFileTorrent || !viewedFileList?.length ? (
             <Button variant='primary' onPress={() => window.open(fullPlaylistLink, '_blank')}>
-              <ListVideo className='size-4' aria-hidden />
+              <ListVideo aria-hidden />
               {t('DownloadPlaylist')}
             </Button>
           ) : null}
-          <Button variant='secondary' onPress={() => void copyMagnetLink()}>
-            <Magnet className='size-4' aria-hidden />
-            {t('CopyMagnet')}
-          </Button>
-          <Button variant='secondary' onPress={() => void copyInfoHash()}>
-            <Hash className='size-4' aria-hidden />
-            {t('CopyHash')}
-          </Button>
+          <ButtonGroup>
+            <Button variant='secondary' onPress={() => void copyMagnetLink()}>
+              <Magnet aria-hidden />
+              {t('CopyMagnet')}
+            </Button>
+            <Button variant='secondary' onPress={() => void copyInfoHash()}>
+              <Hash aria-hidden />
+              {t('CopyHash')}
+            </Button>
+          </ButtonGroup>
         </div>
       </div>
 
@@ -241,12 +261,12 @@ function TorrentActions({
       <div>
         <p className='mb-2 text-sm font-semibold text-muted'>{t('TorrentState')}</p>
         <div className='flex flex-wrap gap-2'>
-          <Button variant='secondary' onPress={() => setPendingConfirm('clearViews')}>
-            <EyeOff className='size-4' aria-hidden />
+          <Button variant='outline' onPress={() => setPendingConfirm('clearViews')}>
+            <EyeOff aria-hidden />
             {t('RemoveViews')}
           </Button>
           <Button variant='danger' onPress={() => setPendingConfirm('drop')}>
-            <Trash2 className='size-4' aria-hidden />
+            <Trash2 aria-hidden />
             {t('DropTorrent')}
           </Button>
         </div>

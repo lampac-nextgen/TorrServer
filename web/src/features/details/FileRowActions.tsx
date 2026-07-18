@@ -1,8 +1,9 @@
 import { lazy, Suspense } from 'react'
-import { Button, Tooltip } from '@heroui/react'
-import { Copy, Download, ExternalLink, Loader2, Play } from 'lucide-react'
+import { Button, ButtonGroup, Spinner, Tooltip } from '@heroui/react'
+import { Copy, Download, ExternalLink, Play } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { ExternalPlayerLink } from 'shared/lib/externalPlayers'
+import { iconBtn } from 'shared/ui/controlClasses'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
 /** Lazy: keeps hls.js out of the Details bundle — only fetched once a file is actually played. */
@@ -32,8 +33,6 @@ export interface FileRowActionsProps {
   onViewedChange?: () => void
 }
 
-const iconBtn =
-  'inline-flex min-h-10 min-w-10 shrink-0 items-center justify-center p-0 [&_svg]:m-0 [&_svg]:block'
 const playerBtn = 'min-h-10 shrink-0 px-2.5 font-medium'
 
 /**
@@ -72,14 +71,32 @@ export default function FileRowActions({
     }
   }
 
+  const externalButtons = externalPlayers.map(player => (
+    <Button
+      key={player.label}
+      variant='secondary'
+      size='sm'
+      className={playerBtn}
+      onPress={() => {
+        window.location.href = player.href
+      }}
+    >
+      {player.label}
+    </Button>
+  ))
+
   return (
     <div className='flex flex-wrap items-center gap-1.5'>
       {playerSupported ? (
         <Suspense
           fallback={
-            <Button variant='primary' size='sm' className='min-h-10 shrink-0 px-3' isDisabled>
-              <Loader2 className='size-4 animate-spin' aria-hidden />
-              {t('Play')}
+            <Button variant='primary' size='sm' className='min-h-10 shrink-0 px-3' isDisabled isPending>
+              {() => (
+                <>
+                  <Spinner size='sm' color='current' />
+                  {t('Play')}
+                </>
+              )}
             </Button>
           }
         >
@@ -107,24 +124,12 @@ export default function FileRowActions({
           className='min-h-10 shrink-0 px-3'
           onPress={() => window.open(openLinkHref, '_blank', 'noopener,noreferrer')}
         >
-          <Play className='size-4' fill='currentColor' aria-hidden />
+          <Play fill='currentColor' aria-hidden />
           {t('Play')}
         </Button>
       ) : null}
 
-      {externalPlayers.map(player => (
-        <Button
-          key={player.label}
-          variant='secondary'
-          size='sm'
-          className={playerBtn}
-          onPress={() => {
-            window.location.href = player.href
-          }}
-        >
-          {player.label}
-        </Button>
-      ))}
+      {externalPlayers.length > 1 ? <ButtonGroup>{externalButtons}</ButtonGroup> : externalButtons}
 
       {showOpenLink && openLinkHref && playerSupported ? (
         <Tooltip.Root>
@@ -137,7 +142,7 @@ export default function FileRowActions({
               aria-label={t('OpenLink')}
               onPress={() => window.open(openLinkHref, '_blank', 'noopener,noreferrer')}
             >
-              <ExternalLink className='size-4' aria-hidden />
+              <ExternalLink aria-hidden />
             </Button>
           </Tooltip.Trigger>
           <Tooltip.Content>{t('OpenLink')}</Tooltip.Content>
@@ -154,7 +159,7 @@ export default function FileRowActions({
             aria-label={t('CopyLink')}
             onPress={() => void copyDirectLink()}
           >
-            <Copy className='size-4' aria-hidden />
+            <Copy aria-hidden />
           </Button>
         </Tooltip.Trigger>
         <Tooltip.Content>{t('CopyLink')}</Tooltip.Content>
@@ -170,7 +175,7 @@ export default function FileRowActions({
             aria-label={preloadLabel}
             onPress={onPreload}
           >
-            <Download className='size-4' aria-hidden />
+            <Download aria-hidden />
           </Button>
         </Tooltip.Trigger>
         <Tooltip.Content>{preloadLabel}</Tooltip.Content>

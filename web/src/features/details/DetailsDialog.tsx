@@ -189,11 +189,11 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                   aria-label={t('EditTorrent')}
                   onPress={() => onEdit(torrent)}
                 >
-                  <Pencil className='size-4' />
+                  <Pencil aria-hidden />
                 </Button>
               ) : null}
               <Modal.CloseTrigger aria-label={t('Close')}>
-                <X className='size-4' />
+                <X aria-hidden />
               </Modal.CloseTrigger>
             </Modal.Header>
 

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { Button, Dropdown, Modal, Tooltip, useOverlayState } from '@heroui/react'
-import { ExternalLink, Info, ListMusic, Loader2, MoreVertical, Pencil, Play, Trash2, X } from 'lucide-react'
+import { Button, Dropdown, Modal, Spinner, Tooltip, useOverlayState } from '@heroui/react'
+import { ExternalLink, Info, ListMusic, MoreVertical, Pencil, Play, Trash2, X } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
@@ -90,10 +90,12 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
               isIconOnly
               className={overlayButtonClass}
               aria-label={t('Play')}
-              isDisabled={resolvingAudio}
+              isPending={resolvingAudio}
               onPress={handlePlay}
             >
-              {resolvingAudio ? <Loader2 size={18} className='animate-spin' /> : <Play size={18} fill='currentColor' />}
+              {({ isPending }) =>
+                isPending ? <Spinner size='sm' color='current' /> : <Play fill='currentColor' aria-hidden />
+              }
             </Button>
           </Tooltip.Trigger>
           <Tooltip.Content>{t('Play')}</Tooltip.Content>
@@ -104,7 +106,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
         <Dropdown isOpen={dropdownState.isOpen} onOpenChange={dropdownState.setOpen}>
           <Dropdown.Trigger>
             <Button variant='primary' isIconOnly className={overlayButtonClass} aria-label={t('Actions')}>
-              <MoreVertical size={18} />
+              <MoreVertical aria-hidden />
             </Button>
           </Dropdown.Trigger>
           <Dropdown.Popover placement='bottom end'>

@@ -410,12 +410,12 @@ export default function VideoPlayer({
             onPress={openPlayer}
             className={inlineTriggerPrimary ? 'min-h-10 shrink-0 px-3' : 'min-h-10 min-w-[72px] max-w-full flex-1'}
           >
-            {inlineTriggerPrimary ? <Play className='size-4' fill='currentColor' aria-hidden /> : null}
+            {inlineTriggerPrimary ? <Play fill='currentColor' aria-hidden /> : null}
             {t('Play')}
           </Button>
         ) : (
           <Button variant='secondary' onPress={openPlayer}>
-            <Play className='size-4' />
+            <Play aria-hidden />
             {t('Play')}
           </Button>
         ))}
@@ -427,7 +427,7 @@ export default function VideoPlayer({
               <Modal.Header className='flex items-center gap-2 border-b border-white/10 bg-black py-2 text-white'>
                 <Modal.Heading className='min-w-0 flex-1 truncate text-base'>{title || t('Play')}</Modal.Heading>
                 <Modal.CloseTrigger aria-label={t('Close')} className={chromeIconBtn}>
-                  <X className='size-4' />
+                  <X aria-hidden />
                 </Modal.CloseTrigger>
               </Modal.Header>
 
@@ -483,7 +483,7 @@ export default function VideoPlayer({
                   <Tooltip>
                     <Tooltip.Trigger>
                       <Button isIconOnly variant='ghost' className={chromeIconBtn} onPress={togglePlayPause}>
-                        {playing ? <Pause className='size-4' /> : <Play className='size-4' />}
+                        {playing ? <Pause aria-hidden /> : <Play aria-hidden />}
                       </Button>
                     </Tooltip.Trigger>
                     <Tooltip.Content>{playing ? t('Pause') : t('Play')}</Tooltip.Content>
@@ -498,7 +498,7 @@ export default function VideoPlayer({
                         aria-label={t('Rewind-10-Sec')}
                         onPress={() => seekRelative(-SEEK_STEP_SEC)}
                       >
-                        <RotateCcw className='size-4' />
+                        <RotateCcw aria-hidden />
                       </Button>
                     </Tooltip.Trigger>
                     <Tooltip.Content>{t('Rewind-10-Sec')}</Tooltip.Content>
@@ -513,7 +513,7 @@ export default function VideoPlayer({
                         aria-label={t('Forward-10-Sec')}
                         onPress={() => seekRelative(SEEK_STEP_SEC)}
                       >
-                        <RotateCw className='size-4' />
+                        <RotateCw aria-hidden />
                       </Button>
                     </Tooltip.Trigger>
                     <Tooltip.Content>{t('Forward-10-Sec')}</Tooltip.Content>
@@ -526,7 +526,7 @@ export default function VideoPlayer({
                   <Tooltip>
                     <Tooltip.Trigger>
                       <Button isIconOnly variant='ghost' className={chromeIconBtn} onPress={toggleMute}>
-                        {muted ? <VolumeX className='size-4' /> : <Volume2 className='size-4' />}
+                        {muted ? <VolumeX aria-hidden /> : <Volume2 aria-hidden />}
                       </Button>
                     </Tooltip.Trigger>
                     <Tooltip.Content>{muted ? t('Unmute') : t('Mute')}</Tooltip.Content>
@@ -556,7 +556,7 @@ export default function VideoPlayer({
                           className={activeSubtitleTrack >= 0 ? iconBtn : chromeIconBtn}
                           aria-label={t('GStreamer.Subtitles', { defaultValue: 'Subtitles' })}
                         >
-                          <Captions className='size-4' />
+                          <Captions aria-hidden />
                         </Button>
                       </Popover.Trigger>
                       <Popover.Content>
@@ -588,7 +588,7 @@ export default function VideoPlayer({
                         className={chromeIconBtn}
                         onPress={fullscreen ? exitFullscreen : enterFullscreen}
                       >
-                        {fullscreen ? <Minimize className='size-4' /> : <Maximize className='size-4' />}
+                        {fullscreen ? <Minimize aria-hidden /> : <Maximize aria-hidden />}
                       </Button>
                     </Tooltip.Trigger>
                     <Tooltip.Content>{fullscreen ? t('ExitFullscreen') : t('Fullscreen')}</Tooltip.Content>
