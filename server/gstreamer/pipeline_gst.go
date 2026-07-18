@@ -28,8 +28,9 @@ var (
 const (
 	defaultAACChannels   = 2
 	defaultAACSampleRate = 48000
-	pipelineReadTimeout  = 20 * time.Second
+	pipelineReadTimeout  = 45 * time.Second
 	pipelineStateTimeout = 5 * time.Second
+	pipelineEOSBackoff   = 120 * time.Second
 	gstPollInterval      = 100 * time.Millisecond
 )
 
@@ -53,11 +54,13 @@ type gstRunner struct {
 
 	reader *mp4BoxReader
 
-	pipeline       uintptr
-	bus            uintptr
-	sink           uintptr
-	subtitleSinks  map[int]uintptr
-	subtitleStores map[int]*subtitleStore
+	pipeline        uintptr
+	bus             uintptr
+	sink            uintptr
+	subtitleSinks   map[int]uintptr
+	subtitleStores  map[int]*subtitleStore
+	videoStartProbe *gstPadProbeRegistration
+	videoClipProbe  *gstPadProbeRegistration
 
 	watchMu     sync.Mutex
 	watchCancel chan struct{}
@@ -93,14 +96,16 @@ func (r *gstRunner) ensureTransientState() {
 		r.subtitleSinks = make(map[int]uintptr)
 	}
 	if r.subtitleStores == nil {
-		r.subtitleStores = make(map[int]*subtitleStore)
+		stores := make(map[int]*subtitleStore)
 		if r.task.Config.Subtitles {
 			for _, track := range r.task.Probe.Tracks {
 				if supportedSubtitleTrack(track) {
-					r.subtitleStores[track.Index] = newSubtitleStore()
+					stores[track.Index] = newSubtitleStore()
 				}
 			}
 		}
+		r.subtitleStores = stores
+		r.task.setSubtitleStores(stores)
 	}
 	if r.reader != nil {
 		return
@@ -125,6 +130,7 @@ func (r *gstRunner) ensureTransientState() {
 
 func (r *gstRunner) releaseTransientState() {
 	r.reader = nil
+	r.task.setSubtitleStores(nil)
 	r.subtitleStores = nil
 	r.subtitleSinks = nil
 	_ = r.takeBusError()
@@ -704,6 +710,7 @@ func videoIsTranscoded(conf Config, probe ProbeInfo) bool {
 func (r *gstRunner) Seek(seconds float64) bool {
 	r.ensureTransientState()
 	r.discardReadySegment()
+	r.resetSubtitleProgress(seconds)
 	wasFrozen := r.IsFrozen()
 	reuse := r.pipeline != 0
 	accurate := r.task.Cue != nil
@@ -712,7 +719,7 @@ func (r *gstRunner) Seek(seconds float64) bool {
 	var actualSeconds float64
 	var err error
 	if reuse {
-		actualSeconds, err = r.reusePipeline(seconds, accurate)
+		actualSeconds, err = r.reusePipeline(seconds, accurate, pipelineStateTimeout)
 	} else {
 		r.reader.SeekReset(seconds)
 		actualSeconds, err = r.startPipeline(seconds)
@@ -723,6 +730,7 @@ func (r *gstRunner) Seek(seconds float64) bool {
 		return false
 	}
 	r.reader.SeekReset(actualSeconds)
+	r.resetSubtitleProgress(actualSeconds)
 
 	r.frozen.Store(false)
 	r.setPosition(actualSeconds)
@@ -735,7 +743,7 @@ func (r *gstRunner) Seek(seconds float64) bool {
 	return true
 }
 
-func (r *gstRunner) reusePipeline(seconds float64, accurate bool) (float64, error) {
+func (r *gstRunner) reusePipeline(seconds float64, accurate bool, waitTimeout time.Duration) (float64, error) {
 	if r.pipeline == 0 || r.bus == 0 || r.sink == 0 {
 		return 0, errors.New("pipeline cannot be reused")
 	}
@@ -754,8 +762,12 @@ func (r *gstRunner) reusePipeline(seconds float64, accurate bool) (float64, erro
 	if videoTimestamper != 0 {
 		defer gstRuntime.objectUnref(videoTimestamper)
 	}
-	videoEncoder := gstRuntime.binGetByName(r.pipeline, "video_encoder")
-	if videoEncoder != 0 {
+	var videoEncoder uintptr
+	if videoIsTranscoded(r.task.Config, r.task.Probe) {
+		videoEncoder = gstRuntime.binGetByName(r.pipeline, "video_encoder")
+		if videoEncoder == 0 {
+			return 0, errors.New("video encoder is not available for seek reset")
+		}
 		defer gstRuntime.objectUnref(videoEncoder)
 	}
 
@@ -779,8 +791,23 @@ func (r *gstRunner) reusePipeline(seconds float64, accurate bool) (float64, erro
 		flags |= gstSeekFlagAccurate
 	}
 	seekNS := int64(math.Round(seconds * 1_000_000_000))
+	if seekNS < 0 {
+		return 0, errors.New("gstreamer seek position is negative")
+	}
+	r.installVideoSeekProbes(r.pipeline, uint64(seekNS), accurate)
+	if err := gstRuntime.popBusError(r.bus, 0); err != nil {
+		return 0, err
+	}
+	gstRuntime.drainBusMessages(r.bus, gstMessageAsyncDone|gstMessageEOS)
 	if err := sendVideoSeekEvent(r.pipeline, flags, seekNS); err != nil {
 		return 0, fmt.Errorf("gstreamer seek failed while reusing pipeline: %w", err)
+	}
+	asyncDone, err := gstRuntime.waitForSeekDone(r.bus, waitTimeout)
+	if err != nil {
+		return 0, fmt.Errorf("gstreamer seek did not finish while reusing pipeline: %w", err)
+	}
+	if !asyncDone {
+		gstTaskDebugf(r.task, "seek ASYNC_DONE not observed at %.3fs; validating pipeline state", seconds)
 	}
 
 	waitResult := gstRuntime.elementGetState(r.pipeline, pipelineStateTimeout)
@@ -791,10 +818,7 @@ func (r *gstRunner) reusePipeline(seconds float64, accurate bool) (float64, erro
 		return 0, fmt.Errorf("gstreamer seek state=%d while reusing pipeline", waitResult)
 	}
 
-	actualSeconds := seconds
-	if positionNS, ok := gstRuntime.elementQueryPosition(r.pipeline); ok && positionNS >= 0 {
-		actualSeconds = float64(positionNS) / 1_000_000_000
-	}
+	actualSeconds := r.querySeekPosition(r.pipeline, seconds)
 	if err := r.setPipelineState(r.pipeline, r.bus, gstStatePlaying); err != nil {
 		return 0, fmt.Errorf("resume pipeline after seek: %w", err)
 	}
@@ -819,6 +843,15 @@ func sendVideoSeekEvent(pipeline uintptr, flags int32, positionNS int64) error {
 		return errors.New("video seek event returned false")
 	}
 	return nil
+}
+
+func (r *gstRunner) querySeekPosition(pipeline uintptr, requestedSeconds float64) float64 {
+	if positionNS, ok := gstRuntime.elementQueryPosition(pipeline); ok {
+		return float64(positionNS) / 1_000_000_000
+	}
+
+	gstTaskDebugf(r.task, "position query unavailable or invalid after seek; using requested=%.3fs", requestedSeconds)
+	return requestedSeconds
 }
 
 func (r *gstRunner) EnsureInit(ctx context.Context, audio int, startIndex int) error {
@@ -981,9 +1014,16 @@ func (r *gstRunner) pullOutputSample() (bool, error) {
 		if err := r.pollPipelineError(); err != nil {
 			return false, err
 		}
-		return gstRuntime.appSinkIsEOS(r.sink), nil
+		if !gstRuntime.appSinkIsEOS(r.sink) {
+			return false, nil
+		}
+		if err := r.earlyEndOfStreamError(); err != nil {
+			return false, err
+		}
+		return true, nil
 	}
 	defer gstRuntime.sampleUnref(sample)
+	r.applyPendingVideoStart()
 
 	if err := gstRuntime.withSampleBytes(sample, func(data []byte) error {
 		if len(data) == 0 {
@@ -1050,7 +1090,40 @@ func (r *gstRunner) watchBus(bus uintptr, generation uint64, cancel <-chan struc
 			go r.freezeBusGeneration(generation)
 			return
 		}
+		if gstRuntime.popBusMessage(bus, 0, gstMessageEOS) {
+			if err := r.earlyEndOfStreamError(); err != nil {
+				gstTaskErrorf(r.task, "pipeline bus failed at %.3fs: %v", r.position(), err)
+				r.storeBusError(err)
+				go r.freezeBusGeneration(generation)
+			}
+			return
+		}
 	}
+}
+
+func (r *gstRunner) earlyEndOfStreamError() error {
+	if r.task == nil || r.task.Probe.DurationNS <= 0 {
+		return nil
+	}
+
+	durationSeconds := float64(r.task.Probe.DurationNS) / float64(time.Second)
+	thresholdSeconds := durationSeconds - pipelineEOSBackoff.Seconds()
+	if thresholdSeconds < 0 {
+		thresholdSeconds = 0
+	}
+
+	positionSeconds := r.position()
+	if !math.IsNaN(positionSeconds) && !math.IsInf(positionSeconds, 0) && positionSeconds >= thresholdSeconds {
+		return nil
+	}
+
+	return fmt.Errorf(
+		"%w: position=%.3fs threshold=%.3fs duration=%.3fs",
+		ErrEarlyEndOfStream,
+		positionSeconds,
+		thresholdSeconds,
+		durationSeconds,
+	)
 }
 
 func (r *gstRunner) freezeBusGeneration(generation uint64) {
@@ -1158,6 +1231,11 @@ func (r *gstRunner) completeReadySegment(index int) Segment {
 	} else {
 		r.readySegment.index = 0
 	}
+	_, videoReadTo := r.task.subtitleRange(index)
+	if r.readySegment.segment.EndNS > videoReadTo {
+		videoReadTo = r.readySegment.segment.EndNS
+	}
+	r.advanceSubtitleProgress(videoReadTo)
 	return r.readySegment.segment
 }
 
@@ -1251,6 +1329,7 @@ func (r *gstRunner) startPipeline(seconds float64) (float64, error) {
 	actualStartSeconds := seconds
 
 	cleanup := func() {
+		r.removeVideoSeekProbes()
 		gstRuntime.elementSetState(pipeline, gstStateNull)
 		gstRuntime.objectUnref(sink)
 		gstRuntime.objectUnref(pipeline)
@@ -1270,9 +1349,28 @@ func (r *gstRunner) startPipeline(seconds float64) (float64, error) {
 		if r.task.Cue != nil {
 			flags |= gstSeekFlagAccurate
 		}
-		if err := sendVideoSeekEvent(pipeline, flags, int64(math.Round(seconds*1_000_000_000))); err != nil {
+		if err := gstRuntime.popBusError(bus, 0); err != nil {
+			cleanup()
+			return 0, err
+		}
+		gstRuntime.drainBusMessages(bus, gstMessageAsyncDone|gstMessageEOS)
+		seekNS := int64(math.Round(seconds * 1_000_000_000))
+		if seekNS < 0 {
+			cleanup()
+			return 0, errors.New("gstreamer seek position is negative")
+		}
+		r.installVideoSeekProbes(pipeline, uint64(seekNS), r.task.Cue != nil)
+		if err := sendVideoSeekEvent(pipeline, flags, seekNS); err != nil {
 			cleanup()
 			return 0, fmt.Errorf("gstreamer seek failed: %w", err)
+		}
+		asyncDone, err := gstRuntime.waitForSeekDone(bus, pipelineStateTimeout)
+		if err != nil {
+			cleanup()
+			return 0, fmt.Errorf("gstreamer seek did not finish: %w", err)
+		}
+		if !asyncDone {
+			gstTaskDebugf(r.task, "initial seek ASYNC_DONE not observed at %.3fs; validating pipeline state", seconds)
 		}
 
 		waitResult := gstRuntime.elementGetState(pipeline, pipelineStateTimeout)
@@ -1297,11 +1395,7 @@ func (r *gstRunner) startPipeline(seconds float64) (float64, error) {
 			return 0, fmt.Errorf("unexpected GstStateChangeReturn=%d after seek", waitResult)
 		}
 
-		if positionNS, ok := gstRuntime.elementQueryPosition(pipeline); ok {
-			actualStartSeconds = float64(positionNS) / 1_000_000_000.0
-		} else {
-			gstTaskDebugf(r.task, "position query unavailable after seek; using requested=%.3fs", seconds)
-		}
+		actualStartSeconds = r.querySeekPosition(pipeline, seconds)
 	}
 
 	if err := r.setPipelineState(pipeline, bus, gstStatePlaying); err != nil {
@@ -1313,6 +1407,7 @@ func (r *gstRunner) startPipeline(seconds float64) (float64, error) {
 	r.bus = bus
 	r.sink = sink
 	r.subtitleSinks = subtitleSinks
+	r.resetSubtitleProgress(actualStartSeconds)
 	r.startBusWatch()
 	gstTaskDebugf(r.task, "pipeline started requested=%.3fs actual=%.3fs audio=%d", seconds, actualStartSeconds, r.audioIndex)
 	return actualStartSeconds, nil
@@ -1351,6 +1446,7 @@ func (r *gstRunner) setPipelineState(pipeline uintptr, bus uintptr, state int32)
 
 func (r *gstRunner) stopPipeline() {
 	r.stopBusWatch()
+	r.removeVideoSeekProbes()
 	if r.pipeline != 0 {
 		_ = gstRuntime.elementSetState(r.pipeline, gstStateNull)
 	}

@@ -413,16 +413,9 @@ func (s *Service) subtitle(c *gin.Context) {
 		c.Status(http.StatusBadRequest)
 		return
 	}
-	value, ready := task.SubtitleVTT(trackIndex, segmentIndex)
-	if !ready {
-		timer := time.NewTimer(time.Second)
-		defer timer.Stop()
-		select {
-		case <-c.Request.Context().Done():
-			return
-		case <-timer.C:
-		}
-		value, _ = task.SubtitleVTT(trackIndex, segmentIndex)
+	value, err := task.WaitSubtitleVTT(c.Request.Context(), trackIndex, segmentIndex, subtitleWaitTimeout)
+	if err != nil {
+		return
 	}
 	c.Data(http.StatusOK, "text/vtt; charset=utf-8", []byte(value))
 }

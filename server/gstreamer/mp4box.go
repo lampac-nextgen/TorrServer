@@ -336,6 +336,14 @@ func (r *mp4BoxReader) SeekReset(seconds float64) {
 	r.resetBoxState()
 }
 
+func (r *mp4BoxReader) SetTimelineOffsetNS(offsetNS uint64) {
+	if offsetNS == math.MaxUint64 {
+		r.tfdtOffsetSeconds = 0
+		return
+	}
+	r.tfdtOffsetSeconds = float64(offsetNS) / 1_000_000_000
+}
+
 func (r *mp4BoxReader) SetTargetSegment(startNS uint64, endNS uint64, toleranceNS uint64) error {
 	if !r.cueMode {
 		return nil

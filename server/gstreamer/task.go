@@ -42,6 +42,9 @@ type Task struct {
 	mu     sync.Mutex
 	runner pipelineRunner
 
+	subtitleMu     sync.RWMutex
+	subtitleStores map[int]*subtitleStore
+
 	disposed atomic.Bool
 }
 

@@ -30,6 +30,7 @@ var (
 	ErrTaskNotFound            = errors.New("gstreamer task not found")
 	ErrServiceClosed           = errors.New("gstreamer service is closed")
 	ErrInvalidIdentifier       = errors.New("invalid gstreamer task id")
+	ErrEarlyEndOfStream        = errors.New("gstreamer reached EOS before the expected end")
 	ErrEndOfStreamExhausted    = errors.New("gstreamer end of stream is exhausted")
 	ErrTruncatedMP4Fragment    = errors.New("truncated mp4 fragment at end of stream")
 	ErrUndecodableEOSRemainder = errors.New("undecodable mp4 eos remainder")
