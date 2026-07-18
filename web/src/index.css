@@ -12,7 +12,7 @@
  *
  * Axes:
  * - Brightness: `:root` vs `.dark`
- * - Palette: `data-palette` on `<html>` (`forest` default / `ocean` / `slate`)
+ * - Palette: `data-palette` on `<html>` (`forest` / `ocean` / `slate` / `ember` / `arctic` / `rose`)
  */
 :root,
 :root[data-palette='forest'] {
@@ -160,6 +160,153 @@
   --app-header: #121516;
   --app-header-foreground: #e8eaeb;
   --app-rail: #080909;
+  --app-rail-foreground: rgba(255, 255, 255, 0.9);
+}
+
+/* Ember — warm copper accent, charcoal chrome (not cream/terracotta). */
+:root[data-palette='ember'] {
+  --background: #f7f4f1;
+  --foreground: #1a1410;
+
+  --surface: #ffffff;
+  --surface-secondary: #f0ebe6;
+  --surface-tertiary: #e6dfd7;
+
+  --muted: #6e635a;
+  --border: #ddd4cb;
+  --separator: #e6dfd7;
+
+  --accent: #c45c26;
+  --accent-foreground: #ffffff;
+
+  --danger: #e05555;
+  --warning: #d99a2b;
+
+  --app-header: #3d2e24;
+  --app-header-foreground: #ffffff;
+  --app-rail: #1c1612;
+  --app-rail-foreground: rgba(255, 255, 255, 0.92);
+}
+
+.dark[data-palette='ember'] {
+  --background: #0e0b09;
+  --foreground: #f0e8e0;
+
+  --surface: #171310;
+  --surface-secondary: #1c1713;
+  --surface-tertiary: #241e19;
+
+  --muted: #b0a094;
+  --border: #3a3028;
+  --separator: #221c17;
+
+  --accent: #e8955a;
+  --accent-foreground: #1a1008;
+
+  --danger: #e2707a;
+  --warning: #e0a040;
+
+  --app-header: #14100d;
+  --app-header-foreground: #f0e8e0;
+  --app-rail: #090706;
+  --app-rail-foreground: rgba(255, 255, 255, 0.9);
+}
+
+/* Arctic — icy blue surfaces, cool azure accent. */
+:root[data-palette='arctic'] {
+  --background: #f2f6fb;
+  --foreground: #0e1520;
+
+  --surface: #ffffff;
+  --surface-secondary: #e8eef6;
+  --surface-tertiary: #dce5f0;
+
+  --muted: #5a6a7e;
+  --border: #d0dbe8;
+  --separator: #dce5f0;
+
+  --accent: #2b6cb0;
+  --accent-foreground: #ffffff;
+
+  --danger: #e05555;
+  --warning: #d99a2b;
+
+  --app-header: #1e3a5f;
+  --app-header-foreground: #ffffff;
+  --app-rail: #121a28;
+  --app-rail-foreground: rgba(255, 255, 255, 0.92);
+}
+
+.dark[data-palette='arctic'] {
+  --background: #080b12;
+  --foreground: #e4ebf5;
+
+  --surface: #0f141d;
+  --surface-secondary: #131925;
+  --surface-tertiary: #1a2230;
+
+  --muted: #8fa0b8;
+  --border: #2a3548;
+  --separator: #1a2230;
+
+  --accent: #6eb6ff;
+  --accent-foreground: #081018;
+
+  --danger: #e2707a;
+  --warning: #e0a040;
+
+  --app-header: #0c1018;
+  --app-header-foreground: #e4ebf5;
+  --app-rail: #06080e;
+  --app-rail-foreground: rgba(255, 255, 255, 0.9);
+}
+
+/* Rose — muted coral accent on cool gray (not purple). */
+:root[data-palette='rose'] {
+  --background: #f8f5f6;
+  --foreground: #1a1214;
+
+  --surface: #ffffff;
+  --surface-secondary: #f2ecee;
+  --surface-tertiary: #e8e0e3;
+
+  --muted: #6e5c62;
+  --border: #ddd2d6;
+  --separator: #e8e0e3;
+
+  --accent: #c45d75;
+  --accent-foreground: #ffffff;
+
+  --danger: #e05555;
+  --warning: #d99a2b;
+
+  --app-header: #5a3542;
+  --app-header-foreground: #ffffff;
+  --app-rail: #1c1418;
+  --app-rail-foreground: rgba(255, 255, 255, 0.92);
+}
+
+.dark[data-palette='rose'] {
+  --background: #0e0a0c;
+  --foreground: #f0e6ea;
+
+  --surface: #161114;
+  --surface-secondary: #1b1518;
+  --surface-tertiary: #231c20;
+
+  --muted: #b09aa2;
+  --border: #3a3035;
+  --separator: #211a1e;
+
+  --accent: #e890a4;
+  --accent-foreground: #1a0c10;
+
+  --danger: #e2707a;
+  --warning: #e0a040;
+
+  --app-header: #140f12;
+  --app-header-foreground: #f0e6ea;
+  --app-rail: #090607;
   --app-rail-foreground: rgba(255, 255, 255, 0.9);
 }
 

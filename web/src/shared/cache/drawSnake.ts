@@ -1,7 +1,7 @@
 import type { CacheMapItem } from 'shared/api/types'
 
 import { priorityDebugLabel } from './buildCacheMap'
-import { snakeSettings, type SnakeThemeMode, type SnakeVariant } from './snakeSettings'
+import { resolveSnakeSettings, type SnakeThemeMode, type SnakeVariant } from './snakeSettings'
 
 export interface DrawSnakeArgs {
   ctx: CanvasRenderingContext2D
@@ -68,7 +68,7 @@ export const drawSnake = ({
   isSnakeDebugMode,
   isMini,
 }: DrawSnakeArgs) => {
-  const settings = snakeSettings[theme][variant]
+  const settings = resolveSnakeSettings(theme, variant)
   const {
     borderWidth,
     backgroundColor,

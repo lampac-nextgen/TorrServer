@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { CacheMapItem, TorrentCache as TorrentCacheData } from 'shared/api/types'
 import { priorityDebugLabel, resolveFocusVisibleCells, resolveFocusWindow } from 'shared/cache/buildCacheMap'
 import { drawSnake, hitTestSnakeCell, setupHiDpiCanvas } from 'shared/cache/drawSnake'
-import { resolvePieceMetrics, snakeSettings, type SnakeThemeMode } from 'shared/cache/snakeSettings'
+import { resolvePieceMetrics, resolveSnakeSettings, type SnakeThemeMode } from 'shared/cache/snakeSettings'
 import { useCreateFocusMap } from 'shared/cache/useUpdateCache'
 import { humanizeSize } from 'shared/lib/format'
 import { useThemePreference } from 'shared/theme/useThemePreference'
@@ -54,7 +54,7 @@ const readersFingerprint = (readers: TorrentCacheData['Readers']) => {
 /** Canvas-based piece map ("snake") showing cache fill, playhead and priorities. */
 function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCacheProps) {
   const { t } = useTranslation()
-  const { isDark } = useThemePreference()
+  const { isDark, palette } = useThemePreference()
   const theme: SnakeThemeMode = isDark ? 'dark' : 'light'
   const isMiniView = mode === 'mini'
 
@@ -97,7 +97,8 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
   }, [focusModel.windowStart])
 
   const variant = isMiniView ? 'mini' : 'default'
-  const baseSettings = snakeSettings[theme][variant]
+  // Re-resolve when palette changes so canvas accents track CSS `--accent`.
+  const baseSettings = useMemo(() => resolveSnakeSettings(theme, variant), [theme, variant, palette])
 
   const { pieceSize, gap } = useMemo(
     () => resolvePieceMetrics(baseSettings, containerWidth, isMiniView, cells.length),
@@ -171,6 +172,7 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
     variant,
     isMiniView,
     theme,
+    palette,
     isSnakeDebugMode,
   ])
 

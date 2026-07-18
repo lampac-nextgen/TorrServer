@@ -13,6 +13,9 @@ export const THEME_PALETTES = {
   FOREST: 'forest',
   OCEAN: 'ocean',
   SLATE: 'slate',
+  EMBER: 'ember',
+  ARCTIC: 'arctic',
+  ROSE: 'rose',
 } as const
 
 export type ThemePalette = (typeof THEME_PALETTES)[keyof typeof THEME_PALETTES]
@@ -35,7 +38,7 @@ function readStoredPreference(): ThemePreference {
 function readStoredPalette(): ThemePalette {
   try {
     const stored = localStorage.getItem(STORAGE_KEY_PALETTE)
-    if (stored === 'forest' || stored === 'ocean' || stored === 'slate') return stored
+    if (stored && (THEME_PALETTE_IDS as string[]).includes(stored)) return stored as ThemePalette
   } catch {
     /* ignore */
   }
@@ -64,7 +67,7 @@ export interface ThemePreferenceState {
 
 /**
  * Applies `dark` class + `data-palette` on html and persists both axes in localStorage.
- * Brightness: light / dark / system. Palette: forest / ocean / slate.
+ * Brightness: light / dark / system. Palette: forest / ocean / slate / ember / arctic / rose.
  */
 export function useThemePreference(): ThemePreferenceState {
   const [preference, setPreferenceState] = useState<ThemePreference>(() => readStoredPreference())

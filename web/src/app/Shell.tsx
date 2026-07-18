@@ -227,6 +227,9 @@ export default function Shell() {
             [THEME_PALETTES.FOREST]: t('ThemePaletteForest'),
             [THEME_PALETTES.OCEAN]: t('ThemePaletteOcean'),
             [THEME_PALETTES.SLATE]: t('ThemePaletteSlate'),
+            [THEME_PALETTES.EMBER]: t('ThemePaletteEmber'),
+            [THEME_PALETTES.ARCTIC]: t('ThemePaletteArctic'),
+            [THEME_PALETTES.ROSE]: t('ThemePaletteRose'),
           }}
         />
 
