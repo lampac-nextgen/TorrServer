@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
     "moduleResolution": "bundler",
@@ -14,24 +14,14 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    "allowJs": true,
-    "checkJs": false,
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "components/*": ["src/components/*"],
-      "utils/*": ["src/utils/*"],
-      "style/*": ["src/style/*"],
-      "shared/*": ["src/shared/*"],
-      "features/*": ["src/features/*"],
-      "icons": ["src/icons"],
-      "icons/*": ["src/icons/*"],
-      "locales/*": ["src/locales/*"],
-      "i18n": ["src/i18n"],
-      "torrentStates": ["src/torrentStates"],
-      "types/*": ["src/types/*"]
+      "@/*": ["./src/*"],
+      "shared/*": ["./src/shared/*"],
+      "app/*": ["./src/app/*"],
+      "features/*": ["./src/features/*"],
+      "locales/*": ["./src/locales/*"]
     }
   },
   "include": ["src", "vite.config.ts"]

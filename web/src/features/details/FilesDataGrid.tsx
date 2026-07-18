@@ -1,23 +1,27 @@
-import { memo, useMemo, useState } from 'react'
+import { memo, useMemo, useState, type ReactNode } from 'react'
 import { DataGrid, type GridColDef } from '@mui/x-data-grid'
 import Box from '@mui/material/Box'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import Stack from '@mui/material/Stack'
+import Typography from '@mui/material/Typography'
 import useMediaQuery from '@mui/material/useMediaQuery'
-import isEqual from 'lodash/isEqual'
 import ptt from 'parse-torrent-title'
 import { useTranslation } from 'react-i18next'
-import { streamHost } from 'utils/Hosts'
-import { readLocalBool } from 'utils/localPrefs'
-import { humanizeSize, detectStandaloneApp, isMacOS, isAppleDevice } from 'utils/Utils'
+import { streamHost } from 'shared/api/hosts'
+import type { PlayableFile } from 'shared/api/types'
 import {
   gstreamerHeartbeatUrl,
   gstreamerMasterUrl,
   shouldUseGStreamerPlayer,
   useGStreamerRuntime,
-} from 'utils/GStreamer'
-import type { PlayableFile } from 'types/api'
-import { queryMax } from 'style/breakpoints'
-import FileRowActions, { type ExternalPlayerLink } from 'components/DialogTorrentDetailsContent/Table/FileRowActions'
-import { ShortTable, ShortTableWrapper } from 'components/DialogTorrentDetailsContent/Table/style'
+} from 'shared/lib/gstreamer'
+import { readLocalBool } from 'shared/lib/localPrefs'
+import { humanizeSize } from 'shared/lib/format'
+import { detectStandaloneApp, isAppleDevice, isMacOS } from 'shared/lib/platform'
+import { queryMax } from 'shared/theme/breakpoints'
+
+import FileRowActions, { type ExternalPlayerLink } from './FileRowActions'
 
 ptt.addHandler('episode', /(\d{1,4})[- |. ]серия|серия[- |. ](\d{1,4})/i, { type: 'integer' })
 ptt.addHandler('season', /sezon[- |. ](\d{1,3})|(\d{1,3})[- |. ]sezon/i, { type: 'integer' })
@@ -31,6 +35,43 @@ export interface FilesDataGridProps {
   hash: string
 }
 
+function ShortFileCard({
+  name,
+  size,
+  viewed,
+  actions,
+}: {
+  name: string
+  size: number
+  viewed: boolean
+  actions: ReactNode
+}) {
+  const { t } = useTranslation()
+
+  return (
+    <Card variant='outlined' sx={{ overflow: 'hidden' }}>
+      <Box sx={{ px: 1.5, py: 1.25, bgcolor: viewed ? 'success.dark' : 'primary.main', color: 'primary.contrastText' }}>
+        <Typography variant='subtitle2' sx={{ textAlign: 'center', wordBreak: 'break-word' }}>
+          {name}
+        </Typography>
+      </Box>
+      <CardContent sx={{ py: 1, '&:last-child': { pb: 1 } }}>
+        <Stack direction='row' spacing={2} sx={{ mb: 1 }}>
+          {viewed && (
+            <Typography variant='caption' color='text.secondary'>
+              {t('Viewed')}
+            </Typography>
+          )}
+          <Typography variant='caption' color='text.secondary'>
+            {t('Size')}: {humanizeSize(size)}
+          </Typography>
+        </Stack>
+        {actions}
+      </CardContent>
+    </Card>
+  )
+}
+
 const FilesDataGrid = memo(
   ({ playableFileList, viewedFileList, selectedSeason, seasonAmount, hash }: FilesDataGridProps) => {
     const { t } = useTranslation()
@@ -42,12 +83,12 @@ const FilesDataGrid = memo(
     const getFileLink = (path: string, id: number) =>
       `${streamHost()}/${encodeURIComponent(path.split('\\').pop()!.split('/').pop()!)}?link=${hash}&index=${id}&play`
     const getPlayer = (path: string, id: number) => {
-      const hls = shouldUseGStreamerPlayer(path, gstRuntime)
+      const useHls = shouldUseGStreamerPlayer(path, gstRuntime)
       return {
-        key: `${id}:${hls ? 'gst' : 'stream'}`,
-        src: hls ? gstreamerMasterUrl(hash, id) : getFileLink(path, id),
-        hls,
-        heartbeatSrc: hls ? gstreamerHeartbeatUrl(hash) : '',
+        key: `${id}:${useHls ? 'gst' : 'stream'}`,
+        src: useHls ? gstreamerMasterUrl(hash, id) : getFileLink(path, id),
+        hls: useHls,
+        heartbeatSrc: useHls ? gstreamerHeartbeatUrl(hash) : '',
       }
     }
     const markPlayerUnsupported = (key: string) => {
@@ -115,6 +156,24 @@ const FilesDataGrid = memo(
       [filtered, viewedFileList, shouldDisplayFullFileName, hash, gstRuntime, unsupportedPlayers],
     )
 
+    const renderActions = (row: (typeof rows)[number]) => (
+      <FileRowActions
+        preloadLabel={t('Preload')}
+        onPreload={() => preloadBuffer(row.id)}
+        playerSupported={!unsupportedPlayers[row.player.key]}
+        playerTitle={row.name}
+        playerSrc={row.player.src}
+        downloadSrc={row.link}
+        hls={row.player.hls}
+        heartbeatSrc={row.player.heartbeatSrc}
+        onPlayerNotSupported={() => markPlayerUnsupported(row.player.key)}
+        openLinkHref={row.link}
+        showOpenLink={shouldShowOpenLink}
+        copyText={row.fullLink}
+        externalPlayers={buildExternalPlayers(new URL(row.fullLink), row.infuseLink, row.senPlayerLink, row.iinaLink)}
+      />
+    )
+
     const columns = useMemo<GridColDef[]>(() => {
       const cols: GridColDef[] = [
         {
@@ -123,15 +182,7 @@ const FilesDataGrid = memo(
           width: 70,
           renderCell: params =>
             params.value ? (
-              <Box
-                sx={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: '50%',
-                  bgcolor: 'success.main',
-                  m: 'auto',
-                }}
-              />
+              <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: 'success.main', m: 'auto' }} />
             ) : null,
         },
         { field: 'name', headerName: t('Name'), flex: 1, minWidth: 160 },
@@ -154,32 +205,7 @@ const FilesDataGrid = memo(
         sortable: false,
         filterable: false,
         disableColumnMenu: true,
-        renderCell: params => {
-          const row = params.row
-          const playerSupported = !unsupportedPlayers[row.player.key]
-          return (
-            <FileRowActions
-              preloadLabel={t('Preload')}
-              onPreload={() => preloadBuffer(row.id)}
-              playerSupported={playerSupported}
-              playerTitle={row.name}
-              playerSrc={row.player.src}
-              downloadSrc={row.link}
-              hls={row.player.hls}
-              heartbeatSrc={row.player.heartbeatSrc}
-              onPlayerNotSupported={() => markPlayerUnsupported(row.player.key)}
-              openLinkHref={row.link}
-              showOpenLink={shouldShowOpenLink}
-              copyText={row.fullLink}
-              externalPlayers={buildExternalPlayers(
-                new URL(row.fullLink),
-                row.infuseLink,
-                row.senPlayerLink,
-                row.iinaLink,
-              )}
-            />
-          )
-        },
+        renderCell: params => renderActions(params.row),
       })
       return cols
     }, [
@@ -196,49 +222,17 @@ const FilesDataGrid = memo(
 
     if (isCompact) {
       return (
-        <ShortTableWrapper>
+        <Stack spacing={1.5}>
           {rows.map(row => (
-            <ShortTable key={row.id} $isViewed={row.viewed}>
-              <div className='short-table-name'>{row.name}</div>
-              <div className='short-table-data'>
-                {row.viewed && (
-                  <div className='short-table-field'>
-                    <div className='short-table-field-name'>{t('Viewed')}</div>
-                    <div className='short-table-field-value'>
-                      <div className='short-table-viewed-indicator' />
-                    </div>
-                  </div>
-                )}
-                <div className='short-table-field'>
-                  <div className='short-table-field-name'>{t('Size')}</div>
-                  <div className='short-table-field-value'>{humanizeSize(row.size)}</div>
-                </div>
-              </div>
-              <div className='short-table-buttons'>
-                <FileRowActions
-                  preloadLabel={t('Preload')}
-                  onPreload={() => preloadBuffer(row.id)}
-                  playerSupported={!unsupportedPlayers[row.player.key]}
-                  playerTitle={row.name}
-                  playerSrc={row.player.src}
-                  downloadSrc={row.link}
-                  hls={row.player.hls}
-                  heartbeatSrc={row.player.heartbeatSrc}
-                  onPlayerNotSupported={() => markPlayerUnsupported(row.player.key)}
-                  openLinkHref={row.link}
-                  showOpenLink={shouldShowOpenLink}
-                  copyText={row.fullLink}
-                  externalPlayers={buildExternalPlayers(
-                    new URL(row.fullLink),
-                    row.infuseLink,
-                    row.senPlayerLink,
-                    row.iinaLink,
-                  )}
-                />
-              </div>
-            </ShortTable>
+            <ShortFileCard
+              key={row.id}
+              name={row.name}
+              size={row.size}
+              viewed={row.viewed}
+              actions={renderActions(row)}
+            />
           ))}
-        </ShortTableWrapper>
+        </Stack>
       )
     }
 
@@ -255,18 +249,17 @@ const FilesDataGrid = memo(
           sx={{
             border: 0,
             '& .MuiDataGrid-cell': { py: 0.75, alignItems: 'flex-start' },
-            '& .button-cell': {
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 0.5,
-              width: '100%',
-            },
           }}
         />
       </Box>
     )
   },
-  (prev, next) => isEqual(prev, next),
+  (prev, next) =>
+    prev.hash === next.hash &&
+    prev.selectedSeason === next.selectedSeason &&
+    prev.playableFileList === next.playableFileList &&
+    prev.viewedFileList === next.viewedFileList &&
+    prev.seasonAmount === next.seasonAmount,
 )
 
 export default FilesDataGrid

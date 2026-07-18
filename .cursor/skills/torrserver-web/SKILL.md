@@ -1,10 +1,11 @@
 ---
 name: torrserver-web
 description: >-
-  Continues TorrServer-Go web UI work (React 19, Vite 6, MUI 9.2, MUI X 9.10,
-  TanStack Query, gen_web embed). Use when editing web/, torrent details/snake/cache,
-  GStreamer player, FileRowActions, empty states, i18n, bundle/lazy chunks, or when
-  the user mentions production-ready UI, MUI X Data Grid/Charts, or web upgrade.
+  Continues TorrServer-Go web UI work (React 19, Vite 8, TypeScript 6, MUI 9.2,
+  MUI X 9.10, TanStack Query, gen_web embed). Use when editing web/, torrent
+  details/snake/cache, GStreamer player, FileRowActions, empty states, i18n,
+  bundle/lazy chunks, or when the user mentions production-ready UI, MUI X
+  Data Grid/Charts, or web upgrade.
 ---
 
 # TorrServer-Go Web
@@ -17,8 +18,12 @@ description: >-
 ## Hard locks
 
 - Keep React — no Vue rewrite.
+- **Tooling:** Vite **8.1** (Rolldown/Oxc) + TypeScript **6.0** + Vitest **4** + `@vitejs/plugin-react` **6**. Node **22+**.
+  - Note: TypeScript **7** exists on npm, but `typescript-eslint` currently peers `<6.1` — stay on TS 6 until the ESLint stack catches up.
 - **Stack:** Material UI **9.2** + MUI X **9.10 Community** (Data Grid, Charts, Tree View, Date Pickers). Theme: `cssVariables` + `colorSchemes` + `useColorScheme`. No Pro/Premium license.
 - **No styled-components** — Emotion via MUI only.
+- **No legacy polyfill/tooling:** no `vite-plugin-node-polyfills`, `react-measure`, `parse-torrent`, or lodash.
+- **Greenfield only:** `web/src/{app,features,shared,locales,assets}` — no `components/`, `style/`, `utils/`, or legacy entry.
 - Brand: **MatriX green**. File row: all actions visible. Snake/GStreamer contracts unchanged.
 - Adaptive shell + `ModalOpenProvider`. Donate removed. Safari **17+**.
 - Radix/shadcn — **cancelled**.
@@ -26,10 +31,10 @@ description: >-
 ## Layout
 
 ```
-web/src/shared/theme/   # createAppTheme, AppGlobalStyles, color helpers
-web/src/shared/ui/      # ModalOpenContext
-web/src/features/       # torrents/search/details (DataGrid, Charts, TreeView)
-web/src/components/     # App shell + remaining surfaces (Add/Settings/Player/…)
+web/src/app/            # App, Shell, Sidebar, BottomNav, ErrorBoundary
+web/src/features/       # torrents, add, search, settings, details, player, about, system
+web/src/shared/         # api, theme, cache (snake), lib, ui, i18n, torrent
+web/src/locales/        # i18n JSON
 ```
 
 ## Workflow
@@ -45,14 +50,15 @@ Always use `--clean`. Restart TorrServer + hard refresh (iOS PWA: remove/re-add 
 
 | Need | Prefer |
 |------|--------|
-| Toast | `AppSnackbar` / `useAppToast` |
-| Torrents desktop | `features/torrents/TorrentsDataGrid` |
-| Torrents mobile | `TorrentCard` grid |
+| Toast | `shared/ui/Toast` |
+| Torrents desktop | `features/torrents/SimpleTorrentsDataGrid` |
+| Torrents mobile | cards in `TorrentsPage` |
 | Search results | `features/search/SearchResultsGrid` |
+| Cache snake | `features/details/TorrentCache` + `shared/cache/*` |
 | Speed history | `features/details/SpeedCharts` |
 | Modal open / immersive | `useSyncModalOpen` / `setImmersive` |
 | Destructive | Confirm dialog; Cancel `autoFocus` |
-| Code split | vite chunks: `mui`, `mui-x`, `hls`, `vendor` |
+| Code split | vite `build.rolldownOptions.output.codeSplitting` groups: `mui`, `hls`, `vendor` |
 
 ## Prompt for new chats
 

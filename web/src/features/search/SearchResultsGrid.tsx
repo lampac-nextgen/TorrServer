@@ -3,7 +3,7 @@ import { DataGrid, type GridColDef } from '@mui/x-data-grid'
 import Box from '@mui/material/Box'
 import CircularProgress from '@mui/material/CircularProgress'
 import { useTranslation } from 'react-i18next'
-import type { SearchResultItem } from 'types/api'
+import type { SearchResultItem } from 'shared/api/types'
 
 interface SearchResultsGridProps {
   results: SearchResultItem[]

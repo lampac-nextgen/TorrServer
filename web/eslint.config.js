@@ -14,7 +14,7 @@ export default tseslint.config(
   {
     files: ['src/**/*.{js,jsx,ts,tsx}'],
     languageOptions: {
-      ecmaVersion: 2022,
+      ecmaVersion: 2023,
       sourceType: 'module',
       globals: {
         ...globals.browser,
@@ -33,7 +33,24 @@ export default tseslint.config(
     },
     rules: {
       ...react.configs.recommended.rules,
-      ...reactHooks.configs.recommended.rules,
+      // Classic hooks (must-pass). React Compiler rules from hooks v7 are warn until
+      // surfaces are migrated to React 19 compiler-friendly patterns.
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/set-state-in-render': 'warn',
+      'react-hooks/immutability': 'warn',
+      'react-hooks/purity': 'warn',
+      'react-hooks/refs': 'warn',
+      'react-hooks/globals': 'warn',
+      'react-hooks/static-components': 'warn',
+      'react-hooks/use-memo': 'warn',
+      'react-hooks/preserve-manual-memoization': 'warn',
+      'react-hooks/incompatible-library': 'warn',
+      'react-hooks/error-boundaries': 'warn',
+      'react-hooks/unsupported-syntax': 'warn',
+      'react-hooks/config': 'off',
+      'react-hooks/gating': 'off',
       'prettier/prettier': [
         'warn',
         {

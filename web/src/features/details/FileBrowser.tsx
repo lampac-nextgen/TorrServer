@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography'
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView'
 import { TreeItem } from '@mui/x-tree-view/TreeItem'
 import { useTranslation } from 'react-i18next'
-import type { PlayableFile } from 'types/api'
+import type { PlayableFile } from 'shared/api/types'
 
 import FilesDataGrid from './FilesDataGrid'
 

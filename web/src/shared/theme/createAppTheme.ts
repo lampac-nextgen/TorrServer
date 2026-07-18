@@ -1,9 +1,9 @@
-import 'style/mui-augmentation'
+import './mui-augmentation'
 import { createTheme } from '@mui/material/styles'
 
-import { mainColors, themeColors } from 'style/colors'
-import { BP, MEDIA_SHORT_VIEWPORT, queryMax } from 'style/breakpoints'
-import { FONT_STACK, LETTER_SPACING, TOUCH_TARGET_PX, radius, typography as typeScale } from 'style/tokens'
+import { mainColors, themeColors } from './colors'
+import { BP, MEDIA_SHORT_VIEWPORT, queryMax } from './breakpoints'
+import { FONT_STACK, LETTER_SPACING, TOUCH_TARGET_PX, radius, typography as typeScale } from './tokens'
 
 const typography = {
   fontFamily: FONT_STACK,

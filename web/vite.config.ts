@@ -2,7 +2,6 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
-import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
 /// <reference types="vitest/config" />
 
@@ -23,30 +22,14 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: './',
-    plugins: [
-      react(),
-      nodePolyfills({
-        include: ['path', 'buffer', 'stream', 'util', 'url', 'http', 'https', 'querystring'],
-        globals: {
-          Buffer: true,
-          global: true,
-          process: true,
-        },
-      }),
-    ],
+    plugins: [react()],
     resolve: {
       alias: {
         '@': path.resolve(rootDir, 'src'),
-        components: path.resolve(rootDir, 'src/components'),
-        utils: path.resolve(rootDir, 'src/utils'),
-        style: path.resolve(rootDir, 'src/style'),
         features: path.resolve(rootDir, 'src/features'),
         shared: path.resolve(rootDir, 'src/shared'),
-        icons: path.resolve(rootDir, 'src/icons'),
+        app: path.resolve(rootDir, 'src/app'),
         locales: path.resolve(rootDir, 'src/locales'),
-        i18n: path.resolve(rootDir, 'src/i18n'),
-        torrentStates: path.resolve(rootDir, 'src/torrentStates'),
-        types: path.resolve(rootDir, 'src/types'),
       },
     },
     server: {
@@ -71,19 +54,21 @@ export default defineConfig(({ mode }) => {
       assetsDir: 'static',
       emptyOutDir: true,
       sourcemap: false,
-      chunkSizeWarningLimit: 900,
-      rollupOptions: {
+      // Safari 17+ / Chrome 117+ (project floor); Vite 8 default is older baseline.
+      target: ['chrome117', 'firefox121', 'safari17', 'edge121'],
+      chunkSizeWarningLimit: 1300,
+      rolldownOptions: {
         output: {
-          manualChunks: {
-            mui: ['@mui/material', '@mui/icons-material', '@mui/system', '@emotion/react', '@emotion/styled'],
-            'mui-x': [
-              '@mui/x-data-grid',
-              '@mui/x-charts',
-              '@mui/x-tree-view',
-              '@mui/x-date-pickers',
+          // Keep MUI (+ X) in one chunk to avoid circular TDZ across chunks.
+          codeSplitting: {
+            groups: [
+              { name: 'hls', test: /node_modules[/\\]hls\.js/ },
+              { name: 'mui', test: /node_modules[/\\](?:@mui[/\\]|@emotion[/\\]|dayjs[/\\])/ },
+              {
+                name: 'vendor',
+                test: /node_modules[/\\](?:react-dom[/\\]|scheduler[/\\]|@tanstack[/\\]react-query[/\\]|i18next|axios[/\\]|react[/\\])/,
+              },
             ],
-            hls: ['hls.js'],
-            vendor: ['react', 'react-dom', '@tanstack/react-query', 'i18next', 'react-i18next', 'axios'],
           },
         },
       },

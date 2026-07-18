@@ -1,0 +1,1 @@
+import{It as e,c as t,jt as n}from"./mui-DtH7lEO0.js";import{o as r}from"./useTranslation-h-x7Jd2V.js";var i=e();function a({open:e,children:n,...a}){return r(!!e),(0,i.jsx)(t,{open:e,...a,children:n})}n(a)({});export{a as t};

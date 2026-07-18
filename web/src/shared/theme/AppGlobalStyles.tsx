@@ -9,8 +9,8 @@ import {
   radius,
   space,
   typography,
-} from 'style/tokens'
-import { BP } from 'style/breakpoints'
+} from './tokens'
+import { BP } from './breakpoints'
 
 /** Injects chrome + design tokens (replaces legacy styled-components GlobalStyle). */
 export default function AppGlobalStyles() {
