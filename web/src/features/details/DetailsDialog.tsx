@@ -257,26 +257,30 @@ export default function DetailsDialog({
                     <StatWidget label={t('Size')} value={humanizeSize(torrentSize)} />
                     <StatWidget label={t('Status')} value={statusLabel(stat)} />
                     {category ? <StatWidget label={t('Category')} value={category} /> : null}
-                    {cache.PiecesCount != null ? (
-                      <StatWidget label={t('PiecesCount')} value={String(cache.PiecesCount)} />
-                    ) : null}
-                    {cache.PiecesLength != null ? (
-                      <StatWidget label={t('PiecesLength')} value={humanizeSize(cache.PiecesLength)} />
-                    ) : null}
-                    {cache.Filled != null && cache.Capacity != null ? (
-                      <StatWidget
-                        label={t('CacheFilled')}
-                        value={(() => {
-                          const filled = cache.Filled
-                          const capacity = cache.Capacity
-                          const shown = Math.min(filled, capacity)
-                          const over = filled > capacity
-                          return over
-                            ? `${humanizeSize(shown)} / ${humanizeSize(capacity)} · ${Math.round((filled / capacity) * 100)}%`
-                            : `${humanizeSize(filled)} / ${humanizeSize(capacity)}`
-                        })()}
-                      />
-                    ) : null}
+                    <StatWidget
+                      label={t('PiecesCount')}
+                      value={cache.PiecesCount != null ? String(cache.PiecesCount) : '—'}
+                    />
+                    <StatWidget
+                      label={t('PiecesLength')}
+                      value={cache.PiecesLength != null ? humanizeSize(cache.PiecesLength) : '—'}
+                    />
+                    <StatWidget
+                      label={t('CacheFilled')}
+                      value={
+                        cache.Filled != null && cache.Capacity != null
+                          ? (() => {
+                              const filled = cache.Filled
+                              const capacity = cache.Capacity
+                              const shown = Math.min(filled, capacity)
+                              const over = filled > capacity
+                              return over
+                                ? `${humanizeSize(shown)} / ${humanizeSize(capacity)} · ${Math.round((filled / capacity) * 100)}%`
+                                : `${humanizeSize(filled)} / ${humanizeSize(capacity)}`
+                            })()
+                          : '—'
+                      }
+                    />
                   </div>
                 </div>
               </div>

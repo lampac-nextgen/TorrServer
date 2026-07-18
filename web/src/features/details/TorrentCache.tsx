@@ -109,6 +109,8 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
     piecesPerRow > 0
       ? Math.max(cells.length > 0 ? Math.ceil(cells.length / piecesPerRow) : emptyRowCount, emptyRowCount) * cellStride
       : 0
+  /** Reserve mini shell height before ResizeObserver so Overview actions don't jump when the snake mounts. */
+  const miniShellMinHeight = isMiniView ? emptyRowCount * cellStride + 16 : undefined
 
   const startingX = piecesPerRow > 0 ? Math.ceil((canvasWidth - cellStride * piecesPerRow) / 2) : 0
 
@@ -297,7 +299,13 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
             ? 'grid max-h-[420px] justify-center overflow-hidden'
             : 'max-h-[min(70dvh,640px)] min-w-0 overflow-auto overscroll-contain'
         }`}
-        style={isMiniView ? undefined : { WebkitOverflowScrolling: 'touch' }}
+        style={
+          isMiniView
+            ? miniShellMinHeight != null
+              ? { minHeight: miniShellMinHeight }
+              : undefined
+            : { WebkitOverflowScrolling: 'touch' }
+        }
       >
         {piecesPerRow > 0 && canvasHeight > 0 ? (
           <canvas
