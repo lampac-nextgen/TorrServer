@@ -1,9 +1,9 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { Chip, useMediaQuery } from '@heroui/react'
-import { ImageOff } from 'lucide-react'
+import { ArrowDown, HardDrive, ImageOff, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
-import { getPeerString, humanizeSize, humanizeSpeed } from 'shared/lib/format'
+import { humanizeSize, humanizeSpeed } from 'shared/lib/format'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import { GETTING_INFO, PRELOAD, WORKING } from 'shared/torrent/states'
 
@@ -32,11 +32,32 @@ function statusChipColor(stat?: number): ChipColor {
   }
 }
 
+/** Meaningful fill only — avoid noisy "0%" from tiny loaded_size / rounding. */
 function progressPercent(torrent: TorrentStat): number | null {
   const size = torrent.torrent_size ?? 0
   const loaded = torrent.loaded_size ?? 0
   if (size <= 0 || loaded <= 0) return null
-  return Math.min(100, Math.round((loaded / size) * 100))
+  const pct = Math.min(100, Math.round((loaded / size) * 100))
+  return pct > 0 ? pct : null
+}
+
+function MetaItem({
+  icon,
+  label,
+  tip,
+}: {
+  icon: ReactNode
+  label: string
+  tip?: string
+}) {
+  return (
+    <span className='inline-flex min-w-0 items-center gap-1' title={tip || label}>
+      <span className='shrink-0 text-muted/80' aria-hidden>
+        {icon}
+      </span>
+      <span className='truncate tabular-nums'>{label}</span>
+    </span>
+  )
 }
 
 /** True hover devices only — touch / hybrid get always-visible actions (avoids sticky synthetic hover). */
@@ -57,6 +78,9 @@ export default function TorrentCard({
 
   const title = torrent.title || torrent.name || torrent.hash
   const percent = progressPercent(torrent)
+  const showProgress = percent != null && percent < 100
+  const downloadSpeed = torrent.download_speed ?? 0
+  const showSpeed = torrent.stat === WORKING || torrent.stat === PRELOAD || downloadSpeed > 0
 
   const statusLabel = (() => {
     const labels: Partial<Record<number, string>> = {
@@ -70,6 +94,12 @@ export default function TorrentCard({
   const categoryLabel = torrent.category
     ? t(TORRENT_CATEGORIES.find(category => category.key === torrent.category)?.name ?? torrent.category)
     : null
+
+  const peersActive = torrent.active_peers
+  const peersTotal = torrent.total_peers ?? 0
+  const seeders = torrent.connected_seeders ?? 0
+  const peersLabel =
+    peersActive == null ? null : seeders > 0 ? `${peersActive}/${peersTotal} · ↑${seeders}` : `${peersActive}/${peersTotal}`
 
   const blurFocusedControl = () => {
     const active = document.activeElement
@@ -121,27 +151,29 @@ export default function TorrentCard({
           </div>
         )}
 
-        {percent != null && percent < 100 ? (
-          <div className='pointer-events-none absolute inset-x-0 bottom-0 h-1.5 bg-black/40'>
-            <div className='h-full bg-accent transition-[width] duration-300' style={{ width: `${percent}%` }} />
+        {showProgress ? (
+          <div className='pointer-events-none absolute inset-x-0 bottom-0 h-1 bg-black/45'>
+            <div
+              className='h-full bg-accent transition-[width] duration-300'
+              style={{ width: `${percent}%` }}
+              aria-hidden
+            />
           </div>
         ) : null}
 
         <div className='pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-1 bg-gradient-to-b from-black/60 to-transparent p-2'>
-          {statusLabel ? (
+          {statusLabel || showProgress ? (
             <Chip
               size='sm'
-              color={statusChipColor(torrent.stat)}
+              color={statusLabel ? statusChipColor(torrent.stat) : 'default'}
               variant={torrent.stat === WORKING ? 'primary' : 'secondary'}
             >
-              <Chip.Label>
-                {statusLabel}
-                {percent != null && percent < 100 ? ` · ${percent}%` : ''}
+              <Chip.Label className='inline-flex items-center gap-1'>
+                {statusLabel || null}
+                {showProgress ? (
+                  <span className={statusLabel ? 'opacity-90' : undefined}>{percent}%</span>
+                ) : null}
               </Chip.Label>
-            </Chip>
-          ) : percent != null && percent < 100 ? (
-            <Chip size='sm' variant='secondary'>
-              <Chip.Label>{percent}%</Chip.Label>
             </Chip>
           ) : (
             <span />
@@ -174,11 +206,27 @@ export default function TorrentCard({
         <h3 className='line-clamp-2 text-sm font-semibold leading-snug text-foreground' title={title}>
           {title}
         </h3>
-        <p className='mt-0.5 truncate text-xs tabular-nums text-muted' title={title}>
-          {humanizeSize(torrent.torrent_size)}
-          {percent != null ? ` · ${percent}%` : ''} · ↓{humanizeSpeed(torrent.download_speed)} ·{' '}
-          {getPeerString(torrent) ?? '—'}
-        </p>
+        <div className='mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] leading-none text-muted sm:text-xs'>
+          <MetaItem
+            icon={<HardDrive className='size-3' strokeWidth={2} />}
+            label={humanizeSize(torrent.torrent_size)}
+            tip={t('Size')}
+          />
+          {showSpeed ? (
+            <MetaItem
+              icon={<ArrowDown className='size-3' strokeWidth={2.25} />}
+              label={downloadSpeed > 0 ? humanizeSpeed(downloadSpeed) : '—'}
+              tip={t('DownloadSpeed')}
+            />
+          ) : null}
+          {peersLabel ? (
+            <MetaItem
+              icon={<Users className='size-3' strokeWidth={2} />}
+              label={peersLabel}
+              tip={t('Peers')}
+            />
+          ) : null}
+        </div>
       </div>
     </article>
   )
