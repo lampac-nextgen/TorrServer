@@ -10,7 +10,7 @@ import { filteredPlaylistAllUrl } from 'shared/api/extras'
 import { dropTorrent, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { useLocalJsonPref } from 'shared/hooks/useLocalPref'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
-import { ALL_VIEWED_QUERY_KEY, listAllViewedEntries, remViewedFile } from 'shared/api/viewed'
+import { ALL_VIEWED_QUERY_KEY, clearViewedFiles, listAllViewedEntries, VIEWED_QUERY_KEY } from 'shared/api/viewed'
 import { buildContinueWatchShelf } from 'shared/lib/serverContinueWatching'
 import { removeContinueWatching } from 'shared/lib/continueWatching'
 import { queryMax } from 'shared/theme/breakpoints'
@@ -387,15 +387,19 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
                     className='shrink-0 rounded-md p-1.5 text-muted hover-fine:bg-surface-tertiary hover-fine:text-foreground'
                     aria-label={t('Clear')}
                     onClick={() => {
-                      removeContinueWatching(entry.hash, entry.fileIndex)
+                      // Chip = torrent-level progress: clear every viewed mark + local shelf row.
+                      removeContinueWatching(entry.hash)
                       setContinueTick(v => v + 1)
                       queryClient.setQueryData<ViewedFileEntry[]>(ALL_VIEWED_QUERY_KEY, old =>
-                        (old || []).filter(
-                          row => !(row.hash === entry.hash && row.file_index === entry.fileIndex),
-                        ),
+                        (old || []).filter(row => row.hash !== entry.hash),
                       )
-                      void remViewedFile(entry.hash, entry.fileIndex)
-                        .then(() => queryClient.invalidateQueries({ queryKey: ALL_VIEWED_QUERY_KEY }))
+                      void clearViewedFiles(entry.hash)
+                        .then(() =>
+                          Promise.all([
+                            queryClient.invalidateQueries({ queryKey: ALL_VIEWED_QUERY_KEY }),
+                            queryClient.invalidateQueries({ queryKey: VIEWED_QUERY_KEY(entry.hash) }),
+                          ]),
+                        )
                         .catch(() => {
                           void queryClient.invalidateQueries({ queryKey: ALL_VIEWED_QUERY_KEY })
                           toast?.showToast({ message: t('Error'), severity: 'error' })

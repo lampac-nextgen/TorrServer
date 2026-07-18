@@ -47,6 +47,10 @@ func RemViewed(vv *Viewed) {
 	m := readIndexes(buf)
 	if vv.FileIndex != -1 {
 		delete(m, vv.FileIndex)
+		if len(m) == 0 {
+			tdb.Rem("Viewed", vv.Hash)
+			return
+		}
 		buf, err := json.Marshal(m)
 		if err == nil {
 			tdb.Set("Viewed", vv.Hash, buf)
