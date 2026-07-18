@@ -218,7 +218,7 @@ export function usePlayLauncher({
       const cachedTracks = audioProbeCache.current[file.id]
       if (cachedTracks !== undefined) {
         if (cachedTracks.length <= 1) {
-          await openPlayer(file, 0)
+          await openPlayer(file, 0, cachedTracks)
           return
         }
         openAudioPicker(cachedTracks)
@@ -230,7 +230,7 @@ export function usePlayLauncher({
         const tracks = extractAudioTracks(data)
         audioProbeCache.current[file.id] = tracks
         if (tracks.length <= 1) {
-          await openPlayer(file, 0)
+          await openPlayer(file, 0, tracks)
           return
         }
         openAudioPicker(tracks)

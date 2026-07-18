@@ -384,6 +384,7 @@
   "PlaybackSpeed": "Скорость",
   "PictureInPicture": "Картинка в картинке",
   "Buffering": "Буферизация…",
+  "ToggleTimeDisplay": "Показать оставшееся время",
   "PlaybackError": "Ошибка воспроизведения",
   "ConfirmCloseServer": "Сервер остановится, все активные потоки прервутся.",
   "ConfirmDeleteTorrent": "Удалить этот торрент из базы данных? Действие нельзя отменить.",

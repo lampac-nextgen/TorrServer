@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
+import axios from 'axios'
 import Hls from 'hls.js'
 import {
   Alert,
@@ -32,13 +33,13 @@ import {
 import { useTranslation } from 'react-i18next'
 import { setViewedFile } from 'shared/api/viewed'
 import { rememberContinueWatching } from 'shared/lib/continueWatching'
-import { gstreamerMasterUrl } from 'shared/lib/gstreamer'
+import { gstreamerMasterUrl, gstreamerProbeUrl } from 'shared/lib/gstreamer'
 import { queryMax } from 'shared/theme/breakpoints'
 import { useModalOpen, useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { iconBtn } from 'shared/ui/controlClasses'
 import { PLAYER_DIALOG_EXPANDED, PLAYER_DIALOG_NORMAL } from 'shared/ui/dialogSizes'
 
-import { formatAudioTrackDisplay, type ProbeTrack } from './audioTrackLabel'
+import { extractAudioTracks, formatAudioTrackDisplay, type ProbeTrack } from './audioTrackLabel'
 
 export interface VideoPlayerProps {
   videoSrc: string
@@ -73,6 +74,7 @@ interface SubtitleTrackInfo {
 
 const HEARTBEAT_INTERVAL_MS = 30_000
 const SEEK_STEP_SEC = 10
+const SEEK_LONG_STEP_SEC = 60
 const TIMECODE_SAVE_INTERVAL_MS = 5_000
 const TIMECODE_RESUME_MARGIN_SEC = 5
 const CHROME_HIDE_MS = 2_500
@@ -182,9 +184,12 @@ export default function VideoPlayer({
   const [rateMenuOpen, setRateMenuOpen] = useState(false)
   const [activeAudioIndex, setActiveAudioIndex] = useState(audioIndex)
   const [playbackSrc, setPlaybackSrc] = useState(videoSrc)
+  const [resolvedAudioTracks, setResolvedAudioTracks] = useState<ProbeTrack[]>(audioTracks)
+  const [scrubPreview, setScrubPreview] = useState<{ ratio: number; time: number } | null>(null)
+  const [showRemaining, setShowRemaining] = useState(false)
 
   const shouldPersistTimecode = Boolean(hash && fileIndex != null && trackTimecode)
-  const canSwitchAudio = hls && Boolean(hash) && fileIndex != null && audioTracks.length > 1
+  const canSwitchAudio = hls && Boolean(hash) && fileIndex != null && resolvedAudioTracks.length > 1
   const showPip = supportsPiP()
 
   const dialogStyle: CSSProperties | undefined = isMobile
@@ -212,6 +217,27 @@ export default function VideoPlayer({
   useEffect(() => {
     setActiveAudioIndex(audioIndex)
   }, [audioIndex])
+
+  useEffect(() => {
+    if (audioTracks.length) setResolvedAudioTracks(audioTracks)
+  }, [audioTracks])
+
+  /** If launcher opened without a track list (or GST probe raced), refresh from /gst/.../probe. */
+  useEffect(() => {
+    if (!open || !hls || !hash || fileIndex == null) return undefined
+    if (resolvedAudioTracks.length > 0) return undefined
+    let cancelled = false
+    void axios
+      .get(gstreamerProbeUrl(hash, fileIndex))
+      .then(({ data }) => {
+        if (cancelled) return
+        setResolvedAudioTracks(extractAudioTracks(data))
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [open, hls, hash, fileIndex, resolvedAudioTracks.length])
 
   useEffect(() => {
     onViewedChangeRef.current = onViewedChange
@@ -467,10 +493,16 @@ export default function VideoPlayer({
         togglePlayPause()
       } else if (event.key === 'ArrowLeft') {
         event.preventDefault()
-        seekRelative(-SEEK_STEP_SEC)
+        seekRelative(event.shiftKey ? -SEEK_LONG_STEP_SEC : -SEEK_STEP_SEC)
       } else if (event.key === 'ArrowRight') {
         event.preventDefault()
-        seekRelative(SEEK_STEP_SEC)
+        seekRelative(event.shiftKey ? SEEK_LONG_STEP_SEC : SEEK_STEP_SEC)
+      } else if (event.key === 'j' || event.key === 'J') {
+        event.preventDefault()
+        seekRelative(-SEEK_LONG_STEP_SEC)
+      } else if (event.key === 'l' || event.key === 'L') {
+        event.preventDefault()
+        seekRelative(SEEK_LONG_STEP_SEC)
       } else if (event.key === 'm' || event.key === 'M') {
         event.preventDefault()
         const video = videoRef.current
@@ -555,6 +587,25 @@ export default function VideoPlayer({
     const next = Array.isArray(value) ? value[0] : value
     video.currentTime = next
     setCurrentTime(next)
+    revealChrome()
+  }
+
+  const updateScrubPreview = (clientX: number, target: HTMLElement) => {
+    if (duration <= 0) {
+      setScrubPreview(null)
+      return
+    }
+    const rect = target.getBoundingClientRect()
+    const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width))
+    setScrubPreview({ ratio, time: ratio * duration })
+  }
+
+  const handleVideoDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    const ratio = (event.clientX - rect.left) / rect.width
+    if (ratio < 0.33) seekRelative(-SEEK_STEP_SEC)
+    else if (ratio > 0.67) seekRelative(SEEK_STEP_SEC)
+    else void videoRef.current?.requestFullscreen()
     revealChrome()
   }
 
@@ -668,9 +719,9 @@ export default function VideoPlayer({
                 <div
                   ref={shellRef}
                   className='relative w-full overflow-hidden bg-black'
-                  style={{ aspectRatio: isMobile ? undefined : '16 / 9' }}
                   onPointerMove={onShellPointerMove}
                   onPointerDown={revealChrome}
+                  onDoubleClick={handleVideoDoubleClick}
                 >
                   <video
                     autoPlay
@@ -697,8 +748,8 @@ export default function VideoPlayer({
                       setLoading(false)
                       setMediaError(true)
                     }}
-                    className='block h-full w-full cursor-pointer bg-black object-contain'
-                    style={{ maxHeight: videoMaxHeight, minHeight: isMobile ? 220 : undefined }}
+                    className='block h-auto w-full cursor-pointer bg-black object-contain'
+                    style={{ maxHeight: videoMaxHeight, minHeight: isMobile ? 220 : 280 }}
                   >
                     {!hls && captionSrc ? <track kind='captions' src={captionSrc} default /> : null}
                   </video>
@@ -750,14 +801,9 @@ export default function VideoPlayer({
                     }`}
                   >
                     <div className='pointer-events-auto flex items-start gap-3'>
-                      <div className='min-w-0 flex-1'>
-                        <p className='text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45'>
-                          {t('Play')}
-                        </p>
-                        <p className='mt-0.5 truncate text-sm font-semibold text-white drop-shadow' title={title || t('Play')}>
-                          {title || t('Play')}
-                        </p>
-                      </div>
+                      <p className='min-w-0 flex-1 truncate text-sm font-semibold text-white drop-shadow' title={title || t('Play')}>
+                        {title || t('Play')}
+                      </p>
                       <Button
                         isIconOnly
                         variant='ghost'
@@ -776,7 +822,19 @@ export default function VideoPlayer({
                     }`}
                   >
                     <div className='rounded-2xl border border-white/10 bg-black/55 px-3 py-2.5 shadow-2xl shadow-black/40 backdrop-blur-xl'>
-                      <div className='group relative mb-2.5 px-0.5'>
+                      <div
+                        className='group relative mb-2.5 px-0.5'
+                        onPointerMove={event => updateScrubPreview(event.clientX, event.currentTarget)}
+                        onPointerLeave={() => setScrubPreview(null)}
+                      >
+                        {scrubPreview && duration > 0 ? (
+                          <div
+                            className='pointer-events-none absolute bottom-full z-20 mb-2 -translate-x-1/2 rounded-md bg-black/85 px-2 py-1 text-[11px] font-medium tabular-nums text-white shadow-lg'
+                            style={{ left: `${scrubPreview.ratio * 100}%` }}
+                          >
+                            {formatDuration(scrubPreview.time)}
+                          </div>
+                        ) : null}
                         <div className='pointer-events-none absolute inset-y-[7px] left-0 right-0 h-1 overflow-hidden rounded-full bg-white/15 group-hover:inset-y-[6px] group-hover:h-1.5'>
                           <div className='absolute inset-y-0 left-0 bg-white/30' style={{ width: `${bufferedPct}%` }} />
                           <div className='absolute inset-y-0 left-0 bg-accent' style={{ width: `${playedPct}%` }} />
@@ -842,11 +900,18 @@ export default function VideoPlayer({
                             <Tooltip.Content>{t('Forward-10-Sec')}</Tooltip.Content>
                           </Tooltip>
 
-                          <span className='ml-1 min-w-[7.5rem] text-xs tabular-nums tracking-wide text-white/75'>
+                          <button
+                            type='button'
+                            className='ml-1 min-w-[7.5rem] rounded-md px-1 text-left text-xs tabular-nums tracking-wide text-white/75 hover-fine:bg-white/10 hover-fine:text-white'
+                            title={t('ToggleTimeDisplay', { defaultValue: 'Toggle remaining time' })}
+                            onClick={() => setShowRemaining(prev => !prev)}
+                          >
                             {formatDuration(currentTime)}
                             <span className='text-white/35'> / </span>
-                            {formatDuration(duration)}
-                          </span>
+                            {showRemaining && duration > 0
+                              ? `-${formatDuration(Math.max(0, duration - currentTime))}`
+                              : formatDuration(duration)}
+                          </button>
                         </div>
 
                         <div className='mx-1 hidden h-4 w-px bg-white/15 sm:block' />
@@ -893,7 +958,7 @@ export default function VideoPlayer({
                                 </Button>
                               </Popover.Trigger>
                               <Popover.Content className='max-h-72 w-72 overflow-y-auto border border-white/10 bg-neutral-950/95 p-1 backdrop-blur-xl'>
-                                {audioTracks.map((track, index) => {
+                                {resolvedAudioTracks.map((track, index) => {
                                   const { title: trackTitle, meta } = formatAudioTrackDisplay(track, index)
                                   const selected = index === activeAudioIndex
                                   return (

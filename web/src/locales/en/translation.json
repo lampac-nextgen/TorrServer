@@ -384,6 +384,7 @@
   "PlaybackSpeed": "Playback speed",
   "PictureInPicture": "Picture in picture",
   "Buffering": "Buffering…",
+  "ToggleTimeDisplay": "Toggle remaining time",
   "PlaybackError": "Playback failed",
   "ConfirmCloseServer": "This stops the server and interrupts any active streams.",
   "ConfirmDeleteTorrent": "Delete this torrent and remove it from the database? This can't be undone.",
