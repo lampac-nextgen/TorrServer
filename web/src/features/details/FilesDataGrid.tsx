@@ -72,25 +72,25 @@ function EpisodeRow({
 
   return (
     <div
-      className={`flex flex-col gap-3 rounded-xl border border-border bg-surface px-3.5 py-3 sm:flex-row sm:items-center sm:gap-4 ${
+      className={`flex flex-col gap-2 rounded-xl border border-border bg-surface px-3 py-2.5 sm:flex-row sm:items-center sm:gap-4 sm:px-3.5 sm:py-3 ${
         row.viewed ? 'opacity-80' : 'border-l-[3px] border-l-accent'
       }`}
     >
-      <div className='flex min-w-0 flex-1 items-start gap-3'>
+      <div className='flex min-w-0 flex-1 items-start gap-2.5 sm:gap-3'>
         {badge ? (
-          <span className='mt-0.5 inline-flex h-9 min-w-11 shrink-0 items-center justify-center rounded-lg bg-accent-soft px-2 text-sm font-bold tabular-nums text-accent'>
+          <span className='mt-0.5 inline-flex h-8 min-w-10 shrink-0 items-center justify-center rounded-lg bg-accent-soft px-2 text-sm font-bold tabular-nums text-accent sm:h-9 sm:min-w-11'>
             {badge}
           </span>
         ) : null}
         <div className='min-w-0 flex-1'>
-          <div className='flex flex-wrap items-center gap-2'>
-            <p className='truncate text-sm font-semibold text-foreground' title={row.path}>
+          <div className='flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5'>
+            <p className='min-w-0 truncate text-sm font-semibold text-foreground' title={row.path}>
               {title}
             </p>
             {row.viewed ? (
               <button
                 type='button'
-                className='inline-flex items-center gap-1 rounded-md text-xs text-accent hover-fine:underline'
+                className='inline-flex shrink-0 items-center gap-1 rounded-md text-xs text-accent hover-fine:underline'
                 onClick={onUnmarkViewed}
               >
                 <CheckCircle2 className='size-3.5' aria-hidden />
@@ -99,18 +99,18 @@ function EpisodeRow({
               </button>
             ) : null}
           </div>
-          <div className='mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted'>
-            {row.season != null ? (
-              <span>
-                {t('Season')} {row.season}
-              </span>
-            ) : null}
-            {row.resolution ? <span>{row.resolution}</span> : null}
-            <span>{humanizeSize(row.size)}</span>
-          </div>
+          <p className='mt-0.5 truncate text-xs text-muted'>
+            {[
+              row.season != null ? `${t('Season')} ${row.season}` : null,
+              row.resolution,
+              humanizeSize(row.size),
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </p>
         </div>
       </div>
-      <div className='shrink-0 sm:ml-auto'>{actions}</div>
+      <div className='w-full shrink-0 sm:ml-auto sm:w-auto'>{actions}</div>
     </div>
   )
 }

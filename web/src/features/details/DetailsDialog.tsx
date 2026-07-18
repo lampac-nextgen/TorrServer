@@ -87,6 +87,7 @@ export default function DetailsDialog({
 }: DetailsDialogProps) {
   const { t } = useTranslation()
   const isFullScreen = useMediaQuery(queryMax('dialog'))
+  const isMobile = useMediaQuery(queryMax('mobile'))
   useSyncModalOpen(true)
 
   const overlayState = useOverlayState({
@@ -269,18 +270,35 @@ export default function DetailsDialog({
                 </div>
               </div>
 
-              <Tabs.Root selectedKey={resolvedTab} onSelectionChange={key => setActiveTab(String(key) as DetailsTab)}>
+              <Tabs.Root
+                variant='secondary'
+                selectedKey={resolvedTab}
+                onSelectionChange={key => setActiveTab(String(key) as DetailsTab)}
+              >
                 <Tabs.ListContainer className='w-full max-w-full'>
-                  <Tabs.List aria-label={t('TorrentDetails')}>
-                    <Tabs.Tab id='overview' className='min-h-11 w-auto shrink-0'>
+                  <Tabs.List
+                    aria-label={t('TorrentDetails')}
+                    className={isMobile ? 'w-full min-w-full' : undefined}
+                  >
+                    <Tabs.Tab
+                      id='overview'
+                      className={isMobile ? 'min-h-11 w-auto flex-1 basis-0' : 'min-h-11 w-auto shrink-0'}
+                    >
                       {t('Overview')}
                       <Tabs.Indicator />
                     </Tabs.Tab>
-                    <Tabs.Tab id='files' className='min-h-11 w-auto shrink-0' aria-label={t('TorrentContent')}>
+                    <Tabs.Tab
+                      id='files'
+                      className={isMobile ? 'min-h-11 w-auto flex-1 basis-0' : 'min-h-11 w-auto shrink-0'}
+                      aria-label={t('TorrentContent')}
+                    >
                       {t('TorrentFiles')}
                       <Tabs.Indicator />
                     </Tabs.Tab>
-                    <Tabs.Tab id='cache' className='min-h-11 w-auto shrink-0'>
+                    <Tabs.Tab
+                      id='cache'
+                      className={isMobile ? 'min-h-11 w-auto flex-1 basis-0' : 'min-h-11 w-auto shrink-0'}
+                    >
                       {t('Cache')}
                       <Tabs.Indicator />
                     </Tabs.Tab>
