@@ -17,10 +17,15 @@ func init() {
 }
 
 func RouteWebPages(route gin.IRouter) {
-	// Serve / as index.html
-	route.GET("/", func(c *gin.Context) {
-		serveEmbedded(c, "pages/index.html", "text/html; charset=utf-8")
-	})
+	const indexHTML = "pages/index.html"
+	const indexMIME = "text/html; charset=utf-8"
+
+	// Serve / and /index.html (Workbox precache / navigateFallback requests the latter).
+	serveIndex := func(c *gin.Context) {
+		serveEmbedded(c, indexHTML, indexMIME)
+	}
+	route.GET("/", serveIndex)
+	route.GET("/index.html", serveIndex)
 
 	// Walk embed.FS and register an explicit route for every file.
 	// Explicit routes avoid catch-all wildcard conflicts with other gin routes.
