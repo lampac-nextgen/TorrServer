@@ -1,22 +1,16 @@
 import { CheckCircle2 } from 'lucide-react'
-import { memo, useMemo, useState, type ReactNode } from 'react'
+import { memo, useCallback, useMemo, useState, type ReactNode } from 'react'
 import ptt from 'parse-torrent-title'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { streamHost } from 'shared/api/hosts'
 import type { PlayableFile, TorrentFileStat } from 'shared/api/types'
-import { listViewedEntries, remViewedFile, VIEWED_QUERY_KEY } from 'shared/api/viewed'
-import {
-  gstreamerHeartbeatUrl,
-  gstreamerMasterUrl,
-  shouldUseGStreamerPlayer,
-  useGStreamerRuntime,
-} from 'shared/lib/gstreamer'
+import { remViewedFile, VIEWED_QUERY_KEY } from 'shared/api/viewed'
+import { shouldUseGStreamerPlayer, useGStreamerRuntime } from 'shared/lib/gstreamer'
 import { useExternalPlayers } from 'shared/lib/externalPlayers'
 import { humanizeSize } from 'shared/lib/format'
-import { useSettingsQuery } from 'shared/hooks/useSettingsQuery'
 import { useOptionalAppToast } from 'shared/ui/Toast'
-import { findCaptionSrc } from 'features/player/usePlayLauncher'
+import { usePlayLauncher } from 'features/player/usePlayLauncher'
 
 import FileRowActions from './FileRowActions'
 import MediaInfoDialog from './MediaInfoDialog'
@@ -36,6 +30,8 @@ export interface FilesDataGridProps {
   selectedSeason?: number
   seasonAmount?: number[] | null
   hash: string
+  displayName?: string
+  torrentData?: string
   allFileStats?: TorrentFileStat[]
   onViewedChange?: () => void
 }
@@ -50,8 +46,9 @@ interface FileRow {
   viewed: boolean
   path: string
   link: string
-  player: { key: string; src: string; hls: boolean; heartbeatSrc: string }
+  playerKey: string
   fullLink: string
+  playable: PlayableFile
 }
 
 function episodeBadge(episode?: number): string | null {
@@ -125,6 +122,8 @@ const FilesDataGrid = memo(
     selectedSeason,
     seasonAmount,
     hash,
+    displayName,
+    torrentData,
     allFileStats = [],
     onViewedChange,
   }: FilesDataGridProps) => {
@@ -135,22 +134,23 @@ const FilesDataGrid = memo(
     const [mediaInfo, setMediaInfo] = useState<{ fileId: number; fileName: string } | null>(null)
     const gstRuntime = useGStreamerRuntime()
     const { buildExternalPlayers, shouldShowOpenLink } = useExternalPlayers()
-    const { data: settings } = useSettingsQuery()
-    const trackTimecode = Boolean(settings?.TrackTimecode)
 
-    const { data: viewedEntries = [] } = useQuery({
-      queryKey: VIEWED_QUERY_KEY(hash),
-      queryFn: () => listViewedEntries(hash),
-      enabled: trackTimecode,
+    const knownPlayableFiles = playableFileList || []
+    const onPlayerNotSupported = useCallback((fileId: number) => {
+      const useGst = knownPlayableFiles.find(file => file.id === fileId)
+      const key = `${fileId}:${useGst && shouldUseGStreamerPlayer(useGst.path, gstRuntime) ? 'gst' : 'stream'}`
+      setUnsupportedPlayerKeys(current => ({ ...current, [key]: true }))
+    }, [knownPlayableFiles, gstRuntime])
+
+    const { playFile, isResolving, resolvingFileId, playerModals } = usePlayLauncher({
+      hash,
+      displayName: displayName || hash,
+      knownPlayableFiles,
+      knownAllFiles: allFileStats,
+      torrentData,
+      onViewedChange,
+      onPlayerNotSupported,
     })
-
-    const timecodeByFile = useMemo(() => {
-      const map = new Map<number, number>()
-      for (const entry of viewedEntries) {
-        map.set(entry.file_index, entry.timecode ?? 0)
-      }
-      return map
-    }, [viewedEntries])
 
     const notifyViewedChange = () => {
       void queryClient.invalidateQueries({ queryKey: VIEWED_QUERY_KEY(hash) })
@@ -173,20 +173,6 @@ const FilesDataGrid = memo(
       return `${streamHost()}/${encodeURIComponent(fileName)}?link=${hash}&index=${id}&play`
     }
 
-    const buildPlayer = (path: string, id: number) => {
-      const useGStreamer = shouldUseGStreamerPlayer(path, gstRuntime)
-      return {
-        key: `${id}:${useGStreamer ? 'gst' : 'stream'}`,
-        src: useGStreamer ? gstreamerMasterUrl(hash, id) : buildFileLink(path, id),
-        hls: useGStreamer,
-        heartbeatSrc: useGStreamer ? gstreamerHeartbeatUrl(hash) : '',
-      }
-    }
-
-    const markPlayerUnsupported = (key: string) => {
-      setUnsupportedPlayerKeys(current => ({ ...current, [key]: true }))
-    }
-
     const fileHasEpisodeText = !!playableFileList?.find(({ path }) => ptt.parse(path).episode)
     const shouldDisplayFullFileName = (playableFileList?.length ?? 0) > 1 && !fileHasEpisodeText
 
@@ -203,7 +189,8 @@ const FilesDataGrid = memo(
         filteredFiles.map(file => {
           const parsed = ptt.parse(file.path)
           const link = buildFileLink(file.path, file.id)
-          const player = buildPlayer(file.path, file.id)
+          const useGStreamer = shouldUseGStreamerPlayer(file.path, gstRuntime)
+          const playerKey = `${file.id}:${useGStreamer ? 'gst' : 'stream'}`
           const fullLink = new URL(link, window.location.href).toString()
           const fileName = file.path.split('/').pop() || file.path
           const episodeLabel =
@@ -222,12 +209,13 @@ const FilesDataGrid = memo(
             viewed: viewedFileList?.includes(file.id) ?? false,
             path: file.path,
             link,
-            player,
+            playerKey,
             fullLink,
+            playable: file,
           }
         }),
       // eslint-disable-next-line react-hooks/exhaustive-deps -- link builders close over hash/gstRuntime
-      [filteredFiles, viewedFileList, shouldDisplayFullFileName, hash, gstRuntime, unsupportedPlayerKeys],
+      [filteredFiles, viewedFileList, shouldDisplayFullFileName, hash, gstRuntime],
     )
 
     if (!playableFileList?.length) {
@@ -245,30 +233,20 @@ const FilesDataGrid = memo(
               <FileRowActions
                 preloadLabel={t('Preload')}
                 onPreload={() => preloadBuffer(row.id)}
-                playerSupported={!unsupportedPlayerKeys[row.player.key]}
-                playerTitle={row.name}
-                playerSrc={row.player.src}
-                downloadSrc={row.link}
-                hls={row.player.hls}
-                heartbeatSrc={row.player.heartbeatSrc}
-                onPlayerNotSupported={() => markPlayerUnsupported(row.player.key)}
+                playerSupported={!unsupportedPlayerKeys[row.playerKey]}
+                onPlay={() => playFile(row.playable)}
+                isPlayPending={isResolving && resolvingFileId === row.id}
                 openLinkHref={row.link}
                 showOpenLink={shouldShowOpenLink}
                 copyText={row.fullLink}
                 externalPlayers={buildExternalPlayers(row.fullLink)}
-                hash={hash}
-                fileIndex={row.id}
-                captionSrc={
-                  findCaptionSrc({ id: row.id, path: row.path, length: row.size }, allFileStats, hash) || undefined
-                }
-                initialTimecode={timecodeByFile.get(row.id) ?? 0}
-                trackTimecode={trackTimecode}
-                onViewedChange={notifyViewedChange}
                 onProbeMedia={() => setMediaInfo({ fileId: row.id, fileName: row.name })}
               />
             }
           />
         ))}
+
+        {playerModals}
 
         {mediaInfo ? (
           <MediaInfoDialog
@@ -289,6 +267,8 @@ const FilesDataGrid = memo(
     prev.viewedFileList === next.viewedFileList &&
     prev.seasonAmount === next.seasonAmount &&
     prev.allFileStats === next.allFileStats &&
+    prev.displayName === next.displayName &&
+    prev.torrentData === next.torrentData &&
     prev.onViewedChange === next.onViewedChange,
 )
 

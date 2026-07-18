@@ -87,7 +87,7 @@ function TorrentActions({
   const fromLatestPlaylistLink = `${fullPlaylistLink}&fromlast`
   const magnetLink = `magnet:?xt=urn:btih:${hash}&dn=${encodeURIComponent(name || title || '')}`
 
-  const { handlePlay, resolvingAudio, playerModals } = usePlayLauncher({
+  const { handlePlay, isResolving, playerModals } = usePlayLauncher({
     hash,
     displayName,
     knownPlayableFiles: playableFileList || [],
@@ -168,7 +168,7 @@ function TorrentActions({
           size='lg'
           fullWidth
           className='sm:w-auto'
-          isPending={resolvingAudio}
+          isPending={isResolving}
           onPress={() => {
             // Series / multi-file: jump to the Content tab (per-file Play/Copy/external) instead of
             // opening a second file-picker modal — matches the legacy details UX.

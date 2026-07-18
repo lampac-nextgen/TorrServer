@@ -45,7 +45,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
     return files.filter(file => isFilePlayable(file.path))
   }, [torrent.file_stats, torrent.data])
 
-  const { handlePlay, resolvingAudio, playerModals } = usePlayLauncher({ hash, displayName, knownPlayableFiles })
+  const { handlePlay, isResolving, playerModals } = usePlayLauncher({ hash, displayName, knownPlayableFiles, torrentData: torrent.data })
 
   useSyncModalOpen(confirmState.isOpen || dropdownState.isOpen)
 
@@ -90,7 +90,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
               isIconOnly
               className={overlayButtonClass}
               aria-label={t('Play')}
-              isPending={resolvingAudio}
+              isPending={isResolving}
               onPress={handlePlay}
             >
               {({ isPending }) =>
