@@ -1,7 +1,19 @@
 import { alphaCss } from 'shared/theme/color'
-import { brand, mainColors } from 'shared/theme/colors'
 
 export type SnakeThemeMode = 'dark' | 'light'
+
+/**
+ * Canvas rendering needs resolved color strings (fillStyle/strokeStyle can't
+ * read CSS custom properties), so the brand swatches used by the piece map
+ * are duplicated here rather than pulled from CSS. Keep in sync with the
+ * `--accent`/`--surface`/`--border` values in `src/index.css`.
+ */
+const swatch = {
+  greenBright: '#2ecf9a',
+  green: '#00a572',
+  inkElevated: '#161f1b',
+  inkSoft: '#121a16',
+} as const
 export type SnakeVariant = 'default' | 'mini'
 
 export interface SnakePieceSettings {
@@ -33,9 +45,9 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       borderWidth: 1,
       pieceSize: 20,
       gapBetweenPieces: 4,
-      borderColor: alphaCss(brand.greenBright, 0.28),
-      completeColor: brand.greenBright,
-      backgroundColor: brand.inkElevated,
+      borderColor: alphaCss(swatch.greenBright, 0.28),
+      completeColor: swatch.greenBright,
+      backgroundColor: swatch.inkElevated,
       readerColor: '#050807',
       readerHaloColor: alphaCss('#fff', 0.45),
       rangeColor: '#c4a882',
@@ -46,9 +58,9 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       borderWidth: 2,
       pieceSize: 26,
       gapBetweenPieces: 5,
-      borderColor: alphaCss(brand.greenBright, 0.32),
-      completeColor: brand.greenBright,
-      backgroundColor: brand.inkSoft,
+      borderColor: alphaCss(swatch.greenBright, 0.32),
+      completeColor: swatch.greenBright,
+      backgroundColor: swatch.inkSoft,
       readerColor: '#050807',
       readerHaloColor: alphaCss('#fff', 0.4),
       rangeColor: '#c4a882',
@@ -61,7 +73,7 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       pieceSize: 20,
       gapBetweenPieces: 4,
       borderColor: '#c5d9ce',
-      completeColor: mainColors.light.primary,
+      completeColor: swatch.green,
       backgroundColor: '#ffffff',
       readerColor: '#000',
       readerHaloColor: alphaCss('#fff', 0.9),
@@ -74,8 +86,8 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       pieceSize: 26,
       gapBetweenPieces: 5,
       borderColor: '#b7d9c8',
-      completeColor: mainColors.light.primary,
-      backgroundColor: brand.greenMist,
+      completeColor: swatch.green,
+      backgroundColor: '#eef7f2',
       readerColor: '#0a0a0a',
       readerHaloColor: alphaCss('#fff', 0.9),
       rangeColor: '#6b8fd4',

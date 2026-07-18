@@ -70,8 +70,8 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsP
       >
         {Array.from({ length: 12 }).map((_, i) => (
           <div key={i} className='flex flex-col gap-2'>
-            <div className='aspect-[2/3] animate-pulse rounded-xl bg-[#1a2620]' />
-            <div className='h-4 animate-pulse rounded bg-[#1a2620]' />
+            <div className='aspect-[2/3] animate-pulse rounded-xl bg-surface-secondary' />
+            <div className='h-4 animate-pulse rounded bg-surface-secondary' />
           </div>
         ))}
       </div>
@@ -80,9 +80,9 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsP
 
   if (isError) {
     return (
-      <div className='grid min-h-[200px] place-items-center p-6 text-center text-[var(--muted,#8fafa0)]'>
+      <div className='grid min-h-[200px] place-items-center p-6 text-center text-muted'>
         <CloudOff size={48} strokeWidth={1.25} className='mb-2 opacity-60' />
-        <p className='text-lg font-semibold text-[var(--foreground,#e6f2ec)]'>{t('NoServerConnection')}</p>
+        <p className='text-lg font-semibold text-foreground'>{t('NoServerConnection')}</p>
       </div>
     )
   }
@@ -94,10 +94,10 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsP
           type='button'
           onClick={onAdd}
           disabled={!onAdd}
-          className='grid min-h-[180px] min-w-[260px] place-items-center gap-3 rounded-2xl border border-dashed border-[var(--border,#2a3b32)] bg-[var(--surface,#121a16)] p-6 transition-colors hover:border-[#00a572]/50 disabled:opacity-50'
+          className='grid min-h-[180px] min-w-[260px] place-items-center gap-3 rounded-2xl border border-dashed border-border bg-surface p-6 transition-colors hover:border-accent/50 disabled:opacity-50'
         >
-          <FolderPlus size={48} className='text-[#00a572] opacity-80' />
-          <span className='text-lg font-semibold text-[var(--foreground,#e6f2ec)]'>{t('NoTorrentsAdded')}</span>
+          <FolderPlus size={48} className='text-accent opacity-80' />
+          <span className='text-lg font-semibold text-foreground'>{t('NoTorrentsAdded')}</span>
           <Button variant='primary' className='pointer-events-none'>
             {t('AddFirstTorrent')}
           </Button>
@@ -109,7 +109,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsP
   if (!sorted.length) {
     return (
       <div className='grid min-h-[200px] place-items-center p-6'>
-        <p className='text-[var(--muted,#8fafa0)]'>{t('NoTorrentsInCategory')}</p>
+        <p className='text-muted'>{t('NoTorrentsInCategory')}</p>
       </div>
     )
   }

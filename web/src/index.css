@@ -1,6 +1,68 @@
 @import "tailwindcss";
 @import "@heroui/styles";
 
+/**
+ * TorrServer brand theme — overrides HeroUI's default CSS variables.
+ * Un-layered rules always win over HeroUI's `@layer theme` vars, so this
+ * is the single source of truth for color: no other file should hardcode
+ * hex colors, and no component should fall back to `var(--x, #hex)`.
+ */
+:root {
+  --background: #f5faf7;
+  --foreground: #0f1915;
+
+  --surface: #ffffff;
+  --surface-secondary: #eef5f1;
+  --surface-tertiary: #e3ede7;
+
+  --muted: #5a7268;
+  --border: #dbe7e0;
+  --separator: #e3ede7;
+
+  --accent: #00a572;
+  --accent-foreground: #ffffff;
+
+  --danger: #e05555;
+  --warning: #d99a2b;
+
+  /* App chrome — deliberately distinct from --surface (top bar / nav rail). */
+  --app-header: #0d6b4f;
+  --app-header-foreground: #ffffff;
+  --app-rail: #14201b;
+  --app-rail-foreground: rgba(255, 255, 255, 0.92);
+}
+
+.dark {
+  --background: #0a0f0d;
+  --foreground: #e6f2ec;
+
+  --surface: #121a16;
+  --surface-secondary: #161f1b;
+  --surface-tertiary: #1a2620;
+
+  --muted: #8fafa0;
+  --border: #2a3b32;
+  --separator: #1e2a24;
+
+  --accent: #2ecf9a;
+  --accent-foreground: #06120d;
+
+  --danger: #e2707a;
+  --warning: #e0a040;
+
+  --app-header: #0e1613;
+  --app-header-foreground: #e6f2ec;
+  --app-rail: #070b09;
+  --app-rail-foreground: rgba(255, 255, 255, 0.9);
+}
+
+@theme inline {
+  --color-app-header: var(--app-header);
+  --color-app-header-foreground: var(--app-header-foreground);
+  --color-app-rail: var(--app-rail);
+  --color-app-rail-foreground: var(--app-rail-foreground);
+}
+
 html,
 body,
 #root {
@@ -10,8 +72,8 @@ body,
 
 body {
   font-family: "Plus Jakarta Sans", system-ui, sans-serif;
-  background: var(--background, #0a0f0d);
-  color: var(--foreground, #e6f2ec);
+  background: var(--background);
+  color: var(--foreground);
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

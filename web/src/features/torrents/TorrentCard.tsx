@@ -84,7 +84,7 @@ export default function TorrentCard({ torrent, onSelect, onEdit }: TorrentCardPr
       data-hash={torrent.hash}
     >
       <div
-        className='relative aspect-[2/3] w-full cursor-pointer overflow-hidden rounded-xl bg-[#1a2620] shadow-sm ring-1 ring-[var(--border,#2a3b32)] transition-shadow hover:shadow-lg hover:ring-[#00a572]/40'
+        className='relative aspect-[2/3] w-full cursor-pointer overflow-hidden rounded-xl bg-surface-secondary shadow-sm ring-1 ring-border transition-shadow hover:shadow-lg hover:ring-accent/40'
         onClick={() => onSelect(torrent)}
         onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -104,7 +104,7 @@ export default function TorrentCard({ torrent, onSelect, onEdit }: TorrentCardPr
             className='h-full w-full object-cover'
           />
         ) : (
-          <div className='grid h-full w-full place-items-center text-[var(--muted,#8fafa0)]'>
+          <div className='grid h-full w-full place-items-center text-muted'>
             <ImageOff size={32} strokeWidth={1.5} />
           </div>
         )}
@@ -133,10 +133,7 @@ export default function TorrentCard({ torrent, onSelect, onEdit }: TorrentCardPr
         </div>
       </div>
 
-      <h3
-        className='line-clamp-2 px-0.5 text-sm font-semibold leading-snug text-[var(--foreground,#e6f2ec)]'
-        title={title}
-      >
+      <h3 className='line-clamp-2 px-0.5 text-sm font-semibold leading-snug text-foreground' title={title}>
         {title}
       </h3>
     </article>

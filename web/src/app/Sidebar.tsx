@@ -73,7 +73,7 @@ export default function Sidebar({
         isDisabled={item.disabled}
         onPress={item.onClick}
         isIconOnly={collapsed}
-        className={`w-full justify-start gap-3 rounded-xl px-3 py-2.5 text-[#d4ebe0] hover:bg-white/8 ${
+        className={`w-full justify-start gap-3 rounded-xl px-3 py-2.5 text-app-rail-foreground hover:bg-white/8 ${
           collapsed ? 'justify-center px-2' : ''
         }`}
         aria-label={item.label}
@@ -94,7 +94,7 @@ export default function Sidebar({
   }
 
   return (
-    <nav className='flex h-full flex-col gap-1 bg-[#14201b] p-2 dark:bg-[#070b09]'>
+    <nav className='flex h-full flex-col gap-1 bg-app-rail p-2'>
       {items.map(renderItem)}
       <div className='my-1 h-px bg-white/12' />
       <div className='mt-auto flex flex-col gap-1'>{footerItems.map(renderItem)}</div>

@@ -112,7 +112,7 @@ export default function Shell() {
 
   return (
     <div
-      className='grid h-full overflow-hidden bg-[var(--background,#0a0f0d)]'
+      className='grid h-full overflow-hidden bg-background'
       style={{
         gridTemplateRows: 'calc(60px + env(safe-area-inset-top, 0px)) 1fr',
         gridTemplateColumns: isMobile ? '1fr' : `${sidebarWidth}px 1fr`,
@@ -121,7 +121,7 @@ export default function Shell() {
       }}
     >
       <header
-        className='flex items-center gap-2 bg-[#0d6b4f] px-2 pt-[env(safe-area-inset-top,0px)] text-white dark:bg-[#0e1613]'
+        className='flex items-center gap-2 bg-app-header px-2 pt-[env(safe-area-inset-top,0px)] text-app-header-foreground'
         style={{
           gridArea: 'header',
           minHeight: 'calc(60px + env(safe-area-inset-top, 0px))',
@@ -133,7 +133,7 @@ export default function Shell() {
               <Button
                 variant='ghost'
                 isIconOnly
-                className='text-white hover:bg-white/10'
+                className='text-app-header-foreground hover:bg-white/10'
                 aria-label={
                   sidebarOpen
                     ? t('CollapseSidebar', { defaultValue: 'Collapse sidebar' })
@@ -161,7 +161,7 @@ export default function Shell() {
             <Button
               variant='ghost'
               isIconOnly
-              className='text-white hover:bg-white/10'
+              className='text-app-header-foreground hover:bg-white/10'
               aria-label={
                 sortABC
                   ? t('SortByDate', { defaultValue: 'Sort by date' })
@@ -184,7 +184,7 @@ export default function Shell() {
             <Button
               variant='ghost'
               isIconOnly
-              className='text-white hover:bg-white/10'
+              className='text-app-header-foreground hover:bg-white/10'
               aria-label={t('Theme', { defaultValue: 'Theme' })}
               onPress={cycleTheme}
             >
@@ -198,7 +198,7 @@ export default function Shell() {
           <Tooltip.Trigger>
             <Button
               variant='ghost'
-              className='min-w-10 px-2 text-xs font-semibold text-white hover:bg-white/10'
+              className='min-w-10 px-2 text-xs font-semibold text-app-header-foreground hover:bg-white/10'
               aria-label={t('Language', { defaultValue: 'Language' })}
               onPress={cycleLanguage}
             >
@@ -223,7 +223,7 @@ export default function Shell() {
       ) : null}
 
       <main
-        className='min-h-0 min-w-0 overflow-auto bg-[var(--background,#0a0f0d)] [-webkit-overflow-scrolling:touch]'
+        className='min-h-0 min-w-0 overflow-auto bg-background [-webkit-overflow-scrolling:touch]'
         style={{
           gridArea: 'content',
           paddingBottom: isMobile ? 'calc(90px + env(safe-area-inset-bottom, 0px))' : 0,

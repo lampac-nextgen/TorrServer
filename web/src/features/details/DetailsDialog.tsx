@@ -21,8 +21,6 @@ import { getPeerString, humanizeSize, humanizeSpeed, removeRedundantCharacters }
 import { isFilePlayable } from 'shared/torrent/playable'
 import { CLOSED, GETTING_INFO, IN_DB, PRELOAD, WORKING } from 'shared/torrent/states'
 import { queryMax } from 'shared/theme/breakpoints'
-import { getThemeColors } from 'shared/theme/colors'
-import { useThemePreference } from 'shared/theme/useThemePreference'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 
 import FileBrowser from './FileBrowser'
@@ -45,25 +43,10 @@ const toPlayableFile = (file: TorrentFileStat): PlayableFile => ({
 })
 
 function StatWidget({ label, value }: { label: string; value: string }) {
-  const [isDark] = useThemePreference()
-  const colors = getThemeColors(isDark ? 'dark' : 'light').dialogTorrentDetailsContent
-
   return (
-    <div
-      className='min-w-[108px] flex-1 rounded-lg border px-3 py-2 text-center'
-      style={{
-        borderColor: colors.bufferTrackBorderColor,
-        backgroundColor: colors.cacheSectionBGColor,
-      }}
-    >
-      <span className='block text-xs leading-tight' style={{ color: colors.widgetFontColor }}>
-        {label}
-      </span>
-      <span
-        className='mt-1 block break-words text-base font-bold tabular-nums'
-        title={value}
-        style={{ color: colors.titleFontColor }}
-      >
+    <div className='min-w-[108px] flex-1 rounded-lg border border-border bg-surface-secondary px-3 py-2 text-center'>
+      <span className='block text-xs leading-tight text-muted'>{label}</span>
+      <span className='mt-1 block break-words text-base font-bold tabular-nums text-foreground' title={value}>
         {value || '—'}
       </span>
     </div>
@@ -73,8 +56,6 @@ function StatWidget({ label, value }: { label: string; value: string }) {
 export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit }: DetailsDialogProps) {
   const { t } = useTranslation()
   const fullScreen = useMediaQuery(queryMax('dialog'))
-  const [isDark] = useThemePreference()
-  const colors = getThemeColors(isDark ? 'dark' : 'light').dialogTorrentDetailsContent
   useSyncModalOpen(true)
 
   const state = useOverlayState({
@@ -195,16 +176,8 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
             </Modal.Header>
 
             <Modal.Body className='gap-4'>
-              <div
-                className='flex flex-col gap-4 rounded-xl p-4 sm:flex-row sm:items-start'
-                style={{
-                  background: `linear-gradient(135deg, ${colors.gradientStartColor}, ${colors.gradientEndColor})`,
-                }}
-              >
-                <div
-                  className='mx-auto grid aspect-[2/3] w-full max-w-[160px] shrink-0 place-items-center overflow-hidden rounded-lg sm:mx-0'
-                  style={{ backgroundColor: colors.posterBGColor }}
-                >
+              <div className='flex flex-col gap-4 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-4 sm:flex-row sm:items-start'>
+                <div className='mx-auto grid aspect-[2/3] w-full max-w-[160px] shrink-0 place-items-center overflow-hidden rounded-lg bg-surface-secondary sm:mx-0'>
                   {poster ? (
                     <img src={poster} alt='' className='h-full w-full object-cover' />
                   ) : (
@@ -213,13 +186,11 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                 </div>
 
                 <div className='min-w-0 flex-1'>
-                  <h2 className='mb-1 break-words text-lg font-bold' style={{ color: colors.titleFontColor }}>
+                  <h2 className='mb-1 break-words text-lg font-bold text-foreground'>
                     {getParsedTitle() || title || name || hash}
                   </h2>
                   {name && title !== name ? (
-                    <p className='mb-3 text-sm' style={{ color: colors.subNameFontColor }}>
-                      {ptt.parse(name).title || name}
-                    </p>
+                    <p className='mb-3 text-sm text-muted'>{ptt.parse(name).title || name}</p>
                   ) : null}
                   <div className='mb-3 flex flex-wrap gap-2'>
                     <StatWidget label={t('DownloadSpeed')} value={humanizeSpeed(downloadSpeed)} />
@@ -255,7 +226,7 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                 </Tabs.Panel>
 
                 <Tabs.Panel id='files' className='pt-4'>
-                  <div className='rounded-xl p-4' style={{ backgroundColor: colors.torrentFilesSectionBGColor }}>
+                  <div className='rounded-xl bg-surface-secondary p-4'>
                     {loading ? (
                       <p className='text-default-500'>{t('TorrentGettingInfo')}</p>
                     ) : (

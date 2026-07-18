@@ -210,8 +210,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit, classNa
     }
   }
 
-  const actionBtnClass =
-    'h-9 w-9 min-w-9 rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-[#00a572]'
+  const actionBtnClass = 'h-9 w-9 min-w-9 rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-accent'
 
   return (
     <>

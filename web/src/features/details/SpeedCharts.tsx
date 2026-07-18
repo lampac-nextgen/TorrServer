@@ -43,13 +43,12 @@ export default function SpeedCharts({ downloadSpeed, uploadSpeed }: SpeedChartsP
       <p className='mb-1 text-xs text-default-500'>Download / Upload</p>
       <svg viewBox={`0 0 ${width} ${height}`} className='h-[120px] w-full' preserveAspectRatio='none' aria-hidden>
         <polyline
-          fill='rgba(0,165,114,0.12)'
-          stroke='#00a572'
+          className='fill-accent/10 stroke-accent'
           strokeWidth='2'
           points={`0,${height} ${dlPoints} ${width},${height}`}
         />
-        <polyline fill='none' stroke='#00a572' strokeWidth='2' points={dlPoints} />
-        <polyline fill='none' stroke='#3d9edd' strokeWidth='2' points={ulPoints} />
+        <polyline className='fill-none stroke-accent' strokeWidth='2' points={dlPoints} />
+        <polyline className='fill-none stroke-focus' strokeWidth='2' points={ulPoints} />
       </svg>
     </div>
   )

@@ -30,11 +30,9 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
     if (!this.state.hasError) return this.props.children
 
     return (
-      <div className='grid min-h-dvh place-items-center gap-4 p-6 text-center font-[family-name:var(--font-sans,system-ui,sans-serif)]'>
-        <h1 className='m-0 text-2xl font-semibold text-[var(--foreground,#e6f2ec)]'>Something went wrong</h1>
-        {this.state.message ? (
-          <p className='m-0 max-w-md text-sm text-[var(--muted,#8fafa0)]'>{this.state.message}</p>
-        ) : null}
+      <div className='grid min-h-dvh place-items-center gap-4 bg-background p-6 text-center'>
+        <h1 className='m-0 text-2xl font-semibold text-foreground'>Something went wrong</h1>
+        {this.state.message ? <p className='m-0 max-w-md text-sm text-muted'>{this.state.message}</p> : null}
         <Button variant='primary' onPress={this.handleReload}>
           Reload
         </Button>

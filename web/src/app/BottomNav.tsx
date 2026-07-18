@@ -55,7 +55,7 @@ export default function BottomNav({
   return (
     <>
       <div
-        className='ts-bottom-nav fixed inset-x-0 bottom-0 z-50 border-t border-[var(--border,#2a3b32)] bg-[var(--surface,#121a16)] pb-[env(safe-area-inset-bottom,0px)]'
+        className='ts-bottom-nav fixed inset-x-0 bottom-0 z-50 border-t border-border bg-surface pb-[env(safe-area-inset-bottom,0px)]'
         style={{ height: 'calc(90px + env(safe-area-inset-bottom, 0px))' }}
       >
         <div className='mx-auto flex h-[90px] max-w-lg items-stretch'>
