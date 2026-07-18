@@ -49,8 +49,7 @@ function PanelFade({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)
   useGSAP(() => {
     if (!ref.current) return
-    const reduced =
-      typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const reduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduced) {
       gsap.set(ref.current, { opacity: 1, y: 0 })
       return
@@ -137,23 +136,28 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
   }, [gstAvailable, t])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fall back if GST tab hidden on non-gst build
     if (!visibleTabs.some(item => item.id === tab)) setTab('primary')
   }, [tab, visibleTabs])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- deep-link / SettingsOpenWithTab
     if (open && initialTab) setTab(initialTab)
   }, [open, initialTab])
 
-  const loadSettings = useCallback(async (signal?: AbortSignal) => {
-    const data = await getSettings(signal)
-    const loaded = { ...defaultSettings, ...data }
-    const mb = Math.round((loaded.CacheSize ?? (defaultSettings.CacheSize ?? 64) * 1024 * 1024) / (1024 * 1024))
-    const next = { ...loaded, CacheSize: mb }
-    setLocalSettings(next)
-    setCacheSizeMb(mb)
-    // Keep play/resume TrackTimecode readers in sync even before Save.
-    queryClient.setQueryData(SETTINGS_QUERY_KEY, { ...loaded, CacheSize: loaded.CacheSize })
-  }, [queryClient])
+  const loadSettings = useCallback(
+    async (signal?: AbortSignal) => {
+      const data = await getSettings(signal)
+      const loaded = { ...defaultSettings, ...data }
+      const mb = Math.round((loaded.CacheSize ?? (defaultSettings.CacheSize ?? 64) * 1024 * 1024) / (1024 * 1024))
+      const next = { ...loaded, CacheSize: mb }
+      setLocalSettings(next)
+      setCacheSizeMb(mb)
+      // Keep play/resume TrackTimecode readers in sync even before Save.
+      queryClient.setQueryData(SETTINGS_QUERY_KEY, { ...loaded, CacheSize: loaded.CacheSize })
+    },
+    [queryClient],
+  )
 
   const loadGstConfig = useCallback(async (signal?: AbortSignal) => {
     try {
@@ -183,6 +187,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
   useEffect(() => {
     if (!open) return undefined
     const ac = new AbortController()
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- load settings when dialog opens
     setLoading(true)
     setStorageLoadedOk(false)
     Promise.all([loadSettings(ac.signal), loadGstConfig(ac.signal), loadStorageBackends(ac.signal)])
@@ -245,9 +250,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
       notifySettingsChanged()
       await queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEY })
       toast?.showToast({
-        message: storageLoadedOk
-          ? t('Saved')
-          : t('SavedWithoutStorage'),
+        message: storageLoadedOk ? t('Saved') : t('SavedWithoutStorage'),
         severity: 'success',
       })
       onClose()
@@ -447,13 +450,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
           </Tabs.Root>
         )}
       </Modal.Body>
-      <Modal.Footer
-        className={
-          isMobile
-            ? 'flex flex-col-reverse gap-2 sm:flex-row sm:justify-end'
-            : undefined
-        }
-      >
+      <Modal.Footer className={isMobile ? 'flex flex-col-reverse gap-2 sm:flex-row sm:justify-end' : undefined}>
         <div className={isMobile ? 'grid grid-cols-2 gap-2' : 'contents'}>
           <Button
             onPress={() => void handleResetDefaults()}

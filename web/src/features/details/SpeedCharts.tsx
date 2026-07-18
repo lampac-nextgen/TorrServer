@@ -34,6 +34,7 @@ export default function SpeedCharts({ downloadSpeed, uploadSpeed }: SpeedChartsP
   useEffect(() => {
     const dl = Math.max(0, downloadSpeed ?? 0)
     const ul = Math.max(0, uploadSpeed ?? 0)
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- append speed samples into rolling history
     setDownloadHistory(prev => [...prev.slice(1), dl])
     setUploadHistory(prev => [...prev.slice(1), ul])
   }, [downloadSpeed, uploadSpeed])

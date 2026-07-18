@@ -62,6 +62,8 @@ export function listContinueWatching(knownHashes?: Set<string>): ContinueWatchEn
 /** Remove one file or every entry for a torrent hash. */
 export function removeContinueWatching(hash: string, fileIndex?: number): void {
   writeAll(
-    readAll().filter(item => (fileIndex == null ? item.hash !== hash : !(item.hash === hash && item.fileIndex === fileIndex))),
+    readAll().filter(item =>
+      fileIndex == null ? item.hash !== hash : !(item.hash === hash && item.fileIndex === fileIndex),
+    ),
   )
 }

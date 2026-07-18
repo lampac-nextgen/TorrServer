@@ -39,6 +39,7 @@ export default function EditTorrentDialog({ torrent, open, onClose }: EditTorren
 
   useEffect(() => {
     if (!open || !torrent) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate edit form from torrent prop
     setTitle(torrent.title || torrent.name || '')
     setCategory(torrent.category || '')
     setPoster(torrent.poster || '')
@@ -49,6 +50,7 @@ export default function EditTorrentDialog({ torrent, open, onClose }: EditTorren
     if (!open) return undefined
     const query = shortenTitleForPosterSearch(title.trim()) || title.trim()
     if (!query || query.length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- keep current poster when search query too short
       setPosterOptions(prev => (poster ? Array.from(new Set([poster, ...prev])) : prev))
       return undefined
     }

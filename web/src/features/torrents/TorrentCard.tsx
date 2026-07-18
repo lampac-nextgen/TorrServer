@@ -41,15 +41,7 @@ function progressPercent(torrent: TorrentStat): number | null {
   return pct > 0 ? pct : null
 }
 
-function MetaItem({
-  icon,
-  label,
-  tip,
-}: {
-  icon: ReactNode
-  label: string
-  tip?: string
-}) {
+function MetaItem({ icon, label, tip }: { icon: ReactNode; label: string; tip?: string }) {
   return (
     <span className='inline-flex min-w-0 items-center gap-1' title={tip || label}>
       <span className='shrink-0 text-muted/80' aria-hidden>
@@ -99,7 +91,11 @@ export default function TorrentCard({
   const peersTotal = torrent.total_peers ?? 0
   const seeders = torrent.connected_seeders ?? 0
   const peersLabel =
-    peersActive == null ? null : seeders > 0 ? `${peersActive}/${peersTotal} · ↑${seeders}` : `${peersActive}/${peersTotal}`
+    peersActive == null
+      ? null
+      : seeders > 0
+        ? `${peersActive}/${peersTotal} · ↑${seeders}`
+        : `${peersActive}/${peersTotal}`
 
   const blurFocusedControl = () => {
     const active = document.activeElement
@@ -170,9 +166,7 @@ export default function TorrentCard({
             >
               <Chip.Label className='inline-flex items-center gap-1'>
                 {statusLabel || null}
-                {showProgress ? (
-                  <span className={statusLabel ? 'opacity-90' : undefined}>{percent}%</span>
-                ) : null}
+                {showProgress ? <span className={statusLabel ? 'opacity-90' : undefined}>{percent}%</span> : null}
               </Chip.Label>
             </Chip>
           ) : (
@@ -203,7 +197,10 @@ export default function TorrentCard({
       </div>
 
       <div className='min-w-0 px-0.5'>
-        <h3 className='line-clamp-3 text-xs font-semibold leading-snug text-foreground sm:line-clamp-2 sm:text-sm' title={title}>
+        <h3
+          className='line-clamp-3 text-xs font-semibold leading-snug text-foreground sm:line-clamp-2 sm:text-sm'
+          title={title}
+        >
           {title}
         </h3>
         <div className='mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] leading-none text-muted sm:text-xs'>
@@ -220,11 +217,7 @@ export default function TorrentCard({
             />
           ) : null}
           {peersLabel ? (
-            <MetaItem
-              icon={<Users className='size-3' strokeWidth={2} />}
-              label={peersLabel}
-              tip={t('Peers')}
-            />
+            <MetaItem icon={<Users className='size-3' strokeWidth={2} />} label={peersLabel} tip={t('Peers')} />
           ) : null}
         </div>
       </div>

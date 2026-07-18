@@ -57,7 +57,8 @@ function StreamCard({
 
   if (stream.codec_type === 'video') {
     if (stream.width && stream.height) {
-      const ar = stream.display_aspect_ratio && stream.display_aspect_ratio !== '0:0' ? ` (${stream.display_aspect_ratio})` : ''
+      const ar =
+        stream.display_aspect_ratio && stream.display_aspect_ratio !== '0:0' ? ` (${stream.display_aspect_ratio})` : ''
       specs.push({ label: t('Resolution'), value: `${stream.width}×${stream.height}${ar}` })
     }
     if (stream.pix_fmt) specs.push({ label: t('FfpPixel'), value: stream.pix_fmt })
@@ -130,6 +131,7 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
 
   useEffect(() => {
     if (!open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reset MediaInfo when dialog closes
       setData(null)
       setError(null)
       setLoading(false)
@@ -165,9 +167,7 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
         <Modal.Container size='md' scroll='inside'>
           <Modal.Dialog style={DIALOG_SHEET_M}>
             <Modal.Header>
-              <Modal.Heading className='min-w-0 truncate'>
-                {t('MediaInfo')}
-              </Modal.Heading>
+              <Modal.Heading className='min-w-0 truncate'>{t('MediaInfo')}</Modal.Heading>
               <Modal.CloseTrigger aria-label={t('Close')} />
             </Modal.Header>
             <Modal.Body className='gap-4'>

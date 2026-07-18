@@ -94,6 +94,7 @@ export default function Shell() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- open Add when OS share/launch hands off a torrent
     if (launchSource || launchFiles) setAddOpen(true)
   }, [launchSource, launchFiles])
 
@@ -161,17 +162,15 @@ export default function Shell() {
     >
       <header
         className={`flex items-center bg-app-header text-app-header-foreground ${
-          isShortViewport ? 'gap-1 px-1 pt-[env(safe-area-inset-top,0px)]' : 'gap-2 px-2 pt-[env(safe-area-inset-top,0px)]'
+          isShortViewport
+            ? 'gap-1 px-1 pt-[env(safe-area-inset-top,0px)]'
+            : 'gap-2 px-2 pt-[env(safe-area-inset-top,0px)]'
         }`}
         style={{ gridArea: 'header', minHeight: headerHeight }}
       >
         {!isMobile ? (
           <HeaderIconButton
-            label={
-              sidebarOpen
-                ? t('CollapseSidebar')
-                : t('ExpandSidebar')
-            }
+            label={sidebarOpen ? t('CollapseSidebar') : t('ExpandSidebar')}
             onPress={() => setSidebarOpen(!sidebarOpen)}
           >
             {sidebarOpen ? <ChevronLeft size={22} /> : <Menu size={22} />}
@@ -204,14 +203,7 @@ export default function Shell() {
           ) : null}
         </h1>
 
-        <HeaderIconButton
-          label={
-            sortABC
-              ? t('SortByDate')
-              : t('SortByName')
-          }
-          onPress={() => setSortABC(v => !v)}
-        >
+        <HeaderIconButton label={sortABC ? t('SortByDate') : t('SortByName')} onPress={() => setSortABC(v => !v)}>
           <SortIcon size={20} />
         </HeaderIconButton>
 
@@ -343,7 +335,9 @@ function HeaderIconButton({ label, onPress, children }: { label: string; onPress
           aria-label={label}
           onPress={onPress}
         >
-          <span className='inline-flex size-full items-center justify-center [&>svg]:m-0 [&>svg]:block'>{children}</span>
+          <span className='inline-flex size-full items-center justify-center [&>svg]:m-0 [&>svg]:block'>
+            {children}
+          </span>
         </Button>
       </Tooltip.Trigger>
       <Tooltip.Content>{label}</Tooltip.Content>

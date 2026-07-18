@@ -25,6 +25,7 @@ export default function UnsafeButton({
   useEffect(() => {
     if (isDisabled || timeout <= 0) return undefined
     const start = Date.now()
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- restart countdown when enabled/timeout changes
     setStartedAt(start)
     setNow(start)
     const intervalId = window.setInterval(() => setNow(Date.now()), 250)

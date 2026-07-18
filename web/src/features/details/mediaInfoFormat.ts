@@ -44,7 +44,7 @@ export function streamTag(stream: FfpStream, key: string): string {
   if (!tags) return ''
   const direct = tags[key]
   if (typeof direct === 'string' && direct) return direct
-  const found = Object.entries(tags).find(([k, v]) => k === key || k.startsWith(`${key}-`))
+  const found = Object.entries(tags).find(([k]) => k === key || k.startsWith(`${key}-`))
   return found && typeof found[1] === 'string' ? found[1] : ''
 }
 

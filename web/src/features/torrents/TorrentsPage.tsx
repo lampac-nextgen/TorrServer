@@ -232,9 +232,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
         <div className='flex flex-col items-center gap-3'>
           <CloudOff size={44} strokeWidth={1.25} className='text-muted' />
           <p className='text-lg font-semibold text-foreground'>
-            {unauthorized
-              ? t('AuthRequired')
-              : t('NoServerConnection')}
+            {unauthorized ? t('AuthRequired') : t('NoServerConnection')}
           </p>
           <Button variant='primary' onPress={() => void refetch()}>
             {t('Retry')}
@@ -264,9 +262,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
 
       {continueEntries.length > 0 && !selectionMode && !libraryQuery ? (
         <section className='border-b border-border/60 px-3 py-3 sm:px-4'>
-          <p className='mb-2 text-xs font-semibold uppercase tracking-wide text-muted'>
-            {t('ContinueWatching')}
-          </p>
+          <p className='mb-2 text-xs font-semibold uppercase tracking-wide text-muted'>{t('ContinueWatching')}</p>
           <div className='flex gap-2 overflow-x-auto pb-1'>
             {continueEntries.map(entry => {
               const torrent = torrents.find(item => item.hash === entry.hash)

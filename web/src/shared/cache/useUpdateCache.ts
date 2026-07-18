@@ -64,7 +64,7 @@ export const useUpdateCache = (hash?: string, options?: UseUpdateCacheOptions) =
   const timerID = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inFlight = useRef(false)
   const cacheRef = useRef<TorrentCache>({})
-  const lastChangeAt = useRef(Date.now())
+  const lastChangeAt = useRef(0)
   const pollMs = useRef(CACHE_POLL_ACTIVE_MS)
 
   useEffect(
@@ -149,9 +149,11 @@ export const useCreateFocusMap = (cache: TorrentCache, visibleCells: number): Ca
   const lastWindowStartRef = useRef<number | undefined>(undefined)
   return useMemo(() => {
     const model = buildFocusModel(cache, visibleCells, {
+      // eslint-disable-next-line react-hooks/refs -- read previous camera window for sticky focus
       lastWindowStart: lastWindowStartRef.current,
     })
     if (model.windowStart != null && model.windowEnd != null && model.windowEnd >= model.windowStart) {
+      // eslint-disable-next-line react-hooks/refs -- persist camera window across cache polls
       lastWindowStartRef.current = model.windowStart
     }
     return model

@@ -330,9 +330,7 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
       focusModel.windowEnd >= focusModel.windowStart ? (
         <p className='mt-2 self-center text-xs uppercase tracking-wide text-muted'>
           {t('SnakeFocusRange', { start: focusModel.windowStart, end: focusModel.windowEnd })}
-          {!hasActiveReaders
-            ? ` · ${t('SnakeIdleFrozen')}`
-            : null}
+          {!hasActiveReaders ? ` · ${t('SnakeIdleFrozen')}` : null}
         </p>
       ) : null}
     </div>

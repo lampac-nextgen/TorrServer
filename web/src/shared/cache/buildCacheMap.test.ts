@@ -146,11 +146,9 @@ describe('resolveFocusWindow / buildFocusModel', () => {
     }
     const first = resolveFocusWindow(base, 40)
     expect(first).not.toBeNull()
-    const next = resolveFocusWindow(
-      { ...base, Readers: [{ Reader: 82, Start: 70, End: 100 }] },
-      40,
-      { lastWindowStart: first!.start },
-    )
+    const next = resolveFocusWindow({ ...base, Readers: [{ Reader: 82, Start: 70, End: 100 }] }, 40, {
+      lastWindowStart: first!.start,
+    })
     expect(next!.start).toBe(first!.start)
     expect(next!.readerPiece).toBe(82)
   })
@@ -165,11 +163,9 @@ describe('resolveFocusWindow / buildFocusModel', () => {
     const first = resolveFocusWindow(cache, 40)!
     // Jump head near the right edge of the frozen window
     const rightEdge = first.end - 2
-    const scrolled = resolveFocusWindow(
-      { ...cache, Readers: [{ Reader: rightEdge, Start: 40, End: 120 }] },
-      40,
-      { lastWindowStart: first.start },
-    )!
+    const scrolled = resolveFocusWindow({ ...cache, Readers: [{ Reader: rightEdge, Start: 40, End: 120 }] }, 40, {
+      lastWindowStart: first.start,
+    })!
     expect(scrolled.start).toBeGreaterThan(first.start)
     expect(scrolled.readerPiece).toBe(rightEdge)
   })

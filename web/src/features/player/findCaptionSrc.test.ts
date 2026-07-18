@@ -21,10 +21,7 @@ describe('findCaptionSrc', () => {
   it('returns a stream URL for a matching sidecar subtitle', async () => {
     const { findCaptionSrc } = await import('./usePlayLauncher')
     const video = { id: 0, path: 'Season 1/episode.mkv', length: 100 }
-    const files: TorrentFileStat[] = [
-      video,
-      { id: 1, path: 'Season 1/episode.en.srt', length: 1 },
-    ]
+    const files: TorrentFileStat[] = [video, { id: 1, path: 'Season 1/episode.en.srt', length: 1 }]
 
     expect(findCaptionSrc(video, files, 'deadbeef')).toBe(
       'http://localhost:8090/stream/episode.en.srt?link=deadbeef&index=1&play',

@@ -269,10 +269,7 @@ function TorrentActions({
               {t('CopyHash')}
             </Button>
           </ButtonGroup>
-          <Button
-            variant='tertiary'
-            onPress={() => window.open(playlistAllUrl({ category: undefined }), '_blank')}
-          >
+          <Button variant='tertiary' onPress={() => window.open(playlistAllUrl({ category: undefined }), '_blank')}>
             <ListVideo aria-hidden />
             {t('DownloadAllPlaylists')}
           </Button>

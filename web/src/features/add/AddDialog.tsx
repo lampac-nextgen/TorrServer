@@ -67,6 +67,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
   const { data: torrents } = useTorrentsQuery()
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- seed source from share/launch props
     if (open && initialSource) setSource(initialSource)
   }, [open, initialSource])
 
@@ -84,6 +85,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
   useEffect(() => {
     const trimmed = source.trim()
     if (!open || !trimmed || !checkTorrentSource(trimmed)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- clear stale duplicate flag when input invalid
       setHashExists(false)
       return undefined
     }
@@ -142,6 +144,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
   useEffect(() => {
     const query = shortenTitleForPosterSearch(title.trim()) || title.trim()
     if (!query || query.length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- clear posters when title too short
       setPosterOptions([])
       return undefined
     }
@@ -225,12 +228,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
         <Modal.CloseTrigger aria-label={t('Close')} />
       </Modal.Header>
       <Modal.Body className='space-y-4'>
-        <TextField
-          value={source}
-          onChange={setSource}
-          isInvalid={hashExists || sourceInvalid}
-          isDisabled={saving}
-        >
+        <TextField value={source} onChange={setSource} isInvalid={hashExists || sourceInvalid} isDisabled={saving}>
           <Label>{t('AddDialog.TorrentSourceLink')}</Label>
           <TextArea rows={2} autoFocus />
           <Description>

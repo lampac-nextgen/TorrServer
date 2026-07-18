@@ -12,7 +12,7 @@ import { Pencil, X } from 'lucide-react'
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import ptt from 'parse-torrent-title'
 import { useTranslation } from 'react-i18next'
-import type { PlayableFile, TorrentFileStat, TorrentStat } from 'shared/api/types'
+import type { TorrentStat } from 'shared/api/types'
 import { listViewedFiles } from 'shared/api/viewed'
 import { useUpdateCache } from 'shared/cache/useUpdateCache'
 import { useTorrentDetail } from 'shared/hooks/useTorrentDetail'
@@ -47,7 +47,10 @@ function StatWidget({ label, value }: { label: string; value: string }) {
   return (
     <div className='min-w-0 flex-1 rounded-lg border border-border bg-surface-secondary px-2.5 py-2 text-center sm:min-w-[104px] sm:px-3'>
       <span className='block text-[11px] leading-tight text-muted sm:text-xs'>{label}</span>
-      <span className='mt-1 block break-words text-sm font-bold tabular-nums text-foreground sm:text-base' title={value}>
+      <span
+        className='mt-1 block break-words text-sm font-bold tabular-nums text-foreground sm:text-base'
+        title={value}
+      >
         {value || '—'}
       </span>
     </div>
@@ -149,8 +152,12 @@ export default function DetailsDialog({
 
   useEffect(() => {
     const seasons = seasonsFingerprint
-      ? seasonsFingerprint.split(',').map(Number).filter(n => Number.isFinite(n) && n > 0)
+      ? seasonsFingerprint
+          .split(',')
+          .map(Number)
+          .filter(n => Number.isFinite(n) && n > 0)
       : []
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- keep season list/selection valid when file list changes
     setSeasonList(seasons)
     setSelectedSeason(prev => {
       if (seasons.length === 0) return undefined
@@ -285,10 +292,7 @@ export default function DetailsDialog({
                 onSelectionChange={key => setActiveTab(String(key) as DetailsTab)}
               >
                 <Tabs.ListContainer className='w-full max-w-full'>
-                  <Tabs.List
-                    aria-label={t('TorrentDetails')}
-                    className={isMobile ? 'w-full min-w-full' : undefined}
-                  >
+                  <Tabs.List aria-label={t('TorrentDetails')} className={isMobile ? 'w-full min-w-full' : undefined}>
                     <Tabs.Tab
                       id='overview'
                       className={isMobile ? 'min-h-11 w-auto flex-1 basis-0' : 'min-h-11 w-auto shrink-0'}

@@ -14,10 +14,7 @@ export type TorznabSearchOptions = {
 }
 
 /** Torznab indexer search (`/torznab/search/`). */
-export const searchTorznab = async (
-  query: string,
-  options?: TorznabSearchOptions,
-): Promise<SearchResultItem[]> => {
+export const searchTorznab = async (query: string, options?: TorznabSearchOptions): Promise<SearchResultItem[]> => {
   const params: Record<string, string | number> = { query }
 
   if (options?.index != null) params.index = options.index

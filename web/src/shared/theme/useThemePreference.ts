@@ -40,7 +40,6 @@ export function useThemePreference(): [boolean, ThemePreference, (mode: ThemePre
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
     const handler = (event: MediaQueryListEvent) => setSystemDark(event.matches)
-    setSystemDark(mq.matches)
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
   }, [])

@@ -21,11 +21,7 @@ import {
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
-import {
-  extractAudioTracks,
-  formatAudioTrackDisplay,
-  type ProbeTrack,
-} from './audioTrackLabel'
+import { extractAudioTracks, formatAudioTrackDisplay, type ProbeTrack } from './audioTrackLabel'
 import { waitForPlayableFiles } from './waitForPlayableFiles'
 import { toPlayableFile } from 'shared/torrent/toPlayableFile'
 
@@ -147,6 +143,7 @@ export function usePlayLauncher({
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- clear resolving spinner when audio picker closes
     if (!audioPickerState.isOpen) setResolvingFileId(null)
   }, [audioPickerState.isOpen])
 
@@ -176,7 +173,11 @@ export function usePlayLauncher({
     return allTorrentFilesRef.current
   }
 
-  const resolveInitialTimecode = async (fileIndex: number, trackTimecode: boolean, override?: number): Promise<number> => {
+  const resolveInitialTimecode = async (
+    fileIndex: number,
+    trackTimecode: boolean,
+    override?: number,
+  ): Promise<number> => {
     if (override != null && override > 0) return override
     if (!trackTimecode) return 0
     const entries = await listViewedEntries(hash)
@@ -198,11 +199,7 @@ export function usePlayLauncher({
     pendingTimecodeRef.current = undefined
     const initialTimecode = await resolveInitialTimecode(file.id, trackTimecode, override)
     const audioTracksForPlayer =
-      tracksForPlayer.length > 0
-        ? tracksForPlayer
-        : useHls
-          ? audioProbeCache.current[file.id] || []
-          : []
+      tracksForPlayer.length > 0 ? tracksForPlayer : useHls ? audioProbeCache.current[file.id] || [] : []
 
     setActivePlayer({
       src: useHls ? gstreamerMasterUrl(hash, file.id, audioIndex) : directStream,
@@ -279,6 +276,7 @@ export function usePlayLauncher({
       playableFiles.find(item => item.id === autoPlayFileId)
     if (!file) return
     autoPlayDoneRef.current = true
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot Continue Watching autoplay
     void resolveAndPlay(file, autoPlayTimecode)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot resume when the target file appears
   }, [autoPlayFileId, autoPlayTimecode, knownPlayableFiles, playableFiles])

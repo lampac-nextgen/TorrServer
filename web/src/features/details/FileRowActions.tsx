@@ -75,13 +75,7 @@ export default function FileRowActions({
 
   const playButton = (className: string) =>
     playerSupported ? (
-      <Button
-        variant='primary'
-        size='sm'
-        className={className}
-        isPending={isPlayPending}
-        onPress={onPlay}
-      >
+      <Button variant='primary' size='sm' className={className} isPending={isPlayPending} onPress={onPlay}>
         {({ isPending }) => (
           <>
             {isPending ? <Spinner size='sm' color='current' /> : <Play fill='currentColor' aria-hidden />}

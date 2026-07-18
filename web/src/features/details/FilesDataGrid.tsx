@@ -104,11 +104,7 @@ function EpisodeRow({
             ) : null}
           </div>
           <p className='mt-0.5 truncate text-xs text-muted'>
-            {[
-              row.season != null ? `${t('Season')} ${row.season}` : null,
-              row.resolution,
-              humanizeSize(row.size),
-            ]
+            {[row.season != null ? `${t('Season')} ${row.season}` : null, row.resolution, humanizeSize(row.size)]
               .filter(Boolean)
               .join(' · ')}
           </p>
@@ -143,12 +139,15 @@ const FilesDataGrid = memo(
     const gstRuntime = useGStreamerRuntime()
     const { buildExternalPlayers, shouldShowOpenLink } = useExternalPlayers()
 
-    const knownPlayableFiles = playableFileList || []
-    const onPlayerNotSupported = useCallback((fileId: number) => {
-      const useGst = knownPlayableFiles.find(file => file.id === fileId)
-      const key = `${fileId}:${useGst && shouldUseGStreamerPlayer(useGst.path, gstRuntime) ? 'gst' : 'stream'}`
-      setUnsupportedPlayerKeys(current => ({ ...current, [key]: true }))
-    }, [knownPlayableFiles, gstRuntime])
+    const knownPlayableFiles = useMemo(() => playableFileList || [], [playableFileList])
+    const onPlayerNotSupported = useCallback(
+      (fileId: number) => {
+        const useGst = knownPlayableFiles.find(file => file.id === fileId)
+        const key = `${fileId}:${useGst && shouldUseGStreamerPlayer(useGst.path, gstRuntime) ? 'gst' : 'stream'}`
+        setUnsupportedPlayerKeys(current => ({ ...current, [key]: true }))
+      },
+      [knownPlayableFiles, gstRuntime],
+    )
 
     const { playFile, isResolving, resolvingFileId, playerModals } = usePlayLauncher({
       hash,

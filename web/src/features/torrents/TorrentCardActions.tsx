@@ -50,7 +50,12 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
     return files.filter(file => isFilePlayable(file.path))
   }, [torrent.file_stats, torrent.data])
 
-  const { handlePlay, isResolving, playerModals } = usePlayLauncher({ hash, displayName, knownPlayableFiles, torrentData: torrent.data })
+  const { handlePlay, isResolving, playerModals } = usePlayLauncher({
+    hash,
+    displayName,
+    knownPlayableFiles,
+    torrentData: torrent.data,
+  })
 
   useSyncModalOpen(confirmState.isOpen || dropdownState.isOpen)
 

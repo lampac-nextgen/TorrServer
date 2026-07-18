@@ -1,12 +1,4 @@
-import {
-  Button,
-  Link,
-  ListBox,
-  Modal,
-  Select,
-  Spinner,
-  useMediaQuery,
-} from '@heroui/react'
+import { Button, Link, ListBox, Modal, Select, Spinner, useMediaQuery } from '@heroui/react'
 import axios from 'axios'
 import { Gauge, Heart, ExternalLink } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -72,6 +64,7 @@ export default function AboutDialog({ open, onClose }: AboutDialogProps) {
 
   useEffect(() => {
     if (!open) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset About panel when reopened
     setVersion(null)
     setSpeedResult(null)
     axios
@@ -134,9 +127,7 @@ export default function AboutDialog({ open, onClose }: AboutDialogProps) {
         </div>
 
         <div className='mt-3 rounded-lg border border-border bg-surface-secondary p-3'>
-          <p className='mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted'>
-            {t('SpeedTest')}
-          </p>
+          <p className='mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted'>{t('SpeedTest')}</p>
           <div className='flex flex-wrap items-center gap-2 px-1'>
             <Select
               aria-label={t('SpeedTestSize')}
@@ -171,7 +162,9 @@ export default function AboutDialog({ open, onClose }: AboutDialogProps) {
                 </>
               )}
             </Button>
-            {speedResult ? <span className='w-full text-sm tabular-nums text-muted sm:w-auto'>{speedResult}</span> : null}
+            {speedResult ? (
+              <span className='w-full text-sm tabular-nums text-muted sm:w-auto'>{speedResult}</span>
+            ) : null}
           </div>
         </div>
 

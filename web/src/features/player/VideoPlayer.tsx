@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from 'react'
 import axios from 'axios'
 import Hls from 'hls.js'
 import {
@@ -208,11 +215,7 @@ export default function VideoPlayer({
       : PLAYER_DIALOG_NORMAL
 
   // Mobile sizes via flex-1 shell; fixed maxHeight only for desktop windows.
-  const videoMaxHeight = isMobile
-    ? undefined
-    : expanded
-      ? 'min(82dvh, calc(100dvh - 5rem))'
-      : 'min(62dvh, 36rem)'
+  const videoMaxHeight = isMobile ? undefined : expanded ? 'min(82dvh, calc(100dvh - 5rem))' : 'min(62dvh, 36rem)'
 
   const syncDuration = useCallback((fromVideo?: HTMLVideoElement | null, hint?: number) => {
     const hinted = hint != null && Number.isFinite(hint) && hint > 0 ? hint : 0
@@ -221,14 +224,17 @@ export default function VideoPlayer({
     if (next > 0) setDuration(prev => (Math.abs(prev - next) > 0.25 ? next : prev))
   }, [])
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync local playback URL when launcher src changes
     setPlaybackSrc(videoSrc)
   }, [videoSrc])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync selected audio when launcher changes track
     setActiveAudioIndex(audioIndex)
   }, [audioIndex])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- adopt probe tracks when launcher provides them
     if (audioTracks.length) setResolvedAudioTracks(audioTracks)
   }, [audioTracks])
 
@@ -435,6 +441,7 @@ export default function VideoPlayer({
 
   useEffect(() => {
     if (!open) return undefined
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- show chrome when player opens
     revealChrome()
     return () => {
       if (chromeHideTimerRef.current != null) window.clearTimeout(chromeHideTimerRef.current)
@@ -442,18 +449,22 @@ export default function VideoPlayer({
   }, [open, revealChrome])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- keep chrome visible while paused
     if (!playing) setChromeVisible(true)
     else revealChrome()
   }, [playing, revealChrome])
 
-  const seekRelative = useCallback((deltaSec: number) => {
-    const video = videoRef.current
-    if (!video) return
-    const next = Math.min(Math.max(0, video.currentTime + deltaSec), video.duration || Infinity)
-    video.currentTime = next
-    setCurrentTime(next)
-    revealChrome()
-  }, [revealChrome])
+  const seekRelative = useCallback(
+    (deltaSec: number) => {
+      const video = videoRef.current
+      if (!video) return
+      const next = Math.min(Math.max(0, video.currentTime + deltaSec), video.duration || Infinity)
+      video.currentTime = next
+      setCurrentTime(next)
+      revealChrome()
+    },
+    [revealChrome],
+  )
 
   const togglePlayPause = useCallback(() => {
     const video = videoRef.current
@@ -746,13 +757,7 @@ export default function VideoPlayer({
                   onPointerDown={revealChrome}
                   onDoubleClick={handleVideoDoubleClick}
                 >
-                  <div
-                    className={
-                      isMobile
-                        ? 'relative flex min-h-0 flex-1 items-center justify-center'
-                        : undefined
-                    }
-                  >
+                  <div className={isMobile ? 'relative flex min-h-0 flex-1 items-center justify-center' : undefined}>
                     <video
                       autoPlay
                       ref={attachVideoNode}
@@ -783,11 +788,7 @@ export default function VideoPlayer({
                           ? 'max-h-full max-w-full cursor-pointer bg-black object-contain'
                           : 'block h-auto w-full cursor-pointer bg-black object-contain'
                       }
-                      style={
-                        isMobile
-                          ? undefined
-                          : { maxHeight: videoMaxHeight, minHeight: 280 }
-                      }
+                      style={isMobile ? undefined : { maxHeight: videoMaxHeight, minHeight: 280 }}
                     >
                       {!hls && captionSrc ? <track kind='captions' src={captionSrc} default /> : null}
                     </video>
@@ -840,7 +841,10 @@ export default function VideoPlayer({
                     }`}
                   >
                     <div className='pointer-events-auto flex items-start gap-3'>
-                      <p className='min-w-0 flex-1 truncate text-sm font-semibold text-white drop-shadow' title={title || t('Play')}>
+                      <p
+                        className='min-w-0 flex-1 truncate text-sm font-semibold text-white drop-shadow'
+                        title={title || t('Play')}
+                      >
                         {title || t('Play')}
                       </p>
                       <Button
@@ -868,11 +872,7 @@ export default function VideoPlayer({
                       }
                     >
                       <div
-                        className={
-                          isMobile
-                            ? 'group relative mb-3 px-0.5 py-1.5'
-                            : 'group relative mb-2.5 px-0.5'
-                        }
+                        className={isMobile ? 'group relative mb-3 px-0.5 py-1.5' : 'group relative mb-2.5 px-0.5'}
                         onPointerMove={event => updateScrubPreview(event.clientX, event.currentTarget)}
                         onPointerLeave={() => setScrubPreview(null)}
                       >
@@ -902,11 +902,7 @@ export default function VideoPlayer({
                           className='relative'
                         >
                           <Slider.Track
-                            className={
-                              isMobile
-                                ? 'h-2 bg-transparent'
-                                : 'h-1 bg-transparent group-hover:h-1.5'
-                            }
+                            className={isMobile ? 'h-2 bg-transparent' : 'h-1 bg-transparent group-hover:h-1.5'}
                           >
                             <Slider.Fill className='bg-transparent' />
                             <Slider.Thumb
@@ -921,11 +917,7 @@ export default function VideoPlayer({
                       </div>
 
                       <div
-                        className={
-                          isMobile
-                            ? 'flex flex-col gap-2.5'
-                            : 'flex flex-wrap items-center gap-x-2 gap-y-1.5'
-                        }
+                        className={isMobile ? 'flex flex-col gap-2.5' : 'flex flex-wrap items-center gap-x-2 gap-y-1.5'}
                       >
                         <div className='flex items-center gap-0.5'>
                           {isMobile ? (
@@ -1168,7 +1160,9 @@ export default function VideoPlayer({
                           </Popover>
                         </div>
 
-                        <div className={`flex items-center gap-0.5 ${isMobile ? 'w-full flex-wrap justify-between' : 'ml-auto'}`}>
+                        <div
+                          className={`flex items-center gap-0.5 ${isMobile ? 'w-full flex-wrap justify-between' : 'ml-auto'}`}
+                        >
                           {showPip ? (
                             <Tooltip>
                               <Tooltip.Trigger>
@@ -1182,9 +1176,7 @@ export default function VideoPlayer({
                                   <PictureInPicture2 aria-hidden />
                                 </Button>
                               </Tooltip.Trigger>
-                              <Tooltip.Content>
-                                {t('PictureInPicture')}
-                              </Tooltip.Content>
+                              <Tooltip.Content>{t('PictureInPicture')}</Tooltip.Content>
                             </Tooltip>
                           ) : null}
 
@@ -1195,11 +1187,7 @@ export default function VideoPlayer({
                                   isIconOnly
                                   variant='ghost'
                                   className={chromeIconBtn}
-                                  aria-label={
-                                    expanded
-                                      ? t('CollapsePlayer')
-                                      : t('ExpandPlayer')
-                                  }
+                                  aria-label={expanded ? t('CollapsePlayer') : t('ExpandPlayer')}
                                   onPress={() => {
                                     setExpanded(prev => !prev)
                                     revealChrome()
@@ -1208,11 +1196,7 @@ export default function VideoPlayer({
                                   {expanded ? <Minimize2 aria-hidden /> : <Maximize2 aria-hidden />}
                                 </Button>
                               </Tooltip.Trigger>
-                              <Tooltip.Content>
-                                {expanded
-                                  ? t('CollapsePlayer')
-                                  : t('ExpandPlayer')}
-                              </Tooltip.Content>
+                              <Tooltip.Content>{expanded ? t('CollapsePlayer') : t('ExpandPlayer')}</Tooltip.Content>
                             </Tooltip>
                           ) : null}
 

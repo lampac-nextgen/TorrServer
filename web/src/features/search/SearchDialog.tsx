@@ -124,6 +124,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
   }, [capsCategories, selectedTracker, t])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset category paging when tracker changes
     setCategory('')
     setPageOffset(0)
     setHasMore(false)
@@ -131,6 +132,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
 
   useEffect(() => {
     if (!open || typeof selectedTracker !== 'number' || selectedTracker < 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- clear caps when search closed / All Trackers
       setCapsCategories(null)
       setCapsLoading(false)
       return
@@ -159,6 +161,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
   useEffect(() => {
     if (!open) return
     const ac = new AbortController()
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- load search settings when dialog opens
     setSettingsLoaded(false)
     getSettings(ac.signal)
       .then(data => {
