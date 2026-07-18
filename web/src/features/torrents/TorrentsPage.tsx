@@ -19,8 +19,9 @@ export interface TorrentsPageProps {
   onClearCategory?: () => void
 }
 
-/** ~170-220px poster tiles, auto-filling available width. */
-const POSTER_GRID_STYLE = { gridTemplateColumns: 'repeat(auto-fill, minmax(172px, 1fr))' }
+/** ~140–180px poster tiles by viewport: denser on phone, roomier on desktop. */
+const POSTER_GRID_CLASS =
+  'torrent-poster-grid grid min-h-full gap-3 p-3 pb-8 sm:gap-4 sm:p-4 md:gap-5 md:p-6'
 const SKELETON_TILE_COUNT = 12
 
 function sortTorrents(torrents: TorrentStat[], sortABC: boolean, sortCategory: string): TorrentStat[] {
@@ -58,14 +59,21 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
       if (prefersReducedMotion()) return
       const tiles = gridRef.current?.querySelectorAll('.torrent-card')
       if (!tiles?.length) return
-      gsap.from(tiles, { opacity: 0, y: 18, duration: 0.45, stagger: 0.035, ease: 'power2.out' })
+      gsap.from(tiles, {
+        opacity: 0,
+        y: 18,
+        duration: 0.45,
+        stagger: 0.035,
+        ease: 'power2.out',
+        clearProps: 'opacity,transform',
+      })
     },
     { scope: gridRef, dependencies: [visibleTorrents.length, sortABC, sortCategory] },
   )
 
   if (isLoading) {
     return (
-      <div className='grid min-h-full gap-3 p-3 sm:gap-4 sm:p-4 md:gap-5 md:p-6' style={POSTER_GRID_STYLE}>
+      <div className={POSTER_GRID_CLASS}>
         {Array.from({ length: SKELETON_TILE_COUNT }, (_, index) => (
           <div key={index} className='flex flex-col gap-2'>
             <div className='aspect-[2/3] w-full animate-pulse rounded-2xl bg-surface-secondary' />
@@ -121,11 +129,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
 
   return (
     <>
-      <div
-        ref={gridRef}
-        className='grid min-h-full gap-3 p-3 pb-8 sm:gap-4 sm:p-4 md:gap-5 md:p-6'
-        style={POSTER_GRID_STYLE}
-      >
+      <div ref={gridRef} className={POSTER_GRID_CLASS}>
         {visibleTorrents.map(torrent => (
           <TorrentCard key={torrent.hash} torrent={torrent} onSelect={setDetailsTorrent} onEdit={setEditingTorrent} />
         ))}

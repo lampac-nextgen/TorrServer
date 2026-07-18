@@ -56,6 +56,7 @@
   "DropTorrent": "Resetează Torrent",
   "EditTorrent": "Editare torrent",
   "Episode": "Episod",
+  "Error": "Eroare",
   "ExitFullscreen": "Ieșire din modul ecran complet",
   "ExternalPlayersHint": "Deschidere în VLC, Infuse etc. — activați din Setări → Aplicație",
   "Forward-10-Sec": "Înainte 10 secunde",
@@ -71,14 +72,14 @@
   "IINA": "IINA",
   "KB": "KB",
   "kbps": "kbps",
-  "Kilobytes": "Kilobytes",
+  "Kilobytes": "Kiloocteți",
   "LatestFilePlayed": "Ultimul fișier redat:",
   "Links": "Link-uri",
   "MB": "MB",
   "Mbps": "Mbps",
   "Movies": "Filme",
   "Music": "Muzică",
-  "Mute": "Mute",
+  "Mute": "Mut",
   "Name": "Nume",
   "NasReleases": "Lansări pentru NAS",
   "None": "Nimic",
@@ -105,7 +106,7 @@
   "Preload": "Preîncărcare",
   "ProjectSource": "GitHub",
   "Rewind-10-Sec": "Derulare înapoi 10 secunde",
-  "Unmute": "Unmute",
+  "Unmute": "Reactivează sunetul",
   "PWAGuide": {
     "Header": "Instalați aplicația",
     "Description": "Instalați aplicația pe dispozitivul dvs. pentru a o accesa cu ușurință oricând. Fără AppStore. Fără descărcare.",
@@ -114,15 +115,21 @@
     "SecondStep": {
       "Select": "Selectați",
       "AddToHomeScreen": "Adaugă la ecranul de pornire"
-    }
+    },
+    "AndroidHeader": "Instalează aplicația",
+    "AndroidDescription": "Adaugă TorrServer pe ecranul de pornire pentru acces rapid. Fără descărcare din magazin.",
+    "Install": "Instalează"
   },
   "Releases": "Lansări TorrServer",
   "RemoveAll": "Ștergeți tot",
   "RemoveViews": "Șterge starea de vizualizare",
   "Resolution": "Rezoluție",
   "Save": "Salvați",
+  "Saved": "Salvat",
   "ScrollDown": "derulați în jos",
-  "Search": "Căutare",
+  "Search": {
+    "Tracker": "Tracker"
+  },
   "Season": "Sezon",
   "Seconds": "Secunde",
   "SelectSeason": "Selectați sezonul",
@@ -130,7 +137,7 @@
   "SettingsDialog": {
     "AdditionalSettings": "Setări suplimentare",
     "AddRetrackers": "Adăugați retrackere",
-    "BBoltDatabase": "BBolt Database",
+    "BBoltDatabase": "Bază de date BBolt",
     "CacheAfterReaderDesc": "din cache va fi încărcat după frame-ul redat în prezent",
     "CacheBeforeReaderDesc": "din cache va fi salvat înainte de frame-ul redat în prezent",
     "CacheSettings": "Setări Cache",
@@ -161,7 +168,7 @@
     "ForceEncryptHint": "Poate ajuta cu providerii care blochează torrentele",
     "FriendlyName": "Numele serverului (DLNA/Bonjour)",
     "FriendlyNameHint": "Lăsați necompletat pentru a utiliza valoarea implicită",
-    "JsonFile": "JSON File",
+    "JsonFile": "Fișier JSON",
     "MobileAppSettings": "Playere",
     "PeersListenPort": "Port pentru conexiuni de la peers",
     "PeersListenPortHint": "1024 - 65535, 0 - aleatoriu",
@@ -223,6 +230,7 @@
     "MobileAppInstantHint": "Aceste comutatoare se salvează imediat în browser — Salvare nu este necesară.",
     "UseDisk": "Utilizează cache pe disc",
     "StorageSettings": "Stocare",
+    "StorageSettingsApplyHint": "Modificările backend se aplică după salvare. Este posibil să fie necesară repornirea pentru unele migrări.",
     "RateLimitHint": "0 = nelimitat",
     "StoreSettingsInJson": "Stochează setările în JSON",
     "SectionCache": "Cache",
@@ -233,7 +241,10 @@
     "SectionConnection": "Conexiune",
     "SectionDiscovery": "Descoperire în rețea",
     "SectionSearchSources": "Surse de căutare",
-    "SectionDisplayPerformance": "Afișare și performanță"
+    "SectionDisplayPerformance": "Afișare și performanță",
+    "SectionSslTls": "SSL/TLS",
+    "TrackTimecode": "Memorează poziția de redare",
+    "TrackTimecodeHint": "Salvează timecode-ul în istoricul vizionărilor."
   },
   "Size": "Mărime",
   "SpecialThanks": "Mulțumiri speciale",
@@ -273,19 +284,19 @@
     "SortBySeeds": "Seeds",
     "SortBySize": "Mărime",
     "SortDescending": "Sortare descrescătoare",
-    "Test": "Test",
+    "Test": "Testează",
     "TorrentAddedSuccessfully": "Torrent adăugat cu succes",
     "TorznabHostURL": "URL-ul gazdei Torznab",
-    "HostHint": "Jackett: …/indexers/all/results/torznab/ — Prowlarr: http://localhost:9696/1. TorrServer appends /api when needed.",
-    "NoIndexersConfigured": "Torznab is enabled but no indexers are configured. Add a Host URL and API key below.",
-    "NoSearchSources": "No search sources enabled. Turn on RuTor and/or Torznab in Settings → Search.",
+    "HostHint": "Jackett: …/indexers/all/results/torznab/ — Prowlarr: http://localhost:9696/1. TorrServer adaugă /api când e nevoie.",
+    "NoIndexersConfigured": "Torznab este activat, dar nu există indexatoare. Adaugă un Host URL și o cheie API mai jos.",
+    "NoSearchSources": "Nicio sursă de căutare activă. Activează RuTor și/sau Torznab în Setări → Căutare.",
     "Tab": "Torznab",
     "AllCategories": "Toate categoriile",
     "Category": "Categorie",
     "LoadMore": "Încarcă mai mult"
   },
   "GStreamer": {
-    "X264Ultrafast": "Use x264 ultrafast preset",
+    "X264Ultrafast": "Folosește presetul x264 ultrafast",
     "Tab": "GStreamer",
     "Settings": "GStreamer",
     "AudioTrack": "Pistă audio",
@@ -341,7 +352,8 @@
     "TranscodeVP8": "Transcodare VP8",
     "UseGPU": "Folosește GPU",
     "UseGPUHint": "Activează accelerarea hardware când este posibil.",
-    "X264UltrafastHint": "Codare x264 mai rapidă, calitate mai redusă."
+    "X264UltrafastHint": "Codare x264 mai rapidă, calitate mai redusă.",
+    "SaveHint": "Modificările se aplică după ce apeși Salvează."
   },
   "TMDB": {
     "Settings": "TMDB",
@@ -352,7 +364,8 @@
     "ImageURL": "URL imagine TMDB",
     "ImageURLHint": "URL de bază pentru imaginile TMDB. Sursele imaginilor sunt adăugate automat (implicit: https://image.tmdb.org)",
     "ImageURLRu": "URL imagine TMDB (Rusia)",
-    "ImageURLRuHint": "URL alternativ de imagine pentru utilizatorii ruși. Sursele imaginilor sunt adăugate automat (implicit: https://imagetmdb.com)"
+    "ImageURLRuHint": "URL alternativ de imagine pentru utilizatorii ruși. Sursele imaginilor sunt adăugate automat (implicit: https://imagetmdb.com)",
+    "APIKeyPlaceholder": "Introdu cheia API TMDB"
   },
   "TurnOff": "Oprire",
   "Uncategorized": "Necategorizat",

@@ -1,11 +1,15 @@
-import { Button, Link, Modal } from '@heroui/react'
+import { Button, Link, Modal, useMediaQuery } from '@heroui/react'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { echoHost } from 'shared/api/hosts'
 import { publicUrl } from 'shared/lib/publicUrl'
+import { queryMax } from 'shared/theme/breakpoints'
 import AppDialog from 'shared/ui/AppDialog'
+import { DIALOG_SHEET_M } from 'shared/ui/dialogSizes'
+
+import { CONTRIBUTORS } from './contributors'
 
 export interface AboutDialogProps {
   open: boolean
@@ -20,9 +24,11 @@ function AboutLink({ name, href }: { name: string; href: string }) {
   )
 }
 
-/** Simple about/info dialog: app icon, live server version, and a credits/links band. */
+/** About dialog: version, links, and Special Thanks contributor grid (parity with master, no Donate). */
 export default function AboutDialog({ open, onClose }: AboutDialogProps) {
   const { t } = useTranslation()
+  const isFullScreenBreakpoint = useMediaQuery(queryMax('dialog'))
+  const isMobile = useMediaQuery(queryMax('mobile'))
   const [version, setVersion] = useState<string | null>(null)
 
   useEffect(() => {
@@ -35,7 +41,13 @@ export default function AboutDialog({ open, onClose }: AboutDialogProps) {
   }, [open])
 
   return (
-    <AppDialog open={open} onClose={onClose} size='sm'>
+    <AppDialog
+      open={open}
+      onClose={onClose}
+      size='md'
+      fullScreen={isFullScreenBreakpoint}
+      dialogStyle={isMobile ? undefined : DIALOG_SHEET_M}
+    >
       <Modal.Header>
         <Modal.Heading>{t('About')}</Modal.Heading>
         <Modal.CloseTrigger />
@@ -58,7 +70,25 @@ export default function AboutDialog({ open, onClose }: AboutDialogProps) {
           <p className='mb-1 px-1 text-xs font-semibold uppercase tracking-wide text-muted'>{t('Links')}</p>
           <AboutLink name={t('ProjectSource')} href='https://github.com/YouROK/TorrServer' />
           <AboutLink name={t('Releases')} href='https://github.com/YouROK/TorrServer/releases' />
+          <AboutLink name={t('NasReleases')} href='https://github.com/vladlenas' />
           <AboutLink name={t('ApiDocs')} href={publicUrl('swagger/index.html')} />
+        </div>
+
+        <div className='mt-3 rounded-lg border border-border bg-surface-secondary p-3'>
+          <p className='mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted'>{t('SpecialThanks')}</p>
+          <div className='grid grid-cols-1 gap-1 sm:grid-cols-2'>
+            {CONTRIBUTORS.map(person => (
+              <Link
+                key={person.url}
+                href={person.url}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='rounded-md px-2 py-1.5 text-sm hover-fine:bg-surface'
+              >
+                {person.name}
+              </Link>
+            ))}
+          </div>
         </div>
       </Modal.Body>
       <Modal.Footer>

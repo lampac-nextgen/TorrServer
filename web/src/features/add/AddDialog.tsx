@@ -30,7 +30,6 @@ import { queryMax } from 'shared/theme/breakpoints'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import AppDialog from 'shared/ui/AppDialog'
 import { DIALOG_SHEET_M } from 'shared/ui/dialogSizes'
-import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
 import MultiAddDialog from './MultiAddDialog'
@@ -64,8 +63,6 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
   const titleTouchedRef = useRef(false)
 
   const { data: torrents } = useTorrentsQuery()
-
-  useSyncModalOpen(open && !multiFiles)
 
   useEffect(() => {
     if (open && initialSource) setSource(initialSource)

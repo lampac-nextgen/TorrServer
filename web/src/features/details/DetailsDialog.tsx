@@ -23,6 +23,7 @@ import { isFilePlayable } from 'shared/torrent/playable'
 import { CLOSED, GETTING_INFO, IN_DB, PRELOAD, WORKING } from 'shared/torrent/states'
 import { queryMax } from 'shared/theme/breakpoints'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
+import { iconBtn } from 'shared/ui/controlClasses'
 import { DIALOG_SHEET_L } from 'shared/ui/dialogSizes'
 
 import FileBrowser from './FileBrowser'
@@ -175,7 +176,7 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
             <Modal.Header className='flex items-center gap-2'>
               <Modal.Heading className='min-w-0 flex-1 truncate'>{t('TorrentDetails')}</Modal.Heading>
               {onEdit ? (
-                <Button isIconOnly variant='ghost' aria-label={t('EditTorrent')} onPress={() => onEdit(torrent)}>
+                <Button isIconOnly variant='ghost' className={iconBtn} aria-label={t('EditTorrent')} onPress={() => onEdit(torrent)}>
                   <Pencil className='size-4' />
                 </Button>
               ) : null}

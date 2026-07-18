@@ -63,7 +63,7 @@ export default function PrimarySettingsPanel({
           </p>
           <Slider
             value={settings.ReaderReadAHead ?? 95}
-            minValue={1}
+            minValue={5}
             maxValue={100}
             onChange={value => onUpdate('ReaderReadAHead', Number(value))}
           >

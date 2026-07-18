@@ -14,6 +14,7 @@ import { queryMax } from 'shared/theme/breakpoints'
 import { THEME_MODES, useThemePreference } from 'shared/theme/useThemePreference'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import { TorrentsPage } from 'features/torrents'
+import { iconBtn } from 'shared/ui/controlClasses'
 
 import BottomNav from './BottomNav'
 import Sidebar from './Sidebar'
@@ -27,6 +28,7 @@ const CloseServerDialog = lazy(() => import('features/system/CloseServerDialog')
 const RemoveAllDialog = lazy(() => import('features/system/RemoveAllDialog'))
 const CategoriesDrawer = lazy(() => import('features/categories/CategoriesDrawer'))
 const PWAInstallationGuide = lazy(() => import('features/pwa/PWAInstallationGuide'))
+const AndroidInstallBanner = lazy(() => import('features/pwa/AndroidInstallBanner'))
 
 const LANG_CYCLE = ['en', 'ru', 'ua', 'zh', 'bg', 'fr', 'ro'] as const
 
@@ -159,7 +161,7 @@ export default function Shell() {
             <button
               type='button'
               onClick={() => setGlobalCategoryFilter('all')}
-              className='inline-flex shrink-0 items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium hover:bg-white/25'
+              className='inline-flex min-h-10 shrink-0 items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium hover-fine:bg-white/25'
               aria-label={t('ClearCategoryFilter', { defaultValue: 'Clear category filter' })}
             >
               <span className='max-w-[9rem] truncate'>{categoryFilterLabel}</span>
@@ -187,7 +189,7 @@ export default function Shell() {
           <Tooltip.Trigger>
             <Button
               variant='ghost'
-              className='min-w-10 px-2 text-xs font-semibold text-app-header-foreground hover:bg-white/10'
+              className={`${iconBtn} px-2 text-xs font-semibold text-app-header-foreground hover-fine:bg-white/10`}
               aria-label={t('Language', { defaultValue: 'Language' })}
               onPress={cycleLanguage}
             >
@@ -255,6 +257,7 @@ export default function Shell() {
           onSelectCategory={setGlobalCategoryFilter}
         />
         {detectApplePlatform().isIOS && !isStandaloneApp ? <PWAInstallationGuide /> : null}
+        {!detectApplePlatform().isIOS && !isStandaloneApp ? <AndroidInstallBanner /> : null}
       </Suspense>
     </div>
   )
@@ -267,7 +270,7 @@ function HeaderIconButton({ label, onPress, children }: { label: string; onPress
         <Button
           variant='ghost'
           isIconOnly
-          className='text-app-header-foreground hover:bg-white/10'
+          className={`${iconBtn} text-app-header-foreground hover-fine:bg-white/10`}
           aria-label={label}
           onPress={onPress}
         >

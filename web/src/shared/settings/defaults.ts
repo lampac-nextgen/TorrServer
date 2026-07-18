@@ -35,6 +35,7 @@ const defaultSettings: BTSets = {
   SslCert: '',
   SslKey: '',
   ShowFSActiveTorr: true,
+  TrackTimecode: false,
   StoreSettingsInJson: true,
   TMDBSettings: {
     APIKey: '',

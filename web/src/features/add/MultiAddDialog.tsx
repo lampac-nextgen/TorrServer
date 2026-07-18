@@ -18,7 +18,6 @@ import { queryMax } from 'shared/theme/breakpoints'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import AppDialog from 'shared/ui/AppDialog'
 import { DIALOG_SHEET_M } from 'shared/ui/dialogSizes'
-import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
 export interface MultiAddDialogProps {
@@ -55,7 +54,6 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
   const toast = useOptionalAppToast()
   const isMobile = useMediaQuery(queryMax('mobile'))
   const isFullScreenBreakpoint = useMediaQuery(queryMax('dialog'))
-  useSyncModalOpen(open)
 
   const { data: existingTorrents = [] } = useTorrentsQuery()
 

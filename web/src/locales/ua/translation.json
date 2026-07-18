@@ -56,6 +56,7 @@
   "DropTorrent": "Скинути торент",
   "EditTorrent": "Редагувати торент",
   "Episode": "Серія",
+  "Error": "Помилка",
   "ExitFullscreen": "Вийти з повноекранного режиму",
   "ExternalPlayersHint": "Відкриття у VLC, Infuse тощо — увімкніть у Налаштуваннях → Застосунок",
   "Forward-10-Sec": "Перемотати на 10 сек",
@@ -114,13 +115,17 @@
     "SecondStep": {
       "Select": "Виберіть",
       "AddToHomeScreen": "Додати на головний екран"
-    }
+    },
+    "AndroidHeader": "Встановити програму",
+    "AndroidDescription": "Додайте TorrServer на головний екран для швидкого доступу. Без завантаження з магазину.",
+    "Install": "Встановити"
   },
   "Releases": "Релізи TorrServer",
   "RemoveAll": "Видалити все",
   "RemoveViews": "Видалити перегляди",
   "Resolution": "Дозволи",
   "Save": "Зберегти",
+  "Saved": "Збережено",
   "ScrollDown": "прокрутіть вних",
   "Search": "Пошук",
   "Season": "Сезон",
@@ -223,6 +228,7 @@
     "MobileAppInstantHint": "Ці перемикачі зберігаються одразу в браузері — «Зберегти» не потрібно.",
     "UseDisk": "Використовувати дисковий кеш",
     "StorageSettings": "Зберігання",
+    "StorageSettingsApplyHint": "Зміни бекенду застосовуються після збереження. Для деяких міграцій може знадобитися перезапуск.",
     "RateLimitHint": "0 = без обмежень",
     "StoreSettingsInJson": "Зберігати налаштування в JSON",
     "SectionCache": "Кеш",
@@ -233,7 +239,10 @@
     "SectionConnection": "З'єднання",
     "SectionDiscovery": "Виявлення в мережі",
     "SectionSearchSources": "Джерела пошуку",
-    "SectionDisplayPerformance": "Відображення та продуктивність"
+    "SectionDisplayPerformance": "Відображення та продуктивність",
+    "SectionSslTls": "SSL/TLS",
+    "TrackTimecode": "Запам'ятовувати позицію відтворення",
+    "TrackTimecodeHint": "Зберігати час зупинки в історії переглядів."
   },
   "Size": "Розмір",
   "SpecialThanks": "Окрема подяка",
@@ -276,9 +285,9 @@
     "Test": "Тест",
     "TorrentAddedSuccessfully": "Торрент успішно додано",
     "TorznabHostURL": "URL хосту Torznab",
-    "HostHint": "Jackett: …/indexers/all/results/torznab/ — Prowlarr: http://localhost:9696/1. TorrServer appends /api when needed.",
-    "NoIndexersConfigured": "Torznab is enabled but no indexers are configured. Add a Host URL and API key below.",
-    "NoSearchSources": "No search sources enabled. Turn on RuTor and/or Torznab in Settings → Search.",
+    "HostHint": "Jackett: …/indexers/all/results/torznab/ — Prowlarr: http://localhost:9696/1. TorrServer за потреби додає /api.",
+    "NoIndexersConfigured": "Torznab увімкнено, але індексатори не налаштовані. Додайте Host URL і API-ключ нижче.",
+    "NoSearchSources": "Немає увімкнених джерел пошуку. Увімкніть RuTor і/або Torznab у Налаштуваннях → Пошук.",
     "Tab": "Torznab",
     "AllCategories": "Всі категорії",
     "Category": "Категорія",
@@ -340,18 +349,20 @@
     "HardwareAcceleration": "Апаратний H.264 encoder",
     "HardwareAccelerationHint": "Один раз перевіряє доступні GPU-кодувальники; за невдачі використовується x264.",
     "X264Ultrafast": "Використовувати x264 ultrafast",
-    "X264UltrafastHint": "Зменшує навантаження CPU ціною якості за того самого бітрейту."
+    "X264UltrafastHint": "Зменшує навантаження CPU ціною якості за того самого бітрейту.",
+    "SaveHint": "Зміни застосовуються після натискання «Зберегти»."
   },
   "TMDB": {
     "Settings": "TMDB",
     "APIKey": "TMDB API ключ",
     "APIKeyHint": "Введіть ваш TMDB API ключ для пошуку постерів фільмів. Отримайте його на https://www.themoviedb.org/settings/api",
-    "APIURL": "TMDB API URL",
+    "APIURL": "URL API TMDB",
     "APIURLHint": "Базовий URL для TMDB API. Шляхи API додаються автоматично (за замовчуванням: https://api.themoviedb.org)",
     "ImageURL": "TMDB URL зображень",
     "ImageURLHint": "Базовий URL для зображень TMDB. Шляхи зображень додаються автоматично (за замовчуванням: https://image.tmdb.org)",
     "ImageURLRu": "TMDB URL зображень (Росія)",
-    "ImageURLRuHint": "Альтернативний URL зображень для російських користувачів. Шляхи зображень додаються автоматично (за замовчуванням: https://imagetmdb.com)"
+    "ImageURLRuHint": "Альтернативний URL зображень для російських користувачів. Шляхи зображень додаються автоматично (за замовчуванням: https://imagetmdb.com)",
+    "APIKeyPlaceholder": "Введіть ваш TMDB API-ключ"
   },
   "TurnOff": "Виключити",
   "Uncategorized": "Без категорії",

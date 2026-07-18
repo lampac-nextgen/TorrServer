@@ -9,6 +9,7 @@ import { dropTorrent, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torre
 import { useExternalPlayers } from 'shared/lib/externalPlayers'
 import { filesFromMetadata } from 'shared/torrent/fileMetadata'
 import { isFilePlayable } from 'shared/torrent/playable'
+import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 import { toPlayableFile, usePlayLauncher } from 'features/player/usePlayLauncher'
 
@@ -32,6 +33,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
       if (!open) setConfirmKind(null)
     },
   })
+  const dropdownState = useOverlayState()
 
   const hash = torrent.hash
   const displayName = torrent.title || torrent.name || hash
@@ -44,6 +46,8 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
   }, [torrent.file_stats, torrent.data])
 
   const { handlePlay, resolvingAudio, playerModals } = usePlayLauncher({ hash, displayName, knownPlayableFiles })
+
+  useSyncModalOpen(confirmState.isOpen || dropdownState.isOpen)
 
   /** Only offer app deep links when there's exactly one obvious file to hand off — otherwise Play's file picker covers it. */
   const { buildExternalPlayers } = useExternalPlayers()
@@ -73,7 +77,8 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
       .catch(() => toast?.showToast({ message: t('Error', { defaultValue: 'Error' }), severity: 'error' }))
   }
 
-  const overlayButtonClass = 'h-10 w-10 min-w-10 rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-accent'
+  const overlayButtonClass =
+    'h-10 w-10 min-h-10 min-w-10 rounded-full bg-black/55 text-white backdrop-blur-sm hover-fine:bg-accent'
 
   return (
     <>
@@ -96,7 +101,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
 
         {/* Details/Playlist live in the menu — the poster itself already opens details, and cramming 4 icon-only
          * buttons into a ~172px tile leaves no room to reach 40px touch targets. */}
-        <Dropdown>
+        <Dropdown isOpen={dropdownState.isOpen} onOpenChange={dropdownState.setOpen}>
           <Dropdown.Trigger>
             <Button variant='primary' isIconOnly className={overlayButtonClass} aria-label={t('Actions')}>
               <MoreVertical size={18} />

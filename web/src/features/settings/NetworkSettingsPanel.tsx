@@ -193,7 +193,7 @@ export default function NetworkSettingsPanel({
         </div>
       </SettingsSection>
 
-      <SettingsSection title='SSL/TLS'>
+      <SettingsSection title={t('SettingsDialog.SectionSslTls')}>
         <TextField value={settings.SslCert || ''} onChange={value => onUpdate('SslCert', value)}>
           <Label>{t('SettingsDialog.SslCert')}</Label>
           <Input placeholder='/etc/ssl/cert.pem' />

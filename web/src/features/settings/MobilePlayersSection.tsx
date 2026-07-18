@@ -1,10 +1,11 @@
 import { Clapperboard } from 'lucide-react'
-import { Description, Link, Switch } from '@heroui/react'
+import { Description, Link } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
 
 import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
 import { isAppleDevice, isDesktop, isMacOS } from 'shared/lib/platform'
 
+import { SettingSwitch } from './SettingSwitch'
 import SettingsSection from './SettingsSection'
 
 const PLAYER_KEYS = {
@@ -13,34 +14,6 @@ const PLAYER_KEYS = {
   senPlayer: 'isSenPlayerUsed',
   iina: 'isIinaUsed',
 } as const
-
-function PlayerSwitch({
-  label,
-  helper,
-  checked,
-  onChange,
-}: {
-  label: string
-  helper: string
-  checked: boolean
-  onChange: (checked: boolean) => void
-}) {
-  return (
-    <div className='flex min-h-12 items-start justify-between gap-4 py-1.5'>
-      <div className='min-w-0 flex-1'>
-        <p className='block text-sm font-medium leading-snug text-foreground'>{label}</p>
-        <p className='mt-1.5 block text-sm leading-relaxed text-muted'>{helper}</p>
-      </div>
-      <Switch isSelected={checked} onChange={onChange} className='mt-0.5 shrink-0'>
-        <Switch.Content>
-          <Switch.Control>
-            <Switch.Thumb />
-          </Switch.Control>
-        </Switch.Content>
-      </Switch>
-    </div>
-  )
-}
 
 /** External-player quick-open toggles — persisted as local prefs, gated by detected platform. */
 export default function MobilePlayersSection() {
@@ -60,44 +33,50 @@ export default function MobilePlayersSection() {
       title={t('SettingsDialog.MobileAppSettings')}
       description={t('SettingsDialog.MobileAppInstantHint')}
     >
-      <PlayerSwitch
-        label={t('SettingsDialog.UseVLC')}
-        helper={t('SettingsDialog.UseVLCHint')}
-        checked={isVlcUsed}
-        onChange={setIsVlcUsed}
-      />
-      {isDesktopPlatform ? (
-        <Description className='-mt-2'>
-          {t('SettingsDialog.UseVLCDesktopHintPrefix')}{' '}
-          <Link href='https://github.com/northsea4/vlc-protocol' target='_blank' rel='noopener noreferrer'>
-            vlc-protocol-handler
-          </Link>
-        </Description>
-      ) : null}
+      <div className='space-y-1'>
+        <SettingSwitch
+          id={PLAYER_KEYS.vlc}
+          label={t('SettingsDialog.UseVLC')}
+          helper={t('SettingsDialog.UseVLCHint')}
+          checked={isVlcUsed}
+          onChange={(_id, checked) => setIsVlcUsed(checked)}
+        />
+        {isDesktopPlatform ? (
+          <Description className='mt-1'>
+            {t('SettingsDialog.UseVLCDesktopHintPrefix')}{' '}
+            <Link href='https://github.com/northsea4/vlc-protocol' target='_blank' rel='noopener noreferrer'>
+              vlc-protocol-handler
+            </Link>
+          </Description>
+        ) : null}
+      </div>
 
       {isApple ? (
         <>
-          <PlayerSwitch
+          <SettingSwitch
+            id={PLAYER_KEYS.infuse}
             label={t('SettingsDialog.UseInfuse')}
             helper={t('SettingsDialog.UseInfuseHint')}
             checked={isInfuseUsed}
-            onChange={setIsInfuseUsed}
+            onChange={(_id, checked) => setIsInfuseUsed(checked)}
           />
-          <PlayerSwitch
+          <SettingSwitch
+            id={PLAYER_KEYS.senPlayer}
             label={t('SettingsDialog.UseSenPlayer')}
             helper={t('SettingsDialog.UseSenPlayerHint')}
             checked={isSenPlayerUsed}
-            onChange={setIsSenPlayerUsed}
+            onChange={(_id, checked) => setIsSenPlayerUsed(checked)}
           />
         </>
       ) : null}
 
       {isMac ? (
-        <PlayerSwitch
+        <SettingSwitch
+          id={PLAYER_KEYS.iina}
           label={t('SettingsDialog.UseIINA')}
           helper={t('SettingsDialog.UseIINAHint')}
           checked={isIinaUsed}
-          onChange={setIsIinaUsed}
+          onChange={(_id, checked) => setIsIinaUsed(checked)}
         />
       ) : null}
     </SettingsSection>

@@ -98,7 +98,7 @@ export default function SearchResultsGrid({
             return (
               <tr
                 key={key}
-                className={`border-t border-border ${busy ? 'bg-accent-soft/40' : 'hover:bg-surface-secondary/80'}`}
+                className={`border-t border-border ${busy ? 'bg-accent-soft/40' : 'hover-fine:bg-surface-secondary/80'}`}
               >
                 <td className='px-3 py-2.5 align-top'>
                   <div className='flex flex-col gap-1'>
@@ -121,7 +121,7 @@ export default function SearchResultsGrid({
                     variant='primary'
                     isDisabled={adding}
                     onPress={() => onAdd(item)}
-                    className='min-h-9'
+                    className='min-h-10'
                   >
                     {busy ? <Spinner size='sm' color='current' /> : t('Add')}
                   </Button>

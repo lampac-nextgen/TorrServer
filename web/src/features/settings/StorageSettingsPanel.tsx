@@ -2,27 +2,17 @@ import { HardDrive } from 'lucide-react'
 import { Alert, Label, ListBox, Select } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
 
-import type { BTSets } from 'shared/api/types'
 import type { StorageBackend, StorageSettings } from 'shared/api/storage'
-import defaultSettings from 'shared/settings/defaults'
 
-import { SettingSwitch } from './SettingSwitch'
 import SettingsSection from './SettingsSection'
 
 export interface StorageSettingsPanelProps {
-  settings: BTSets
-  onBoolSwitch: (id: string, checked: boolean) => void
   backends: StorageSettings
   onBackendsChange: (next: StorageSettings) => void
 }
 
 /** Where BT settings + viewed history are persisted (JSON file vs. BBolt DB). */
-export default function StorageSettingsPanel({
-  settings,
-  onBoolSwitch,
-  backends,
-  onBackendsChange,
-}: StorageSettingsPanelProps) {
+export default function StorageSettingsPanel({ backends, onBackendsChange }: StorageSettingsPanelProps) {
   const { t } = useTranslation()
 
   const updateBackend = (key: keyof StorageSettings, value: StorageBackend) => {
@@ -36,13 +26,6 @@ export default function StorageSettingsPanel({
         title={t('SettingsDialog.StorageSettings')}
         description={t('SettingsDialog.SettingsStorageHint')}
       >
-        <SettingSwitch
-          id='StoreSettingsInJson'
-          label={t('SettingsDialog.StoreSettingsInJson')}
-          checked={Boolean(settings.StoreSettingsInJson ?? defaultSettings.StoreSettingsInJson)}
-          onChange={onBoolSwitch}
-        />
-
         <Select
           selectedKey={backends.settings}
           onSelectionChange={key => updateBackend('settings', String(key) as StorageBackend)}
@@ -79,11 +62,7 @@ export default function StorageSettingsPanel({
       </SettingsSection>
 
       <Alert status='accent'>
-        <Alert.Description>
-          {t('SettingsDialog.StorageSettingsApplyHint', {
-            defaultValue: 'Backend changes apply after Save. Restart may be required for some migrations.',
-          })}
-        </Alert.Description>
+        <Alert.Description>{t('SettingsDialog.StorageSettingsApplyHint')}</Alert.Description>
       </Alert>
     </div>
   )

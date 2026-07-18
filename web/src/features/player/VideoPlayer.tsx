@@ -16,6 +16,7 @@ import { Captions, Maximize, Minimize, Pause, Play, Volume2, VolumeX, X } from '
 import { useTranslation } from 'react-i18next'
 import { queryMax } from 'shared/theme/breakpoints'
 import { useModalOpen, useSyncModalOpen } from 'shared/ui/ModalOpenContext'
+import { iconBtn } from 'shared/ui/controlClasses'
 
 export interface VideoPlayerProps {
   videoSrc: string
@@ -283,6 +284,8 @@ export default function VideoPlayer({
     setOpen(true)
   }
 
+  const chromeIconBtn = `${iconBtn} text-white hover-fine:bg-white/10`
+
   return (
     <>
       {showTrigger &&
@@ -305,15 +308,11 @@ export default function VideoPlayer({
 
       <Modal state={overlayState}>
         <Modal.Backdrop>
-          <Modal.Container
-            size={isMobile ? 'full' : 'lg'}
-            scroll='inside'
-            className={isMobile ? 'ts-immersive' : undefined}
-          >
+          <Modal.Container size={isMobile ? 'full' : 'lg'} scroll='inside'>
             <Modal.Dialog className='bg-black'>
               <Modal.Header className='flex items-center gap-2 border-b border-white/10 bg-black py-2 text-white'>
                 <Modal.Heading className='min-w-0 flex-1 truncate text-base'>{title || t('Play')}</Modal.Heading>
-                <Modal.CloseTrigger aria-label={t('Close')} className='text-white hover:bg-white/10'>
+                <Modal.CloseTrigger aria-label={t('Close')} className={chromeIconBtn}>
                   <X className='size-4' />
                 </Modal.CloseTrigger>
               </Modal.Header>
@@ -354,112 +353,112 @@ export default function VideoPlayer({
                     </div>
                   ) : null}
                 </div>
+              </Modal.Body>
 
-                <div className='flex flex-col gap-3 bg-neutral-950 p-3 text-white'>
-                  <Slider value={currentTime} maxValue={duration || 0} onChange={handleSeek} aria-label={t('Seconds')}>
+              <Modal.Footer className='flex flex-col gap-3 border-t border-white/10 bg-neutral-950 p-3 text-white'>
+                <Slider value={currentTime} maxValue={duration || 0} onChange={handleSeek} aria-label={t('Seconds')}>
+                  <Slider.Track>
+                    <Slider.Fill />
+                    <Slider.Thumb />
+                  </Slider.Track>
+                </Slider>
+
+                <div className='flex flex-wrap items-center gap-2'>
+                  <Tooltip>
+                    <Tooltip.Trigger>
+                      <Button
+                        isIconOnly
+                        variant='ghost'
+                        className={chromeIconBtn}
+                        onPress={togglePlayPause}
+                      >
+                        {playing ? <Pause className='size-4' /> : <Play className='size-4' />}
+                      </Button>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>{playing ? t('Pause') : t('Play')}</Tooltip.Content>
+                  </Tooltip>
+
+                  <span className='min-w-[100px] text-xs tabular-nums text-white/80'>
+                    {formatDuration(currentTime)} / {formatDuration(duration)}
+                  </span>
+
+                  <Tooltip>
+                    <Tooltip.Trigger>
+                      <Button
+                        isIconOnly
+                        variant='ghost'
+                        className={chromeIconBtn}
+                        onPress={toggleMute}
+                      >
+                        {muted ? <VolumeX className='size-4' /> : <Volume2 className='size-4' />}
+                      </Button>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>{muted ? t('Unmute') : t('Mute')}</Tooltip.Content>
+                  </Tooltip>
+
+                  {/* A drag-precise slider is fiddly on touch and duplicates the hardware volume
+                   * buttons — keep it for mouse/trackpad users, mute button covers touch. */}
+                  <Slider
+                    value={volume * 100}
+                    maxValue={100}
+                    onChange={handleVolumeChange}
+                    className='hidden w-24 sm:flex'
+                    aria-label={t('Mute')}
+                  >
                     <Slider.Track>
                       <Slider.Fill />
                       <Slider.Thumb />
                     </Slider.Track>
                   </Slider>
 
-                  <div className='flex flex-wrap items-center gap-2'>
-                    <Tooltip>
-                      <Tooltip.Trigger>
+                  {subtitleTracks.length > 0 ? (
+                    <Popover isOpen={subtitleMenuOpen} onOpenChange={setSubtitleMenuOpen}>
+                      <Popover.Trigger>
                         <Button
                           isIconOnly
-                          variant='ghost'
-                          className='text-white hover:bg-white/10'
-                          onPress={togglePlayPause}
+                          variant={activeSubtitleTrack >= 0 ? 'primary' : 'ghost'}
+                          className={activeSubtitleTrack >= 0 ? iconBtn : chromeIconBtn}
+                          aria-label={t('GStreamer.Subtitles', { defaultValue: 'Subtitles' })}
                         >
-                          {playing ? <Pause className='size-4' /> : <Play className='size-4' />}
+                          <Captions className='size-4' />
                         </Button>
-                      </Tooltip.Trigger>
-                      <Tooltip.Content>{playing ? t('Pause') : t('Play')}</Tooltip.Content>
-                    </Tooltip>
-
-                    <span className='min-w-[100px] text-xs tabular-nums text-white/80'>
-                      {formatDuration(currentTime)} / {formatDuration(duration)}
-                    </span>
-
-                    <Tooltip>
-                      <Tooltip.Trigger>
-                        <Button
-                          isIconOnly
-                          variant='ghost'
-                          className='text-white hover:bg-white/10'
-                          onPress={toggleMute}
+                      </Popover.Trigger>
+                      <Popover.Content>
+                        <ListBox
+                          selectedKeys={[String(activeSubtitleTrack)]}
+                          onSelectionChange={keys => {
+                            const value = [...keys][0]
+                            switchSubtitleTrack(value == null ? -1 : Number(value))
+                          }}
                         >
-                          {muted ? <VolumeX className='size-4' /> : <Volume2 className='size-4' />}
-                        </Button>
-                      </Tooltip.Trigger>
-                      <Tooltip.Content>{muted ? t('Unmute') : t('Mute')}</Tooltip.Content>
-                    </Tooltip>
+                          <ListBox.Item id='-1'>{t('None')}</ListBox.Item>
+                          {subtitleTracks.map(track => (
+                            <ListBox.Item key={track.id} id={String(track.id)}>
+                              {subtitleLabel(track)}
+                            </ListBox.Item>
+                          ))}
+                        </ListBox>
+                      </Popover.Content>
+                    </Popover>
+                  ) : null}
 
-                    {/* A drag-precise slider is fiddly on touch and duplicates the hardware volume
-                     * buttons — keep it for mouse/trackpad users, mute button covers touch. */}
-                    <Slider
-                      value={volume * 100}
-                      maxValue={100}
-                      onChange={handleVolumeChange}
-                      className='hidden w-24 sm:flex'
-                      aria-label={t('Mute')}
-                    >
-                      <Slider.Track>
-                        <Slider.Fill />
-                        <Slider.Thumb />
-                      </Slider.Track>
-                    </Slider>
+                  <div className='flex-1' />
 
-                    {subtitleTracks.length > 0 ? (
-                      <Popover isOpen={subtitleMenuOpen} onOpenChange={setSubtitleMenuOpen}>
-                        <Popover.Trigger>
-                          <Button
-                            isIconOnly
-                            variant={activeSubtitleTrack >= 0 ? 'primary' : 'ghost'}
-                            className={activeSubtitleTrack >= 0 ? '' : 'text-white hover:bg-white/10'}
-                            aria-label={t('GStreamer.Subtitles', { defaultValue: 'Subtitles' })}
-                          >
-                            <Captions className='size-4' />
-                          </Button>
-                        </Popover.Trigger>
-                        <Popover.Content>
-                          <ListBox
-                            selectedKeys={[String(activeSubtitleTrack)]}
-                            onSelectionChange={keys => {
-                              const value = [...keys][0]
-                              switchSubtitleTrack(value == null ? -1 : Number(value))
-                            }}
-                          >
-                            <ListBox.Item id='-1'>{t('None')}</ListBox.Item>
-                            {subtitleTracks.map(track => (
-                              <ListBox.Item key={track.id} id={String(track.id)}>
-                                {subtitleLabel(track)}
-                              </ListBox.Item>
-                            ))}
-                          </ListBox>
-                        </Popover.Content>
-                      </Popover>
-                    ) : null}
-
-                    <div className='flex-1' />
-
-                    <Tooltip>
-                      <Tooltip.Trigger>
-                        <Button
-                          isIconOnly
-                          variant='ghost'
-                          className='text-white hover:bg-white/10'
-                          onPress={fullscreen ? exitFullscreen : enterFullscreen}
-                        >
-                          {fullscreen ? <Minimize className='size-4' /> : <Maximize className='size-4' />}
-                        </Button>
-                      </Tooltip.Trigger>
-                      <Tooltip.Content>{fullscreen ? t('ExitFullscreen') : t('Fullscreen')}</Tooltip.Content>
-                    </Tooltip>
-                  </div>
+                  <Tooltip>
+                    <Tooltip.Trigger>
+                      <Button
+                        isIconOnly
+                        variant='ghost'
+                        className={chromeIconBtn}
+                        onPress={fullscreen ? exitFullscreen : enterFullscreen}
+                      >
+                        {fullscreen ? <Minimize className='size-4' /> : <Maximize className='size-4' />}
+                      </Button>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>{fullscreen ? t('ExitFullscreen') : t('Fullscreen')}</Tooltip.Content>
+                  </Tooltip>
                 </div>
-              </Modal.Body>
+              </Modal.Footer>
             </Modal.Dialog>
           </Modal.Container>
         </Modal.Backdrop>

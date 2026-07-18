@@ -84,6 +84,13 @@ export default function FeaturesSettingsPanel({
           checked={boolChecked('ShowFSActiveTorr')}
           onChange={onBoolSwitch}
         />
+        <SettingSwitch
+          id='TrackTimecode'
+          label={t('SettingsDialog.TrackTimecode')}
+          helper={t('SettingsDialog.TrackTimecodeHint')}
+          checked={boolChecked('TrackTimecode')}
+          onChange={onBoolSwitch}
+        />
       </SettingsSection>
     </div>
   )

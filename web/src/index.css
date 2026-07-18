@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "@heroui/styles";
 
+/* Decorative hover only on true hover devices — avoids sticky :hover after tap on touch. */
+@custom-variant hover-fine (@media (hover: hover) and (pointer: fine));
+
 /**
  * TorrServer brand theme — overrides HeroUI's default CSS variables.
  * Un-layered rules always win over HeroUI's `@layer theme` vars, so this
@@ -132,4 +135,21 @@ body[data-immersive='true'] .ts-bottom-nav {
   padding-right: calc(1.5rem + env(safe-area-inset-right, 0px));
   padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
   padding-left: calc(1.5rem + env(safe-area-inset-left, 0px));
+}
+
+/* Poster library density: tighter tiles on phone, roomier on desktop (BP.mobile=700, BP.list2=1100). */
+.torrent-poster-grid {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+
+@media (min-width: 700px) {
+  .torrent-poster-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .torrent-poster-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
 }

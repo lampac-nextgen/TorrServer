@@ -78,6 +78,7 @@ export interface BTSets {
   SslCert?: string
   SslKey?: string
   ShowFSActiveTorr?: boolean
+  TrackTimecode?: boolean
   StoreSettingsInJson?: boolean
   [key: string]: unknown
 }

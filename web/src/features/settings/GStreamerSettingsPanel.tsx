@@ -1,8 +1,10 @@
-import { Alert, Description, Input, Label, ListBox, Select, Separator, Switch, TextField } from '@heroui/react'
+import { Alert, Description, Input, Label, ListBox, Select, Separator, TextField } from '@heroui/react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { gstEchoHost } from 'shared/api/hosts'
+
+import { SettingSwitch } from './SettingSwitch'
 
 export interface GStreamerConfig {
   GSTVersion: number
@@ -69,34 +71,6 @@ export const emptyGstConfig = (): GStreamerConfig => ({
   VideoBitrate: 10000,
 })
 
-function GstSwitch({
-  label,
-  helper,
-  checked,
-  onChange,
-}: {
-  label: string
-  helper?: string
-  checked: boolean
-  onChange: (checked: boolean) => void
-}) {
-  return (
-    <div className='flex min-h-11 items-start justify-between gap-4 py-1.5'>
-      <div className='min-w-0 flex-1'>
-        <p className='block text-sm font-medium leading-snug text-foreground'>{label}</p>
-        {helper ? <p className='mt-1.5 block text-sm leading-relaxed text-muted'>{helper}</p> : null}
-      </div>
-      <Switch isSelected={checked} onChange={onChange} className='mt-0.5 shrink-0'>
-        <Switch.Content>
-          <Switch.Control>
-            <Switch.Thumb />
-          </Switch.Control>
-        </Switch.Content>
-      </Switch>
-    </div>
-  )
-}
-
 interface GStreamerSettingsPanelProps {
   config: GStreamerConfig
   onChange: (next: GStreamerConfig) => void
@@ -122,6 +96,10 @@ export default function GStreamerSettingsPanel({ config, onChange }: GStreamerSe
 
   const update = <K extends keyof GStreamerConfig>(key: K, value: GStreamerConfig[K]) => {
     onChange({ ...config, [key]: value })
+  }
+
+  const updateSwitch = (id: string, checked: boolean) => {
+    update(id as keyof GStreamerConfig, checked)
   }
 
   const statusLabel = (component?: GstComponentStatus) => {
@@ -240,42 +218,49 @@ export default function GStreamerSettingsPanel({ config, onChange }: GStreamerSe
           <Description>{t('GStreamer.VideoBitrateHint')}</Description>
         </TextField>
         <div className='divide-y divide-separator border-y border-separator'>
-          <GstSwitch
+          <SettingSwitch
+            id='TranscodeH264'
             label={t('GStreamer.TranscodeH264')}
             helper={t('GStreamer.TranscodeHint')}
             checked={Boolean(config.TranscodeH264)}
-            onChange={v => update('TranscodeH264', v)}
+            onChange={updateSwitch}
           />
-          <GstSwitch
+          <SettingSwitch
+            id='TranscodeH265'
             label={t('GStreamer.TranscodeH265')}
             checked={Boolean(config.TranscodeH265)}
-            onChange={v => update('TranscodeH265', v)}
+            onChange={updateSwitch}
           />
-          <GstSwitch
+          <SettingSwitch
+            id='TranscodeAV1'
             label={t('GStreamer.TranscodeAV1')}
             checked={Boolean(config.TranscodeAV1)}
-            onChange={v => update('TranscodeAV1', v)}
+            onChange={updateSwitch}
           />
-          <GstSwitch
+          <SettingSwitch
+            id='TranscodeVP9'
             label={t('GStreamer.TranscodeVP9')}
             checked={Boolean(config.TranscodeVP9)}
-            onChange={v => update('TranscodeVP9', v)}
+            onChange={updateSwitch}
           />
-          <GstSwitch
+          <SettingSwitch
+            id='TranscodeVP8'
             label={t('GStreamer.TranscodeVP8')}
             checked={Boolean(config.TranscodeVP8)}
-            onChange={v => update('TranscodeVP8', v)}
+            onChange={updateSwitch}
           />
-          <GstSwitch
+          <SettingSwitch
+            id='TranscodeAVI'
             label={t('GStreamer.TranscodeAVI')}
             checked={Boolean(config.TranscodeAVI)}
-            onChange={v => update('TranscodeAVI', v)}
+            onChange={updateSwitch}
           />
-          <GstSwitch
+          <SettingSwitch
+            id='HDRToSDR'
             label={t('GStreamer.HDRToSDR')}
             helper={t('GStreamer.HDRToSDRHint')}
             checked={Boolean(config.HDRToSDR)}
-            onChange={v => update('HDRToSDR', v)}
+            onChange={updateSwitch}
           />
         </div>
       </div>
@@ -285,29 +270,33 @@ export default function GStreamerSettingsPanel({ config, onChange }: GStreamerSe
       <div>
         <p className='mb-3 text-sm font-semibold text-foreground'>{t('GStreamer.SectionAdvanced')}</p>
         <div className='divide-y divide-separator border-y border-separator'>
-          <GstSwitch
+          <SettingSwitch
+            id='Subtitles'
             label={t('GStreamer.Subtitles')}
             helper={t('GStreamer.SubtitlesHint')}
             checked={Boolean(config.Subtitles)}
-            onChange={v => update('Subtitles', v)}
+            onChange={updateSwitch}
           />
-          <GstSwitch
+          <SettingSwitch
+            id='UseGPU'
             label={t('GStreamer.UseGPU')}
             helper={t('GStreamer.UseGPUHint')}
             checked={Boolean(config.UseGPU)}
-            onChange={v => update('UseGPU', v)}
+            onChange={updateSwitch}
           />
-          <GstSwitch
+          <SettingSwitch
+            id='HardwareAcceleration'
             label={t('GStreamer.HardwareAcceleration')}
             helper={t('GStreamer.HardwareAccelerationHint')}
             checked={Boolean(config.HardwareAcceleration)}
-            onChange={v => update('HardwareAcceleration', v)}
+            onChange={updateSwitch}
           />
-          <GstSwitch
+          <SettingSwitch
+            id='X264Ultrafast'
             label={t('GStreamer.X264Ultrafast')}
             helper={t('GStreamer.X264UltrafastHint')}
             checked={Boolean(config.X264Ultrafast)}
-            onChange={v => update('X264Ultrafast', v)}
+            onChange={updateSwitch}
           />
         </div>
       </div>

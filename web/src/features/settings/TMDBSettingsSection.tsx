@@ -23,24 +23,29 @@ export default function TMDBSettingsSection({ settings, updateSettings }: TMDBSe
   }
 
   const fields: Array<{ field: TMDBField; label: string; hint: string; placeholder: string }> = [
-    { field: 'APIKey', label: t('TMDB.APIKey'), hint: t('TMDB.APIKeyHint'), placeholder: 'Enter your TMDB API key' },
+    {
+      field: 'APIKey',
+      label: t('TMDB.APIKey'),
+      hint: t('TMDB.APIKeyHint'),
+      placeholder: t('TMDB.APIKeyPlaceholder'),
+    },
     {
       field: 'APIURL',
       label: t('TMDB.APIURL'),
       hint: t('TMDB.APIURLHint'),
-      placeholder: 'https://api.themoviedb.org/3',
+      placeholder: t('TMDB.APIURLPlaceholder'),
     },
     {
       field: 'ImageURL',
       label: t('TMDB.ImageURL'),
       hint: t('TMDB.ImageURLHint'),
-      placeholder: 'https://image.tmdb.org',
+      placeholder: t('TMDB.ImageURLPlaceholder'),
     },
     {
       field: 'ImageURLRu',
       label: t('TMDB.ImageURLRu'),
       hint: t('TMDB.ImageURLRuHint'),
-      placeholder: 'https://imagetmdb.com',
+      placeholder: t('TMDB.ImageURLRuPlaceholder'),
     },
   ]
 

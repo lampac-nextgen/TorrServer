@@ -11,7 +11,6 @@ import { queryMax } from 'shared/theme/breakpoints'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import AppDialog from 'shared/ui/AppDialog'
 import { DIALOG_SHEET_M } from 'shared/ui/dialogSizes'
-import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
 export interface EditTorrentDialogProps {
@@ -35,8 +34,6 @@ export default function EditTorrentDialog({ torrent, open, onClose }: EditTorren
   const [posterOptions, setPosterOptions] = useState<string[]>([])
   const [postersLoading, setPostersLoading] = useState(false)
   const [saving, setSaving] = useState(false)
-
-  useSyncModalOpen(open)
 
   useEffect(() => {
     if (!open || !torrent) return

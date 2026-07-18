@@ -16,6 +16,7 @@ import {
   useGStreamerRuntime,
 } from 'shared/lib/gstreamer'
 import { isFilePlayable } from 'shared/torrent/playable'
+import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
 /** Lazy: keeps hls.js out of the initial bundle — only fetched once a file is actually played. */
@@ -99,6 +100,8 @@ export function usePlayLauncher({ hash, displayName, knownPlayableFiles }: UsePl
 
   const filePickerState = useOverlayState()
   const audioPickerState = useOverlayState()
+
+  useSyncModalOpen(filePickerState.isOpen || audioPickerState.isOpen)
 
   const openPlayer = (file: PlayableFile, audioIndex = 0) => {
     const useHls = shouldUseGStreamerPlayer(file.path, gstRuntime)

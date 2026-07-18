@@ -1,6 +1,4 @@
 import { useRef } from 'react'
-import { useGSAP } from '@gsap/react'
-import gsap from 'gsap'
 import { Chip, useMediaQuery } from '@heroui/react'
 import { ImageOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -30,12 +28,13 @@ function statusChipColor(stat?: number): ChipColor {
   }
 }
 
+/** True hover devices only — touch / hybrid get always-visible actions (avoids sticky synthetic hover). */
+const HOVER_FINE_MQ = '(hover: hover) and (pointer: fine)'
+
 export default function TorrentCard({ torrent, onSelect, onEdit }: TorrentCardProps) {
   const { t } = useTranslation()
   const cardRef = useRef<HTMLElement>(null)
-  const overlayRef = useRef<HTMLDivElement>(null)
-  /** Touch devices have no hover, so the action overlay must be shown permanently instead of revealed on mouseenter. */
-  const isCoarsePointer = useMediaQuery('(pointer: coarse)')
+  const hoverFine = useMediaQuery(HOVER_FINE_MQ)
 
   const title = torrent.title || torrent.name || torrent.hash
 
@@ -53,38 +52,18 @@ export default function TorrentCard({ torrent, onSelect, onEdit }: TorrentCardPr
     ? t(TORRENT_CATEGORIES.find(category => category.key === torrent.category)?.name ?? torrent.category)
     : null
 
-  useGSAP(
-    () => {
-      const overlay = overlayRef.current
-      const card = cardRef.current
-      if (!overlay || !card || isCoarsePointer) return
-
-      const reveal = () => {
-        overlay.style.pointerEvents = 'auto'
-        gsap.to(overlay, { opacity: 1, duration: 0.2, ease: 'power2.out' })
-      }
-      const conceal = () => {
-        overlay.style.pointerEvents = 'none'
-        gsap.to(overlay, { opacity: 0, duration: 0.15, ease: 'power2.in' })
-      }
-
-      card.addEventListener('mouseenter', reveal)
-      card.addEventListener('mouseleave', conceal)
-      card.addEventListener('focusin', reveal)
-      card.addEventListener('focusout', conceal)
-
-      return () => {
-        card.removeEventListener('mouseenter', reveal)
-        card.removeEventListener('mouseleave', conceal)
-        card.removeEventListener('focusin', reveal)
-        card.removeEventListener('focusout', conceal)
-      }
-    },
-    { scope: cardRef, dependencies: [isCoarsePointer] },
-  )
+  const blurFocusedControl = () => {
+    const active = document.activeElement
+    if (active instanceof HTMLElement && cardRef.current?.contains(active)) active.blur()
+  }
 
   return (
-    <article ref={cardRef} className='torrent-card group flex min-w-0 flex-col gap-2' data-hash={torrent.hash}>
+    <article
+      ref={cardRef}
+      className='torrent-card group flex min-w-0 flex-col gap-2'
+      data-hash={torrent.hash}
+      onMouseLeave={hoverFine ? blurFocusedControl : undefined}
+    >
       <div
         role='button'
         tabIndex={0}
@@ -96,7 +75,7 @@ export default function TorrentCard({ torrent, onSelect, onEdit }: TorrentCardPr
             onSelect(torrent)
           }
         }}
-        className='relative aspect-[2/3] w-full cursor-pointer overflow-hidden rounded-2xl bg-surface-secondary ring-1 ring-border transition-shadow duration-200 hover:shadow-lg hover:ring-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background'
+        className='relative aspect-[2/3] w-full cursor-pointer overflow-hidden rounded-2xl bg-surface-secondary ring-1 ring-border transition-shadow duration-200 hover-fine:shadow-lg hover-fine:ring-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background'
       >
         {torrent.poster ? (
           <img src={torrent.poster} alt='' loading='lazy' className='h-full w-full object-cover' />
@@ -126,12 +105,12 @@ export default function TorrentCard({ torrent, onSelect, onEdit }: TorrentCardPr
         </div>
 
         <div
-          ref={overlayRef}
-          style={isCoarsePointer ? undefined : { opacity: 0, pointerEvents: 'none' }}
           className={
-            isCoarsePointer
-              ? 'absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-gradient-to-t from-black/85 via-black/55 to-transparent px-2 pb-2 pt-10'
-              : 'absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/80 via-black/40 to-transparent'
+            hoverFine
+              ? // CSS hover only — no focus-within (portaled menus restore focus and would stick the overlay).
+                // Keyboard: has-[:focus-visible] reveals when Tab lands on Play/More inside the overlay.
+                'pointer-events-none absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100 has-[:focus-visible]:pointer-events-auto has-[:focus-visible]:opacity-100'
+              : 'absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-gradient-to-t from-black/85 via-black/55 to-transparent px-2 pb-2 pt-10'
           }
         >
           <TorrentCardActions

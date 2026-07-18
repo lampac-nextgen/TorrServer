@@ -389,7 +389,8 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
         <Modal.CloseTrigger />
       </Modal.Header>
       <Modal.Body>
-        <div className='flex flex-col gap-2 pb-4 pt-1 sm:flex-row sm:flex-wrap sm:items-end'>
+        <div className='sticky top-0 z-10 -mx-1 bg-surface px-1 pb-4 pt-1'>
+          <div className='flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end'>
           <Select
             selectedKey={trackerKey}
             onSelectionChange={key => {
@@ -466,6 +467,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
           >
             {loading ? <Spinner size='sm' color='current' /> : t('Search')}
           </Button>
+        </div>
         </div>
 
         {searched && sortedResults.length > 0 ? (

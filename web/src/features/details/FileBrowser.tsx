@@ -123,7 +123,7 @@ export default function FileBrowser({
   return (
     <div className={`grid min-h-[200px] w-full gap-3 ${hasUsefulFolders ? 'md:grid-cols-[200px_1fr]' : 'grid-cols-1'}`}>
       {hasUsefulFolders ? (
-        <div className='max-h-[420px] overflow-auto rounded-xl border border-border bg-surface-secondary p-2 md:rounded-none md:border-0 md:border-r md:border-border md:bg-transparent md:p-0 md:pr-3'>
+        <div className='rounded-xl border border-border bg-surface-secondary p-2 md:rounded-none md:border-0 md:border-r md:border-border md:bg-transparent md:p-0 md:pr-3'>
           <p className='mb-1.5 px-1 text-xs font-medium uppercase tracking-wide text-muted'>
             {t('Folders', { defaultValue: 'Folders' })}
           </p>

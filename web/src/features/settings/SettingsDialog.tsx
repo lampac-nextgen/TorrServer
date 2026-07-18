@@ -71,9 +71,9 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
   const [gstConfig, setGstConfig] = useState<GStreamerConfig>(emptyGstConfig())
   const [gstDefaults, setGstDefaults] = useState<GStreamerConfig>(emptyGstConfig())
   const [storageBackends, setStorageBackends] = useState<StorageSettings>(defaultStorageSettings())
+  const [storageLoadedOk, setStorageLoadedOk] = useState(false)
 
   const gstAvailable = Boolean(gstRuntime.built_in)
-  const isGstTab = tab === 'gstreamer'
 
   const visibleTabs = useMemo(() => {
     const tabs: { id: SettingsTab; label: string; icon: ReactNode }[] = [
@@ -115,20 +115,28 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
     }
   }, [])
 
-  const loadStorageBackends = useCallback(async (signal?: AbortSignal) => {
-    try {
-      setStorageBackends(await getStorageSettings(signal))
-    } catch {
-      setStorageBackends(defaultStorageSettings())
-    }
-  }, [])
+  const loadStorageBackends = useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        setStorageBackends(await getStorageSettings(signal))
+        setStorageLoadedOk(true)
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') return
+        setStorageLoadedOk(false)
+        toast?.showToast({ message: t('Error'), severity: 'error' })
+      }
+    },
+    [t, toast],
+  )
 
   useEffect(() => {
     if (!open) return undefined
     const ac = new AbortController()
     setLoading(true)
+    setStorageLoadedOk(false)
     Promise.all([loadSettings(ac.signal), loadGstConfig(ac.signal), loadStorageBackends(ac.signal)])
-      .catch(() => {
+      .catch(err => {
+        if ((err as Error).name === 'AbortError') return
         toast?.showToast({ message: t('Error'), severity: 'error' })
       })
       .finally(() => {
@@ -164,26 +172,25 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
   )
 
   const handleSave = async () => {
-    if (saving) return
+    if (saving || !storageLoadedOk) return
     setSaving(true)
     try {
-      if (isGstTab) {
+      const sets: BTSets = {
+        ...settings,
+        CacheSize: cacheSizeMb * 1024 * 1024,
+        ReaderReadAHead: settings.ReaderReadAHead ?? defaultSettings.ReaderReadAHead,
+        PreloadCache: settings.PreloadCache ?? defaultSettings.PreloadCache,
+      }
+      await setSettings(sets)
+      await setStorageSettings(storageBackends)
+      if (gstAvailable) {
         await setGstSettings(gstConfig)
         await queryClient.invalidateQueries({ queryKey: [GST_RUNTIME_QUERY_KEY] })
-      } else {
-        const sets: BTSets = {
-          ...settings,
-          CacheSize: cacheSizeMb * 1024 * 1024,
-          ReaderReadAHead: settings.ReaderReadAHead ?? defaultSettings.ReaderReadAHead,
-          PreloadCache: settings.PreloadCache ?? defaultSettings.PreloadCache,
-        }
-        await setSettings(sets)
-        await setStorageSettings(storageBackends)
-        clearTMDBCache()
-        notifySettingsChanged()
-        await queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEY })
       }
-      toast?.showToast({ message: t('Saved', { defaultValue: 'Saved' }), severity: 'success' })
+      clearTMDBCache()
+      notifySettingsChanged()
+      await queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEY })
+      toast?.showToast({ message: t('Saved'), severity: 'success' })
       onClose()
     } catch (err) {
       toast?.showToast({ message: (err as Error).message || t('Error'), severity: 'error' })
@@ -193,7 +200,15 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
   }
 
   const footerButtonClassName = isMobile ? 'min-h-11 px-4' : undefined
-  const panelClassName = isMobile ? 'pt-4' : 'ml-0 min-w-0 flex-1'
+  const panelClassName = isMobile
+    ? 'min-h-0 flex-1 overflow-y-auto pt-4'
+    : 'ml-0 min-h-0 min-w-0 flex-1 overflow-y-auto'
+  const tabsRootClassName = isMobile
+    ? 'flex min-h-0 flex-1 flex-col overflow-hidden'
+    : 'flex min-h-0 flex-1 gap-6 overflow-hidden'
+  const tabsListClassName = isMobile
+    ? 'sticky top-0 z-10 shrink-0 overflow-x-auto bg-surface pb-2'
+    : 'sticky top-0 z-10 w-60 shrink-0 self-start bg-surface'
 
   return (
     <AppDialog
@@ -207,7 +222,15 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
         <Modal.Heading>{t('SettingsDialog.Settings')}</Modal.Heading>
         <Modal.CloseTrigger />
       </Modal.Header>
-      <Modal.Body className={loading ? undefined : isMobile ? undefined : 'min-h-[min(60dvh,32rem)]'}>
+      <Modal.Body
+        className={
+          loading
+            ? undefined
+            : isMobile
+              ? 'flex min-h-0 flex-col overflow-hidden'
+              : 'flex min-h-[min(60dvh,32rem)] flex-col overflow-hidden'
+        }
+      >
         {loading ? (
           <div className='grid place-items-center py-16'>
             <Spinner size='lg' />
@@ -217,12 +240,9 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
             orientation={isMobile ? 'horizontal' : 'vertical'}
             selectedKey={tab}
             onSelectionChange={key => setTab(String(key) as SettingsTab)}
-            className={isMobile ? undefined : 'gap-6'}
+            className={tabsRootClassName}
           >
-            <Tabs.List
-              aria-label={t('SettingsDialog.Settings')}
-              className={isMobile ? 'overflow-x-auto' : 'w-60 shrink-0'}
-            >
+            <Tabs.List aria-label={t('SettingsDialog.Settings')} className={tabsListClassName}>
               {visibleTabs.map(item => (
                 <Tabs.Tab
                   key={item.id}
@@ -275,12 +295,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
 
             <Tabs.Panel id='storage' className={panelClassName}>
               <PanelFade>
-                <StorageSettingsPanel
-                  settings={settings}
-                  onBoolSwitch={handleBoolSwitch}
-                  backends={storageBackends}
-                  onBackendsChange={setStorageBackends}
-                />
+                <StorageSettingsPanel backends={storageBackends} onBackendsChange={setStorageBackends} />
               </PanelFade>
             </Tabs.Panel>
 
@@ -328,7 +343,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
         <Button
           variant='primary'
           onPress={() => void handleSave()}
-          isDisabled={loading || saving}
+          isDisabled={loading || saving || !storageLoadedOk}
           className={footerButtonClassName}
         >
           {saving ? <Spinner size='sm' color='current' /> : t('Save')}

@@ -63,7 +63,7 @@ export default function Sidebar({
         isIconOnly={collapsed}
         aria-label={item.label}
         aria-current={item.active ? 'true' : undefined}
-        className={`w-full justify-start gap-3 rounded-xl px-3 py-2.5 text-app-rail-foreground hover:bg-white/10 ${
+        className={`w-full justify-start gap-3 rounded-xl px-3 py-2.5 text-app-rail-foreground hover-fine:bg-white/10 ${
           collapsed ? 'justify-center px-2' : ''
         } ${item.active ? 'bg-white/15' : ''}`}
       >

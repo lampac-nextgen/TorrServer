@@ -36,7 +36,7 @@ export default function CategoriesDrawer({ open, onClose, selectedCategory, onSe
 
   const itemClass = (active: boolean) =>
     `flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium transition-colors ${
-      active ? 'bg-accent-soft text-accent-soft-foreground' : 'text-foreground hover:bg-surface-secondary'
+      active ? 'bg-accent-soft text-accent-soft-foreground' : 'text-foreground hover-fine:bg-surface-secondary'
     }`
 
   return (

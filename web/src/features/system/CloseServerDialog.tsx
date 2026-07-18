@@ -1,8 +1,9 @@
-import { Button, Modal } from '@heroui/react'
+import { Button, Modal, useMediaQuery } from '@heroui/react'
 import { Power } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { shutdownHost } from 'shared/api/hosts'
+import { queryMax } from 'shared/theme/breakpoints'
 import AppDialog from 'shared/ui/AppDialog'
 import UnsafeButton from 'shared/ui/UnsafeButton'
 
@@ -14,9 +15,10 @@ export interface CloseServerDialogProps {
 /** Destructive confirm dialog for shutting down the TorrServer process. */
 export default function CloseServerDialog({ open, onClose }: CloseServerDialogProps) {
   const { t } = useTranslation()
+  const isFullScreenBreakpoint = useMediaQuery(queryMax('dialog'))
 
   return (
-    <AppDialog open={open} onClose={onClose} size='sm'>
+    <AppDialog open={open} onClose={onClose} size='sm' fullScreen={isFullScreenBreakpoint}>
       <Modal.Header>
         <Modal.Icon className='bg-danger/15 text-danger'>
           <Power className='size-5' aria-hidden />
