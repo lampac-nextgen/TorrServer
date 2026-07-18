@@ -1,3 +1,5 @@
+import type {} from '@mui/material/themeCssVarsAugmentation'
+
 export {}
 
 declare module '@mui/material/Button' {
@@ -5,3 +7,4 @@ declare module '@mui/material/Button' {
     cardAction: true
   }
 }
+

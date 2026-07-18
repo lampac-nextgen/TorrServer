@@ -1,21 +1,21 @@
-import { createTheme, useMediaQuery, type PaletteMode, type Theme } from '@mui/material'
-import { useEffect, useMemo, useState } from 'react'
+import { useColorScheme, type Theme } from '@mui/material/styles'
+import { useCallback } from 'react'
 
-import { mainColors, themeColors } from './colors'
-import { BP, MEDIA_SHORT_VIEWPORT, queryMax } from './breakpoints'
-import { FONT_STACK, LETTER_SPACING, TOUCH_TARGET_PX, radius, typography as typeScale } from './tokens'
+import { createAppTheme } from 'shared/theme/createAppTheme'
+import { BP, queryMax } from './breakpoints'
 import './mui-augmentation'
 
 export { BP, mediaMax, queryMax, MEDIA_SHORT_VIEWPORT } from './breakpoints'
+export { createAppTheme } from 'shared/theme/createAppTheme'
 
 export const THEME_MODES = {
   LIGHT: 'light',
   DARK: 'dark',
-  AUTO: 'auto',
+  AUTO: 'system',
 } as const
 
 export type ThemePreference = (typeof THEME_MODES)[keyof typeof THEME_MODES]
-export type ResolvedThemeMode = typeof THEME_MODES.LIGHT | typeof THEME_MODES.DARK
+export type ResolvedThemeMode = 'light' | 'dark'
 
 /** Compat aliases — prefer `BP` / `mediaMax` / `queryMax`. */
 export const LAYOUT_PHONE_MAX = BP.phone
@@ -33,318 +33,33 @@ export const LAYOUT_DIALOG_FULLSCREEN_MEDIA = queryMax('dialog')
 export const LAYOUT_LIST_3COL_MAX = BP.list3
 export const LAYOUT_LIST_3COL_MEDIA = queryMax('list3')
 
-const typography = {
-  fontFamily: FONT_STACK,
-  fontSize: 14,
-  htmlFontSize: 16,
-  body1: {
-    fontSize: typeScale.body,
-    letterSpacing: LETTER_SPACING,
-  },
-  body2: {
-    fontSize: typeScale.meta,
-    letterSpacing: LETTER_SPACING,
-  },
-  button: {
-    fontSize: typeScale.button,
-    letterSpacing: LETTER_SPACING,
-  },
-  h6: {
-    fontSize: typeScale.heading,
-    fontWeight: 600,
-    letterSpacing: LETTER_SPACING,
-  },
-}
+/** Singleton app theme (cssVariables + colorSchemes). */
+export const appTheme: Theme = createAppTheme()
 
-export const darkTheme = createTheme({
-  typography,
-  palette: {
-    mode: THEME_MODES.DARK,
-    primary: { main: mainColors.dark.primary },
-    secondary: { main: mainColors.dark.secondary },
-    background: {
-      default: themeColors.dark.app.appSecondaryColor,
-      paper: themeColors.dark.app.paperColor,
+/** @deprecated Prefer appTheme */
+export const darkTheme = appTheme
+/** @deprecated Prefer appTheme */
+export const lightTheme = appTheme
+
+/**
+ * Must be called under ThemeProvider with colorSchemes.
+ * Returns [isDark, preference, setPreference].
+ */
+export function useThemePreference(): [boolean, ThemePreference, (mode: ThemePreference) => void] {
+  const { mode, setMode, systemMode } = useColorScheme()
+
+  const updateThemeMode = useCallback(
+    (next: ThemePreference) => {
+      setMode(next)
     },
-  },
-})
-
-export const lightTheme = createTheme({
-  typography,
-  palette: {
-    mode: THEME_MODES.LIGHT,
-    primary: { main: mainColors.light.primary },
-    secondary: { main: mainColors.light.secondary },
-    background: {
-      default: themeColors.light.app.appSecondaryColor,
-      paper: themeColors.light.app.paperColor,
-    },
-  },
-})
-
-export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePreference) => void, Theme] => {
-  const savedThemeMode = localStorage.getItem('themeMode') as ThemePreference | null
-  const isSystemModeDark = useMediaQuery('(prefers-color-scheme: dark)')
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (savedThemeMode === THEME_MODES.DARK) return true
-    if (savedThemeMode === THEME_MODES.LIGHT) return false
-    return isSystemModeDark
-  })
-  const [currentThemeMode, setCurrentThemeMode] = useState<ThemePreference>(savedThemeMode || THEME_MODES.AUTO)
-
-  const updateThemeMode = (mode: ThemePreference) => {
-    setCurrentThemeMode(mode)
-    localStorage.setItem('themeMode', mode)
-  }
-
-  useEffect(() => {
-    if (currentThemeMode === THEME_MODES.LIGHT) setIsDarkMode(false)
-    if (currentThemeMode === THEME_MODES.DARK) setIsDarkMode(true)
-    if (currentThemeMode === THEME_MODES.AUTO) setIsDarkMode(isSystemModeDark)
-  }, [isSystemModeDark, currentThemeMode])
-
-  const theme: ResolvedThemeMode = isDarkMode ? THEME_MODES.DARK : THEME_MODES.LIGHT
-  const card = themeColors[theme].torrentCard
-
-  const muiTheme = useMemo(
-    () =>
-      createTheme({
-        typography,
-        breakpoints: {
-          values: {
-            xs: 0,
-            sm: BP.compact,
-            md: BP.dialog,
-            lg: BP.list3,
-            xl: 1536,
-          },
-        },
-        palette: {
-          mode: theme as PaletteMode,
-          primary: { main: mainColors[theme].primary },
-          secondary: { main: mainColors[theme].secondary },
-          // MUI 6 dark default is #121212 — master used gray paper/secondary, not Material black.
-          background: {
-            default: themeColors[theme].app.appSecondaryColor,
-            paper: themeColors[theme].app.paperColor,
-          },
-        },
-        components: {
-          MuiButton: {
-            defaultProps: {
-              disableElevation: true,
-            },
-            styleOverrides: {
-              root: {
-                borderRadius: radius.md,
-                textTransform: 'none',
-              },
-              sizeSmall: {
-                minHeight: 32,
-              },
-              sizeMedium: {
-                minHeight: 36,
-              },
-              sizeLarge: {
-                minHeight: 40,
-              },
-            },
-            variants: [
-              {
-                props: { variant: 'cardAction' },
-                style: {
-                  backgroundColor: card.buttonBGColor,
-                  color: '#fff',
-                  minHeight: 36,
-                  minWidth: 0,
-                  width: '100%',
-                  borderRadius: radius.sm,
-                  textTransform: 'uppercase',
-                  justifyContent: 'flex-start',
-                  fontSize: typeScale.button,
-                  fontWeight: 400,
-                  letterSpacing: '0.01em',
-                  padding: '0 10px',
-                  boxShadow: 'none',
-                  WebkitTapHighlightColor: 'transparent',
-                  touchAction: 'manipulation',
-                  '&:hover': {
-                    backgroundColor: card.accentCardColor,
-                    boxShadow: 'none',
-                  },
-                  '&:active': {
-                    transform: 'scale(0.98)',
-                  },
-                  '&.Mui-disabled': {
-                    color: '#fff',
-                    opacity: 0.75,
-                  },
-                  '& .MuiButton-startIcon': {
-                    marginRight: 8,
-                    marginLeft: 0,
-                    '& > *:nth-of-type(1)': {
-                      fontSize: 18,
-                    },
-                  },
-                  [`@media ${queryMax('list3')}, ${MEDIA_SHORT_VIEWPORT}`]: {
-                    justifyContent: 'center',
-                    fontSize: typeScale.buttonDense,
-                    fontWeight: 400,
-                    letterSpacing: '0.02em',
-                    minHeight: 40,
-                    padding: '6px 6px',
-                    '& .MuiButton-startIcon': {
-                      display: 'none',
-                    },
-                  },
-                  [`@media ${queryMax('mobile')}`]: {
-                    fontSize: typeScale.buttonDense,
-                    fontWeight: 400,
-                    minHeight: TOUCH_TARGET_PX,
-                  },
-                  [`@media ${queryMax('phone')}`]: {
-                    fontSize: typeScale.buttonPhone,
-                    fontWeight: 400,
-                    padding: '6px 8px',
-                    minHeight: TOUCH_TARGET_PX,
-                  },
-                },
-              },
-            ],
-          },
-          MuiIconButton: {
-            styleOverrides: {
-              root: {
-                [`@media ${queryMax('mobile')}`]: {
-                  minWidth: TOUCH_TARGET_PX,
-                  minHeight: TOUCH_TARGET_PX,
-                },
-              },
-              sizeMedium: {
-                width: 36,
-                height: 36,
-                [`@media ${queryMax('mobile')}`]: {
-                  width: TOUCH_TARGET_PX,
-                  height: TOUCH_TARGET_PX,
-                },
-              },
-              sizeSmall: {
-                width: 32,
-                height: 32,
-                [`@media ${queryMax('mobile')}`]: {
-                  width: TOUCH_TARGET_PX,
-                  height: TOUCH_TARGET_PX,
-                },
-              },
-            },
-          },
-          MuiAlert: {
-            defaultProps: {
-              variant: 'filled',
-            },
-          },
-          MuiChip: {
-            defaultProps: {
-              size: 'small',
-            },
-            styleOverrides: {
-              root: {
-                fontWeight: 500,
-              },
-              sizeSmall: {
-                height: 22,
-                fontSize: 12,
-              },
-            },
-          },
-          MuiToggleButton: {
-            styleOverrides: {
-              root: {
-                textTransform: 'none',
-              },
-            },
-          },
-          MuiTypography: {
-            styleOverrides: {
-              h6: {
-                fontSize: typeScale.heading,
-                fontWeight: 600,
-                lineHeight: 1.3,
-                [`@media ${queryMax('mobile')}`]: {
-                  fontSize: typeScale.body,
-                },
-              },
-            },
-          },
-          MuiListItemText: {
-            styleOverrides: {
-              primary: {
-                fontSize: typeScale.body,
-              },
-              secondary: {
-                fontSize: typeScale.button,
-              },
-            },
-          },
-          MuiListItemButton: {
-            styleOverrides: {
-              root: {
-                [`@media ${queryMax('mobile')}`]: {
-                  minHeight: TOUCH_TARGET_PX,
-                },
-              },
-            },
-          },
-          MuiPaper: {
-            styleOverrides: {
-              root: {
-                backgroundColor: themeColors[theme].app.paperColor,
-                backgroundImage: 'none',
-              },
-            },
-          },
-          MuiInputBase: {
-            styleOverrides: {
-              input: {
-                color: mainColors[theme].labels,
-              },
-            },
-          },
-          MuiFormControlLabel: {
-            styleOverrides: {
-              labelPlacementStart: {
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginInlineStart: 0,
-                marginTop: 6,
-                marginBottom: 2,
-              },
-            },
-          },
-          MuiInputLabel: {
-            styleOverrides: {
-              root: {
-                color: mainColors[theme].labels,
-                marginBottom: 8,
-                '&.Mui-focused': {
-                  color: mainColors[theme].labels,
-                },
-              },
-            },
-          },
-          MuiFormGroup: {
-            styleOverrides: {
-              root: {
-                '& .MuiFormHelperText-root': {
-                  marginTop: -8,
-                },
-              },
-            },
-          },
-        },
-      }),
-    [theme, card],
+    [setMode],
   )
 
-  return [isDarkMode, currentThemeMode, updateThemeMode, muiTheme]
+  const resolvedDark =
+    mode === 'dark' || (mode === 'system' && systemMode === 'dark') || (mode == null && systemMode === 'dark')
+
+  const currentPreference: ThemePreference =
+    mode === 'light' ? THEME_MODES.LIGHT : mode === 'dark' ? THEME_MODES.DARK : THEME_MODES.AUTO
+
+  return [Boolean(resolvedDark), currentPreference, updateThemeMode]
 }

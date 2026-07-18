@@ -17,28 +17,22 @@ description: >-
 ## Hard locks
 
 - Keep React — no Vue rewrite.
-- **Stack:** Material UI **9.2** + MUI X **9.10 Community** (Data Grid, Charts, Tree View, Date Pickers). No Pro/Premium license.
-- **No styled-components** — Emotion via MUI only (`@emotion/react` / `@emotion/styled` / `styled` from `@mui/material/styles`).
-- Brand: **MatriX green** (`style/colors.ts` + theme). No purple/cream AI defaults.
-- File row: **all** player/copy/preload actions visible as equal outlined buttons — never a «⋯» menu.
-- Snake: poll `/cache` at **100ms** (idle 400ms); skip unchanged; `memo`; **focus-window** around playhead; HiDPI bottom-up paint.
-- GStreamer: keep runtime React Query cache + probe cache in card; heartbeat `no-store`.
-- No lord-icon / Lottie — `@mui/icons-material` + light CSS motion.
-- Relative asset base for Go embed (`./`). Do not break Basic Auth / API hosts in `utils/Hosts.ts`.
-- Breakpoints: `web/src/style/breakpoints.ts` (`BP` + `mediaMax` / `queryMax`). Shell 1-col = **`mobile` (700)**; dialog fullscreen = **`dialog` (960)**.
-- **One adaptive shell:** width + CSS chrome tokens (`AppGlobalStyles`). No `standaloneMedia` / PWA layout caste. Bottom nav @ ≤700 fixed outside shell; **90px band including** safe-area. Modal↔nav via `ModalOpenProvider` / `data-modal-open` (not fragile Backdrop `aria-hidden`).
-- Donate removed. Safari **17+** (MUI 9 browser floor).
-- Radix/shadcn Wave 2 — **cancelled** (toolkit = MUI + MUI X).
+- **Stack:** Material UI **9.2** + MUI X **9.10 Community** (Data Grid, Charts, Tree View, Date Pickers). Theme: `cssVariables` + `colorSchemes` + `useColorScheme`. No Pro/Premium license.
+- **No styled-components** — Emotion via MUI only.
+- Brand: **MatriX green**. File row: all actions visible. Snake/GStreamer contracts unchanged.
+- Adaptive shell + `ModalOpenProvider`. Donate removed. Safari **17+**.
+- Radix/shadcn — **cancelled**.
 
-## New layout (in progress)
+## Layout
 
 ```
-web/src/shared/   # theme, ModalOpenContext, AppDialog
-web/src/features/ # torrents DataGrid, search DataGrid, details SpeedCharts
-web/src/components/ # legacy surfaces being migrated (still primary for Add/Settings/Details/Player)
+web/src/shared/theme/   # createAppTheme, AppGlobalStyles, color helpers
+web/src/shared/ui/      # ModalOpenContext
+web/src/features/       # torrents/search/details (DataGrid, Charts, TreeView)
+web/src/components/     # App shell + remaining surfaces (Add/Settings/Player/…)
 ```
 
-## Workflow after UI changes that ship in the binary
+## Workflow
 
 ```bash
 cd web && yarn typecheck && yarn lint && yarn test && yarn build
