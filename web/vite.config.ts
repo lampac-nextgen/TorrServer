@@ -40,6 +40,8 @@ export default defineConfig(({ mode }) => {
         components: path.resolve(rootDir, 'src/components'),
         utils: path.resolve(rootDir, 'src/utils'),
         style: path.resolve(rootDir, 'src/style'),
+        features: path.resolve(rootDir, 'src/features'),
+        shared: path.resolve(rootDir, 'src/shared'),
         icons: path.resolve(rootDir, 'src/icons'),
         locales: path.resolve(rootDir, 'src/locales'),
         i18n: path.resolve(rootDir, 'src/i18n'),
@@ -73,7 +75,13 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks: {
-            mui: ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
+            mui: ['@mui/material', '@mui/icons-material', '@mui/system', '@emotion/react', '@emotion/styled'],
+            'mui-x': [
+              '@mui/x-data-grid',
+              '@mui/x-charts',
+              '@mui/x-tree-view',
+              '@mui/x-date-pickers',
+            ],
             hls: ['hls.js'],
             vendor: ['react', 'react-dom', '@tanstack/react-query', 'i18next', 'react-i18next', 'axios'],
           },

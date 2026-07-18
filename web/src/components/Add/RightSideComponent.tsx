@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { rgba } from 'polished'
+import { alphaCss } from 'shared/theme/color'
 import { NoImageIcon } from 'icons'
 import {
   FormControl,
@@ -121,7 +121,7 @@ export default function RightSideComponent({
               variant='outlined'
               fullWidth
               disabled={isCustomTitleEnabled}
-              InputProps={{ readOnly: true }}
+              slotProps={{ input: { readOnly: true } }}
             />
             <TextField
               onChange={handleTitleChange}
@@ -134,23 +134,25 @@ export default function RightSideComponent({
               variant='outlined'
               fullWidth
               helperText={t('AddDialog.CustomTorrentTitleHelperText')}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position='end'>
-                    <IconButton
-                      size='small'
-                      style={{ padding: '1px', marginRight: '-6px' }}
-                      onClick={() => {
-                        setTitle('')
-                        setIsCustomTitleEnabled(!isCustomTitleEnabled)
-                        updateTitleFromSource()
-                        setIsUserInteractedWithPoster(false)
-                      }}
-                    >
-                      <HighlightOffIcon style={{ color: isCustomTitleEnabled ? primary : rgba('#ccc', 0.25) }} />
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position='end'>
+                      <IconButton
+                        size='small'
+                        style={{ padding: '1px', marginRight: '-6px' }}
+                        onClick={() => {
+                          setTitle('')
+                          setIsCustomTitleEnabled(!isCustomTitleEnabled)
+                          updateTitleFromSource()
+                          setIsUserInteractedWithPoster(false)
+                        }}
+                      >
+                      <HighlightOffIcon style={{ color: isCustomTitleEnabled ? primary : alphaCss('#ccc', 0.25) }} />
                     </IconButton>
                   </InputAdornment>
                 ),
+                },
               }}
             />
           </>

@@ -1,12 +1,12 @@
-import styled, { css } from 'styled-components'
+import styled from '@emotion/styled'
+import { css } from '@emotion/react'
+import { resolveThemeColors } from 'shared/theme/color'
 
 /** Non-interactive empty-state wrapper (e.g. offline message). */
 export default styled.div`
-  ${({
-    theme: {
-      addDialog: { notificationSuccessBGColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {addDialog: { notificationSuccessBGColor },} = resolveThemeColors(theme)
+    return css`
     display: grid;
     place-items: center;
     gap: 12px;
@@ -24,5 +24,6 @@ export default styled.div`
       font-weight: 500;
       text-align: center;
     }
-  `}
+  `
+  }}
 `

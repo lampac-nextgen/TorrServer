@@ -1,5 +1,7 @@
 import { mediaMax } from 'style/breakpoints'
-import styled, { css } from 'styled-components'
+import styled from '@emotion/styled'
+import { css } from '@emotion/react'
+import { resolveThemeColors } from 'shared/theme/color'
 
 export const MainSectionButtonGroup = styled.div`
   display: grid;
@@ -35,12 +37,11 @@ export const MainSectionButtonGroup = styled.div`
 `
 
 export const SmallLabel = styled.div<{ $mb?: number }>`
-  ${({
-    $mb,
-    theme: {
-      torrentFunctions: { fontColor },
-    },
-  }) => css`
+  ${({$mb,
+    theme,
+  }) => {
+    const {torrentFunctions: { fontColor },} = resolveThemeColors(theme)
+    return css`
     ${$mb && `margin-bottom: ${$mb}px`};
     font-size: 14px;
     font-weight: 400;
@@ -52,5 +53,6 @@ export const SmallLabel = styled.div<{ $mb?: number }>`
       font-weight: 400;
       ${$mb && `margin-bottom: ${$mb / 1.5}px`};
     }
-  `}
+  `
+  }}
 `

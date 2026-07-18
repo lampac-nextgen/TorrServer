@@ -1,4 +1,6 @@
-import styled, { css } from 'styled-components'
+import styled from '@emotion/styled'
+import { css } from '@emotion/react'
+import { resolveThemeColors } from 'shared/theme/color'
 
 export const StyledWrapper = styled.div<{ $isOpen?: boolean }>`
   ${({ $isOpen }) => css`

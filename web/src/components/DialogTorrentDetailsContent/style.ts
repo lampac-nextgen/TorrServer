@@ -1,6 +1,8 @@
-import { rgba } from 'polished'
+import { alphaCss } from 'shared/theme/color'
 import { mediaMax } from 'style/breakpoints'
-import styled, { css } from 'styled-components'
+import styled from '@emotion/styled'
+import { css } from '@emotion/react'
+import { resolveThemeColors } from 'shared/theme/color'
 
 export const DialogContentGrid = styled.div`
   display: grid;
@@ -32,12 +34,11 @@ export const DetailsScrollBody = styled.div`
 `
 
 export const Poster = styled.div<{ $poster?: boolean }>`
-  ${({
-    $poster,
-    theme: {
-      dialogTorrentDetailsContent: { posterBGColor },
-    },
-  }) => css`
+  ${({$poster,
+    theme,
+  }) => {
+    const {dialogTorrentDetailsContent: { posterBGColor },} = resolveThemeColors(theme)
+    return css`
     height: 400px;
     border-radius: 5px;
     overflow: hidden;
@@ -61,7 +62,7 @@ export const Poster = styled.div<{ $poster?: boolean }>`
               transform: scale(2.5) translateY(-3px);
             }
           `
-    }
+    }}
 
     ${mediaMax('desktop')} {
       align-self: start;
@@ -76,17 +77,16 @@ export const Poster = styled.div<{ $poster?: boolean }>`
           : css`
               display: none;
             `
-      }
+      }}
     }
-  `}
+  `
+  }}
 `
 
 export const MainSection = styled.section`
-  ${({
-    theme: {
-      dialogTorrentDetailsContent: { gradientStartColor, gradientEndColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {dialogTorrentDetailsContent: { gradientStartColor, gradientEndColor },} = resolveThemeColors(theme)
+    return css`
     grid-area: main;
     padding: 40px;
     display: grid;
@@ -98,15 +98,14 @@ export const MainSection = styled.section`
       grid-template-columns: 1fr;
       padding: 20px;
     }
-  `}
+  `
+  }}
 `
 
 export const CacheSection = styled.section`
-  ${({
-    theme: {
-      dialogTorrentDetailsContent: { cacheSectionBGColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {dialogTorrentDetailsContent: { cacheSectionBGColor },} = resolveThemeColors(theme)
+    return css`
     grid-area: cache;
     padding: 40px;
     display: grid;
@@ -118,15 +117,14 @@ export const CacheSection = styled.section`
     ${mediaMax('tablet')} {
       padding: 20px;
     }
-  `}
+  `
+  }}
 `
 
 export const TorrentFilesSection = styled.section`
-  ${({
-    theme: {
-      dialogTorrentDetailsContent: { torrentFilesSectionBGColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {dialogTorrentDetailsContent: { torrentFilesSectionBGColor },} = resolveThemeColors(theme)
+    return css`
     grid-area: file-list;
     padding: 40px;
     box-shadow: inset 3px 25px 8px -25px rgba(0, 0, 0, 0.5);
@@ -135,16 +133,16 @@ export const TorrentFilesSection = styled.section`
     ${mediaMax('tablet')} {
       padding: 20px;
     }
-  `}
+  `
+  }}
 `
 
 export const SectionSubName = styled.div<{ $mb?: number }>`
-  ${({
-    $mb,
-    theme: {
-      dialogTorrentDetailsContent: { subNameFontColor },
-    },
-  }) => css`
+  ${({$mb,
+    theme,
+  }) => {
+    const {dialogTorrentDetailsContent: { subNameFontColor },} = resolveThemeColors(theme)
+    return css`
     ${$mb && `margin-top: ${$mb / 3}px`};
     ${$mb && `margin-bottom: ${$mb}px`};
     line-height: 1.2;
@@ -155,17 +153,17 @@ export const SectionSubName = styled.div<{ $mb?: number }>`
       ${$mb && `margin-bottom: ${$mb / 2}px`};
       font-size: 14px;
     }
-  `}
+  `
+  }}
 `
 
 export const SectionTitle = styled.div<{ $color?: string; $mb?: number }>`
-  ${({
-    $color,
+  ${({$color,
     $mb,
-    theme: {
-      dialogTorrentDetailsContent: { titleFontColor },
-    },
-  }) => css`
+    theme,
+  }) => {
+    const {dialogTorrentDetailsContent: { titleFontColor },} = resolveThemeColors(theme)
+    return css`
     ${$mb && `margin-bottom: ${$mb}px`};
     font-size: 1.5rem;
     font-weight: 300;
@@ -182,7 +180,8 @@ export const SectionTitle = styled.div<{ $color?: string; $mb?: number }>`
     ${mediaMax('mobile')} {
       font-size: 1.125rem;
     }
-  `}
+  `
+  }}
 `
 
 export const SectionHeader = styled.div`
@@ -244,11 +243,9 @@ export const WidgetFieldWrapper = styled.div`
 `
 
 export const WidgetFieldTitle = styled.div`
-  ${({
-    theme: {
-      dialogTorrentDetailsContent: { titleFontColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {dialogTorrentDetailsContent: { titleFontColor },} = resolveThemeColors(theme)
+    return css`
     grid-area: title;
     justify-self: start;
     text-transform: uppercase;
@@ -256,13 +253,14 @@ export const WidgetFieldTitle = styled.div`
     margin-bottom: 2px;
     font-weight: 600;
     color: ${titleFontColor};
-  `}
+  `
+  }}
 `
 
 export const WidgetFieldIcon = styled.div<{ $bgColor?: string; $fontColor?: string }>`
   ${({ $bgColor, $fontColor }) => css`
     grid-area: icon;
-    color: ${$fontColor || rgba('#fff', 0.8)};
+    color: ${$fontColor || alphaCss('#fff', 0.8)};
     background: ${$bgColor};
     border-radius: 5px 0 0 5px;
 
@@ -271,17 +269,17 @@ export const WidgetFieldIcon = styled.div<{ $bgColor?: string; $fontColor?: stri
         width: 50%;
       }
     }
-  `}
+  `
+  }}
 `
 
 export const WidgetFieldValue = styled.div<{ $bgColor?: string; $fontColor?: string }>`
-  ${({
-    $bgColor,
+  ${({$bgColor,
     $fontColor,
-    theme: {
-      dialogTorrentDetailsContent: { widgetFontColor },
-    },
-  }) => css`
+    theme,
+  }) => {
+    const {dialogTorrentDetailsContent: { widgetFontColor },} = resolveThemeColors(theme)
+    return css`
     grid-area: value;
     font-size: 24px;
     padding: 0 20px 0 0;
@@ -297,17 +295,17 @@ export const WidgetFieldValue = styled.div<{ $bgColor?: string; $fontColor?: str
       font-size: 18px;
       padding: 0 16px 0 0;
     }
-  `}
+  `
+  }}
 `
 
 export const Divider = styled.div`
-  ${({
-    theme: {
-      addDialog: { separatorColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {addDialog: { separatorColor },} = resolveThemeColors(theme)
+    return css`
     height: 1px;
     background-color: ${separatorColor};
     margin: 30px 0;
-  `}
+  `
+  }}
 `

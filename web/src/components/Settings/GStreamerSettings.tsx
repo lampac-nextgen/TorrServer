@@ -310,7 +310,7 @@ const GStreamerSettings = forwardRef<GStreamerSettingsHandle>(function GStreamer
         helperText={t('GStreamer.VersionHint')}
         variant='outlined'
         fullWidth
-        inputProps={{ inputMode: 'decimal', pattern: '[0-9]*[.,]?[0-9]*' }}
+        slotProps={{ htmlInput: { inputMode: 'decimal', pattern: '[0-9]*[.,]?[0-9]*' } }}
       />
 
       <TextField
@@ -351,7 +351,7 @@ const GStreamerSettings = forwardRef<GStreamerSettingsHandle>(function GStreamer
         helperText={t('GStreamer.MaxTasksHint')}
         variant='outlined'
         fullWidth
-        inputProps={{ min: 0 }}
+        slotProps={{ htmlInput: { min: 0 } }}
       />
 
       <TextField
@@ -363,7 +363,7 @@ const GStreamerSettings = forwardRef<GStreamerSettingsHandle>(function GStreamer
         helperText={t('GStreamer.InactiveMinutesHint')}
         variant='outlined'
         fullWidth
-        inputProps={{ min: 1 }}
+        slotProps={{ htmlInput: { min: 1 } }}
       />
 
       <TextField
@@ -375,7 +375,7 @@ const GStreamerSettings = forwardRef<GStreamerSettingsHandle>(function GStreamer
         helperText={t('GStreamer.SegmentSecondsHint')}
         variant='outlined'
         fullWidth
-        inputProps={{ min: 1 }}
+        slotProps={{ htmlInput: { min: 1 } }}
       />
 
       <TextField
@@ -387,7 +387,7 @@ const GStreamerSettings = forwardRef<GStreamerSettingsHandle>(function GStreamer
         helperText={t('GStreamer.SegmentDiffHint')}
         variant='outlined'
         fullWidth
-        inputProps={{ min: 0 }}
+        slotProps={{ htmlInput: { min: 0 } }}
       />
 
       <Divider />
@@ -403,7 +403,7 @@ const GStreamerSettings = forwardRef<GStreamerSettingsHandle>(function GStreamer
         helperText={t('GStreamer.AACBitrateKbpsHint')}
         variant='outlined'
         fullWidth
-        inputProps={{ min: 32 }}
+        slotProps={{ htmlInput: { min: 32 } }}
       />
 
       <TextField
@@ -415,7 +415,7 @@ const GStreamerSettings = forwardRef<GStreamerSettingsHandle>(function GStreamer
         helperText={t('GStreamer.AACChannelsHint')}
         variant='outlined'
         fullWidth
-        inputProps={{ min: 0 }}
+        slotProps={{ htmlInput: { min: 0 } }}
       />
 
       <TextField
@@ -427,7 +427,7 @@ const GStreamerSettings = forwardRef<GStreamerSettingsHandle>(function GStreamer
         helperText={t('GStreamer.AACSamplerateHint')}
         variant='outlined'
         fullWidth
-        inputProps={{ min: 0 }}
+        slotProps={{ htmlInput: { min: 0 } }}
       />
 
       <Divider />
@@ -443,7 +443,7 @@ const GStreamerSettings = forwardRef<GStreamerSettingsHandle>(function GStreamer
         helperText={t('GStreamer.VideoBitrateHint')}
         variant='outlined'
         fullWidth
-        inputProps={{ min: 100 }}
+        slotProps={{ htmlInput: { min: 100 } }}
       />
 
       <FormHelperText style={{ marginBottom: 8 }}>{t('GStreamer.TranscodeHint')}</FormHelperText>
@@ -611,7 +611,7 @@ const GStreamerSettings = forwardRef<GStreamerSettingsHandle>(function GStreamer
         <FormHelperText>{t('GStreamer.X264UltrafastHint')}</FormHelperText>
       </FormGroup>
 
-      <Box mt={3} mb={2} display='flex' flexWrap='wrap' style={{ gap: 10 }}>
+      <Box sx={{ mt: 3, mb: 2, display: 'flex', flexWrap: 'wrap', gap: 10 }}>
         <Button
           type='button'
           variant='contained'

@@ -1,4 +1,4 @@
-import { rgba } from 'polished'
+import { alphaCss } from 'shared/theme/color'
 import { mainColors } from 'style/colors'
 
 export type SnakeThemeMode = 'dark' | 'light'
@@ -33,26 +33,26 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       borderWidth: 1,
       pieceSize: 20,
       gapBetweenPieces: 4,
-      borderColor: rgba('#fff', 0.28),
+      borderColor: alphaCss('#fff', 0.28),
       completeColor: mainColors.dark.primary,
       backgroundColor: '#1a2822',
       readerColor: '#0a0a0a',
-      readerHaloColor: rgba('#fff', 0.55),
+      readerHaloColor: alphaCss('#fff', 0.55),
       rangeColor: '#cda184',
-      rangeEmptyColor: rgba('#cda184', 0.3),
+      rangeEmptyColor: alphaCss('#cda184', 0.3),
     },
     mini: {
       cacheMaxHeight: 420,
       borderWidth: 2,
       pieceSize: 26,
       gapBetweenPieces: 5,
-      borderColor: rgba('#fff', 0.32),
+      borderColor: alphaCss('#fff', 0.32),
       completeColor: mainColors.dark.primary,
       backgroundColor: '#1f3028',
       readerColor: '#0a0a0a',
-      readerHaloColor: rgba('#fff', 0.5),
+      readerHaloColor: alphaCss('#fff', 0.5),
       rangeColor: '#cda184',
-      rangeEmptyColor: rgba('#cda184', 0.32),
+      rangeEmptyColor: alphaCss('#cda184', 0.32),
     },
   },
   light: {
@@ -64,9 +64,9 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       completeColor: mainColors.light.primary,
       backgroundColor: '#ffffff',
       readerColor: '#000',
-      readerHaloColor: rgba('#fff', 0.9),
+      readerHaloColor: alphaCss('#fff', 0.9),
       rangeColor: '#7e6bc4',
-      rangeEmptyColor: rgba('#afa6e3', 0.32),
+      rangeEmptyColor: alphaCss('#afa6e3', 0.32),
     },
     mini: {
       cacheMaxHeight: 420,
@@ -77,9 +77,9 @@ export const snakeSettings: Record<SnakeThemeMode, Record<SnakeVariant, SnakePie
       completeColor: mainColors.light.primary,
       backgroundColor: '#f4faf7',
       readerColor: '#0a0a0a',
-      readerHaloColor: rgba('#fff', 0.9),
+      readerHaloColor: alphaCss('#fff', 0.9),
       rangeColor: '#7e6bc4',
-      rangeEmptyColor: rgba('#afa6e3', 0.36),
+      rangeEmptyColor: alphaCss('#afa6e3', 0.36),
     },
   },
 }

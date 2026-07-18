@@ -50,6 +50,7 @@ import {
 } from 'utils/GStreamer'
 
 import { buttonLoadingIcon } from 'utils/buttonLoading'
+import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 
 const AddDialog = lazy(() => import('components/Add/AddDialog'))
 const DialogTorrentDetailsContent = lazy(() => import('components/DialogTorrentDetailsContent'))
@@ -191,6 +192,8 @@ const Torrent = ({ torrent }: TorrentCardProps) => {
   const { t } = useTranslation()
   const [isDetailedInfoOpened, setIsDetailedInfoOpened] = useState(false)
   const [isDeleteTorrentOpened, setIsDeleteTorrentOpened] = useState(false)
+  useSyncModalOpen(isDetailedInfoOpened)
+  useSyncModalOpen(isDeleteTorrentOpened)
   const [unsupportedPlayers, setUnsupportedPlayers] = useState<Record<string, boolean>>({})
   const [episodeMenuAnchor, setEpisodeMenuAnchor] = useState<HTMLElement | null>(null)
   const [selectedPlayer, setSelectedPlayer] = useState<TorrentPlayer | null>(null)

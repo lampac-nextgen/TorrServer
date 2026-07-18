@@ -1,4 +1,4 @@
-import { rgba } from 'polished'
+import { alphaCss } from 'shared/theme/color'
 
 export const themeColors = {
   light: {
@@ -11,7 +11,7 @@ export const themeColors = {
     },
     torrentCard: {
       accentCardColor: '#337a57',
-      buttonBGColor: rgba('#337a57', 0.5),
+      buttonBGColor: alphaCss('#337a57', 0.5),
       cardPrimaryColor: '#00a572',
       cardSecondaryColor: '#74c39c',
     },
@@ -92,19 +92,19 @@ export const themeColors = {
     },
     torrentCard: {
       accentCardColor: '#323637',
-      buttonBGColor: rgba('#323637', 0.5),
+      buttonBGColor: alphaCss('#323637', 0.5),
       cardPrimaryColor: '#545a5e',
-      cardSecondaryColor: rgba('#dee3e5', 0.4),
+      cardSecondaryColor: alphaCss('#dee3e5', 0.4),
     },
     dialogTorrentDetailsContent: {
-      posterBGColor: rgba('#dee3e5', 0.4),
+      posterBGColor: alphaCss('#dee3e5', 0.4),
       gradientStartColor: '#656f76',
       gradientEndColor: '#545a5e',
       cacheSectionBGColor: '#3c4244',
-      widgetFontColor: rgba('#fff', 0.8),
+      widgetFontColor: alphaCss('#fff', 0.8),
       titleFontColor: '#f1eff3',
       subNameFontColor: '#dee3e5',
-      torrentFilesSectionBGColor: rgba('#545a5e', 0.9),
+      torrentFilesSectionBGColor: alphaCss('#545a5e', 0.9),
       bufferTrailStartColor: '#5a6166',
       bufferTrailEndColor: '#656f76',
       bufferEmptyTrackColor: '#3c4244',
@@ -133,14 +133,14 @@ export const themeColors = {
     },
     table: {
       defaultPrimaryColor: '#323637',
-      defaultSecondaryColor: rgba('#545a5e', 0.9),
+      defaultSecondaryColor: alphaCss('#545a5e', 0.9),
       defaultTertiaryColor: '#545a5e',
-      rowBGColor: rgba('#545a5e', 0.35),
-      viewedRowBGColor: rgba('#545a5e', 0.55),
+      rowBGColor: alphaCss('#545a5e', 0.35),
+      viewedRowBGColor: alphaCss('#545a5e', 0.55),
       dividerColor: '#656f76',
       rowFontColor: '#f1eff3',
-      shortTableButtonsBGColor: rgba('#545a5e', 0.35),
-      outlinedButtonBorderColor: rgba('#dee3e5', 0.45),
+      shortTableButtonsBGColor: alphaCss('#545a5e', 0.35),
+      outlinedButtonBorderColor: alphaCss('#dee3e5', 0.45),
       viewedPrimaryColor: '#5a6166',
       viewedSecondaryColor: '#656f76',
       viewedTertiaryColor: '#707880',
@@ -154,7 +154,7 @@ export const themeColors = {
       preloadCacheBorderColor: '#dee3e5',
       preloadCacheFontColor: '#f1eff3',
       storageSelectedBG: '#323637',
-      storageUnselectedBG: rgba('#545a5e', 0.9),
+      storageUnselectedBG: alphaCss('#545a5e', 0.9),
       storageSelectedIcon: '#dee3e5',
       storageUnselectedIcon: '#323637',
     },
@@ -169,11 +169,11 @@ export const mainColors = {
   light: {
     primary: '#00a572',
     secondary: '#00a572',
-    labels: rgba('#000', 0.9),
+    labels: alphaCss('#000', 0.9),
   },
   dark: {
     primary: '#323637',
     secondary: '#dee3e5',
-    labels: rgba('#fff', 0.9),
+    labels: alphaCss('#fff', 0.9),
   },
 }

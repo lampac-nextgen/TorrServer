@@ -8,6 +8,7 @@ import { torrentsHost } from 'utils/Hosts'
 import { useTranslation } from 'react-i18next'
 import { StyledDialog } from 'style/CustomMaterialUiStyles'
 import type { OfflineAwareProps } from 'types/api'
+import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 
 import UnsafeButton from './UnsafeButton'
 
@@ -25,6 +26,7 @@ const fnRemoveAll = () => {
 export default function RemoveAll({ isOffline, isLoading }: OfflineAwareProps) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
+  useSyncModalOpen(open)
   const closeDialog = () => setOpen(false)
   const openDialog = () => setOpen(true)
 

@@ -1,7 +1,7 @@
 import { AppBar, IconButton, Toolbar, Typography } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { ArrowBack } from '@mui/icons-material'
-import styled from 'styled-components'
+import { styled } from '@mui/material/styles'
 import { useTranslation } from 'react-i18next'
 
 interface DialogHeaderProps {

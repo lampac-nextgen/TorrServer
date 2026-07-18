@@ -4,10 +4,9 @@ import axios, { isAxiosError } from 'axios'
 import {
   TextField,
   Button,
-  Chip,
+  Box,
   CircularProgress,
   Typography,
-  IconButton,
   Snackbar,
   Alert,
   useMediaQuery,
@@ -17,10 +16,9 @@ import {
   InputLabel,
   ToggleButton,
   ToggleButtonGroup,
-  useTheme,
   type SelectChangeEvent,
 } from '@mui/material'
-import { CloudDownload as DownloadIcon, ArrowUpward, ArrowDownward } from '@mui/icons-material'
+import { ArrowUpward, ArrowDownward } from '@mui/icons-material'
 import { torznabSearchHost, torrentsHost, settingsHost, searchHost } from 'utils/Hosts'
 import { StyledDialog, StyledHeader, dialogPaperSx } from 'style/CustomMaterialUiStyles'
 import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
@@ -28,6 +26,8 @@ import { parseSizeToBytes, formatSizeToClassicUnits } from 'utils/Utils'
 import { getMoviePosters, shortenTitleForPosterSearch } from 'components/Add/helpers'
 import { buttonLoadingIcon } from 'utils/buttonLoading'
 import type { BTSets, SearchResultItem, TorznabUrl } from 'types/api'
+import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
+import SearchResultsGrid from 'features/search/SearchResultsGrid'
 import { beginSearchRequest, isCurrentSearch } from './searchRequest'
 
 import {
@@ -38,12 +38,6 @@ import {
   ResultsCount,
   ResultsScroll,
   EmptyState,
-  ResultList,
-  ResultRow,
-  ResultMain,
-  ResultTitle,
-  MetaBadges,
-  ResultAction,
   Footer,
 } from './style'
 
@@ -86,6 +80,7 @@ const axiosErrorMessage = (err: unknown, fallback: string): string => {
 
 export default function SearchDialog({ handleClose }: SearchDialogProps) {
   const { t } = useTranslation()
+  useSyncModalOpen(true)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResultItem[]>([])
   const [loading, setLoading] = useState(false)
@@ -105,8 +100,6 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
   const searchAbortRef = useRef<AbortController | null>(null)
   const searchGenRef = useRef(0)
   const fullScreen = useMediaQuery(LAYOUT_DIALOG_FULLSCREEN_MEDIA)
-  const theme = useTheme()
-  const isDark = theme.palette.mode === 'dark'
 
   const hasTorznab = enableTorznab && trackers.length > 0
   const hasRutor = enableRutor
@@ -459,64 +452,17 @@ export default function SearchDialog({ handleClose }: SearchDialogProps) {
             )}
 
             {!loading && sortedResults.length > 0 && (
-              <ResultList>
-                {sortedResults.map((item, index) => {
-                  const sizeBytes = parseSizeToBytes(item.Size || '0')
-                  const formattedSize = formatSizeToClassicUnits(sizeBytes)
-                  const itemKey = resultDedupeKey(item) || `${item.Title || 'item'}-${index}`
-                  const isAddingThis = adding && addingKey === itemKey
-                  return (
-                    <ResultRow
-                      key={itemKey}
-                      role='button'
-                      tabIndex={0}
-                      onClick={() => !adding && handleAdd(item)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault()
-                          if (!adding) handleAdd(item)
-                        }
-                      }}
-                    >
-                      <ResultMain>
-                        <ResultTitle>{item.Title}</ResultTitle>
-                        <MetaBadges>
-                          <Chip size='small' label={formattedSize} variant='outlined' />
-                          <Chip
-                            size='small'
-                            label={`S ${item.Seed || 0}`}
-                            color={isDark ? 'default' : 'success'}
-                            variant='outlined'
-                            sx={
-                              isDark ? { bgcolor: 'rgba(255, 255, 255, 0.08)' } : { bgcolor: 'rgba(0, 167, 114, 0.12)' }
-                            }
-                          />
-                          <Chip size='small' label={`P ${item.Peer || 0}`} variant='outlined' />
-                        </MetaBadges>
-                      </ResultMain>
-                      <ResultAction>
-                        <IconButton
-                          edge='end'
-                          aria-label='add'
-                          onClick={e => {
-                            e.stopPropagation()
-                            handleAdd(item)
-                          }}
-                          disabled={adding}
-                          size='small'
-                          sx={{ minWidth: 40, minHeight: 40 }}
-                        >
-                          {isAddingThis ? (
-                            <CircularProgress size={18} color='secondary' />
-                          ) : (
-                            <DownloadIcon color='secondary' />
-                          )}
-                        </IconButton>
-                      </ResultAction>
-                    </ResultRow>
-                  )
-                })}
-              </ResultList>
+              <Box sx={{ flex: 1, minHeight: 280, height: '100%' }}>
+                <SearchResultsGrid
+                  results={sortedResults}
+                  loading={false}
+                  adding={adding}
+                  addingKey={addingKey}
+                  resultDedupeKey={resultDedupeKey}
+                  formatSize={item => formatSizeToClassicUnits(parseSizeToBytes(item.Size || '0'))}
+                  onAdd={handleAdd}
+                />
+              </Box>
             )}
           </ResultsScroll>
         </SearchBody>

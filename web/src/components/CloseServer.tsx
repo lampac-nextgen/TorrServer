@@ -5,12 +5,14 @@ import { PowerSettingsNew as PowerSettingsNewIcon, PowerOff as PowerOffIcon } fr
 import { shutdownHost } from 'utils/Hosts'
 import { useTranslation } from 'react-i18next'
 import type { OfflineAwareProps } from 'types/api'
+import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 
 import UnsafeButton from './UnsafeButton'
 
 export default function CloseServer({ isOffline, isLoading }: OfflineAwareProps) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
+  useSyncModalOpen(open)
   const closeDialog = () => setOpen(false)
   const openDialog = () => setOpen(true)
 

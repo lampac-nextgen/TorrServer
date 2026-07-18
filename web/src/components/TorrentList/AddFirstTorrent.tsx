@@ -4,7 +4,9 @@ import CircularProgress from '@mui/material/CircularProgress'
 import CreateNewFolderOutlinedIcon from '@mui/icons-material/CreateNewFolderOutlined'
 import { useState, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
-import styled, { css, keyframes } from 'styled-components'
+import styled from '@emotion/styled'
+import { css, keyframes } from '@emotion/react'
+import { resolveThemeColors } from 'shared/theme/color'
 
 const AddDialog = lazy(() => import('../Add/AddDialog'))
 
@@ -14,11 +16,9 @@ const float = keyframes`
 `
 
 const EmptyTorrentCTA = styled(ButtonBase)`
-  ${({
-    theme: {
-      addDialog: { notificationSuccessBGColor, languageSwitchBGColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {addDialog: { notificationSuccessBGColor, languageSwitchBGColor },} = resolveThemeColors(theme)
+    return css`
     && {
       display: grid;
       place-items: center;
@@ -53,7 +53,8 @@ const EmptyTorrentCTA = styled(ButtonBase)`
         text-align: center;
       }
     }
-  `}
+  `
+  }}
 `
 
 export default function AddFirstTorrent() {

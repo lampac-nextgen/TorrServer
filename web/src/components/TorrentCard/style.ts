@@ -1,13 +1,13 @@
 import { mediaMax, MEDIA_SHORT_VIEWPORT } from 'style/breakpoints'
 import { cssVar, radius, typography } from 'style/tokens'
-import styled, { css } from 'styled-components'
+import styled from '@emotion/styled'
+import { css } from '@emotion/react'
+import { resolveThemeColors } from 'shared/theme/color'
 
 export const TorrentCard = styled.div`
-  ${({
-    theme: {
-      torrentCard: { cardPrimaryColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {torrentCard: { cardPrimaryColor },} = resolveThemeColors(theme)
+    return css`
     border-radius: ${radius.sm}px;
     display: grid;
     grid-template-columns: 120px 260px 1fr;
@@ -35,7 +35,8 @@ export const TorrentCard = styled.div`
       grid-template-columns: 60px 1fr;
       grid-template-rows: 90px max-content;
     }
-  `}
+  `
+  }}
 `
 
 export const TorrentCardPoster = styled.button<{ $isPoster?: boolean }>`
@@ -60,13 +61,11 @@ export const TorrentCardPoster = styled.button<{ $isPoster?: boolean }>`
     filter: brightness(0.7);
   }
 
-  ${({
-    $isPoster,
-    theme: {
+  ${({ $isPoster, theme }) => {
+    const {
       torrentCard: { cardSecondaryColor, accentCardColor },
-    },
-  }) =>
-    $isPoster
+    } = resolveThemeColors(theme)
+    return $isPoster
       ? css`
           img {
             width: 100%;
@@ -84,7 +83,8 @@ export const TorrentCardPoster = styled.button<{ $isPoster?: boolean }>`
           svg {
             transform: translateY(-3px);
           }
-        `};
+        `
+  }}
 
   ${mediaMax('list3')}, ${MEDIA_SHORT_VIEWPORT} {
     svg {
@@ -112,11 +112,9 @@ export const TorrentCardButtons = styled.div`
 `
 
 export const TorrentCardDescription = styled.div`
-  ${({
-    theme: {
-      torrentCard: { cardSecondaryColor, accentCardColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {torrentCard: { cardSecondaryColor, accentCardColor },} = resolveThemeColors(theme)
+    return css`
     grid-area: description;
     background: ${cardSecondaryColor};
     border-radius: ${radius.sm}px;
@@ -224,7 +222,8 @@ export const TorrentCardDescription = styled.div`
         font-size: 9px;
       }
     }
-  `}
+  `
+  }}
 `
 
 export const StatusIndicators = styled.div<{ $color: string }>`
@@ -235,5 +234,6 @@ export const StatusIndicators = styled.div<{ $color: string }>`
     border-radius: 50%;
     flex-shrink: 0;
     box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-  `}
+  `
+  }}
 `

@@ -1,14 +1,15 @@
 import { Button } from '@mui/material'
-import styled, { css } from 'styled-components'
+import styled from '@emotion/styled'
+import { css } from '@emotion/react'
+import { resolveThemeColors } from 'shared/theme/color'
 import { mediaMax } from 'style/breakpoints'
 
 export const Content = styled.div<{ $isEditMode?: boolean }>`
-  ${({
-    $isEditMode,
-    theme: {
-      addDialog: { gradientStartColor, gradientEndColor, fontColor, separatorColor },
-    },
-  }) => css`
+  ${({$isEditMode,
+    theme,
+  }) => {
+    const {addDialog: { gradientStartColor, gradientEndColor, fontColor, separatorColor },} = resolveThemeColors(theme)
+    return css`
     height: 550px;
     max-height: min(550px, calc(100dvh - var(--app-chrome-top) - var(--app-chrome-bottom)));
     background: linear-gradient(145deg, ${gradientStartColor}, ${gradientEndColor});
@@ -35,7 +36,8 @@ export const Content = styled.div<{ $isEditMode?: boolean }>`
     ${mediaMax('compact')} {
       align-content: start;
     }
-  `}
+  `
+  }}
 `
 
 export const RightSide = styled.div`
@@ -47,14 +49,13 @@ export const RightSideContainer = styled.div<{
   $notificationMessage?: string
   $isError?: boolean
 }>`
-  ${({
-    $isHidden,
+  ${({$isHidden,
     $notificationMessage,
     $isError,
-    theme: {
-      addDialog: { notificationErrorBGColor, notificationSuccessBGColor },
-    },
-  }) => css`
+    theme,
+  }) => {
+    const {addDialog: { notificationErrorBGColor, notificationSuccessBGColor },} = resolveThemeColors(theme)
+    return css`
     height: 530px;
     max-height: min(530px, calc(100dvh - var(--app-chrome-top) - var(--app-chrome-bottom) - 20px));
     min-width: 0;
@@ -88,14 +89,14 @@ export const RightSideContainer = styled.div<{
           text-align: center;
         }
       `
-    };
+    }};
 
     ${
       $isHidden &&
       css`
         display: none;
       `
-    };
+    }};
 
     ${mediaMax('mobile')} {
       height: auto;
@@ -105,14 +106,13 @@ export const RightSideContainer = styled.div<{
     ${mediaMax('compact')} {
       min-height: 170px;
     }
-  `}
+  `
+  }}
 `
 export const LeftSide = styled.div`
-  ${({
-    theme: {
-      addDialog: { separatorColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {addDialog: { separatorColor },} = resolveThemeColors(theme)
+    return css`
     display: flex;
     flex-direction: column;
     border-right: 1px solid ${separatorColor};
@@ -121,7 +121,8 @@ export const LeftSide = styled.div`
       border-right: none;
       border-bottom: 1px solid ${separatorColor};
     }
-  `}
+  `
+  }}
 `
 
 export const LeftSideBottomSectionBasicStyles = css`
@@ -133,11 +134,9 @@ export const LeftSideBottomSectionBasicStyles = css`
 
 export const LeftSideBottomSectionNoFile = styled.div<{ $isDragActive?: boolean }>`
   ${LeftSideBottomSectionBasicStyles}
-  ${({
-    theme: {
-      addDialog: { dropzoneBorderColor, dropzoneHoverBGColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {addDialog: { dropzoneBorderColor, dropzoneHoverBGColor },} = resolveThemeColors(theme)
+    return css`
     border: 4px dashed ${dropzoneBorderColor};
     text-align: center;
     outline: none;
@@ -152,7 +151,8 @@ export const LeftSideBottomSectionNoFile = styled.div<{ $isDragActive?: boolean 
         transform: translateY(-4%);
       }
     }
-  `}
+  `
+  }}
 
   ${({ $isDragActive }) => $isDragActive && `border: 4px dashed green`};
 
@@ -186,18 +186,18 @@ export const IconWrapper = styled.div`
 `
 
 export const LeftSideTopSection = styled.div<{ $active?: boolean }>`
-  ${({
-    $active,
-    theme: {
-      addDialog: { gradientStartColor },
-    },
-  }) => css`
+  ${({$active,
+    theme,
+  }) => {
+    const {addDialog: { gradientStartColor },} = resolveThemeColors(theme)
+    return css`
     background: ${gradientStartColor};
     padding: 0 20px 20px 20px;
     transition: all 0.3s;
 
     ${$active && 'box-shadow: 0 8px 10px -9px rgba(0, 0, 0, 0.5)'};
-  `}
+  `
+  }}
 `
 
 export const PosterWrapper = styled.div`
@@ -270,12 +270,11 @@ export const PosterSuggestionsItem = styled.div`
 `
 
 export const Poster = styled.div<{ $poster?: boolean }>`
-  ${({
-    $poster,
-    theme: {
-      addDialog: { posterBGColor },
-    },
-  }) => css`
+  ${({$poster,
+    theme,
+  }) => {
+    const {addDialog: { posterBGColor },} = resolveThemeColors(theme)
+    return css`
     border-radius: 5px;
     overflow: hidden;
     width: 200px;
@@ -302,8 +301,9 @@ export const Poster = styled.div<{ $poster?: boolean }>`
               transform: scale(1.5) translateY(-3px);
             }
           `
-    }
-  `}
+    }}
+  `
+  }}
 `
 
 export const ClearPosterButton = styled(Button)<{ $showbutton?: boolean }>`
@@ -348,7 +348,8 @@ export const PosterLanguageSwitch = styled.div<{ $showbutton?: boolean }>`
     left: 50%;
     transform: translate(-50%, -50%);
     ${!$showbutton && 'display: none'};
-  `}
+  `
+  }}
 `
 
 export const MultiFileRow = styled.div`
@@ -372,11 +373,9 @@ export const MultiFileRow = styled.div`
 `
 
 export const MultiFilePoster = styled.div`
-  ${({
-    theme: {
-      addDialog: { posterBGColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {addDialog: { posterBGColor },} = resolveThemeColors(theme)
+    return css`
     width: 80px;
     height: 110px;
     border-radius: 4px;
@@ -406,7 +405,8 @@ export const MultiFilePoster = styled.div`
       display: grid;
       place-items: center;
     }
-  `}
+  `
+  }}
 `
 
 export const MultiFileInfo = styled.div`

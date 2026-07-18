@@ -1,13 +1,13 @@
-import styled, { css } from 'styled-components'
+import styled from '@emotion/styled'
+import { css } from '@emotion/react'
+import { resolveThemeColors } from 'shared/theme/color'
 import { DialogFooter } from 'style/DialogStyles'
 import { mediaMax } from 'style/breakpoints'
 
 export const Content = styled.div`
-  ${({
-    theme: {
-      settingsDialog: { contentBG },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {settingsDialog: { contentBG },} = resolveThemeColors(theme)
+    return css`
     background: ${contentBG};
     overflow: hidden;
     flex: 1;
@@ -20,7 +20,8 @@ export const Content = styled.div`
       max-height: none;
       flex: 1 1 auto;
     }
-  `}
+  `
+  }}
 `
 
 export const SearchBody = styled.div`
@@ -46,11 +47,7 @@ export const SearchToolbar = styled.div`
   top: 0;
   z-index: 2;
   padding-bottom: 4px;
-  background: ${({
-    theme: {
-      settingsDialog: { contentBG },
-    },
-  }) => contentBG};
+  background: ${({ theme }) => resolveThemeColors(theme).settingsDialog.contentBG};
 
   .search-tracker {
     min-width: 150px;
@@ -155,12 +152,10 @@ export const ResultList = styled.ul`
 `
 
 export const ResultRow = styled.li`
-  ${({
-    theme: {
-      app: { paperColor },
-      addDialog: { separatorColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {app: { paperColor },
+      addDialog: { separatorColor },} = resolveThemeColors(theme)
+    return css`
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 8px 12px;
@@ -185,7 +180,8 @@ export const ResultRow = styled.li`
       padding: 8px 10px;
       gap: 6px 8px;
     }
-  `}
+  `
+  }}
 `
 
 export const ResultMain = styled.div`

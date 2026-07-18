@@ -25,6 +25,7 @@ import TorznabSettings from './TorznabSettings'
 import TMDBSettings from './TMDBSettings'
 import GStreamerSettings, { type GStreamerSettingsHandle } from './GStreamerSettings'
 import type { BTSets } from 'types/api'
+import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 
 interface SettingsDialogProps {
   handleClose: () => void
@@ -32,6 +33,7 @@ interface SettingsDialogProps {
 
 export default function SettingsDialog({ handleClose }: SettingsDialogProps) {
   const { t } = useTranslation()
+  useSyncModalOpen(true)
   const toast = useOptionalAppToast()
   const fullScreen = useMediaQuery(LAYOUT_DIALOG_FULLSCREEN_MEDIA)
   const { direction } = useTheme()

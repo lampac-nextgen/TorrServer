@@ -51,7 +51,7 @@ export default function LeftSideComponent({
           variant='outlined'
           onFocus={() => setIsTorrentSourceActive(true)}
           onBlur={() => setIsTorrentSourceActive(false)}
-          inputProps={{ autoComplete: 'off' }}
+          slotProps={{ htmlInput: { autoComplete: 'off' } }}
         />
       </LeftSideTopSection>
 

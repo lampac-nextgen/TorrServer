@@ -18,14 +18,15 @@ import axios from 'axios'
 import TorrentList from 'components/TorrentList'
 import useChangeLanguage from 'utils/useChangeLanguage'
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles'
-import { ThemeProvider as StyledComponentsThemeProvider } from 'styled-components'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { useQuery } from '@tanstack/react-query'
 import { detectApplePlatform, getTorrents, isStandaloneApp } from 'utils/Utils'
-import GlobalStyle from 'style/GlobalStyle'
 import { AppSnackbarProvider } from 'components/Feedback/AppSnackbar'
 import { THEME_MODES, useMaterialUITheme } from 'style/materialUISetup'
 import { queryMax } from 'style/breakpoints'
-import getStyledComponentsTheme from 'style/getStyledComponentsTheme'
+import AppGlobalStyles from 'shared/theme/AppGlobalStyles'
+import { ModalOpenProvider } from 'shared/ui/ModalOpenContext'
 import useLaunchHandler from 'utils/useLaunchHandler'
 import { useTranslation } from 'react-i18next'
 
@@ -91,14 +92,11 @@ export default function App() {
   }, [])
 
   return (
-    <>
-      <GlobalStyle />
-
-      <DarkModeContext.Provider value={{ isDarkMode }}>
-        <MuiThemeProvider theme={muiTheme}>
-          <StyledComponentsThemeProvider
-            theme={getStyledComponentsTheme(isDarkMode ? THEME_MODES.DARK : THEME_MODES.LIGHT)}
-          >
+    <DarkModeContext.Provider value={{ isDarkMode }}>
+      <MuiThemeProvider theme={muiTheme}>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <ModalOpenProvider>
+            <AppGlobalStyles />
             <CssBaseline />
             <AppSnackbarProvider>
               <>
@@ -236,9 +234,9 @@ export default function App() {
                 />
               </>
             </AppSnackbarProvider>
-          </StyledComponentsThemeProvider>
-        </MuiThemeProvider>
-      </DarkModeContext.Provider>
-    </>
+          </ModalOpenProvider>
+        </LocalizationProvider>
+      </MuiThemeProvider>
+    </DarkModeContext.Provider>
   )
 }

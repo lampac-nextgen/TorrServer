@@ -1,9 +1,13 @@
-import styled, { css } from 'styled-components'
+import styled from '@emotion/styled'
+import { css } from '@emotion/react'
+import { resolveThemeColors } from 'shared/theme/color'
 import { mediaMax } from 'style/breakpoints'
 import { TOUCH_TARGET_PX, cssVar, space, typography } from 'style/tokens'
 
 export const Header = styled.div`
-  ${({ theme: { primary } }) => css`
+  ${({ theme }) => {
+    const { primary } = resolveThemeColors(theme)
+    return css`
     background: ${primary};
     color: #fff;
     font-size: ${typography.heading};
@@ -19,17 +23,16 @@ export const Header = styled.div`
       font-size: ${typography.body};
       padding: ${space.md}px ${space.lg}px;
     }
-  `}
+  `
+  }}
 `
 
 /** Shared dialog footer used by Settings, Search, Add. */
 export const DialogFooter = styled.div`
-  ${({
-    theme: {
-      settingsDialog: { footerBG },
-      addDialog: { separatorColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {settingsDialog: { footerBG },
+      addDialog: { separatorColor },} = resolveThemeColors(theme)
+    return css`
     padding: ${space.md}px ${space.lg}px;
     display: flex;
     flex-wrap: wrap;
@@ -62,7 +65,8 @@ export const DialogFooter = styled.div`
         min-height: ${TOUCH_TARGET_PX}px;
       }
     }
-  `}
+  `
+  }}
 `
 
 export { cssVar }

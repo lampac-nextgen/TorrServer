@@ -2,7 +2,8 @@ import { useTranslation } from 'react-i18next'
 import { USBIcon, RAMIcon } from 'icons'
 import { FormControlLabel, Switch, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import TextField from '@mui/material/TextField'
-import { useTheme } from 'styled-components'
+import { useTheme } from '@mui/material/styles'
+import { resolveThemeColors } from 'shared/theme/color'
 
 import {
   CacheLegendGrid,
@@ -57,7 +58,8 @@ export default function PrimarySettingsComponent({
   updateSettings,
 }: PrimarySettingsProps) {
   const { t } = useTranslation()
-  const theme = useTheme()
+  const muiTheme = useTheme()
+  const theme = resolveThemeColors(muiTheme)
   const cacheBeforeReaderColor = theme.settingsDialog.cacheBeforeReaderColor
   const cacheAfterReaderColor = theme.settingsDialog.cacheAfterReaderColor
   const { UseDisk, TorrentsSavePath, RemoveCacheOnDrop } = settings || {}

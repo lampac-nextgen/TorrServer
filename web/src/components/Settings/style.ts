@@ -1,4 +1,6 @@
-import styled, { css } from 'styled-components'
+import styled from '@emotion/styled'
+import { css } from '@emotion/react'
+import { resolveThemeColors } from 'shared/theme/color'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import { StyledHeader } from 'style/CustomMaterialUiStyles'
@@ -79,24 +81,22 @@ import { DialogFooter } from 'style/DialogStyles'
 export const FooterSection = DialogFooter
 
 export const Divider = styled.div`
-  ${({
-    theme: {
-      settingsDialog: { separatorColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {settingsDialog: { separatorColor },} = resolveThemeColors(theme)
+    return css`
     height: 1px;
     background-color: ${separatorColor};
     margin: 30px 0;
-  `}
+  `
+  }}
 `
 
 export const Content = styled.div<{ $isLoading?: boolean }>`
-  ${({
-    $isLoading,
-    theme: {
-      settingsDialog: { contentBG },
-    },
-  }) => css`
+  ${({$isLoading,
+    theme,
+  }) => {
+    const {settingsDialog: { contentBG },} = resolveThemeColors(theme)
+    return css`
     background: ${contentBG};
     overflow: auto;
     flex: 1;
@@ -110,13 +110,14 @@ export const Content = styled.div<{ $isLoading?: boolean }>`
         display: grid;
         place-items: center;
       `
-    }
+    }}
 
     ${mediaMax('compact')} {
       /* Keep first paint readable: section label + cache bar stay in view */
       scroll-padding-top: 8px;
     }
-  `}
+  `
+  }}
 `
 
 export const CacheLegendGrid = styled.div`
@@ -290,13 +291,12 @@ export const GstSettingsContent = styled(SecondarySettingsContent)`
 `
 
 export const StorageIconWrapper = styled.div<{ $small?: boolean; $selected?: boolean }>`
-  ${({
-    $selected,
+  ${({$selected,
     $small,
-    theme: {
-      settingsDialog: { storageSelectedBG, storageUnselectedBG },
-    },
-  }) => css`
+    theme,
+  }) => {
+    const {settingsDialog: { storageSelectedBG, storageUnselectedBG },} = resolveThemeColors(theme)
+    return css`
     width: ${$small ? '48px' : '72px'};
     height: ${$small ? '48px' : '72px'};
     border-radius: 50%;
@@ -313,16 +313,15 @@ export const StorageIconWrapper = styled.div<{ $small?: boolean; $selected?: boo
       width: ${$small ? '44px' : '64px'};
       height: ${$small ? '44px' : '64px'};
     }
-  `}
+  `
+  }}
 `
 
 export const CacheStorageSelector = styled.div`
-  ${({
-    theme: {
-      table: { outlinedButtonBorderColor },
-      settingsDialog: { cacheAfterReaderColor, preloadCacheBorderColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {table: { outlinedButtonBorderColor },
+      settingsDialog: { cacheAfterReaderColor, preloadCacheBorderColor },} = resolveThemeColors(theme)
+    return css`
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: max-content auto;
@@ -363,7 +362,8 @@ export const CacheStorageSelector = styled.div`
         font-size: 12px;
       }
     }
-  `}
+  `
+  }}
 `
 
 export const SettingSectionLabel = styled.div`
@@ -399,14 +399,13 @@ export const GstRuntimeStatusList = styled.div`
 `
 
 export const GstRuntimeStatusItem = styled.div<{ $ok?: boolean; $warn?: boolean }>`
-  ${({
-    $ok,
+  ${({$ok,
     $warn,
-    theme: {
-      settingsDialog: { cacheAfterReaderColor, cacheBeforeReaderColor, preloadCacheBorderColor },
-      addDialog: { separatorColor },
-    },
-  }) => css`
+    theme,
+  }) => {
+    const {settingsDialog: { cacheAfterReaderColor, cacheBeforeReaderColor, preloadCacheBorderColor },
+      addDialog: { separatorColor },} = resolveThemeColors(theme)
+    return css`
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -419,7 +418,7 @@ export const GstRuntimeStatusItem = styled.div<{ $ok?: boolean; $warn?: boolean 
         : $warn
           ? 'rgba(205, 161, 132, 0.2)'
           : `color-mix(in srgb, ${cacheBeforeReaderColor} 18%, transparent)`
-    };
+    }};
     font-size: 13px;
     line-height: 1.4;
 
@@ -446,7 +445,8 @@ export const GstRuntimeStatusItem = styled.div<{ $ok?: boolean; $warn?: boolean 
       opacity: 0.75;
       word-break: break-word;
     }
-  `}
+  `
+  }}
 `
 
 export const GstSubsectionLabel = styled(SettingSectionLabel)`
@@ -455,21 +455,18 @@ export const GstSubsectionLabel = styled(SettingSectionLabel)`
   margin-top: 14px;
 `
 
-export const PreloadCachePercentage = styled.div.attrs<{
+export const PreloadCachePercentage = styled.div<{
   $value?: number
   $beforeColor?: string
   $afterColor?: string
-}>(({ $value = 0, $beforeColor, $afterColor }) => ({
-  // Fast-changing gradient values go in style (styled-components recommendation)
-  style: {
-    background: `linear-gradient(to right, ${$beforeColor} 0%, ${$beforeColor} ${$value}%, ${$afterColor} ${$value}%, ${$afterColor} 100%)`,
-  },
-}))`
-  ${({
-    theme: {
+}>`
+  background: ${({ $value = 0, $beforeColor = 'transparent', $afterColor = 'transparent' }) =>
+    `linear-gradient(to right, ${$beforeColor} 0%, ${$beforeColor} ${$value}%, ${$afterColor} ${$value}%, ${$afterColor} 100%)`};
+  ${({ theme }) => {
+    const {
       settingsDialog: { preloadCacheBorderColor, preloadCacheFontColor },
-    },
-  }) => css`
+    } = resolveThemeColors(theme)
+    return css`
     border: 1px solid ${preloadCacheBorderColor};
     padding: 10px 16px;
     border-radius: 5px;
@@ -484,19 +481,18 @@ export const PreloadCachePercentage = styled.div.attrs<{
     overflow: hidden;
     user-select: none;
     isolation: isolate;
-  `}
+  `
+  }}
 `
 
 /** Dim overlay for preload share — sits on the whole cache bar (master behavior). */
-export const PreloadCacheOverlay = styled.div.attrs<{ $widthPct?: number }>(({ $widthPct = 0 }) => ({
-  style: { width: `${$widthPct}%` },
-  'aria-hidden': true,
-}))`
-  ${({
-    theme: {
+export const PreloadCacheOverlay = styled.div<{ $widthPct?: number }>`
+  width: ${({ $widthPct = 0 }) => `${$widthPct}%`};
+  ${({ theme }) => {
+    const {
       settingsDialog: { preloadCacheBorderColor },
-    },
-  }) => css`
+    } = resolveThemeColors(theme)
+    return css`
     position: absolute;
     inset: 0 auto 0 0;
     height: 100%;
@@ -505,7 +501,8 @@ export const PreloadCacheOverlay = styled.div.attrs<{ $widthPct?: number }>(({ $
     border-radius: 4px;
     pointer-events: none;
     z-index: 0;
-  `}
+  `
+  }}
 `
 
 export const PreloadCacheLabel = styled.span`

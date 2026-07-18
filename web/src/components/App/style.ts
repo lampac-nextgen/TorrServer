@@ -1,18 +1,19 @@
 import { IconButton } from '@mui/material'
-import { rgba } from 'polished'
+import { alphaCss } from 'shared/theme/color'
 import { mediaMax } from 'style/breakpoints'
-import styled, { css } from 'styled-components'
+import styled from '@emotion/styled'
+import { css } from '@emotion/react'
+import { resolveThemeColors } from 'shared/theme/color'
 
 export const AppWrapper = styled.div<{ $isDrawerOpen?: boolean }>`
-  ${({
-    $isDrawerOpen,
-    theme: {
-      app: { appSecondaryColor },
-    },
-  }) => css`
+  ${({$isDrawerOpen,
+    theme,
+  }) => {
+    const {app: { appSecondaryColor },} = resolveThemeColors(theme)
+    return css`
     height: 100%;
     max-height: 100dvh;
-    background: ${rgba(appSecondaryColor, 0.8)};
+    background: ${alphaCss(appSecondaryColor, 0.8)};
     display: grid;
     grid-template-columns: ${$isDrawerOpen ? '240px' : '60px'} 1fr;
     /* Desktop: header + content only. Bottom nav row only on mobile. */
@@ -32,7 +33,8 @@ export const AppWrapper = styled.div<{ $isDrawerOpen?: boolean }>`
         'content content'
         'nav nav';
     }
-  `}
+  `
+  }}
 `
 
 export const CenteredGrid = styled.div`
@@ -47,7 +49,9 @@ export const CenteredGrid = styled.div`
 `
 
 export const AppHeader = styled.div`
-  ${({ theme: { primary } }) => css`
+  ${({ theme }) => {
+    const { primary } = resolveThemeColors(theme)
+    return css`
     background: ${primary};
     color: #fff;
     grid-area: head;
@@ -76,19 +80,18 @@ export const AppHeader = styled.div`
         display: none;
       }
     }
-  `}
+  `
+  }}
 `
 
 export const AppSidebarStyle = styled.div<{ $isDrawerOpen?: boolean }>`
-  ${({
-    theme: {
-      app: { appSecondaryColor, sidebarBGColor, sidebarFillColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {app: { appSecondaryColor, sidebarBGColor, sidebarFillColor },} = resolveThemeColors(theme)
+    return css`
     grid-area: side;
     z-index: 2;
     overflow-x: hidden;
-    border-right: 1px solid ${rgba(appSecondaryColor, 0.12)};
+    border-right: 1px solid ${alphaCss(appSecondaryColor, 0.12)};
     background: ${sidebarBGColor};
     color: ${sidebarFillColor};
     white-space: nowrap;
@@ -108,7 +111,8 @@ export const AppSidebarStyle = styled.div<{ $isDrawerOpen?: boolean }>`
     ${mediaMax('mobile')} {
       display: none;
     }
-  `}
+  `
+  }}
 `
 
 export const TorrentListWrapper = styled.div`
@@ -146,11 +150,9 @@ export const TorrentListWrapper = styled.div`
 `
 
 export const HeaderToggle = styled(IconButton)`
-  ${({
-    theme: {
-      app: { headerToggleColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {app: { headerToggleColor },} = resolveThemeColors(theme)
+    return css`
     && {
       border-radius: 50%;
       background: ${headerToggleColor};
@@ -161,7 +163,7 @@ export const HeaderToggle = styled(IconButton)`
       height: 35px;
 
       &:hover {
-        background: ${rgba(headerToggleColor, 0.7)};
+        background: ${alphaCss(headerToggleColor, 0.7)};
       }
 
       ${mediaMax('mobile')} {
@@ -174,7 +176,8 @@ export const HeaderToggle = styled(IconButton)`
         }
       }
     }
-  `}
+  `
+  }}
 `
 
 export const StyledIconButton = styled(IconButton)`

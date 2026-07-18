@@ -8,7 +8,8 @@ import { viewedHost } from 'utils/Hosts'
 import { GETTING_INFO, IN_DB } from 'torrentStates'
 import CircularProgress from '@mui/material/CircularProgress'
 import { useTranslation } from 'react-i18next'
-import { useTheme } from 'styled-components'
+import { useTheme } from '@mui/material/styles'
+import { resolveThemeColors } from 'shared/theme/color'
 import { readLocalBool } from 'utils/localPrefs'
 import type { PlayableFile, TorrentStat, ViewedFileEntry } from 'types/api'
 
@@ -31,6 +32,7 @@ import {
   DetailsScrollBody,
 } from './style'
 import { DownlodSpeedWidget, UploadSpeedWidget, PeersWidget, SizeWidget, StatusWidget, CategoryWidget } from './widgets'
+import SpeedCharts from 'features/details/SpeedCharts'
 import TorrentFunctions from './TorrentFunctions'
 import { isFilePlayable } from './helpers'
 
@@ -67,7 +69,7 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
       bufferEmptyTrackColor,
       bufferTrackBorderColor,
     },
-  } = useTheme()
+  } = resolveThemeColors(useTheme())
   const [isLoading, setIsLoading] = useState(true)
   const [isDetailedCacheView, setIsDetailedCacheView] = useState(false)
   const [viewedFileList, setViewedFileList] = useState<number[] | undefined>()
@@ -223,6 +225,7 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
                   <StatusWidget stat={stat} />
                   <CategoryWidget data={category} />
                 </WidgetWrapper>
+                <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} />
 
                 <Divider />
 
@@ -245,8 +248,7 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
                   <Typography
                     component='div'
                     variant='body2'
-                    fontWeight={400}
-                    textAlign='center'
+                    sx={{ fontWeight: 400, textAlign: 'center' }}
                     aria-label={`${humanizeSize(Filled || 0)} / ${humanizeSize(cacheDisplayTarget)}`}
                   >
                     {`${humanizeSize(Filled || 0)} / ${humanizeSize(cacheDisplayTarget)}`}
@@ -310,7 +312,7 @@ export default function DialogTorrentDetailsContent({ closeDialog, torrent }: Di
               {(seasonAmount?.length ?? 0) > 1 && (
                 <>
                   <SectionSubName $mb={7}>{t('SelectSeason')}</SectionSubName>
-                  <Stack direction='row' useFlexGap flexWrap='wrap' spacing={1} sx={{ mb: '30px' }}>
+                  <Stack direction='row' useFlexGap spacing={1} sx={{ flexWrap: 'wrap', mb: '30px' }}>
                     {seasonAmount!.map(season => (
                       <Button
                         key={season}

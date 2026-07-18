@@ -1,12 +1,13 @@
-import styled, { css } from 'styled-components'
+import styled from '@emotion/styled'
+import { css } from '@emotion/react'
+import { resolveThemeColors } from 'shared/theme/color'
 import { mediaMax } from 'style/breakpoints'
 
-const viewedIndicator = css`
-  ${({
-    theme: {
-      table: { defaultPrimaryColor },
-    },
-  }) => css`
+const viewedIndicator = (theme: Parameters<typeof resolveThemeColors>[0]) => {
+  const {
+    table: { defaultPrimaryColor },
+  } = resolveThemeColors(theme)
+  return css`
     &::before {
       content: '';
       width: 10px;
@@ -18,22 +19,20 @@ const viewedIndicator = css`
       left: 50%;
       transform: translate(-50%, -50%);
     }
-  `}
-`
+  `
+}
 
 export const TableStyle = styled.table`
-  ${({
-    theme: {
-      table: {
+  ${({ theme }) => {
+    const {table: {
         defaultPrimaryColor,
         rowBGColor,
         viewedRowBGColor,
         dividerColor,
         rowFontColor,
         outlinedButtonBorderColor,
-      },
-    },
-  }) => css`
+      },} = resolveThemeColors(theme)
+    return css`
     border-collapse: collapse;
     margin: 25px 0;
     font-size: 0.8125rem;
@@ -74,7 +73,7 @@ export const TableStyle = styled.table`
       &.viewed-file-indicator {
         position: relative;
 
-        ${viewedIndicator}
+        ${viewedIndicator(theme)}
       }
     }
 
@@ -111,7 +110,8 @@ export const TableStyle = styled.table`
     ${mediaMax('shortTable')} {
       display: none;
     }
-  `}
+  `
+  }}
 `
 
 export const ShortTableWrapper = styled.div`
@@ -130,10 +130,10 @@ export const ShortTableWrapper = styled.div`
 `
 
 export const ShortTable = styled.div<{ $isViewed?: boolean }>`
-  ${({
-    $isViewed,
-    theme: {
-      table: {
+  ${({$isViewed,
+    theme,
+  }) => {
+    const {table: {
         defaultPrimaryColor,
         defaultSecondaryColor,
         defaultTertiaryColor,
@@ -141,9 +141,8 @@ export const ShortTable = styled.div<{ $isViewed?: boolean }>`
         viewedPrimaryColor,
         viewedSecondaryColor,
         viewedTertiaryColor,
-      },
-    },
-  }) => css`
+      },} = resolveThemeColors(theme)
+    return css`
     display: grid;
     width: 100%;
     grid-template-rows: repeat(3, max-content);
@@ -214,7 +213,7 @@ export const ShortTable = styled.div<{ $isViewed?: boolean }>`
       }
 
       &-viewed-indicator {
-        ${$isViewed && viewedIndicator}
+        ${$isViewed && viewedIndicator(theme)}
       }
 
       &-buttons {
@@ -253,5 +252,6 @@ export const ShortTable = styled.div<{ $isViewed?: boolean }>`
         }
       }
     }
-  `}
+  `
+  }}
 `

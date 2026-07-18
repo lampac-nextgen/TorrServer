@@ -1,6 +1,6 @@
 import { InputAdornment, OutlinedInput, Slider } from '@mui/material'
 import { useRef, type ChangeEvent, type FocusEvent } from 'react'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import { mediaMax } from 'style/breakpoints'
 
 interface SliderInputProps {

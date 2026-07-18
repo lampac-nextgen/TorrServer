@@ -1,4 +1,5 @@
 import { Drawer, List } from '@mui/material'
+import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import SettingsDialog from 'components/Settings'
 import AboutDialog from 'components/About'
 import CloseServer from 'components/CloseServer'
@@ -12,6 +13,8 @@ interface MoreSheetProps extends OfflineAwareProps {
 
 /** Secondary actions — full sidebar parity (Remove All / Settings / About / Close). */
 export default function MoreSheet({ open, onClose, isOffline, isLoading }: MoreSheetProps) {
+  useSyncModalOpen(open)
+
   return (
     <Drawer
       anchor='bottom'

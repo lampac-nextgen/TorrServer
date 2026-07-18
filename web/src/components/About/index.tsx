@@ -10,6 +10,7 @@ import { echoHost } from 'utils/Hosts'
 import { publicUrl } from 'utils/publicUrl'
 import { StyledDialog, StyledMenuButtonWrapper, dialogPaperSx } from 'style/CustomMaterialUiStyles'
 import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
+import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 
 import LinkComponent from './LinkComponent'
 import { DialogWrapper, HeaderSection, ThanksSection, Section, FooterSection } from './style'
@@ -19,6 +20,7 @@ export default function AboutDialog() {
   const [open, setOpen] = useState(false)
   const [torrServerVersion, setTorrServerVersion] = useState('')
   const fullScreen = useMediaQuery(LAYOUT_DIALOG_FULLSCREEN_MEDIA)
+  useSyncModalOpen(open)
   useEffect(() => {
     axios.get(echoHost()).then(({ data }) => setTorrServerVersion(data))
   }, [])

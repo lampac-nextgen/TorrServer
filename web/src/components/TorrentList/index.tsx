@@ -1,11 +1,15 @@
 import { useMemo } from 'react'
 import TorrentCard from 'components/TorrentCard'
+import Box from '@mui/material/Box'
 import Skeleton from '@mui/material/Skeleton'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
+import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTranslation } from 'react-i18next'
 import { TorrentListWrapper, CenteredGrid } from 'components/App/style'
 import type { OfflineAwareProps, TorrentStat } from 'types/api'
+import { queryMax } from 'style/breakpoints'
+import TorrentsDataGrid from 'features/torrents/TorrentsDataGrid'
 
 import NoServerConnection from './NoServerConnection'
 import AddFirstTorrent from './AddFirstTorrent'
@@ -18,6 +22,7 @@ interface TorrentListProps extends OfflineAwareProps {
 
 export default function TorrentList({ isOffline, isLoading, sortABC, torrents, sortCategory }: TorrentListProps) {
   const { t } = useTranslation()
+  const isMobile = useMediaQuery(queryMax('mobile'))
   const sortedTorrents = useMemo(() => {
     if (!torrents) return []
     const filtered = torrents.filter(torrent => sortCategory === 'all' || torrent.category === sortCategory)
@@ -71,6 +76,23 @@ export default function TorrentList({ isOffline, isLoading, sortABC, torrents, s
           {t('NoTorrentsInCategory', { defaultValue: 'No torrents in this category' })}
         </Typography>
       </CenteredGrid>
+    )
+  }
+
+  if (!isMobile) {
+    return (
+      <Box
+        sx={{
+          gridArea: 'content',
+          height: '100%',
+          minHeight: 0,
+          minWidth: 0,
+          p: 1,
+          overflow: 'hidden',
+        }}
+      >
+        <TorrentsDataGrid torrents={sortedTorrents} />
+      </Box>
     )
   }
 

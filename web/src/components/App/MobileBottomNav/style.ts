@@ -1,17 +1,17 @@
 import { mediaMax } from 'style/breakpoints'
 import { MOBILE_BOTTOM_NAV_PX } from 'style/tokens'
-import styled, { css } from 'styled-components'
+import styled from '@emotion/styled'
+import { css } from '@emotion/react'
+import { resolveThemeColors } from 'shared/theme/color'
 
 /**
  * Bottom nav — fixed 90px band including safe-area (production shell).
  * Always visible at ≤700 (browser and Home Screen).
  */
 export default styled.nav`
-  ${({
-    theme: {
-      app: { sidebarBGColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {app: { sidebarBGColor },} = resolveThemeColors(theme)
+    return css`
     display: none;
     background: ${sidebarBGColor};
     color: #fff;
@@ -78,5 +78,6 @@ export default styled.nav`
       line-height: 1.15;
       text-align: center;
     }
-  `}
+  `
+  }}
 `

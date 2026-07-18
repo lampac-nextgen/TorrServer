@@ -1,7 +1,7 @@
 import { ListItemButton } from '@mui/material'
 import Dialog from '@mui/material/Dialog'
 import type { SxProps, Theme } from '@mui/material/styles'
-import styled from 'styled-components'
+import { styled } from '@mui/material/styles'
 import { Header } from 'style/DialogStyles'
 import { mediaMax } from 'style/breakpoints'
 

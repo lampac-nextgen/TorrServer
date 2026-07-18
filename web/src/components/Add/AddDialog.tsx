@@ -16,6 +16,7 @@ import { DialogFooter } from 'style/DialogStyles'
 import { StyledDialog, StyledHeader, dialogPaperSx } from 'style/CustomMaterialUiStyles'
 import { LAYOUT_DIALOG_FULLSCREEN_MEDIA } from 'style/materialUISetup'
 import { buttonLoadingIcon } from 'utils/buttonLoading'
+import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 
 import {
   checkImageURL,
@@ -70,6 +71,7 @@ export default function AddDialog({
 
   // When files are dropped/selected, switch to MultiAddDialog
   const [multiFiles, setMultiFiles] = useState<File[] | null>(null)
+  useSyncModalOpen(!multiFiles)
 
   const { data: torrents } = useQuery({
     queryKey: ['torrents'],

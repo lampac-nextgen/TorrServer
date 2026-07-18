@@ -206,8 +206,10 @@ export default function SecondarySettingsComponent({ settings, inputForm }: Seco
         margin='normal'
         id='TorrentDisconnectTimeout'
         label={t('SettingsDialog.TorrentDisconnectTimeout')}
-        InputProps={{
-          endAdornment: <InputAdornment position='end'>{t('Seconds')}</InputAdornment>,
+        slotProps={{
+          input: {
+            endAdornment: <InputAdornment position='end'>{t('Seconds')}</InputAdornment>,
+          },
         }}
         value={TorrentDisconnectTimeout}
         type='number'
@@ -240,8 +242,10 @@ export default function SecondarySettingsComponent({ settings, inputForm }: Seco
         margin='normal'
         id='DownloadRateLimit'
         label={t('SettingsDialog.DownloadRateLimit')}
-        InputProps={{
-          endAdornment: <InputAdornment position='end'>{t('Kilobytes')}</InputAdornment>,
+        slotProps={{
+          input: {
+            endAdornment: <InputAdornment position='end'>{t('Kilobytes')}</InputAdornment>,
+          },
         }}
         value={DownloadRateLimit}
         type='number'
@@ -262,8 +266,10 @@ export default function SecondarySettingsComponent({ settings, inputForm }: Seco
         margin='normal'
         id='UploadRateLimit'
         label={t('SettingsDialog.UploadRateLimit')}
-        InputProps={{
-          endAdornment: <InputAdornment position='end'>{t('Kilobytes')}</InputAdornment>,
+        slotProps={{
+          input: {
+            endAdornment: <InputAdornment position='end'>{t('Kilobytes')}</InputAdornment>,
+          },
         }}
         value={UploadRateLimit}
         type='number'
@@ -400,7 +406,7 @@ export default function SecondarySettingsComponent({ settings, inputForm }: Seco
         <FormHelperText>{t('SettingsDialog.ShowFSActiveTorrHint')}</FormHelperText>
       </FormGroup>
       {/* Storage Settings Section */}
-      <Box mt={4} mb={2}>
+      <Box sx={{ mt: 4, mb: 2 }}>
         <SettingSectionLabel>{t('SettingsDialog.StorageConfiguration')}</SettingSectionLabel>
 
         <FormGroup>
@@ -435,7 +441,7 @@ export default function SecondarySettingsComponent({ settings, inputForm }: Seco
           <FormHelperText style={{ marginTop: '8px' }}>{t('SettingsDialog.ViewedStorageHint')}</FormHelperText>
         </FormGroup>
 
-        <Box mt={2} mb={2}>
+        <Box sx={{ mt: 2, mb: 2 }}>
           <Button
             variant='contained'
             color='primary'

@@ -15,7 +15,8 @@ import {
 } from '@mui/material'
 import { mediaMax, queryMax } from 'style/breakpoints'
 import { keyframes, styled } from '@mui/material/styles'
-import styledSC, { css } from 'styled-components'
+import { css } from '@emotion/react'
+import { resolveThemeColors } from 'shared/theme/color'
 import CloseIcon from '@mui/icons-material/Close'
 import Forward10Icon from '@mui/icons-material/Forward10'
 import FullscreenIcon from '@mui/icons-material/Fullscreen'
@@ -33,6 +34,7 @@ import Hls from 'hls.js'
 import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
 import { StyledDialog } from 'style/CustomMaterialUiStyles'
 import { useTranslation } from 'react-i18next'
+import { useModalOpen, useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 
 export interface VideoPlayerProps {
   videoSrc: string
@@ -125,10 +127,12 @@ const pulse = keyframes`
   }
 `
 
-const PlayerHeader = styledSC(DialogTitle)`
-  ${({ theme }) => css`
+const PlayerHeader = styled(DialogTitle)`
+  ${({ theme }) => {
+    const { primary } = resolveThemeColors(theme)
+    return css`
     && {
-      background-color: ${theme.primary};
+      background-color: ${primary};
       color: #fff;
       padding: 8px 16px;
       padding-top: max(8px, var(--safe-top));
@@ -136,7 +140,8 @@ const PlayerHeader = styledSC(DialogTitle)`
       justify-content: space-between;
       align-items: center;
     }
-  `}
+  `
+  }}
 `
 
 const PlayerIconButton = styled(IconButton)({
@@ -144,7 +149,7 @@ const PlayerIconButton = styled(IconButton)({
   padding: 12,
   minWidth: 44,
   minHeight: 44,
-  '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' },
+  '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
   [mediaMax('mobile')]: {
     padding: 10,
   },
@@ -155,7 +160,7 @@ const Controls = styled(Box)(({ theme }) => ({
   bottom: 0,
   left: 0,
   width: '100%',
-  background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+  background: 'linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent)',
   padding: theme.spacing(0, 3, 2, 3),
   transition: 'opacity 200ms',
   opacity: 0,
@@ -168,7 +173,7 @@ const Controls = styled(Box)(({ theme }) => ({
     opacity: 1,
     padding: theme.spacing(0, 1, 2, 1),
     gap: theme.spacing(0),
-    background: 'linear-gradient(to top, rgba(0,0,0,0.95), transparent)',
+    background: 'linear-gradient(to top, rgba(0, 0, 0, 0.95), transparent)',
   },
 }))
 
@@ -179,7 +184,7 @@ const CentralControl = styled(IconButton)(({ theme }) => ({
   transform: 'translate(-50%, -50%)',
   borderRadius: '50%',
   padding: theme.spacing(1),
-  backgroundColor: 'rgba(0,0,0,0.5)',
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',
   opacity: 0,
   transition: 'opacity 200ms',
   zIndex: 3,
@@ -222,7 +227,7 @@ const LoadingOverlay = styled(Box)({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundColor: 'rgba(0,0,0,0.6)',
+  backgroundColor: 'rgba(0, 0, 0, 0.6)',
   zIndex: 4,
 })
 
@@ -298,11 +303,13 @@ const VideoPlayer = ({
   onClose,
 }: VideoPlayerProps) => {
   const isMobile = useMediaQuery(queryMax('dialog'))
+  const { setImmersive } = useModalOpen()
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const hlsRef = useRef<Hls | null>(null)
   const onNotSupportedRef = useRef(onNotSupported)
   const { t } = useTranslation()
   const [open, setOpen] = useState(initiallyOpen)
+  useSyncModalOpen(open)
   const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null)
   const [loading, setLoading] = useState(true)
   const [mediaError, setMediaError] = useState(false)
@@ -326,6 +333,12 @@ const VideoPlayer = ({
   useEffect(() => {
     onNotSupportedRef.current = onNotSupported
   }, [onNotSupported])
+
+  useEffect(() => {
+    if (!isMobile || !open) return
+    setImmersive(true)
+    return () => setImmersive(false)
+  }, [isMobile, open, setImmersive])
 
   useEffect(() => {
     const vid = document.createElement('video')
@@ -673,7 +686,7 @@ const VideoPlayer = ({
                     </Typography>
                   </TimeRow>
                 )}
-                <Box flexGrow={1} />
+                <Box sx={{ flexGrow: 1 }} />
                 {subtitleTracks.length > 0 && (
                   <>
                     <Tooltip title={t('GStreamer.Subtitles')}>

@@ -1,4 +1,5 @@
 import { Drawer, List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
+import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import CheckIcon from '@mui/icons-material/Check'
 import ClearIcon from '@mui/icons-material/Clear'
 import { TORRENT_CATEGORIES } from 'components/categories'
@@ -18,6 +19,7 @@ export default function CategoriesSheet({
   setGlobalFilterCategory,
 }: CategoriesSheetProps) {
   const { t } = useTranslation()
+  useSyncModalOpen(open)
 
   const pick = (key: string) => {
     setGlobalFilterCategory(key)

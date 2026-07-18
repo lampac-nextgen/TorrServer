@@ -23,6 +23,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getTorrents } from 'utils/Utils'
 import useChangeLanguage from 'utils/useChangeLanguage'
 import { buttonLoadingIcon } from 'utils/buttonLoading'
+import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import parseTorrent from 'parse-torrent'
 import type { MultiAddFileState, TorrentStat } from 'types/api'
 
@@ -158,6 +159,7 @@ export interface MultiAddDialogProps {
 
 export default function MultiAddDialog({ files, handleClose }: MultiAddDialogProps) {
   const { t } = useTranslation()
+  useSyncModalOpen(true)
   const fullScreen = useMediaQuery(LAYOUT_DIALOG_FULLSCREEN_MEDIA)
   const [isSaving, setIsSaving] = useState(false)
 

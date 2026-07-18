@@ -127,7 +127,7 @@ export default function TorznabSettings({ settings, inputForm, updateSettings }:
                 secondary={
                   <>
                     {url.Name && (
-                      <Typography component='span' variant='body2' display='block' color='text.secondary'>
+                      <Typography component='span' variant='body2' color='text.secondary' sx={{ display: 'block' }}>
                         {url.Host}
                       </Typography>
                     )}

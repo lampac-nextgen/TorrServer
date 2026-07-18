@@ -1,4 +1,6 @@
-import styled, { css } from 'styled-components'
+import styled from '@emotion/styled'
+import { css } from '@emotion/react'
+import { resolveThemeColors } from 'shared/theme/color'
 import { mediaMax } from 'style/breakpoints'
 
 export const DialogWrapper = styled.div`
@@ -33,11 +35,9 @@ export const HeaderSection = styled.section`
 `
 
 export const ThanksSection = styled.section`
-  ${({
-    theme: {
-      aboutDialog: { bandBG, bandFontColor },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {aboutDialog: { bandBG, bandFontColor },} = resolveThemeColors(theme)
+    return css`
     padding: 16px 20px;
     text-align: center;
     font-size: 15px;
@@ -49,7 +49,8 @@ export const ThanksSection = styled.section`
       font-size: 14px;
       padding: 20px 16px;
     }
-  `}
+  `
+  }}
 `
 
 export const Section = styled.section`
@@ -86,16 +87,15 @@ export const Section = styled.section`
 `
 
 export const FooterSection = styled.div`
-  ${({
-    theme: {
-      aboutDialog: { bandBG },
-    },
-  }) => css`
+  ${({ theme }) => {
+    const {aboutDialog: { bandBG },} = resolveThemeColors(theme)
+    return css`
     padding: 20px;
     display: flex;
     justify-content: flex-end;
     background: ${bandBG};
-  `}
+  `
+  }}
 `
 
 export const LinkWrapper = styled.a<{ $isLink?: boolean }>`
@@ -117,22 +117,21 @@ export const LinkWrapper = styled.a<{ $isLink?: boolean }>`
       transition: 0.2s;
     }
 
-    ${
-      $isLink
-        ? css`
-            :hover {
-              filter: brightness(1.1);
+    ${$isLink
+      ? css`
+          :hover {
+            filter: brightness(1.1);
 
-              > * {
-                transform: translateY(0px);
-              }
+            > * {
+              transform: translateY(0px);
             }
-          `
-        : css`
-            cursor: default;
-          `
-    }
-  `}
+          }
+        `
+      : css`
+          cursor: default;
+        `}
+  `
+  }}
 `
 
 export const LinkIcon = styled.div`
