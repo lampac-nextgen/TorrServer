@@ -24,10 +24,11 @@ const EmptyTorrentCTA = styled(ButtonBase)`
       place-items: center;
       gap: 12px;
       padding: 28px 40px;
-      border-radius: 8px;
+      border-radius: var(--ts-radius-md);
       background: ${notificationSuccessBGColor};
       color: inherit;
       font: inherit;
+      font-size: var(--ts-font-body);
       transition:
         background 0.2s ease,
         box-shadow 0.2s ease;

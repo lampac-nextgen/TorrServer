@@ -7,14 +7,18 @@ Use the project skill torrserver-web and read .cursor/context/web-upgrade-sessio
 
 You are continuing TorrServer-Go web UI work on branch feature/web-upgrade.
 
-Stack: React 19 + Vite 6 + TypeScript + MUI 6.4 + styled-components + TanStack Query v5.
-Ship path: web build → go run gen_web.go --clean → embedded in server/web/pages/template/pages.
+Phase: Ideal Wave 1 on MUI 6 (accepted or pending manual accept). Wave 2 Radix/shadcn only after accept.
+
+Stack: React 19 + Vite 6 + TypeScript + MUI 6 + styled-components + TanStack Query v5.
+Design SSOT: web/src/style/tokens.ts → GlobalStyle + MUI theme. Brand: MatriX green.
+Ship: cd web && yarn typecheck && yarn lint && yarn test && yarn build && cd .. && go run gen_web.go --clean
 
 Locked:
-- No Vue, no MUI 7, no full Emotion rewrite, no FileRow ⋯ menu
-- Snake poll 100ms + memo + sparse/downsample (see context); GStreamer probe/runtime caches stay
+- No Vue, no MUI 7 in Wave 1, no FileRow ⋯ menu, Donate stays removed
+- One adaptive shell (width + chrome tokens); no standaloneMedia / PWA layout caste
+- Bottom nav 90px band including safe-area; fixed outside AppWrapper; open-modal only disables taps
+- Snake poll 100ms + memo + focus-window; GStreamer caches stay
 - No lord-icon; empty/offline = MUI icons
-- Layers: Universal (CDN Open Sans, no self-host woff2) · Mobile (breakpoints only) · PWA (standaloneMedia chrome only)
 - Do not commit unless I ask
 
 Reply in Russian when I write in Russian. Code/comments in English.
@@ -27,7 +31,7 @@ Task:
 
 ```
 Skill: torrserver-web. Context: .cursor/context/web-upgrade-session.md.
-Respect locked decisions. After UI: typecheck + build + gen_web --clean. No commit unless asked.
+Respect locked decisions. After UI: typecheck + lint + test + build + gen_web --clean. No commit unless asked.
 
 Task: <…>
 ```

@@ -1,8 +1,9 @@
 # TorrServer-Go — Web upgrade session context
 
-**Saved:** 2026-07-17  
+**Saved:** 2026-07-18  
 **Transcript:** [Web MUI production](98d7e6a7-6a2f-4721-ae12-0e4a1c6657ef)  
-**Branch (typical):** `feature/web-upgrade`
+**Branch (typical):** `feature/web-upgrade`  
+**Phase:** Ideal production UI — **Wave 1 on MUI 6** (Wave 2 toolkit migration only after accept)
 
 Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-discovering decisions.
 
@@ -14,10 +15,11 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 |-------|--------|
 | Runtime | React 19 + Vite 6 |
 | Lang | TypeScript (strict), 0 `.jsx` |
-| UI | MUI 6.4.8 + Emotion + styled-components 6 |
+| UI | MUI 6 + Emotion + styled-components 6 (Wave 1) |
+| Design SSOT | `web/src/style/tokens.ts` → GlobalStyle CSS vars + MUI theme |
 | Data | TanStack Query v5 |
 | Node | `>=22` (`web/.nvmrc`) |
-| Ship | `npm run build` → `go run gen_web.go --clean` → `server/web/pages/template/pages` (`//go:embed`) |
+| Ship | `yarn typecheck && yarn lint && yarn test && yarn build` → `go run gen_web.go --clean` |
 | Assets | `homepage` / base `./` relative paths |
 
 ---
@@ -25,15 +27,17 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 ## Locked decisions (do not reopen unless asked)
 
 1. **Keep React** — no Vue rewrite.
-2. **No MUI 7** in this phase.
-3. **No full Emotion migration** — keep styled-components for shells/canvas/PWA; MUI for primitives/feedback.
+2. **Wave 1 = ideal UX on MUI 6** — no MUI 7; no Radix/shadcn until Wave 1 accepted.
+3. **No full Emotion migration in Wave 1** — styled-components for shells/canvas; MUI for primitives/feedback.
 4. **No MUI DataGrid** rewrite of file list.
 5. **No React Router** (still SPA without client routes).
 6. **No Jackett/Prowlarr 1-click sync** in web polish scope.
-7. **File row actions:** all visible equal outlined buttons — **no «⋯» overflow menu** (Infuse / SenPlayer / IINA / Copy / Play / Preload).
-8. **Snake:** focus-window around playhead (`buildFocusModel`); HiDPI bottom-up fill; reader/range on top; poll 100ms active / 400ms idle + memo + skip unchanged. Full-torrent LOD (`buildCacheDrawModel`) optional later — not default UI.
-9. **GStreamer:** keep React Query runtime cache (60s, invalidate on Settings save); keep in-card `audioTracksByFile` probe cache; heartbeat `cache: 'no-store'`.
-10. **Empty / offline UI:** MUI icons only — **no lord-icon** (removed script + base64).
+7. **File row actions:** all visible equal outlined buttons — **no «⋯» overflow menu**.
+8. **Snake:** focus-window around playhead; HiDPI bottom-up; poll 100ms / 400ms idle + memo + skip unchanged.
+9. **GStreamer:** React Query runtime cache; in-card probe cache; heartbeat `no-store`.
+10. **Empty / offline UI:** MUI icons only — **no lord-icon**.
+11. **Brand:** MatriX green (`colors.ts`). One adaptive shell — no PWA layout caste. Donate removed.
+12. **Legacy master** is not SSOT for layout; current adaptive shell + tokens are.
 
 ---
 
@@ -65,23 +69,35 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 
 ---
 
-## Responsive — adaptive universal shell (done)
+## Ideal Wave 1 (done on MUI 6)
 
-- Canonical breakpoints: `web/src/style/breakpoints.ts` (`BP` + `mediaMax` / `queryMax`). MUI `md` = `BP.dialog` (960).
-- **One shell:** width + CSS chrome tokens. No `standaloneMedia` / `PWAFooter`.
-- Chrome: header **60 + safe-top**; bottom nav **90 + safe-bottom** ([`chrome.ts`](../../web/src/style/chrome.ts)).
-- ≤700: fixed `MobileBottomNav` **outside** `AppWrapper` (Add / Search / Categories / More). Sidebar **unmounted** (not only hidden).
-- Modals: fullscreen papers inset above chrome; bottom nav `pointer-events: none` while `.MuiModal-root` open; immersive video hides nav.
-- Dialog fullscreen / details stack: **`dialog` (960)**. Card actions 2-col @ `cardDense`.
-- Typography: CDN Open Sans 300/400/600, letter-spacing `-0.1px`.
-- Donate removed. Status: 8px dot next to Size.
-- `detectStandaloneApp` — install guide / launch only. Install guide offset: `--app-chrome-bottom`.
+- Tokens SSOT: `web/src/style/tokens.ts` (typography / space / radius / touch / chrome) → `GlobalStyle` + `materialUISetup`.
+- Shell: header `60 + safe-top`; bottom nav **90px band including** safe-area (`--app-chrome-bottom: 90px` @ ≤700). Nav fixed outside `AppWrapper`.
+- Modals: only **open** modals disable nav (`:not([aria-hidden='true'])`); immersive video hides nav; fullscreen papers inset above chrome; confirms not inset.
+- Cards: compact title clamp, status-dot, cardAction density via tokens.
+- Dialogs: shared `StyledDialog` / `DialogFooter` / `StyledHeader` policy; Cancel `autoFocus` on destructive.
+- Secondary: details title scale, empty CTA, snake meta contrast — no algorithm/behavior change.
+
+### Acceptance checklist (manual)
+
+- [ ] Light + Dark × Desktop / Mobile Safari / PWA Home Screen
+- [ ] Bottom nav always tappable when no open modal
+- [ ] No double bottom gap in PWA; install guide sits above chrome
+- [ ] Card titles/stats/status-dot readable; no clipped indicators
+- [ ] Fullscreen dialogs sit above chrome; video immersive fills viewport
+
+### Wave 2 spike (after accept — do not start early)
+
+1. Spike 2–3 days: one surface (Settings) on **Radix + shadcn-style + Tailwind v4** beside current MUI.
+2. Compare a11y, bundle, PWA chrome inset, touch targets.
+3. If spike OK: migrate Button/Dialog/Drawer/TextField in packages; drop Emotion/MUI; keep snake on canvas + minimal CSS.
 
 ### Still open (ask before doing)
 
 - Broader `Stack` migrations across dialogs
 - Settings/details skeletons beyond torrent list
-- Offline service worker
+- Offline service worker / PWA cache
+- Wave 2 toolkit migration (blocked on Wave 1 accept)
 
 ---
 

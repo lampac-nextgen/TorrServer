@@ -25,7 +25,7 @@ export const AppWrapper = styled.div<{ $isDrawerOpen?: boolean }>`
 
     ${mediaMax('mobile')} {
       grid-template-columns: 0 1fr;
-      /* Spacer row = 90px + safe-area (matches fixed footer) */
+      /* Spacer row = bottom nav 90px band */
       grid-template-rows: var(--app-chrome-top) minmax(0, 1fr) var(--app-chrome-bottom);
       grid-template-areas:
         'head head'

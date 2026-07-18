@@ -58,9 +58,9 @@ export const StyledDialog = styled(Dialog)`
 `
 
 export const StyledHeader = styled(Header)`
-  padding-top: max(15px, var(--safe-top));
+  padding-top: max(var(--ts-space-md), var(--safe-top));
 
   ${mediaMax('mobile')} {
-    padding-top: max(12px, var(--safe-top));
+    padding-top: max(var(--ts-space-md), var(--safe-top));
   }
 `

@@ -1,18 +1,24 @@
 import styled, { css } from 'styled-components'
 import { mediaMax } from 'style/breakpoints'
+import { TOUCH_TARGET_PX, cssVar, space, typography } from 'style/tokens'
 
 export const Header = styled.div`
   ${({ theme: { primary } }) => css`
     background: ${primary};
     color: #fff;
-    font-size: 20px;
+    font-size: ${typography.heading};
     font-weight: 600;
     box-shadow:
       0px 2px 4px -1px rgb(0 0 0 / 20%),
       0px 4px 5px 0px rgb(0 0 0 / 14%),
       0px 1px 10px 0px rgb(0 0 0 / 12%);
-    padding: 15px 24px;
+    padding: ${space.md}px ${space.xxl}px;
     position: relative;
+
+    ${mediaMax('mobile')} {
+      font-size: ${typography.body};
+      padding: ${space.md}px ${space.lg}px;
+    }
   `}
 `
 
@@ -24,29 +30,28 @@ export const DialogFooter = styled.div`
       addDialog: { separatorColor },
     },
   }) => css`
-    padding: 12px 16px;
+    padding: ${space.md}px ${space.lg}px;
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end;
     align-items: stretch;
-    gap: 8px;
+    gap: ${space.sm}px;
     border-top: 1px solid ${separatorColor};
     background: ${footerBG};
 
     .MuiButton-root {
-      min-height: 44px;
+      min-height: ${TOUCH_TARGET_PX}px;
       min-width: 96px;
       padding-left: 14px;
       padding-right: 14px;
     }
 
     ${mediaMax('compact')} {
-      padding: 12px;
+      padding: ${space.md}px;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      gap: ${space.sm}px;
 
-      /* Cancel | Reset on first row; Save full-width below (primary thumb reach) */
       .MuiButton-root:last-child {
         grid-column: 1 / -1;
       }
@@ -54,8 +59,10 @@ export const DialogFooter = styled.div`
       .MuiButton-root {
         width: 100%;
         min-width: 0;
-        min-height: 44px;
+        min-height: ${TOUCH_TARGET_PX}px;
       }
     }
   `}
 `
+
+export { cssVar }

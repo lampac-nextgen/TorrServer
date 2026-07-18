@@ -17,18 +17,20 @@ description: >-
 ## Hard locks
 
 - Keep React — no Vue rewrite.
-- Stay on MUI 6 — no MUI 7 unless asked.
-- Keep dual styling: MUI for buttons/dialogs/feedback; styled-components for shells/canvas/PWA.
+- **Wave 1 ideal UX** stays on **MUI 6** — no MUI 7, no Radix/shadcn migration until Wave 1 is accepted.
+- **Wave 2** (after accept): Radix primitives + shadcn-style + Tailwind v4; spike one surface first (see session). Keep styled-components only for snake/canvas if needed.
+- Dual styling Wave 1: MUI for buttons/dialogs/feedback; styled-components for shells/canvas.
+- Design SSOT: [`web/src/style/tokens.ts`](../../../web/src/style/tokens.ts) → CSS vars in `GlobalStyle` + MUI theme. Brand: **MatriX green** (`colors.ts`). No purple/cream AI defaults.
 - File row: **all** player/copy/preload actions visible as equal outlined buttons — never a «⋯» menu.
 - Snake: poll `/cache` at **100ms** (idle 400ms); skip unchanged; `memo`; **focus-window** around playhead (`buildFocusModel`, ~64–120 cells); HiDPI bottom-up paint. Optional full-torrent LOD (`buildCacheDrawModel`) is available but not the default UI path.
 - GStreamer: keep runtime React Query cache + probe cache in card; heartbeat `no-store`.
 - No lord-icon / Lottie for empty states — use `@mui/icons-material` + light CSS motion.
 - Relative asset base for Go embed (`./`). Do not break Basic Auth / API hosts in `utils/Hosts.ts`.
 - Breakpoints: only `web/src/style/breakpoints.ts` (`BP` + `mediaMax` / `queryMax`). Shell/list 1-col = **`mobile` (700)**; dialog fullscreen = **`dialog` (960)**. Do not hardcode px in `@media`.
-- **One adaptive shell:** layout by width + CSS chrome tokens (`--app-chrome-*`, `env(safe-area-*)`) only. **No** `standaloneMedia` / `isStandaloneApp` for layout or feature gating. Bottom nav @ `mediaMax('mobile')` in browser and Home Screen — fixed **outside** `AppWrapper`, height **90px + safe-area** (`style/chrome.ts`). Sidebar unmounted on ≤700. Feature parity via Categories/More sheets.
-- While any MUI modal is open, `.ts-bottom-nav` is non-interactive; immersive video (`.ts-immersive`) hides it.
+- **One adaptive shell:** layout by width + CSS chrome tokens only. **No** `standaloneMedia` / `isStandaloneApp` for layout or feature gating. Bottom nav @ `mediaMax('mobile')` in browser and Home Screen — fixed **outside** `AppWrapper`, height **90px band including** safe-area padding (`tokens.ts` / `GlobalStyle`). Sidebar unmounted on ≤700. Feature parity via Categories/More sheets. Donate removed.
+- While an **open** MUI modal is shown (`.MuiModal-root:not([aria-hidden='true'])`), `.ts-bottom-nav` is non-interactive; immersive video (`.ts-immersive`) hides it.
 - `detectStandaloneApp` — install guide / launch / protocol only.
-- Visual tokens master: colors, letter-spacing `-0.1px`, CDN Open Sans 300/400/600, status-dot, Donate removed. No self-hosted woff2.
+- Visual tokens: letter-spacing `-0.1px`, CDN Open Sans 300/400/600, status-dot. No self-hosted woff2.
 
 ## Workflow after UI changes that ship in the binary
 
@@ -50,6 +52,7 @@ Always use `--clean` so orphan hashed chunks are removed. Restart TorrServer + h
 | Destructive | Confirm dialog; Cancel `autoFocus` |
 | Heavy dialogs | `React.lazy` + `Suspense`; do not static-import from always-mounted trees |
 | Code split | Keep vite `manualChunks`: `mui`, `hls`, `vendor` |
+| Dialogs | `StyledDialog` + `dialogPaperSx`; fullscreen inset above chrome; immersive = 100dvh |
 
 ## Snake vs “cache”
 

@@ -1,9 +1,9 @@
 import { mediaMax } from 'style/breakpoints'
-import { MOBILE_BOTTOM_NAV_PX } from 'style/chrome'
+import { MOBILE_BOTTOM_NAV_PX } from 'style/tokens'
 import styled, { css } from 'styled-components'
 
 /**
- * Bottom nav — master PWA footer pattern: fixed 90px band including safe-area.
+ * Bottom nav — fixed 90px band including safe-area (production shell).
  * Always visible at ≤700 (browser and Home Screen).
  */
 export default styled.nav`
@@ -28,7 +28,6 @@ export default styled.nav`
       left: 0;
       right: 0;
       width: 100%;
-      /* Master: 90px total; home-indicator padding eats into the band */
       height: ${MOBILE_BOTTOM_NAV_PX}px;
       padding-bottom: env(safe-area-inset-bottom, 0px);
       padding-left: env(safe-area-inset-left, 0px);
@@ -44,7 +43,7 @@ export default styled.nav`
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      font-size: 10px;
+      font-size: var(--ts-font-label);
       padding: 6px 2px !important;
       color: #fff;
       gap: 2px;
@@ -66,7 +65,7 @@ export default styled.nav`
         text-align: center;
 
         .MuiTypography-root {
-          font-size: 10px;
+          font-size: var(--ts-font-label);
           line-height: 1.15;
           font-weight: 400;
         }
@@ -75,7 +74,7 @@ export default styled.nav`
 
     .ts-nav-tab-label {
       display: block;
-      font-size: 10px;
+      font-size: var(--ts-font-label);
       line-height: 1.15;
       text-align: center;
     }

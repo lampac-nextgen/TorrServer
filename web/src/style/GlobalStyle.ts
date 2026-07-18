@@ -1,11 +1,20 @@
 import { createGlobalStyle } from 'styled-components'
 
 import { mediaMax } from './breakpoints'
-import { MOBILE_BOTTOM_NAV_PX, MOBILE_HEADER_PX } from './chrome'
+import {
+  FONT_STACK,
+  LETTER_SPACING,
+  MOBILE_BOTTOM_NAV_PX,
+  MOBILE_HEADER_PX,
+  TOUCH_TARGET_PX,
+  radius,
+  space,
+  typography,
+} from './tokens'
 
 /**
- * Master typography + adaptive chrome tokens.
- * Bottom nav height matches upstream PWA footer (90px); safe-area added separately.
+ * Viewport shell + design tokens (Wave 1 SSOT).
+ * Bottom nav: 90px band including safe-area padding (not stacked on top).
  */
 export default createGlobalStyle`
   :root {
@@ -15,11 +24,25 @@ export default createGlobalStyle`
     --app-bottom-nav-h: 0px;
     --app-chrome-top: calc(var(--app-header-h) + var(--safe-top));
     --app-chrome-bottom: calc(var(--app-bottom-nav-h) + var(--safe-bottom));
+
+    --ts-font-label: ${typography.label};
+    --ts-font-meta: ${typography.meta};
+    --ts-font-body: ${typography.body};
+    --ts-font-title: ${typography.title};
+    --ts-font-heading: ${typography.heading};
+    --ts-font-button: ${typography.button};
+    --ts-space-xs: ${space.xs}px;
+    --ts-space-sm: ${space.sm}px;
+    --ts-space-md: ${space.md}px;
+    --ts-space-lg: ${space.lg}px;
+    --ts-radius-sm: ${radius.sm}px;
+    --ts-radius-md: ${radius.md}px;
+    --ts-radius-lg: ${radius.lg}px;
+    --ts-touch: ${TOUCH_TARGET_PX}px;
   }
 
   ${mediaMax('mobile')} {
     :root {
-      /* 90px total band — safe-area is padding inside the nav, not added on top */
       --app-bottom-nav-h: ${MOBILE_BOTTOM_NAV_PX}px;
       --app-chrome-bottom: ${MOBILE_BOTTOM_NAV_PX}px;
     }
@@ -28,7 +51,8 @@ export default createGlobalStyle`
   html {
     height: 100%;
     overflow: hidden;
-    font-family: 'Open Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: ${FONT_STACK};
+    font-size: 16px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -45,8 +69,9 @@ export default createGlobalStyle`
     height: 100%;
     overflow: hidden;
     font-family: inherit;
+    font-size: ${typography.body};
     box-sizing: border-box;
-    letter-spacing: -0.1px;
+    letter-spacing: ${LETTER_SPACING};
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -61,7 +86,7 @@ export default createGlobalStyle`
   textarea,
   select {
     font-family: inherit;
-    letter-spacing: -0.1px;
+    letter-spacing: ${LETTER_SPACING};
   }
 
   /* Only OPEN modals — keepMounted Drawers leave .MuiModal-root with aria-hidden=true */
@@ -69,7 +94,6 @@ export default createGlobalStyle`
     pointer-events: none;
   }
 
-  /* Immersive video: hide bottom chrome entirely */
   body:has(.ts-immersive.MuiDialog-root:not([aria-hidden='true'])) .ts-bottom-nav,
   body:has(.MuiModal-root:not([aria-hidden='true']) .ts-immersive) .ts-bottom-nav {
     visibility: hidden;

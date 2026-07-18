@@ -1,4 +1,5 @@
 import { mediaMax, MEDIA_SHORT_VIEWPORT } from 'style/breakpoints'
+import { cssVar, radius, typography } from 'style/tokens'
 import styled, { css } from 'styled-components'
 
 export const TorrentCard = styled.div`
@@ -7,7 +8,7 @@ export const TorrentCard = styled.div`
       torrentCard: { cardPrimaryColor },
     },
   }) => css`
-    border-radius: 5px;
+    border-radius: ${radius.sm}px;
     display: grid;
     grid-template-columns: 120px 260px 1fr;
     grid-template-rows: 180px;
@@ -39,7 +40,7 @@ export const TorrentCard = styled.div`
 
 export const TorrentCardPoster = styled.button<{ $isPoster?: boolean }>`
   grid-area: poster;
-  border-radius: 5px;
+  border-radius: ${radius.sm}px;
   overflow: hidden;
   text-align: center;
   cursor: pointer;
@@ -71,7 +72,7 @@ export const TorrentCardPoster = styled.button<{ $isPoster?: boolean }>`
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: 5px;
+            border-radius: ${radius.sm}px;
           }
         `
       : css`
@@ -118,15 +119,15 @@ export const TorrentCardDescription = styled.div`
   }) => css`
     grid-area: description;
     background: ${cardSecondaryColor};
-    border-radius: 5px;
+    border-radius: ${radius.sm}px;
     padding: 5px;
     display: grid;
-    grid-template-rows: 55% 1fr;
-    gap: 10px;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 8px;
     min-width: 0;
+    min-height: 0;
 
     ${mediaMax('cardDense')} {
-      grid-template-rows: 60% 1fr;
       gap: 3px;
     }
 
@@ -140,17 +141,13 @@ export const TorrentCardDescription = styled.div`
 
     .description-section-name {
       text-transform: uppercase;
-      font-size: 10px;
+      font-size: ${cssVar.fontLabel};
       font-weight: 600;
       letter-spacing: 0.4px;
       color: ${accentCardColor};
       min-width: 0;
       flex-shrink: 0;
-
-      ${mediaMax('cardDense')} {
-        font-size: 0.5rem;
-        line-height: 10px;
-      }
+      line-height: 1.2;
     }
 
     .description-status-wrapper {
@@ -167,7 +164,7 @@ export const TorrentCardDescription = styled.div`
     .description-torrent-title {
       min-width: 0;
       overflow: hidden;
-      font-size: 0.8125rem;
+      font-size: ${cssVar.fontTitle};
       font-weight: 400;
       line-height: 1.25;
       overflow-wrap: anywhere;
@@ -202,16 +199,16 @@ export const TorrentCardDescription = styled.div`
     }
 
     .description-statistics-element-value {
-      margin-bottom: 10px;
+      margin-bottom: 6px;
       margin-left: 0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      font-size: 0.8125rem;
+      font-size: ${cssVar.fontTitle};
       line-height: 1.2;
 
       ${mediaMax('list3')}, ${MEDIA_SHORT_VIEWPORT} {
-        font-size: 0.7rem;
+        font-size: ${typography.meta};
         margin-bottom: 0;
       }
     }
@@ -220,6 +217,7 @@ export const TorrentCardDescription = styled.div`
     .description-statistics-element-value {
       ${mediaMax('cardDense')} {
         font-size: 0.6rem;
+        -webkit-line-clamp: 2;
       }
 
       ${mediaMax('micro')} {

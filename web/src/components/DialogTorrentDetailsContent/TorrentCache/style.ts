@@ -3,9 +3,11 @@ import styled, { css } from 'styled-components'
 import { snakeSettings, type SnakeThemeMode } from './snakeSettings'
 
 export const ScrollNotification = styled.div<{ $themeType?: SnakeThemeMode }>`
-  margin-top: 10px;
+  margin-top: var(--ts-space-sm);
   text-transform: uppercase;
   align-self: center;
+  font-size: var(--ts-font-label);
+  letter-spacing: 0.4px;
   color: ${({ $themeType }) => ($themeType === 'dark' ? 'rgba(255, 255, 255, 0.55)' : 'rgba(0, 0, 0, 0.5)')};
 `
 

@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { mainColors, themeColors } from './colors'
 import { BP, MEDIA_SHORT_VIEWPORT, queryMax } from './breakpoints'
+import { FONT_STACK, LETTER_SPACING, TOUCH_TARGET_PX, radius, typography as typeScale } from './tokens'
 import './mui-augmentation'
 
 export { BP, mediaMax, queryMax, MEDIA_SHORT_VIEWPORT } from './breakpoints'
@@ -33,16 +34,25 @@ export const LAYOUT_LIST_3COL_MAX = BP.list3
 export const LAYOUT_LIST_3COL_MEDIA = queryMax('list3')
 
 const typography = {
-  fontFamily: `'Open Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif`,
+  fontFamily: FONT_STACK,
   fontSize: 14,
   htmlFontSize: 16,
   body1: {
-    fontSize: '0.875rem',
-    letterSpacing: '-0.1px',
+    fontSize: typeScale.body,
+    letterSpacing: LETTER_SPACING,
+  },
+  body2: {
+    fontSize: typeScale.meta,
+    letterSpacing: LETTER_SPACING,
   },
   button: {
-    fontSize: '0.8125rem',
-    letterSpacing: '-0.1px',
+    fontSize: typeScale.button,
+    letterSpacing: LETTER_SPACING,
+  },
+  h6: {
+    fontSize: typeScale.heading,
+    fontWeight: 600,
+    letterSpacing: LETTER_SPACING,
   },
 }
 
@@ -126,7 +136,7 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
             },
             styleOverrides: {
               root: {
-                borderRadius: 8,
+                borderRadius: radius.md,
                 textTransform: 'none',
               },
               sizeSmall: {
@@ -148,10 +158,10 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
                   minHeight: 36,
                   minWidth: 0,
                   width: '100%',
-                  borderRadius: 5,
+                  borderRadius: radius.sm,
                   textTransform: 'uppercase',
                   justifyContent: 'flex-start',
-                  fontSize: '0.75rem',
+                  fontSize: typeScale.button,
                   fontWeight: 400,
                   letterSpacing: '0.01em',
                   padding: '0 10px',
@@ -178,7 +188,7 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
                   },
                   [`@media ${queryMax('list3')}, ${MEDIA_SHORT_VIEWPORT}`]: {
                     justifyContent: 'center',
-                    fontSize: '0.7rem',
+                    fontSize: typeScale.buttonDense,
                     fontWeight: 400,
                     letterSpacing: '0.02em',
                     minHeight: 40,
@@ -188,14 +198,15 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
                     },
                   },
                   [`@media ${queryMax('mobile')}`]: {
-                    fontSize: '0.7rem',
+                    fontSize: typeScale.buttonDense,
                     fontWeight: 400,
+                    minHeight: TOUCH_TARGET_PX,
                   },
                   [`@media ${queryMax('phone')}`]: {
-                    fontSize: '0.65rem',
+                    fontSize: typeScale.buttonPhone,
                     fontWeight: 400,
                     padding: '6px 8px',
-                    minHeight: 40,
+                    minHeight: TOUCH_TARGET_PX,
                   },
                 },
               },
@@ -205,24 +216,24 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
             styleOverrides: {
               root: {
                 [`@media ${queryMax('mobile')}`]: {
-                  minWidth: 44,
-                  minHeight: 44,
+                  minWidth: TOUCH_TARGET_PX,
+                  minHeight: TOUCH_TARGET_PX,
                 },
               },
               sizeMedium: {
                 width: 36,
                 height: 36,
                 [`@media ${queryMax('mobile')}`]: {
-                  width: 44,
-                  height: 44,
+                  width: TOUCH_TARGET_PX,
+                  height: TOUCH_TARGET_PX,
                 },
               },
               sizeSmall: {
                 width: 32,
                 height: 32,
                 [`@media ${queryMax('mobile')}`]: {
-                  width: 44,
-                  height: 44,
+                  width: TOUCH_TARGET_PX,
+                  height: TOUCH_TARGET_PX,
                 },
               },
             },
@@ -256,11 +267,11 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
           MuiTypography: {
             styleOverrides: {
               h6: {
-                fontSize: '1rem',
+                fontSize: typeScale.heading,
                 fontWeight: 600,
                 lineHeight: 1.3,
                 [`@media ${queryMax('mobile')}`]: {
-                  fontSize: '0.875rem',
+                  fontSize: typeScale.body,
                 },
               },
             },
@@ -268,10 +279,19 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
           MuiListItemText: {
             styleOverrides: {
               primary: {
-                fontSize: '0.875rem',
+                fontSize: typeScale.body,
               },
               secondary: {
-                fontSize: '0.75rem',
+                fontSize: typeScale.button,
+              },
+            },
+          },
+          MuiListItemButton: {
+            styleOverrides: {
+              root: {
+                [`@media ${queryMax('mobile')}`]: {
+                  minHeight: TOUCH_TARGET_PX,
+                },
               },
             },
           },

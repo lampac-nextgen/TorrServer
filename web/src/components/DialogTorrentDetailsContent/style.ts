@@ -167,16 +167,20 @@ export const SectionTitle = styled.div<{ $color?: string; $mb?: number }>`
     },
   }) => css`
     ${$mb && `margin-bottom: ${$mb}px`};
-    font-size: 34px;
+    font-size: 1.5rem;
     font-weight: 300;
-    line-height: 1;
+    line-height: 1.15;
     word-break: break-word;
     color: ${$color || titleFontColor};
 
     ${mediaMax('tablet')} {
-      font-size: 24px;
-      line-height: 1.1;
+      font-size: 1.25rem;
+      line-height: 1.2;
       ${$mb && `margin-bottom: ${$mb / 2}px`};
+    }
+
+    ${mediaMax('mobile')} {
+      font-size: 1.125rem;
     }
   `}
 `
