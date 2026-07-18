@@ -37,15 +37,22 @@ export const StyledMenuButtonWrapper = styled(ListItemButton)`
   }
 `
 
-/** Adaptive dialog — normal backdrop; inset above bottom chrome on mobile. */
+/**
+ * Adaptive dialog — normal backdrop.
+ * Only fullscreen papers inset above bottom chrome (confirms stay centered).
+ * Immersive (video) fills the viewport and hides chrome via GlobalStyle.
+ */
 export const StyledDialog = styled(Dialog)`
   ${mediaMax('mobile')} {
-    .MuiDialog-container .MuiPaper-root {
+    .MuiDialog-container .MuiPaper-root.MuiDialog-paperFullScreen {
       margin-bottom: var(--app-chrome-bottom);
+      max-height: calc(100dvh - var(--app-chrome-bottom));
     }
 
     &.ts-immersive .MuiDialog-container .MuiPaper-root {
       margin-bottom: 0;
+      max-height: 100dvh;
+      height: 100%;
     }
   }
 `

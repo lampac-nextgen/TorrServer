@@ -25,7 +25,8 @@ description: >-
 - No lord-icon / Lottie for empty states — use `@mui/icons-material` + light CSS motion.
 - Relative asset base for Go embed (`./`). Do not break Basic Auth / API hosts in `utils/Hosts.ts`.
 - Breakpoints: only `web/src/style/breakpoints.ts` (`BP` + `mediaMax` / `queryMax`). Shell/list 1-col = **`mobile` (700)**; dialog fullscreen = **`dialog` (960)**. Do not hardcode px in `@media`.
-- **One adaptive shell:** layout by width + CSS chrome tokens (`--app-chrome-*`, `env(safe-area-*)`) only. **No** `standaloneMedia` / `isStandaloneApp` for layout or feature gating. Bottom nav @ `mediaMax('mobile')` in browser and Home Screen. Feature parity everywhere (Categories / Remove All via sheets).
+- **One adaptive shell:** layout by width + CSS chrome tokens (`--app-chrome-*`, `env(safe-area-*)`) only. **No** `standaloneMedia` / `isStandaloneApp` for layout or feature gating. Bottom nav @ `mediaMax('mobile')` in browser and Home Screen — fixed **outside** `AppWrapper`, height **90px + safe-area** (`style/chrome.ts`). Sidebar unmounted on ≤700. Feature parity via Categories/More sheets.
+- While any MUI modal is open, `.ts-bottom-nav` is non-interactive; immersive video (`.ts-immersive`) hides it.
 - `detectStandaloneApp` — install guide / launch / protocol only.
 - Visual tokens master: colors, letter-spacing `-0.1px`, CDN Open Sans 300/400/600, status-dot, Donate removed. No self-hosted woff2.
 

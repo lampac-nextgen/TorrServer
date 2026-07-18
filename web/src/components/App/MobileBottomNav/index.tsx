@@ -14,6 +14,7 @@ import MoreSheet from './MoreSheet'
 import StyledBottomNav from './style'
 
 interface MobileBottomNavProps extends OfflineAwareProps {
+  globalCategoryFilter: string
   setGlobalFilterCategory: (key: string) => void
   onOpenSearch: () => void
 }
@@ -21,6 +22,7 @@ interface MobileBottomNavProps extends OfflineAwareProps {
 export default function MobileBottomNav({
   isOffline,
   isLoading,
+  globalCategoryFilter,
   setGlobalFilterCategory,
   onOpenSearch,
 }: MobileBottomNavProps) {
@@ -58,6 +60,7 @@ export default function MobileBottomNav({
       <CategoriesSheet
         open={categoriesOpen}
         onClose={() => setCategoriesOpen(false)}
+        selectedCategory={globalCategoryFilter}
         setGlobalFilterCategory={setGlobalFilterCategory}
       />
 

@@ -177,10 +177,6 @@ export const HeaderToggle = styled(IconButton)`
   `}
 `
 
-export const SidebarOverlay = styled.div<{ $isDrawerOpen?: boolean }>`
-  display: none;
-`
-
 export const StyledIconButton = styled(IconButton)`
   margin-right: 6px;
 

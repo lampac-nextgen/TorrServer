@@ -7,10 +7,16 @@ import { useTranslation } from 'react-i18next'
 interface CategoriesSheetProps {
   open: boolean
   onClose: () => void
+  selectedCategory: string
   setGlobalFilterCategory: (key: string) => void
 }
 
-export default function CategoriesSheet({ open, onClose, setGlobalFilterCategory }: CategoriesSheetProps) {
+export default function CategoriesSheet({
+  open,
+  onClose,
+  selectedCategory,
+  setGlobalFilterCategory,
+}: CategoriesSheetProps) {
   const { t } = useTranslation()
 
   const pick = (key: string) => {
@@ -35,19 +41,23 @@ export default function CategoriesSheet({ open, onClose, setGlobalFilterCategory
       }}
     >
       <List dense sx={{ py: 1 }}>
-        <ListItemButton onClick={() => pick('all')}>
+        <ListItemButton selected={selectedCategory === 'all'} onClick={() => pick('all')}>
           <ListItemIcon>
             <CheckIcon />
           </ListItemIcon>
           <ListItemText primary={t('All')} />
         </ListItemButton>
         {TORRENT_CATEGORIES.map(category => (
-          <ListItemButton key={category.key} onClick={() => pick(category.key)}>
+          <ListItemButton
+            key={category.key}
+            selected={selectedCategory === category.key}
+            onClick={() => pick(category.key)}
+          >
             <ListItemIcon>{category.icon}</ListItemIcon>
             <ListItemText primary={t(category.name)} />
           </ListItemButton>
         ))}
-        <ListItemButton onClick={() => pick('')}>
+        <ListItemButton selected={selectedCategory === ''} onClick={() => pick('')}>
           <ListItemIcon>
             <ClearIcon />
           </ListItemIcon>

@@ -55,8 +55,8 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 - ShortTable: no hardcoded black
 - AddDialog: shared `['torrents']` query (no second 1s poll)
 - Search: no full-content loading overlay; Alert snackbars
-- TorrentList Skeleton; StatusIndicator → MUI `Chip` (size small)
-- PWA sidebar overlay `top: 90px` under standalone
+- TorrentList Skeleton; status = 8px colored dot next to Size
+- Adaptive shell: MobileBottomNav ≤700 (no standalone PWA footer caste)
 - lord-icon removed → `CreateNewFolderOutlined` / `CloudOffOutlined` + CSS float on hover
 
 ### Verify
@@ -67,14 +67,15 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue without re-di
 
 ## Responsive — adaptive universal shell (done)
 
-- Canonical breakpoints: `web/src/style/breakpoints.ts` (`BP` + `mediaMax` / `queryMax`).
-- **One shell:** width + CSS chrome tokens (`--app-chrome-*`, safe-area). Removed `standaloneMedia`, `PWAFooter`, outside-click helper.
-- ≤700: `MobileBottomNav` (Add / Search / Categories / More) + feature parity sheets. >700: sidebar.
-- Dialog fullscreen: **`dialog` (960)**; details main|cache stacks there. Card actions 2-col @ `cardDense`.
-- Typography: CDN Open Sans 300/400/600, letter-spacing `-0.1px`. Visual tokens = master colors.
-- Feature parity everywhere (Categories, Remove All via sheets on mobile).
+- Canonical breakpoints: `web/src/style/breakpoints.ts` (`BP` + `mediaMax` / `queryMax`). MUI `md` = `BP.dialog` (960).
+- **One shell:** width + CSS chrome tokens. No `standaloneMedia` / `PWAFooter`.
+- Chrome: header **60 + safe-top**; bottom nav **90 + safe-bottom** ([`chrome.ts`](../../web/src/style/chrome.ts)).
+- ≤700: fixed `MobileBottomNav` **outside** `AppWrapper` (Add / Search / Categories / More). Sidebar **unmounted** (not only hidden).
+- Modals: fullscreen papers inset above chrome; bottom nav `pointer-events: none` while `.MuiModal-root` open; immersive video hides nav.
+- Dialog fullscreen / details stack: **`dialog` (960)**. Card actions 2-col @ `cardDense`.
+- Typography: CDN Open Sans 300/400/600, letter-spacing `-0.1px`.
 - Donate removed. Status: 8px dot next to Size.
-- `detectStandaloneApp` / `isStandaloneApp` — install guide / launch only.
+- `detectStandaloneApp` — install guide / launch only. Install guide offset: `--app-chrome-bottom`.
 
 ### Still open (ask before doing)
 

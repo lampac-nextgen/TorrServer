@@ -94,7 +94,7 @@ export const useMaterialUITheme = (): [boolean, ThemePreference, (mode: ThemePre
           values: {
             xs: 0,
             sm: BP.compact,
-            md: BP.mobile,
+            md: BP.dialog,
             lg: BP.list3,
             xl: 1536,
           },

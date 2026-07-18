@@ -41,7 +41,7 @@ export default function RemoveAll({ isOffline, isLoading }: OfflineAwareProps) {
       <StyledDialog open={open} onClose={closeDialog}>
         <DialogTitle>{t('DeleteTorrents?')}</DialogTitle>
         <DialogActions>
-          <Button variant='outlined' onClick={closeDialog} color='secondary'>
+          <Button variant='outlined' onClick={closeDialog} color='secondary' autoFocus>
             {t('Cancel')}
           </Button>
 
@@ -54,7 +54,6 @@ export default function RemoveAll({ isOffline, isLoading }: OfflineAwareProps) {
               closeDialog()
             }}
             color='secondary'
-            autoFocus
           >
             {t('OK')}
           </UnsafeButton>

@@ -3,7 +3,7 @@ import styled, { css } from 'styled-components'
 export const StyledWrapper = styled.div<{ $isOpen?: boolean }>`
   ${({ $isOpen }) => css`
     position: absolute;
-    bottom: 10px;
+    bottom: calc(10px + var(--app-chrome-bottom));
     left: 50%;
     background: #eeeef0;
     width: calc(100% - 20px);

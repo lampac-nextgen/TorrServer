@@ -563,7 +563,7 @@ const VideoPlayer = ({
             sx: theme => ({
               display: 'flex',
               flexDirection: 'column',
-              maxHeight: 'calc(100dvh - var(--app-chrome-top) - var(--app-chrome-bottom))',
+              maxHeight: isMobile ? '100dvh' : 'calc(100dvh - var(--app-chrome-top) - var(--app-chrome-bottom))',
               overflow: 'hidden',
               backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#fff',
               borderRadius: isMobile ? 0 : theme.spacing(1),

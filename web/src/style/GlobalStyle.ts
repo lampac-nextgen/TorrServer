@@ -61,4 +61,14 @@ export default createGlobalStyle`
     font-family: inherit;
     letter-spacing: -0.1px;
   }
+
+  /* Modal open: bottom nav must not steal taps in the chrome gap */
+  body:has(.MuiModal-root) .ts-bottom-nav {
+    pointer-events: none;
+  }
+
+  /* Immersive video: hide bottom chrome entirely */
+  body:has(.ts-immersive) .ts-bottom-nav {
+    visibility: hidden;
+  }
 `

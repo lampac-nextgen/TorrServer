@@ -1,5 +1,6 @@
 import CssBaseline from '@mui/material/CssBaseline'
 import CircularProgress from '@mui/material/CircularProgress'
+import useMediaQuery from '@mui/material/useMediaQuery'
 import { createContext, lazy, Suspense, useEffect, useState } from 'react'
 import Typography from '@mui/material/Typography'
 import Tooltip from '@mui/material/Tooltip'
@@ -23,6 +24,7 @@ import { detectApplePlatform, getTorrents, isStandaloneApp } from 'utils/Utils'
 import GlobalStyle from 'style/GlobalStyle'
 import { AppSnackbarProvider } from 'components/Feedback/AppSnackbar'
 import { THEME_MODES, useMaterialUITheme } from 'style/materialUISetup'
+import { queryMax } from 'style/breakpoints'
 import getStyledComponentsTheme from 'style/getStyledComponentsTheme'
 import useLaunchHandler from 'utils/useLaunchHandler'
 import { useTranslation } from 'react-i18next'
@@ -48,6 +50,7 @@ export default function App() {
   const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false)
   const [torrServerVersion, setTorrServerVersion] = useState('')
   const [listPollMs, setListPollMs] = useState(1000)
+  const isMobileShell = useMediaQuery(queryMax('mobile'))
 
   const [isDarkMode, currentThemeMode, updateThemeMode, muiTheme] = useMaterialUITheme()
   const [currentLang, changeLang] = useChangeLanguage()
@@ -191,12 +194,14 @@ export default function App() {
                     </div>
                   </AppHeader>
 
-                  <Sidebar
-                    isOffline={isOffline}
-                    isLoading={isLoading}
-                    isDrawerOpen={isDrawerOpen}
-                    setGlobalFilterCategory={setGlobalFilterCategory}
-                  />
+                  {!isMobileShell && (
+                    <Sidebar
+                      isOffline={isOffline}
+                      isLoading={isLoading}
+                      isDrawerOpen={isDrawerOpen}
+                      setGlobalFilterCategory={setGlobalFilterCategory}
+                    />
+                  )}
 
                   <TorrentList
                     isOffline={isOffline}
@@ -225,6 +230,7 @@ export default function App() {
                 <MobileBottomNav
                   isOffline={isOffline}
                   isLoading={isLoading}
+                  globalCategoryFilter={globalCategoryFilter}
                   setGlobalFilterCategory={setGlobalFilterCategory}
                   onOpenSearch={() => setIsSearchDialogOpen(true)}
                 />
