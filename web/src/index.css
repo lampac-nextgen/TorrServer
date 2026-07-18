@@ -91,3 +91,32 @@ body[data-modal-open='true'] .ts-bottom-nav {
 body[data-immersive='true'] .ts-bottom-nav {
   visibility: hidden;
 }
+
+/**
+ * Modal width floor — HeroUI's `.modal__container` sizes itself with
+ * `width: fit-content` (from `sm:w-fit`) and `.modal__dialog` fills it at
+ * `width: 100%`. Any scrollable descendant (Tabs' horizontal ScrollShadow,
+ * the cache "snake" canvas wrapper, file tables, ...) contributes ~0 to the
+ * fit-content min-content calculation, so the container can collapse far
+ * below the intended `size` — the dialog then renders as a narrow sliver
+ * with clipped/wrapped content. An explicit min-width equal to each size's
+ * max-width gives the container a hard floor, independent of what scrolls
+ * inside it.
+ */
+@media (width >= 40rem) {
+  .modal__dialog--xs {
+    min-width: 20rem;
+  }
+
+  .modal__dialog--sm {
+    min-width: 24rem;
+  }
+
+  .modal__dialog--md {
+    min-width: 28rem;
+  }
+
+  .modal__dialog--lg {
+    min-width: 32rem;
+  }
+}

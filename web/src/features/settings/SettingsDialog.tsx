@@ -1,7 +1,8 @@
 import { Button, Description, Modal, Spinner, Tabs, useMediaQuery } from '@heroui/react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { Cog, Film, HardDrive, Rss, SlidersHorizontal, Smartphone, Wifi } from 'lucide-react'
 
 import type { BTSets } from 'shared/api/types'
 import { getSettings, setSettings, SETTINGS_QUERY_KEY } from 'shared/api/settings'
@@ -58,15 +59,15 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const isGstTab = tab === 'gstreamer'
 
   const visibleTabs = useMemo(() => {
-    const tabs: { id: SettingsTab; label: string }[] = [
-      { id: 'primary', label: t('SettingsDialog.Tabs.Main') },
-      { id: 'network', label: t('Network') },
-      { id: 'features', label: t('SettingsDialog.AdditionalSettings') },
-      { id: 'storage', label: t('SettingsDialog.StorageSettings') },
-      { id: 'app', label: t('SettingsDialog.Tabs.App') },
+    const tabs: { id: SettingsTab; label: string; icon: ReactNode }[] = [
+      { id: 'primary', label: t('SettingsDialog.Tabs.Main'), icon: <SlidersHorizontal size={17} /> },
+      { id: 'network', label: t('Network'), icon: <Wifi size={17} /> },
+      { id: 'features', label: t('SettingsDialog.AdditionalSettings'), icon: <Cog size={17} /> },
+      { id: 'storage', label: t('SettingsDialog.StorageSettings'), icon: <HardDrive size={17} /> },
+      { id: 'app', label: t('SettingsDialog.Tabs.App'), icon: <Smartphone size={17} /> },
     ]
-    if (gstAvailable) tabs.push({ id: 'gstreamer', label: t('GStreamer.Tab') })
-    tabs.push({ id: 'torznab', label: t('Torznab.Tab') })
+    if (gstAvailable) tabs.push({ id: 'gstreamer', label: t('GStreamer.Tab'), icon: <Film size={17} /> })
+    tabs.push({ id: 'torznab', label: t('Torznab.Tab'), icon: <Rss size={17} /> })
     return tabs
   }, [gstAvailable, t])
 
@@ -171,9 +172,16 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   }
 
   const footerButtonClassName = isMobile ? 'min-h-11 px-4' : undefined
+  const panelClassName = isMobile ? 'pt-4' : 'ml-0 min-w-0 flex-1'
 
   return (
-    <AppDialog open={open} onClose={onClose} size='md' fullScreen={isMobile}>
+    <AppDialog
+      open={open}
+      onClose={onClose}
+      size='lg'
+      fullScreen={isMobile}
+      dialogClassName={isMobile ? undefined : 'sm:min-w-[42rem] sm:max-w-2xl'}
+    >
       <Modal.Header>
         <Modal.Heading>{t('SettingsDialog.Settings')}</Modal.Heading>
         <Modal.CloseTrigger />
@@ -184,20 +192,29 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
             <Spinner size='lg' />
           </div>
         ) : (
-          <Tabs.Root selectedKey={tab} onSelectionChange={key => setTab(String(key) as SettingsTab)}>
-            <Tabs.List aria-label={t('SettingsDialog.Settings')} className='overflow-x-auto'>
+          <Tabs.Root
+            orientation={isMobile ? 'horizontal' : 'vertical'}
+            selectedKey={tab}
+            onSelectionChange={key => setTab(String(key) as SettingsTab)}
+            className={isMobile ? undefined : 'gap-6'}
+          >
+            <Tabs.List
+              aria-label={t('SettingsDialog.Settings')}
+              className={isMobile ? 'overflow-x-auto' : 'w-52 shrink-0'}
+            >
               {visibleTabs.map(item => (
                 <Tabs.Tab
                   key={item.id}
                   id={item.id}
-                  className={isMobile ? 'min-h-11 whitespace-nowrap' : 'whitespace-nowrap'}
+                  className={isMobile ? 'min-h-11 whitespace-nowrap' : 'min-h-10 justify-start gap-2.5 px-3 text-left'}
                 >
-                  {item.label}
+                  {!isMobile ? item.icon : null}
+                  <span className='truncate'>{item.label}</span>
                 </Tabs.Tab>
               ))}
             </Tabs.List>
 
-            <Tabs.Panel id='primary' className='pt-4'>
+            <Tabs.Panel id='primary' className={panelClassName}>
               <PrimarySettingsPanel
                 settings={settings}
                 cacheSizeMb={cacheSizeMb}
@@ -207,7 +224,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               />
             </Tabs.Panel>
 
-            <Tabs.Panel id='network' className='pt-4'>
+            <Tabs.Panel id='network' className={panelClassName}>
               <NetworkSettingsPanel
                 settings={settings}
                 boolChecked={boolChecked}
@@ -216,7 +233,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               />
             </Tabs.Panel>
 
-            <Tabs.Panel id='features' className='pt-4'>
+            <Tabs.Panel id='features' className={panelClassName}>
               <FeaturesSettingsPanel
                 settings={settings}
                 boolChecked={boolChecked}
@@ -225,7 +242,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               />
             </Tabs.Panel>
 
-            <Tabs.Panel id='storage' className='pt-4'>
+            <Tabs.Panel id='storage' className={panelClassName}>
               <StorageSettingsPanel
                 settings={settings}
                 onBoolSwitch={handleBoolSwitch}
@@ -234,14 +251,14 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               />
             </Tabs.Panel>
 
-            <Tabs.Panel id='app' className='pt-4'>
+            <Tabs.Panel id='app' className={panelClassName}>
               <Description className='mb-4'>{t('SettingsDialog.AppTabHint')}</Description>
               <TMDBSettingsSection settings={settings} updateSettings={updateSettingsPartial} />
               <MobilePlayersSection />
             </Tabs.Panel>
 
             {gstAvailable ? (
-              <Tabs.Panel id='gstreamer' className='pt-4'>
+              <Tabs.Panel id='gstreamer' className={panelClassName}>
                 <GStreamerSettingsPanel config={gstConfig} onChange={setGstConfig} />
                 <Button
                   className='mt-4'
@@ -253,7 +270,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               </Tabs.Panel>
             ) : null}
 
-            <Tabs.Panel id='torznab' className='pt-4'>
+            <Tabs.Panel id='torznab' className={panelClassName}>
               <TorznabSettingsPanel
                 settings={settings}
                 onUpdate={updateSetting}

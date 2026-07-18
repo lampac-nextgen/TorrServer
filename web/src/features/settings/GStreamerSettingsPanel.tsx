@@ -87,9 +87,11 @@ function GstSwitch({
         {helper ? <Description>{helper}</Description> : null}
       </div>
       <Switch isSelected={checked} onChange={onChange}>
-        <Switch.Control>
-          <Switch.Thumb />
-        </Switch.Control>
+        <Switch.Content>
+          <Switch.Control>
+            <Switch.Thumb />
+          </Switch.Control>
+        </Switch.Content>
       </Switch>
     </div>
   )

@@ -1,5 +1,5 @@
 import { Button, ButtonGroup, Modal, Separator, useOverlayState } from '@heroui/react'
-import { EyeOff, ListVideo, Magnet, Trash2 } from 'lucide-react'
+import { EyeOff, ListVideo, Loader2, Magnet, Play, Trash2 } from 'lucide-react'
 import { memo, useState } from 'react'
 import ptt from 'parse-torrent-title'
 import { useQueryClient } from '@tanstack/react-query'
@@ -9,6 +9,7 @@ import { playlistTorrHost } from 'shared/api/hosts'
 import { dropTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { clearViewedFiles } from 'shared/api/viewed'
 import { useOptionalAppToast } from 'shared/ui/Toast'
+import { usePlayLauncher } from 'features/player/usePlayLauncher'
 
 export interface TorrentActionsProps {
   hash: string
@@ -52,6 +53,12 @@ function TorrentActions({
   const fromLatestPlaylistLink = `${fullPlaylistLink}&fromlast`
   const magnetLink = `magnet:?xt=urn:btih:${hash}&dn=${encodeURIComponent(name || title || '')}`
 
+  const { handlePlay, resolvingAudio, playerModals } = usePlayLauncher({
+    hash,
+    displayName,
+    knownPlayableFiles: playableFileList || [],
+  })
+
   const runPendingConfirm = () => {
     if (pendingConfirm === 'drop') {
       void dropTorrent(hash)
@@ -85,6 +92,15 @@ function TorrentActions({
 
   return (
     <div className='space-y-4'>
+      <Button variant='primary' size='lg' className='w-full sm:w-auto' isDisabled={resolvingAudio} onPress={handlePlay}>
+        {resolvingAudio ? (
+          <Loader2 className='size-4 animate-spin' aria-hidden />
+        ) : (
+          <Play className='size-4' fill='currentColor' aria-hidden />
+        )}
+        {t('Play')}
+      </Button>
+
       {hasPartialProgress ? (
         <div className='rounded-xl border border-border bg-surface-secondary p-4'>
           <p className='mb-1 flex items-center gap-2 text-sm font-semibold'>
@@ -145,6 +161,8 @@ function TorrentActions({
           </Button>
         </div>
       </div>
+
+      {playerModals}
 
       <Modal.Root state={confirmState}>
         <Modal.Backdrop>

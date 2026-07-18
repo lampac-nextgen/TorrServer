@@ -18,8 +18,8 @@ export interface TorrentsPageProps {
   onAdd?: () => void
 }
 
-/** ~150-200px poster tiles, auto-filling available width. */
-const POSTER_GRID_STYLE = { gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }
+/** ~170-220px poster tiles, auto-filling available width. */
+const POSTER_GRID_STYLE = { gridTemplateColumns: 'repeat(auto-fill, minmax(172px, 1fr))' }
 const SKELETON_TILE_COUNT = 12
 
 function sortTorrents(torrents: TorrentStat[], sortABC: boolean, sortCategory: string): TorrentStat[] {
@@ -64,7 +64,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsP
 
   if (isLoading) {
     return (
-      <div className='grid min-h-full gap-3 p-3 sm:gap-4 sm:p-4 md:p-6' style={POSTER_GRID_STYLE}>
+      <div className='grid min-h-full gap-3 p-3 sm:gap-4 sm:p-4 md:gap-5 md:p-6' style={POSTER_GRID_STYLE}>
         {Array.from({ length: SKELETON_TILE_COUNT }, (_, index) => (
           <div key={index} className='flex flex-col gap-2'>
             <div className='aspect-[2/3] w-full animate-pulse rounded-2xl bg-surface-secondary' />
@@ -120,7 +120,11 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsP
 
   return (
     <>
-      <div ref={gridRef} className='grid min-h-full gap-3 p-3 pb-8 sm:gap-4 sm:p-4 md:p-6' style={POSTER_GRID_STYLE}>
+      <div
+        ref={gridRef}
+        className='grid min-h-full gap-3 p-3 pb-8 sm:gap-4 sm:p-4 md:gap-5 md:p-6'
+        style={POSTER_GRID_STYLE}
+      >
         {visibleTorrents.map(torrent => (
           <TorrentCard key={torrent.hash} torrent={torrent} onSelect={setDetailsTorrent} onEdit={setEditingTorrent} />
         ))}

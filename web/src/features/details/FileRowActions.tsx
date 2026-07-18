@@ -1,9 +1,11 @@
+import { lazy, Suspense } from 'react'
 import { Button, Tooltip } from '@heroui/react'
-import { Copy, Download, ExternalLink } from 'lucide-react'
+import { Copy, Download, ExternalLink, Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
-import VideoPlayer from 'features/player/VideoPlayer'
+/** Lazy: keeps hls.js out of the Details bundle — only fetched once a file is actually played. */
+const VideoPlayer = lazy(() => import('features/player/VideoPlayer'))
 
 export interface ExternalPlayerLink {
   label: string
@@ -69,15 +71,24 @@ export default function FileRowActions({
       </Tooltip.Root>
 
       {playerSupported ? (
-        <VideoPlayer
-          title={playerTitle}
-          videoSrc={playerSrc}
-          downloadSrc={downloadSrc}
-          hls={hls}
-          heartbeatSrc={heartbeatSrc}
-          onNotSupported={onPlayerNotSupported}
-          inlineTrigger
-        />
+        <Suspense
+          fallback={
+            <Button variant='secondary' size='sm' className={actionButtonClass} isDisabled>
+              <Loader2 className='size-4 animate-spin' aria-hidden />
+              {t('Play')}
+            </Button>
+          }
+        >
+          <VideoPlayer
+            title={playerTitle}
+            videoSrc={playerSrc}
+            downloadSrc={downloadSrc}
+            hls={hls}
+            heartbeatSrc={heartbeatSrc}
+            onNotSupported={onPlayerNotSupported}
+            inlineTrigger
+          />
+        </Suspense>
       ) : (
         showOpenLink &&
         openLinkHref && (

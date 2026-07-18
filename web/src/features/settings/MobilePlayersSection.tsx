@@ -29,9 +29,11 @@ function PlayerSwitch({
         <Description>{helper}</Description>
       </div>
       <Switch isSelected={checked} onChange={onChange}>
-        <Switch.Control>
-          <Switch.Thumb />
-        </Switch.Control>
+        <Switch.Content>
+          <Switch.Control>
+            <Switch.Thumb />
+          </Switch.Control>
+        </Switch.Content>
       </Switch>
     </div>
   )

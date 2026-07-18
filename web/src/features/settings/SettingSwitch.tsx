@@ -27,9 +27,11 @@ export function SettingSwitch({ id, label, helper, checked, onChange }: SettingS
         {helper ? <Description>{helper}</Description> : null}
       </div>
       <Switch id={id} isSelected={checked} onChange={value => onChange(id, value)}>
-        <Switch.Control>
-          <Switch.Thumb />
-        </Switch.Control>
+        <Switch.Content>
+          <Switch.Control>
+            <Switch.Thumb />
+          </Switch.Control>
+        </Switch.Content>
       </Switch>
     </div>
   )

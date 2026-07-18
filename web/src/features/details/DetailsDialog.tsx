@@ -161,7 +161,7 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
     <Modal.Root state={overlayState}>
       <Modal.Backdrop>
         <Modal.Container size={isFullScreen ? 'full' : 'lg'} scroll='inside'>
-          <Modal.Dialog>
+          <Modal.Dialog className={isFullScreen ? undefined : 'sm:min-w-[42rem] sm:max-w-4xl lg:max-w-5xl'}>
             <Modal.Header className='flex items-center gap-2'>
               <Modal.Heading className='min-w-0 flex-1 truncate'>{t('TorrentDetails')}</Modal.Heading>
               {onEdit ? (
@@ -208,6 +208,17 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
 
                 <Tabs.Panel id='overview' className='space-y-4 pt-4'>
                   <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} />
+
+                  <div className='rounded-xl border border-border bg-surface-secondary p-4'>
+                    <div className='mb-3 flex items-center justify-between gap-2'>
+                      <p className='text-sm font-semibold text-muted'>{t('Cache')}</p>
+                      <Button size='sm' variant='ghost' onPress={() => setActiveTab('cache')}>
+                        {t('DetailedCacheView.button')}
+                      </Button>
+                    </div>
+                    <TorrentCache cache={cache} mode='mini' />
+                  </div>
+
                   <TorrentActions
                     hash={hash}
                     name={name}
@@ -272,7 +283,12 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                       </Button>
                       {isDetailedCacheView ? (
                         <Checkbox isSelected={isSnakeDebugMode} onChange={setIsSnakeDebugMode}>
-                          {t('SnakeDebug', { defaultValue: 'Debug pieces' })}
+                          <Checkbox.Content>
+                            <Checkbox.Control>
+                              <Checkbox.Indicator />
+                            </Checkbox.Control>
+                            {t('SnakeDebug', { defaultValue: 'Debug pieces' })}
+                          </Checkbox.Content>
                         </Checkbox>
                       ) : null}
                     </div>
