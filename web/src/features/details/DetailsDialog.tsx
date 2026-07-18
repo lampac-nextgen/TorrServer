@@ -215,6 +215,44 @@ export default function DetailsDialog({
   const isLoadingMetadata = stat === GETTING_INFO && playableFileList.length === 0
   const hasMultipleSeasons = (seasonList?.length ?? 0) > 1
 
+  const cacheFilledValue =
+    cache.Filled != null && cache.Capacity != null
+      ? (() => {
+          const filled = cache.Filled
+          const capacity = cache.Capacity
+          const shown = Math.min(filled, capacity)
+          const over = filled > capacity
+          return over
+            ? `${humanizeSize(shown)} / ${humanizeSize(capacity)} · ${Math.round((filled / capacity) * 100)}%`
+            : `${humanizeSize(filled)} / ${humanizeSize(capacity)}`
+        })()
+      : '—'
+
+  const primaryStats = (
+    <>
+      <StatWidget label={t('DownloadSpeed')} value={humanizeSpeed(downloadSpeed)} />
+      <StatWidget label={t('UploadSpeed')} value={humanizeSpeed(uploadSpeed)} />
+      <StatWidget label={t('Peers')} value={getPeerString(torrent) || '—'} />
+      <StatWidget label={t('Size')} value={humanizeSize(torrentSize)} />
+    </>
+  )
+
+  const secondaryStats = (
+    <>
+      <StatWidget label={t('Status')} value={statusLabel(stat)} />
+      <StatWidget label={t('Category')} value={category || '—'} />
+      <StatWidget
+        label={t('PiecesCount')}
+        value={cache.PiecesCount != null ? String(cache.PiecesCount) : '—'}
+      />
+      <StatWidget
+        label={t('PiecesLength')}
+        value={cache.PiecesLength != null ? humanizeSize(cache.PiecesLength) : '—'}
+      />
+      <StatWidget label={t('CacheFilled')} value={cacheFilledValue} />
+    </>
+  )
+
   return (
     <Modal.Root state={overlayState}>
       <Modal.Backdrop>
@@ -225,101 +263,113 @@ export default function DetailsDialog({
             className='flex flex-col overflow-hidden'
             style={isFullScreen ? DIALOG_FULLSCREEN : DIALOG_DETAILS}
           >
-            <Modal.Header className='flex shrink-0 items-center gap-2'>
+            <Modal.Header className='flex shrink-0 flex-nowrap items-center gap-1 sm:gap-2'>
               <Modal.Heading className='min-w-0 flex-1 truncate'>{t('TorrentDetails')}</Modal.Heading>
               {onEdit ? (
                 <Button
                   isIconOnly
                   variant='ghost'
-                  className={iconBtn}
+                  className={`${iconBtn} shrink-0`}
                   aria-label={t('EditTorrent')}
                   onPress={() => onEdit(torrent)}
                 >
                   <Pencil {...iconChrome} aria-hidden />
                 </Button>
               ) : null}
-              <Modal.CloseTrigger aria-label={t('Close')}>
+              <Modal.CloseTrigger aria-label={t('Close')} className='shrink-0'>
                 <X {...iconChrome} aria-hidden />
               </Modal.CloseTrigger>
             </Modal.Header>
 
-            <Modal.Body className='flex min-h-0 flex-1 flex-col gap-4 overflow-hidden'>
+            <Modal.Body className='flex min-h-0 flex-1 flex-col gap-3 overflow-hidden sm:gap-4'>
+              {/* Compact on fullscreen (no nested scroll); full hero on desktop. */}
               <div
-                className={`flex flex-col gap-4 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-4 sm:flex-row sm:items-start ${
-                  isFullScreen
-                    ? 'min-h-0 max-h-[min(42dvh,22rem)] shrink overflow-y-auto overscroll-contain'
-                    : 'shrink-0'
+                className={`shrink-0 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 ${
+                  isFullScreen ? 'space-y-3 p-3' : 'flex flex-col gap-4 p-4 sm:flex-row sm:items-start'
                 }`}
               >
-                {/* Always reserve poster column so late poster URL doesn't reflow the stats grid. */}
-                <button
-                  type='button'
-                  onClick={() => setPosterEditOpen(true)}
-                  aria-label={t('AddDialog.AddPosterLinkInput')}
-                  title={t('AddDialog.AddPosterLinkInput')}
-                  className='group relative mx-auto grid aspect-[2/3] w-full max-w-[120px] shrink-0 place-items-center overflow-hidden rounded-lg bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2 sm:mx-0'
-                >
-                  {poster ? (
-                    <img
-                      src={poster}
-                      alt=''
-                      className='h-full w-full object-cover'
-                      onError={event => {
-                        event.currentTarget.style.display = 'none'
-                      }}
-                    />
-                  ) : (
-                    <ImagePlus {...iconEmpty} className='text-muted' aria-hidden />
-                  )}
-                  <span className='pointer-events-none absolute inset-0 grid place-items-center bg-black/0 px-2 text-center text-xs font-medium text-white opacity-0 transition-opacity group-hover:bg-black/45 group-hover:opacity-100 group-focus-visible:bg-black/45 group-focus-visible:opacity-100'>
-                    {t('AddDialog.AddPosterLinkInput')}
-                  </span>
-                </button>
+                {isFullScreen ? (
+                  <>
+                    <div className='flex items-start gap-3'>
+                      <button
+                        type='button'
+                        onClick={() => setPosterEditOpen(true)}
+                        aria-label={t('AddDialog.AddPosterLinkInput')}
+                        title={t('AddDialog.AddPosterLinkInput')}
+                        className='group relative grid h-16 w-[42px] shrink-0 place-items-center overflow-hidden rounded-md bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
+                      >
+                        {poster ? (
+                          <img
+                            src={poster}
+                            alt=''
+                            className='h-full w-full object-cover'
+                            onError={event => {
+                              event.currentTarget.style.display = 'none'
+                            }}
+                          />
+                        ) : (
+                          <ImagePlus size={18} strokeWidth={1.75} className='text-muted' aria-hidden />
+                        )}
+                        <span className='pointer-events-none absolute inset-0 grid place-items-center bg-black/0 text-[9px] font-medium text-white opacity-0 transition-opacity group-focus-visible:bg-black/45 group-focus-visible:opacity-100'>
+                          {t('AddDialog.AddPosterLinkInput')}
+                        </span>
+                      </button>
+                      <div className='min-w-0 flex-1'>
+                        <h2 className='line-clamp-2 text-base font-bold leading-snug text-foreground'>{displayTitle}</h2>
+                        {subtitle ? (
+                          <p className='mt-0.5 line-clamp-1 text-xs text-muted' title={subtitle}>
+                            {subtitle}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                    <div className='grid grid-cols-2 gap-1.5'>{primaryStats}</div>
+                  </>
+                ) : (
+                  <>
+                    {/* Always reserve poster column so late poster URL doesn't reflow the stats grid. */}
+                    <button
+                      type='button'
+                      onClick={() => setPosterEditOpen(true)}
+                      aria-label={t('AddDialog.AddPosterLinkInput')}
+                      title={t('AddDialog.AddPosterLinkInput')}
+                      className='group relative mx-auto grid aspect-[2/3] w-full max-w-[120px] shrink-0 place-items-center overflow-hidden rounded-lg bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2 sm:mx-0'
+                    >
+                      {poster ? (
+                        <img
+                          src={poster}
+                          alt=''
+                          className='h-full w-full object-cover'
+                          onError={event => {
+                            event.currentTarget.style.display = 'none'
+                          }}
+                        />
+                      ) : (
+                        <ImagePlus {...iconEmpty} className='text-muted' aria-hidden />
+                      )}
+                      <span className='pointer-events-none absolute inset-0 grid place-items-center bg-black/0 px-2 text-center text-xs font-medium text-white opacity-0 transition-opacity group-hover:bg-black/45 group-hover:opacity-100 group-focus-visible:bg-black/45 group-focus-visible:opacity-100'>
+                        {t('AddDialog.AddPosterLinkInput')}
+                      </span>
+                    </button>
 
-                <div className='min-w-0 flex-1'>
-                  <h2 className='mb-1 break-words text-lg font-bold text-foreground'>{displayTitle}</h2>
-                  {/* Reserve subtitle line so title-only torrents don't collapse hero height. */}
-                  <p
-                    className={`mb-3 truncate text-sm ${subtitle ? 'text-muted' : 'invisible'}`}
-                    aria-hidden={!subtitle}
-                  >
-                    {subtitle || '\u00a0'}
-                  </p>
+                    <div className='min-w-0 flex-1'>
+                      <h2 className='mb-1 break-words text-lg font-bold text-foreground'>{displayTitle}</h2>
+                      {/* Reserve subtitle line so title-only torrents don't collapse hero height. */}
+                      <p
+                        className={`mb-3 truncate text-sm ${subtitle ? 'text-muted' : 'invisible'}`}
+                        aria-hidden={!subtitle}
+                      >
+                        {subtitle || '\u00a0'}
+                      </p>
 
-                  {/* 9 slots → 2 rows on xl (5+4). min-h locks row stack so value updates never grow hero. */}
-                  <div className='grid grid-cols-2 gap-2 sm:grid-cols-3 sm:min-h-[11.5rem] lg:grid-cols-4 lg:min-h-[7.75rem] xl:grid-cols-5 xl:min-h-[7.75rem]'>
-                    <StatWidget label={t('DownloadSpeed')} value={humanizeSpeed(downloadSpeed)} />
-                    <StatWidget label={t('UploadSpeed')} value={humanizeSpeed(uploadSpeed)} />
-                    <StatWidget label={t('Peers')} value={getPeerString(torrent) || '—'} />
-                    <StatWidget label={t('Size')} value={humanizeSize(torrentSize)} />
-                    <StatWidget label={t('Status')} value={statusLabel(stat)} />
-                    <StatWidget label={t('Category')} value={category || '—'} />
-                    <StatWidget
-                      label={t('PiecesCount')}
-                      value={cache.PiecesCount != null ? String(cache.PiecesCount) : '—'}
-                    />
-                    <StatWidget
-                      label={t('PiecesLength')}
-                      value={cache.PiecesLength != null ? humanizeSize(cache.PiecesLength) : '—'}
-                    />
-                    <StatWidget
-                      label={t('CacheFilled')}
-                      value={
-                        cache.Filled != null && cache.Capacity != null
-                          ? (() => {
-                              const filled = cache.Filled
-                              const capacity = cache.Capacity
-                              const shown = Math.min(filled, capacity)
-                              const over = filled > capacity
-                              return over
-                                ? `${humanizeSize(shown)} / ${humanizeSize(capacity)} · ${Math.round((filled / capacity) * 100)}%`
-                                : `${humanizeSize(filled)} / ${humanizeSize(capacity)}`
-                            })()
-                          : '—'
-                      }
-                    />
-                  </div>
-                </div>
+                      {/* 9 slots → 2 rows on xl (5+4). min-h locks row stack so value updates never grow hero. */}
+                      <div className='grid grid-cols-2 gap-2 sm:grid-cols-3 sm:min-h-[11.5rem] lg:grid-cols-4 lg:min-h-[7.75rem] xl:grid-cols-5 xl:min-h-[7.75rem]'>
+                        {primaryStats}
+                        {secondaryStats}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/*
@@ -361,6 +411,10 @@ export default function DetailsDialog({
                 </Tabs.ListContainer>
 
                 <Tabs.Panel id='overview' className='min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pt-4'>
+                  {isFullScreen ? (
+                    <div className='grid grid-cols-2 gap-1.5 sm:grid-cols-3'>{secondaryStats}</div>
+                  ) : null}
+
                   <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} />
 
                   <div className='rounded-xl border border-border bg-surface-secondary p-4'>
