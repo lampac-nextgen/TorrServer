@@ -207,8 +207,8 @@ export default function VideoPlayer({
   const canSwitchAudio = hls && Boolean(hash) && fileIndex != null && resolvedAudioTracks.length > 1
   const showPip = supportsPiP()
 
-  // Without PLAYER_DIALOG_MOBILE the Modal.Container is "full" but the dialog itself
-  // stays content-sized → huge black void under a tiny video (Safari phone screenshot).
+  // Without DIALOG_FULLSCREEN / PLAYER_DIALOG_MOBILE the Modal.Container is "full" but the
+  // dialog itself stays content-sized → huge black void under a tiny video (Safari phone).
   const dialogStyle: CSSProperties | undefined = isMobile
     ? PLAYER_DIALOG_MOBILE
     : expanded

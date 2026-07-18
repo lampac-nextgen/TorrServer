@@ -372,7 +372,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
       size='lg'
       fullScreen={isFullScreenBreakpoint}
       dialogClassName='flex flex-col overflow-hidden'
-      dialogStyle={isMobile ? undefined : DIALOG_SETTINGS}
+      dialogStyle={isFullScreenBreakpoint ? undefined : DIALOG_SETTINGS}
     >
       <Modal.Header className='shrink-0'>
         <Modal.Heading>{t('SettingsDialog.Settings')}</Modal.Heading>

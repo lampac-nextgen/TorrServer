@@ -395,7 +395,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
       onClose={onClose}
       size='lg'
       fullScreen={isFullScreenBreakpoint}
-      dialogStyle={isMobile ? undefined : DIALOG_SHEET_L}
+      dialogStyle={isFullScreenBreakpoint ? undefined : DIALOG_SHEET_L}
     >
       <Modal.Header>
         <Modal.Heading>{t('Torznab.SearchTorrents')}</Modal.Heading>

@@ -102,7 +102,7 @@ export default function EditTorrentDialog({ torrent, open, onClose }: EditTorren
       size='lg'
       fullScreen={isFullScreenBreakpoint}
       dialogClassName='flex flex-col overflow-hidden'
-      dialogStyle={isMobile ? undefined : DIALOG_EDIT}
+      dialogStyle={isFullScreenBreakpoint ? undefined : DIALOG_EDIT}
     >
       <Modal.Header className='shrink-0'>
         <Modal.Heading>{t('EditTorrent')}</Modal.Heading>

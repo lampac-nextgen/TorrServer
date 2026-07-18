@@ -64,7 +64,7 @@ export default function EditPosterDialog({ torrent, open, onClose }: EditPosterD
       onClose={onClose}
       size='md'
       fullScreen={isFullScreenBreakpoint}
-      dialogStyle={isMobile ? undefined : DIALOG_SHEET_M}
+      dialogStyle={isFullScreenBreakpoint ? undefined : DIALOG_SHEET_M}
     >
       <Modal.Header>
         <Modal.Heading>{t('AddDialog.AddPosterLinkInput')}</Modal.Heading>

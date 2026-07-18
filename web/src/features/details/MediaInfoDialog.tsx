@@ -1,10 +1,11 @@
-import { Button, Modal, Spinner, useOverlayState } from '@heroui/react'
+import { Button, Modal, Spinner, useMediaQuery } from '@heroui/react'
 import { AudioLines, Captions, Clapperboard, FileVideo, Layers } from 'lucide-react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { fetchFfp, type FfpProbeResult, type FfpStream } from 'shared/api/extras'
-import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
+import { queryMax } from 'shared/theme/breakpoints'
+import AppDialog from 'shared/ui/AppDialog'
 import { DIALOG_SHEET_M } from 'shared/ui/dialogSizes'
 
 import {
@@ -116,18 +117,10 @@ function StreamCard({
 /** Nested sheet with full ffprobe streams — replaces the one-line toast. */
 export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName }: MediaInfoDialogProps) {
   const { t } = useTranslation()
+  const isFullScreenBreakpoint = useMediaQuery(queryMax('dialog'))
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [data, setData] = useState<FfpProbeResult | null>(null)
-
-  const overlayState = useOverlayState({
-    isOpen: open,
-    onOpenChange: next => {
-      if (!next) onClose()
-    },
-  })
-
-  useSyncModalOpen(open)
 
   useEffect(() => {
     if (!open) {
@@ -162,126 +155,127 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
   const container = data?.format?.format_long_name || data?.format?.format_name
 
   return (
-    <Modal.Root state={overlayState}>
-      <Modal.Backdrop isDismissable>
-        <Modal.Container size='md' scroll='inside'>
-          <Modal.Dialog style={DIALOG_SHEET_M}>
-            <Modal.Header>
-              <Modal.Heading className='min-w-0 truncate'>{t('MediaInfo')}</Modal.Heading>
-              <Modal.CloseTrigger aria-label={t('Close')} />
-            </Modal.Header>
-            <Modal.Body className='gap-4'>
-              <div className='rounded-xl border border-border bg-gradient-to-br from-accent-soft/50 to-surface-secondary p-3'>
-                <p className='mb-2 flex items-center gap-2 text-sm font-semibold text-foreground'>
-                  <FileVideo className='text-accent' size={16} strokeWidth={1.75} aria-hidden />
-                  <span className='min-w-0 truncate' title={fileName}>
-                    {fileName}
-                  </span>
-                </p>
-                <div className='grid grid-cols-2 gap-1.5 sm:grid-cols-4'>
-                  <Spec label={t('FfpContainer')} value={container} />
-                  <Spec label={t('FfpDuration')} value={duration} />
-                  <Spec label={t('Size')} value={size} />
-                  <Spec label={t('FfpBitrate')} value={bitrate} />
-                </div>
-              </div>
+    <AppDialog
+      open={open}
+      onClose={onClose}
+      size='md'
+      fullScreen={isFullScreenBreakpoint}
+      dialogClassName='flex flex-col overflow-hidden'
+      dialogStyle={isFullScreenBreakpoint ? undefined : DIALOG_SHEET_M}
+    >
+      <Modal.Header className='shrink-0'>
+        <Modal.Heading className='min-w-0 truncate'>{t('MediaInfo')}</Modal.Heading>
+        <Modal.CloseTrigger aria-label={t('Close')} />
+      </Modal.Header>
+      <Modal.Body className='min-h-0 flex-1 gap-4 overflow-y-auto overscroll-contain'>
+        <div className='rounded-xl border border-border bg-gradient-to-br from-accent-soft/50 to-surface-secondary p-3'>
+          <p className='mb-2 flex items-center gap-2 text-sm font-semibold text-foreground'>
+            <FileVideo className='text-accent' size={16} strokeWidth={1.75} aria-hidden />
+            <span className='min-w-0 truncate' title={fileName}>
+              {fileName}
+            </span>
+          </p>
+          <div className='grid grid-cols-2 gap-1.5 sm:grid-cols-4'>
+            <Spec label={t('FfpContainer')} value={container} />
+            <Spec label={t('FfpDuration')} value={duration} />
+            <Spec label={t('Size')} value={size} />
+            <Spec label={t('FfpBitrate')} value={bitrate} />
+          </div>
+        </div>
 
-              {loading ? (
-                <div className='grid place-items-center py-12'>
-                  <Spinner size='lg' />
-                </div>
-              ) : null}
+        {loading ? (
+          <div className='grid place-items-center py-12'>
+            <Spinner size='lg' />
+          </div>
+        ) : null}
 
-              {error ? <p className='rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger'>{error}</p> : null}
+        {error ? <p className='rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger'>{error}</p> : null}
 
-              {!loading && !error && data ? (
-                <div className='space-y-4'>
-                  {groups.video.length > 0 ? (
-                    <section className='space-y-2'>
-                      <h3 className='flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted'>
-                        <Clapperboard size={14} strokeWidth={1.75} aria-hidden />
-                        {t('FfpVideo')} ({groups.video.length})
-                      </h3>
-                      {groups.video.map((stream, i) => (
-                        <StreamCard
-                          key={`v-${i}`}
-                          index={i}
-                          stream={stream}
-                          kindLabel={t('FfpVideo')}
-                          icon={<Clapperboard size={16} strokeWidth={1.75} aria-hidden />}
-                        />
-                      ))}
-                    </section>
-                  ) : null}
+        {!loading && !error && data ? (
+          <div className='space-y-4'>
+            {groups.video.length > 0 ? (
+              <section className='space-y-2'>
+                <h3 className='flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted'>
+                  <Clapperboard size={14} strokeWidth={1.75} aria-hidden />
+                  {t('FfpVideo')} ({groups.video.length})
+                </h3>
+                {groups.video.map((stream, i) => (
+                  <StreamCard
+                    key={`v-${i}`}
+                    index={i}
+                    stream={stream}
+                    kindLabel={t('FfpVideo')}
+                    icon={<Clapperboard size={16} strokeWidth={1.75} aria-hidden />}
+                  />
+                ))}
+              </section>
+            ) : null}
 
-                  {groups.audio.length > 0 ? (
-                    <section className='space-y-2'>
-                      <h3 className='flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted'>
-                        <AudioLines size={14} strokeWidth={1.75} aria-hidden />
-                        {t('FfpAudio')} ({groups.audio.length})
-                      </h3>
-                      {groups.audio.map((stream, i) => (
-                        <StreamCard
-                          key={`a-${i}`}
-                          index={i}
-                          stream={stream}
-                          kindLabel={t('FfpAudio')}
-                          icon={<AudioLines size={16} strokeWidth={1.75} aria-hidden />}
-                        />
-                      ))}
-                    </section>
-                  ) : null}
+            {groups.audio.length > 0 ? (
+              <section className='space-y-2'>
+                <h3 className='flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted'>
+                  <AudioLines size={14} strokeWidth={1.75} aria-hidden />
+                  {t('FfpAudio')} ({groups.audio.length})
+                </h3>
+                {groups.audio.map((stream, i) => (
+                  <StreamCard
+                    key={`a-${i}`}
+                    index={i}
+                    stream={stream}
+                    kindLabel={t('FfpAudio')}
+                    icon={<AudioLines size={16} strokeWidth={1.75} aria-hidden />}
+                  />
+                ))}
+              </section>
+            ) : null}
 
-                  {groups.subtitle.length > 0 ? (
-                    <section className='space-y-2'>
-                      <h3 className='flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted'>
-                        <Captions size={14} strokeWidth={1.75} aria-hidden />
-                        {t('FfpSubtitle')} ({groups.subtitle.length})
-                      </h3>
-                      {groups.subtitle.map((stream, i) => (
-                        <StreamCard
-                          key={`s-${i}`}
-                          index={i}
-                          stream={stream}
-                          kindLabel={t('FfpSubtitle')}
-                          icon={<Captions size={16} strokeWidth={1.75} aria-hidden />}
-                        />
-                      ))}
-                    </section>
-                  ) : null}
+            {groups.subtitle.length > 0 ? (
+              <section className='space-y-2'>
+                <h3 className='flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted'>
+                  <Captions size={14} strokeWidth={1.75} aria-hidden />
+                  {t('FfpSubtitle')} ({groups.subtitle.length})
+                </h3>
+                {groups.subtitle.map((stream, i) => (
+                  <StreamCard
+                    key={`s-${i}`}
+                    index={i}
+                    stream={stream}
+                    kindLabel={t('FfpSubtitle')}
+                    icon={<Captions size={16} strokeWidth={1.75} aria-hidden />}
+                  />
+                ))}
+              </section>
+            ) : null}
 
-                  {groups.other.length > 0 ? (
-                    <section className='space-y-2'>
-                      <h3 className='flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted'>
-                        <Layers size={14} strokeWidth={1.75} aria-hidden />
-                        {t('FfpOther')} ({groups.other.length})
-                      </h3>
-                      {groups.other.map((stream, i) => (
-                        <StreamCard
-                          key={`o-${i}`}
-                          index={i}
-                          stream={stream}
-                          kindLabel={stream.codec_type || t('FfpOther')}
-                          icon={<Layers size={16} strokeWidth={1.75} aria-hidden />}
-                        />
-                      ))}
-                    </section>
-                  ) : null}
+            {groups.other.length > 0 ? (
+              <section className='space-y-2'>
+                <h3 className='flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted'>
+                  <Layers size={14} strokeWidth={1.75} aria-hidden />
+                  {t('FfpOther')} ({groups.other.length})
+                </h3>
+                {groups.other.map((stream, i) => (
+                  <StreamCard
+                    key={`o-${i}`}
+                    index={i}
+                    stream={stream}
+                    kindLabel={stream.codec_type || t('FfpOther')}
+                    icon={<Layers size={16} strokeWidth={1.75} aria-hidden />}
+                  />
+                ))}
+              </section>
+            ) : null}
 
-                  {!groups.video.length && !groups.audio.length && !groups.subtitle.length && !groups.other.length ? (
-                    <p className='py-6 text-center text-sm text-muted'>{t('NoData')}</p>
-                  ) : null}
-                </div>
-              ) : null}
-            </Modal.Body>
-            <Modal.Footer>
-              <Button variant='secondary' onPress={onClose} autoFocus>
-                {t('Close')}
-              </Button>
-            </Modal.Footer>
-          </Modal.Dialog>
-        </Modal.Container>
-      </Modal.Backdrop>
-    </Modal.Root>
+            {!groups.video.length && !groups.audio.length && !groups.subtitle.length && !groups.other.length ? (
+              <p className='py-6 text-center text-sm text-muted'>{t('NoData')}</p>
+            ) : null}
+          </div>
+        ) : null}
+      </Modal.Body>
+      <Modal.Footer className='shrink-0'>
+        <Button variant='secondary' onPress={onClose} autoFocus>
+          {t('Close')}
+        </Button>
+      </Modal.Footer>
+    </AppDialog>
   )
 }

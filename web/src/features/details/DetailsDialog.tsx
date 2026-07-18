@@ -24,7 +24,7 @@ import { CLOSED, GETTING_INFO, IN_DB, PRELOAD, WORKING } from 'shared/torrent/st
 import { queryMax } from 'shared/theme/breakpoints'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { iconBtn } from 'shared/ui/controlClasses'
-import { DIALOG_DETAILS } from 'shared/ui/dialogSizes'
+import { DIALOG_DETAILS, DIALOG_FULLSCREEN } from 'shared/ui/dialogSizes'
 import { iconChrome, iconEmpty } from 'shared/ui/iconProps'
 import { toPlayableFile } from 'shared/torrent/toPlayableFile'
 
@@ -223,7 +223,7 @@ export default function DetailsDialog({
               layers, so a plain width utility can lose to them regardless of specificity — see AppDialog. */}
           <Modal.Dialog
             className='flex flex-col overflow-hidden'
-            style={isFullScreen ? { height: '100%', maxHeight: '100%' } : DIALOG_DETAILS}
+            style={isFullScreen ? DIALOG_FULLSCREEN : DIALOG_DETAILS}
           >
             <Modal.Header className='flex shrink-0 items-center gap-2'>
               <Modal.Heading className='min-w-0 flex-1 truncate'>{t('TorrentDetails')}</Modal.Heading>
@@ -244,7 +244,13 @@ export default function DetailsDialog({
             </Modal.Header>
 
             <Modal.Body className='flex min-h-0 flex-1 flex-col gap-4 overflow-hidden'>
-              <div className='flex shrink-0 flex-col gap-4 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-4 sm:flex-row sm:items-start'>
+              <div
+                className={`flex flex-col gap-4 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-4 sm:flex-row sm:items-start ${
+                  isFullScreen
+                    ? 'min-h-0 max-h-[min(42dvh,22rem)] shrink overflow-y-auto overscroll-contain'
+                    : 'shrink-0'
+                }`}
+              >
                 {/* Always reserve poster column so late poster URL doesn't reflow the stats grid. */}
                 <button
                   type='button'

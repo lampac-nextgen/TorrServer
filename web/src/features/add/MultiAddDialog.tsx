@@ -201,7 +201,7 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
       onClose={onClose}
       size='md'
       fullScreen={isFullScreenBreakpoint}
-      dialogStyle={isMobile ? undefined : DIALOG_SHEET_M}
+      dialogStyle={isFullScreenBreakpoint ? undefined : DIALOG_SHEET_M}
     >
       <Modal.Header>
         <Modal.Heading>

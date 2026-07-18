@@ -99,7 +99,7 @@ export default function AboutDialog({ open, onClose }: AboutDialogProps) {
       onClose={onClose}
       size='md'
       fullScreen={isFullScreenBreakpoint}
-      dialogStyle={isMobile ? undefined : DIALOG_SHEET_M}
+      dialogStyle={isFullScreenBreakpoint ? undefined : DIALOG_SHEET_M}
     >
       <Modal.Header>
         <Modal.Heading>{t('About')}</Modal.Heading>

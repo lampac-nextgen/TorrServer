@@ -222,7 +222,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
       onClose={onClose}
       size='md'
       fullScreen={isFullScreenBreakpoint}
-      dialogStyle={isMobile ? undefined : DIALOG_SHEET_M}
+      dialogStyle={isFullScreenBreakpoint ? undefined : DIALOG_SHEET_M}
     >
       <Modal.Header>
         <Modal.Heading>{t('AddNewTorrent')}</Modal.Heading>

@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  DIALOG_FULLSCREEN,
   DIALOG_SETTINGS,
   DIALOG_SHEET_L,
   DIALOG_SHEET_M,
   PLAYER_DIALOG_EXPANDED,
+  PLAYER_DIALOG_MOBILE,
   PLAYER_DIALOG_NORMAL,
 } from './dialogSizes'
 
@@ -22,5 +24,12 @@ describe('dialogSizes', () => {
   it('exports player normal and expanded sizes', () => {
     expect(PLAYER_DIALOG_NORMAL.width).toBe('min(94vw, 64rem)')
     expect(PLAYER_DIALOG_EXPANDED.width).toBe('min(96vw, 80rem)')
+  })
+
+  it('exports fullscreen mobile surface with 100dvh (shared with player)', () => {
+    expect(DIALOG_FULLSCREEN.height).toBe('100dvh')
+    expect(DIALOG_FULLSCREEN.maxHeight).toBe('100dvh')
+    expect(DIALOG_FULLSCREEN.width).toBe('100%')
+    expect(PLAYER_DIALOG_MOBILE).toBe(DIALOG_FULLSCREEN)
   })
 })
