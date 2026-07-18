@@ -28,6 +28,7 @@ import { DIALOG_DETAILS } from 'shared/ui/dialogSizes'
 import { toPlayableFile } from 'shared/torrent/toPlayableFile'
 
 import FileBrowser from './FileBrowser'
+import CacheMapDialog from './CacheMapDialog'
 import SpeedCharts from './SpeedCharts'
 import TorrentActions from './TorrentActions'
 import TorrentCache from './TorrentCache'
@@ -113,6 +114,7 @@ export default function DetailsDialog({
   const [seasonList, setSeasonList] = useState<number[] | null>(null)
   const [selectedSeason, setSelectedSeason] = useState<number | undefined>()
   const [isSnakeDebugMode, setIsSnakeDebugMode] = useLocalBoolPref('isSnakeDebugMode')
+  const [cacheMapOpen, setCacheMapOpen] = useState(false)
 
   const {
     poster,
@@ -136,8 +138,8 @@ export default function DetailsDialog({
   const resolvedTab: DetailsTab = activeTab ?? (playableFileList.length > 1 ? 'files' : 'overview')
 
   const cache = useUpdateCache(hash, {
-    // Fast snake only on Cache tab; Overview mini-preview uses idle cadence.
-    fast: resolvedTab === 'cache',
+    // Fast snake on Cache tab or while the large map dialog is open.
+    fast: resolvedTab === 'cache' || cacheMapOpen,
   })
 
   const seasonsFingerprint = useMemo(() => {
@@ -332,7 +334,7 @@ export default function DetailsDialog({
                   <div className='rounded-xl border border-border bg-surface-secondary p-4'>
                     <div className='mb-3 flex items-center justify-between gap-2'>
                       <p className='text-sm font-semibold text-muted'>{t('Cache')}</p>
-                      <Button size='sm' variant='ghost' onPress={() => setActiveTab('cache')}>
+                      <Button size='sm' variant='ghost' onPress={() => setCacheMapOpen(true)}>
                         {t('DetailedCacheView.button')}
                       </Button>
                     </div>
@@ -397,14 +399,19 @@ export default function DetailsDialog({
                 <Tabs.Panel id='cache' className='flex min-h-0 flex-1 flex-col gap-4 overflow-hidden pt-4'>
                   <div className='flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
                     <p className='text-sm font-semibold text-muted'>{t('Cache')}</p>
-                    <Checkbox isSelected={isSnakeDebugMode} onChange={setIsSnakeDebugMode}>
-                      <Checkbox.Content>
-                        <Checkbox.Control>
-                          <Checkbox.Indicator />
-                        </Checkbox.Control>
-                        {t('SnakeDebug')}
-                      </Checkbox.Content>
-                    </Checkbox>
+                    <div className='flex flex-wrap items-center gap-2'>
+                      <Checkbox isSelected={isSnakeDebugMode} onChange={setIsSnakeDebugMode}>
+                        <Checkbox.Content>
+                          <Checkbox.Control>
+                            <Checkbox.Indicator />
+                          </Checkbox.Control>
+                          {t('SnakeDebug')}
+                        </Checkbox.Content>
+                      </Checkbox>
+                      <Button size='sm' variant='secondary' onPress={() => setCacheMapOpen(true)}>
+                        {t('DetailedCacheView.button')}
+                      </Button>
+                    </div>
                   </div>
 
                   <div className='flex min-h-0 min-w-0 flex-1 flex-col'>
@@ -416,6 +423,14 @@ export default function DetailsDialog({
           </Modal.Dialog>
         </Modal.Container>
       </Modal.Backdrop>
+
+      <CacheMapDialog
+        open={cacheMapOpen}
+        onClose={() => setCacheMapOpen(false)}
+        cache={cache}
+        isSnakeDebugMode={isSnakeDebugMode}
+        onSnakeDebugModeChange={setIsSnakeDebugMode}
+      />
     </Modal.Root>
   )
 }

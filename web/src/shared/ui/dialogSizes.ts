@@ -55,3 +55,13 @@ export const DIALOG_DETAILS: CSSProperties = {
   maxHeight: 'min(88dvh, 52rem)',
   minHeight: 'min(88dvh, 52rem)',
 }
+
+/** Full cache-map workspace stacked above Details. */
+export const DIALOG_CACHE: CSSProperties = {
+  minWidth: 'min(96vw, 80rem)',
+  maxWidth: 'min(96vw, 80rem)',
+  width: 'min(96vw, 80rem)',
+  height: 'min(92dvh, 56rem)',
+  maxHeight: 'min(92dvh, 56rem)',
+  minHeight: 'min(92dvh, 56rem)',
+}

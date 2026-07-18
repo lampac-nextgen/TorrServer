@@ -49,8 +49,8 @@ export default function AppDialog({
       <Modal.Backdrop>
         <Modal.Container size={fullScreen ? 'full' : size} scroll='inside' className={className}>
           <Modal.Dialog
-            className={fullScreen ? undefined : dialogClassName}
-            style={fullScreen ? undefined : dialogStyle}
+            className={dialogClassName}
+            style={fullScreen ? { height: '100%', maxHeight: '100%' } : dialogStyle}
           >
             {children}
           </Modal.Dialog>
