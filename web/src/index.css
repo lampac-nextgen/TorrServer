@@ -9,8 +9,13 @@
  * Un-layered rules always win over HeroUI's `@layer theme` vars, so this
  * is the single source of truth for color: no other file should hardcode
  * hex colors, and no component should fall back to `var(--x, #hex)`.
+ *
+ * Axes:
+ * - Brightness: `:root` vs `.dark`
+ * - Palette: `data-palette` on `<html>` (`forest` default / `ocean` / `slate`)
  */
-:root {
+:root,
+:root[data-palette='forest'] {
   --background: #f5faf7;
   --foreground: #0f1915;
 
@@ -35,7 +40,8 @@
   --app-rail-foreground: rgba(255, 255, 255, 0.92);
 }
 
-.dark {
+.dark,
+.dark[data-palette='forest'] {
   --background: #0a0f0d;
   --foreground: #e6f2ec;
 
@@ -56,6 +62,104 @@
   --app-header: #0e1613;
   --app-header-foreground: #e6f2ec;
   --app-rail: #070b09;
+  --app-rail-foreground: rgba(255, 255, 255, 0.9);
+}
+
+/* Ocean — cool teal chrome + accent (light). */
+:root[data-palette='ocean'] {
+  --background: #f3f9fb;
+  --foreground: #0e171c;
+
+  --surface: #ffffff;
+  --surface-secondary: #eaf3f6;
+  --surface-tertiary: #ddebf0;
+
+  --muted: #5a6f78;
+  --border: #d4e4ea;
+  --separator: #ddebf0;
+
+  --accent: #0b8f9e;
+  --accent-foreground: #ffffff;
+
+  --danger: #e05555;
+  --warning: #d99a2b;
+
+  --app-header: #0c5f6e;
+  --app-header-foreground: #ffffff;
+  --app-rail: #0f1c22;
+  --app-rail-foreground: rgba(255, 255, 255, 0.92);
+}
+
+.dark[data-palette='ocean'] {
+  --background: #080e12;
+  --foreground: #e4eef2;
+
+  --surface: #10181d;
+  --surface-secondary: #141e24;
+  --surface-tertiary: #1a262e;
+
+  --muted: #8aa3ae;
+  --border: #2a3c46;
+  --separator: #1c2830;
+
+  --accent: #3ecfd4;
+  --accent-foreground: #061014;
+
+  --danger: #e2707a;
+  --warning: #e0a040;
+
+  --app-header: #0c1419;
+  --app-header-foreground: #e4eef2;
+  --app-rail: #060a0d;
+  --app-rail-foreground: rgba(255, 255, 255, 0.9);
+}
+
+/* Slate — neutral graphite chrome, muted sage accent (light). */
+:root[data-palette='slate'] {
+  --background: #f5f6f7;
+  --foreground: #14181a;
+
+  --surface: #ffffff;
+  --surface-secondary: #eef0f1;
+  --surface-tertiary: #e4e7e9;
+
+  --muted: #5c666c;
+  --border: #d9dee1;
+  --separator: #e4e7e9;
+
+  --accent: #4d7a6c;
+  --accent-foreground: #ffffff;
+
+  --danger: #e05555;
+  --warning: #d99a2b;
+
+  --app-header: #3a4542;
+  --app-header-foreground: #ffffff;
+  --app-rail: #1a1e1c;
+  --app-rail-foreground: rgba(255, 255, 255, 0.92);
+}
+
+.dark[data-palette='slate'] {
+  --background: #0b0c0d;
+  --foreground: #e8eaeb;
+
+  --surface: #131516;
+  --surface-secondary: #171a1b;
+  --surface-tertiary: #1c2022;
+
+  --muted: #9aa3a8;
+  --border: #2c3235;
+  --separator: #1e2224;
+
+  --accent: #8fb8a8;
+  --accent-foreground: #0c1210;
+
+  --danger: #e2707a;
+  --warning: #e0a040;
+
+  --app-header: #121516;
+  --app-header-foreground: #e8eaeb;
+  --app-rail: #080909;
   --app-rail-foreground: rgba(255, 255, 255, 0.9);
 }
 

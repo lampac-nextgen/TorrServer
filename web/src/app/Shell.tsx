@@ -1,7 +1,7 @@
 import { lazy, type ReactNode, Suspense, useEffect, useState } from 'react'
 import axios from 'axios'
 import { Button, Dropdown, Spinner, Tooltip, useMediaQuery } from '@heroui/react'
-import { Check, ChevronLeft, Menu, Moon, SortAsc, SortDesc, Sun, SunMoon, X } from 'lucide-react'
+import { Check, ChevronLeft, Menu, Moon, Palette, SortAsc, SortDesc, Sun, SunMoon, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { echoHost } from 'shared/api/hosts'
 import { SUPPORTED_LANGS } from 'shared/i18n'
@@ -12,7 +12,13 @@ import { useLocalJsonPref } from 'shared/hooks/useLocalPref'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
 import { OPEN_SETTINGS_EVENT, type SettingsDeepLinkTab } from 'shared/lib/settingsEvents'
 import { MEDIA_SHORT_VIEWPORT, queryMax } from 'shared/theme/breakpoints'
-import { THEME_MODES, useThemePreference } from 'shared/theme/useThemePreference'
+import {
+  THEME_MODES,
+  THEME_PALETTE_IDS,
+  THEME_PALETTES,
+  useThemePreference,
+  type ThemePalette,
+} from 'shared/theme/useThemePreference'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import { TorrentsPage } from 'features/torrents'
 import { iconBtn } from 'shared/ui/controlClasses'
@@ -66,7 +72,7 @@ export default function Shell() {
   const isMobile = useMediaQuery(queryMax('mobile'))
   const isShortViewport = useMediaQuery(MEDIA_SHORT_VIEWPORT)
 
-  const [, currentThemeMode, updateThemeMode] = useThemePreference()
+  const { preference: currentThemeMode, setPreference: updateThemeMode, palette, setPalette } = useThemePreference()
   const [currentLang, changeLang] = useChangeLanguage()
   const { launchSource, setLaunchSource, launchFiles, setLaunchFiles } = useLaunchHandler()
   const [sidebarOpen, setSidebarOpen] = useLocalJsonPref('sidebarOpen', true)
@@ -213,6 +219,17 @@ export default function Shell() {
           <ThemeIcon {...iconNav} />
         </HeaderIconButton>
 
+        <PaletteMenu
+          current={palette}
+          label={t('ThemePalette')}
+          onChange={setPalette}
+          labels={{
+            [THEME_PALETTES.FOREST]: t('ThemePaletteForest'),
+            [THEME_PALETTES.OCEAN]: t('ThemePaletteOcean'),
+            [THEME_PALETTES.SLATE]: t('ThemePaletteSlate'),
+          }}
+        />
+
         <LanguageMenu
           currentLang={LANG_CYCLE.includes(currentLang as (typeof LANG_CYCLE)[number]) ? currentLang : 'en'}
           label={t('Language')}
@@ -306,6 +323,52 @@ export default function Shell() {
         {!detectApplePlatform().isIOS && !isStandaloneApp ? <AndroidInstallBanner /> : null}
       </Suspense>
     </div>
+  )
+}
+
+function PaletteMenu({
+  current,
+  label,
+  onChange,
+  labels,
+}: {
+  current: ThemePalette
+  label: string
+  onChange: (palette: ThemePalette) => void
+  labels: Record<ThemePalette, string>
+}) {
+  return (
+    <Dropdown>
+      <Dropdown.Trigger>
+        <Button
+          variant='ghost'
+          isIconOnly
+          className={`${iconBtn} text-app-header-foreground hover-fine:bg-white/10`}
+          aria-label={`${label}: ${labels[current]}`}
+        >
+          <span className='inline-flex size-full items-center justify-center [&>svg]:m-0 [&>svg]:block'>
+            <Palette {...iconNav} aria-hidden />
+          </span>
+        </Button>
+      </Dropdown.Trigger>
+      <Dropdown.Popover placement='bottom end' className='min-w-[11rem]'>
+        <Dropdown.Menu aria-label={label}>
+          {THEME_PALETTE_IDS.map(id => {
+            const selected = id === current
+            return (
+              <Dropdown.Item key={id} textValue={labels[id]} onPress={() => onChange(id)} className='min-h-11 gap-2'>
+                <span className='min-w-0 flex-1 truncate text-sm'>{labels[id]}</span>
+                {selected ? (
+                  <Check {...iconMenu} className='shrink-0 text-accent' aria-hidden />
+                ) : (
+                  <span className='size-4 shrink-0' aria-hidden />
+                )}
+              </Dropdown.Item>
+            )
+          })}
+        </Dropdown.Menu>
+      </Dropdown.Popover>
+    </Dropdown>
   )
 }
 

@@ -54,7 +54,7 @@ const readersFingerprint = (readers: TorrentCacheData['Readers']) => {
 /** Canvas-based piece map ("snake") showing cache fill, playhead and priorities. */
 function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCacheProps) {
   const { t } = useTranslation()
-  const [isDark] = useThemePreference()
+  const { isDark } = useThemePreference()
   const theme: SnakeThemeMode = isDark ? 'dark' : 'light'
   const isMiniView = mode === 'mini'
 
@@ -296,10 +296,7 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
   }, [tooltip])
 
   return (
-    <div
-      ref={rootRef}
-      className={`relative flex w-full min-w-0 flex-col ${isMiniView ? '' : 'min-h-0 flex-1'}`}
-    >
+    <div ref={rootRef} className={`relative flex w-full min-w-0 flex-col ${isMiniView ? '' : 'min-h-0 flex-1'}`}>
       <div
         ref={scrollWrapperRef}
         className={`relative w-full min-w-0 rounded-lg border border-border bg-surface-secondary p-2 ${
