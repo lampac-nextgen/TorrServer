@@ -10,6 +10,7 @@ import { playlistTorrHost, streamHost } from 'shared/api/hosts'
 import { dropTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { clearViewedFiles } from 'shared/api/viewed'
 import { useExternalPlayers } from 'shared/lib/externalPlayers'
+import { copyToClipboard } from 'shared/lib/clipboard'
 import { requestOpenSettings } from 'shared/lib/settingsEvents'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 import { usePlayLauncher } from 'features/player/usePlayLauncher'
@@ -136,7 +137,7 @@ function TorrentActions({
 
   const copyMagnetLink = async () => {
     try {
-      await navigator.clipboard.writeText(magnetLink)
+      await copyToClipboard(magnetLink)
       toast?.showToast({ message: t('Copied'), severity: 'success' })
     } catch {
       toast?.showToast({ message: t('Error'), severity: 'error' })
@@ -145,7 +146,7 @@ function TorrentActions({
 
   const copyInfoHash = async () => {
     try {
-      await navigator.clipboard.writeText(hash)
+      await copyToClipboard(hash)
       toast?.showToast({ message: t('Copied'), severity: 'success' })
     } catch {
       toast?.showToast({ message: t('Error'), severity: 'error' })
@@ -155,7 +156,7 @@ function TorrentActions({
   const copyStreamLink = async () => {
     if (!singleFileStream) return
     try {
-      await navigator.clipboard.writeText(singleFileStream.fullLink)
+      await copyToClipboard(singleFileStream.fullLink)
       toast?.showToast({ message: t('Copied'), severity: 'success' })
     } catch {
       toast?.showToast({ message: t('Error'), severity: 'error' })

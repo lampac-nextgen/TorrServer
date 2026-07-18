@@ -2,6 +2,7 @@ import { Button, ButtonGroup, Dropdown, Spinner, Tooltip, useMediaQuery, useOver
 import { Copy, Download, ExternalLink, Info, MoreHorizontal, Play } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { ExternalPlayerLink } from 'shared/lib/externalPlayers'
+import { copyToClipboard } from 'shared/lib/clipboard'
 import { queryMax } from 'shared/theme/breakpoints'
 import { iconBtn } from 'shared/ui/controlClasses'
 import { useOptionalAppToast } from 'shared/ui/Toast'
@@ -22,10 +23,12 @@ export interface FileRowActionsProps {
 }
 
 const playerBtn = 'min-h-11 shrink-0 px-3 font-medium'
+const playerBtnMobile = 'min-h-11 min-w-0 flex-1 px-2 text-xs font-medium'
 
 /**
  * Per-file actions: Play + external players always visible;
  * secondary Open/Copy/Preload/Info — inline icons on desktop, overflow menu on mobile.
+ * Mobile stacks rows (no horizontal scroll) so Play / Infuse / VLC never clip.
  */
 export default function FileRowActions({
   preloadLabel,
@@ -46,7 +49,7 @@ export default function FileRowActions({
 
   const copyDirectLink = async () => {
     try {
-      await navigator.clipboard.writeText(copyText)
+      await copyToClipboard(copyText)
       toast?.showToast({ message: t('Copied'), severity: 'success' })
     } catch {
       toast?.showToast({ message: t('Error'), severity: 'error' })
@@ -57,48 +60,30 @@ export default function FileRowActions({
     if (openLinkHref) window.open(openLinkHref, '_blank', 'noopener,noreferrer')
   }
 
-  const externalButtons = externalPlayers.map(player => (
-    <Button
-      key={player.label}
-      variant='secondary'
-      size='sm'
-      className={playerBtn}
-      onPress={() => {
-        window.location.href = player.href
-      }}
-    >
-      {player.label}
-    </Button>
-  ))
-
-  const playButton = playerSupported ? (
-    <Button
-      variant='primary'
-      size='sm'
-      className='min-h-11 shrink-0 px-3'
-      isPending={isPlayPending}
-      onPress={onPlay}
-    >
-      {({ isPending }) => (
-        <>
-          {isPending ? <Spinner size='sm' color='current' /> : <Play fill='currentColor' aria-hidden />}
-          {t('Play')}
-        </>
-      )}
-    </Button>
-  ) : showOpenLink && openLinkHref ? (
-    <Button
-      variant='primary'
-      size='sm'
-      className='min-h-11 shrink-0 px-3'
-      onPress={openExternal}
-    >
-      <Play fill='currentColor' aria-hidden />
-      {t('Play')}
-    </Button>
-  ) : null
-
   const showOpenIcon = Boolean(showOpenLink && openLinkHref && playerSupported)
+
+  const playButton = (className: string) =>
+    playerSupported ? (
+      <Button
+        variant='primary'
+        size='sm'
+        className={className}
+        isPending={isPlayPending}
+        onPress={onPlay}
+      >
+        {({ isPending }) => (
+          <>
+            {isPending ? <Spinner size='sm' color='current' /> : <Play fill='currentColor' aria-hidden />}
+            {t('Play')}
+          </>
+        )}
+      </Button>
+    ) : showOpenLink && openLinkHref ? (
+      <Button variant='primary' size='sm' className={className} onPress={openExternal}>
+        <Play fill='currentColor' aria-hidden />
+        {t('Play')}
+      </Button>
+    ) : null
 
   const secondaryDesktop = (
     <>
@@ -175,13 +160,7 @@ export default function FileRowActions({
   const secondaryMobile = (
     <Dropdown isOpen={moreMenu.isOpen} onOpenChange={moreMenu.setOpen}>
       <Dropdown.Trigger>
-        <Button
-          variant='secondary'
-          size='sm'
-          isIconOnly
-          className={iconBtn}
-          aria-label={t('Actions')}
-        >
+        <Button variant='secondary' size='sm' isIconOnly className={iconBtn} aria-label={t('Actions')}>
           <MoreHorizontal aria-hidden />
         </Button>
       </Dropdown.Trigger>
@@ -232,21 +211,53 @@ export default function FileRowActions({
     </Dropdown>
   )
 
-  return (
-    <div
-      className={
-        isMobile
-          ? 'flex w-full min-w-0 items-center gap-1.5 overflow-x-auto'
-          : 'flex flex-nowrap items-center gap-1'
-      }
+  if (isMobile) {
+    return (
+      <div className='flex w-full min-w-0 flex-col gap-1.5'>
+        <div className='flex w-full min-w-0 items-center gap-1.5'>
+          {playButton('min-h-11 min-w-0 flex-1 px-3')}
+          {secondaryMobile}
+        </div>
+        {externalPlayers.length > 0 ? (
+          <div className='flex w-full min-w-0 gap-1.5'>
+            {externalPlayers.map(player => (
+              <Button
+                key={player.label}
+                variant='secondary'
+                size='sm'
+                className={playerBtnMobile}
+                onPress={() => {
+                  window.location.href = player.href
+                }}
+              >
+                <span className='truncate'>{player.label}</span>
+              </Button>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    )
+  }
+
+  const externalButtons = externalPlayers.map(player => (
+    <Button
+      key={player.label}
+      variant='secondary'
+      size='sm'
+      className={playerBtn}
+      onPress={() => {
+        window.location.href = player.href
+      }}
     >
-      {playButton}
-      {externalPlayers.length > 1 ? (
-        <ButtonGroup className='shrink-0'>{externalButtons}</ButtonGroup>
-      ) : (
-        externalButtons
-      )}
-      {isMobile ? secondaryMobile : secondaryDesktop}
+      {player.label}
+    </Button>
+  ))
+
+  return (
+    <div className='flex flex-nowrap items-center gap-1'>
+      {playButton('min-h-11 shrink-0 px-3')}
+      {externalPlayers.length > 1 ? <ButtonGroup className='shrink-0'>{externalButtons}</ButtonGroup> : externalButtons}
+      {secondaryDesktop}
     </div>
   )
 }
