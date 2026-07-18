@@ -22,18 +22,21 @@ description: >-
   - Note: TypeScript **7** exists on npm, but `typescript-eslint` currently peers `<6.1` — stay on TS 6 until the ESLint stack catches up.
 - **Stack:** Material UI **9.2** + MUI X **9.10 Community** (Data Grid, Charts, Tree View, Date Pickers). Theme: `cssVariables` + `colorSchemes` + `useColorScheme`. No Pro/Premium license.
 - **No styled-components** — Emotion via MUI only.
-- **Greenfield only:** `web/src/{app,features,shared,locales,assets}` — no `components/`, `style/`, `utils/`, or legacy entry.
+- **Greenfield only:** `web/src/{app,features,shared,locales,assets}` — no `components/`, `style/`, `utils/`, `icons/`, or legacy entry.
+- **Doctrine:** Source of truth is server HTTP contracts + product UX. Never port/copy UI from deleted legacy trees. Frame work as “complete modern product”, not “legacy parity”.
+- Prefer `shared/api/*` + React Query hooks over scattered `axios` in features.
 - `parse-torrent` + minimal `vite-plugin-node-polyfills` are allowed for MultiAdd hash/dedup only (not general lodash/react-measure).
 - Brand: **MatriX green**. File row: all actions visible. Snake/GStreamer contracts unchanged.
 - Adaptive shell + `ModalOpenProvider`. Donate removed. Safari **17+**.
 - Radix/shadcn — **cancelled**.
+- If ghost `components/` / `style/` / `utils/` / `types/` reappear — delete immediately; never re-alias in Vite.
 
 ## Layout
 
 ```
 web/src/app/            # App, Shell, Sidebar, BottomNav, ErrorBoundary
-web/src/features/       # torrents, add, search, settings, details, player, about, system
-web/src/shared/         # api, theme, cache (snake), lib, ui, i18n, torrent
+web/src/features/       # torrents, add, search, settings, details, player, about, system, pwa, categories
+web/src/shared/         # api, hooks, theme, cache (snake), lib, ui, i18n, torrent, settings
 web/src/locales/        # i18n JSON
 ```
 
@@ -51,8 +54,9 @@ Always use `--clean`. Restart TorrServer + hard refresh (iOS PWA: remove/re-add 
 | Need | Prefer |
 |------|--------|
 | Toast | `shared/ui/Toast` |
+| Torrents list query | `shared/hooks/useTorrentsQuery` |
 | Torrents desktop | `features/torrents/SimpleTorrentsDataGrid` |
-| Torrents mobile | cards in `TorrentsPage` |
+| Torrents mobile | `features/torrents/TorrentCard` |
 | Search results | `features/search/SearchResultsGrid` |
 | Cache snake | `features/details/TorrentCache` + `shared/cache/*` |
 | Speed history | `features/details/SpeedCharts` |

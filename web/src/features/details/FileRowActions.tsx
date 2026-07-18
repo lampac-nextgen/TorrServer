@@ -1,7 +1,6 @@
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
 import Tooltip from '@mui/material/Tooltip'
-import CopyToClipboard from 'react-copy-to-clipboard'
 import { useTranslation } from 'react-i18next'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
@@ -50,6 +49,15 @@ export default function FileRowActions({
 }: FileRowActionsProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(copyText)
+      toast?.showToast({ message: t('Copied'), severity: 'success' })
+    } catch {
+      toast?.showToast({ message: t('Error'), severity: 'error' })
+    }
+  }
 
   return (
     <Box
@@ -106,14 +114,9 @@ export default function FileRowActions({
         </Tooltip>
       ))}
 
-      <CopyToClipboard
-        text={copyText}
-        onCopy={() => toast?.showToast({ message: t('Copied', { defaultValue: 'Copied' }), severity: 'success' })}
-      >
-        <Button variant='outlined' color='primary' size='small' sx={actionSx}>
-          {t('CopyLink')}
-        </Button>
-      </CopyToClipboard>
+      <Button variant='outlined' color='primary' size='small' sx={actionSx} onClick={() => void copyLink()}>
+        {t('CopyLink')}
+      </Button>
     </Box>
   )
 }

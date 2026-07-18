@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import axios from 'axios'
 import ptt from 'parse-torrent-title'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
@@ -16,12 +15,12 @@ import useMediaQuery from '@mui/material/useMediaQuery'
 import CloseIcon from '@mui/icons-material/Close'
 import ImageNotSupportedIcon from '@mui/icons-material/ImageNotSupported'
 import { useTranslation } from 'react-i18next'
-import { getTorrent } from 'shared/api/torrents'
-import { viewedHost } from 'shared/api/hosts'
-import type { PlayableFile, TorrentFileStat, TorrentStat, ViewedFileEntry } from 'shared/api/types'
+import type { PlayableFile, TorrentFileStat, TorrentStat } from 'shared/api/types'
+import { listViewedFiles } from 'shared/api/viewed'
 import { useUpdateCache } from 'shared/cache/useUpdateCache'
+import { useTorrentDetail } from 'shared/hooks/useTorrentDetail'
+import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
 import { getPeerString, humanizeSize, humanizeSpeed, removeRedundantCharacters } from 'shared/lib/format'
-import { readLocalBool, writeLocalJson } from 'shared/lib/localPrefs'
 import { isFilePlayable } from 'shared/torrent/playable'
 import { CLOSED, GETTING_INFO, IN_DB, PRELOAD, WORKING } from 'shared/torrent/states'
 import { queryMax } from 'shared/theme/breakpoints'
@@ -71,14 +70,16 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose }: Deta
   const fullScreen = useMediaQuery(queryMax('dialog'))
   useSyncModalOpen(true)
 
-  const [torrent, setTorrent] = useState(initialTorrent)
+  const hash = initialTorrent.hash
+  const { data: liveTorrent } = useTorrentDetail(hash, initialTorrent)
+  const torrent = liveTorrent ?? initialTorrent
+
   const [viewedFileList, setViewedFileList] = useState<number[] | undefined>()
   const [seasonAmount, setSeasonAmount] = useState<number[] | null>(null)
   const [selectedSeason, setSelectedSeason] = useState<number | undefined>()
   const [isDetailedCacheView, setIsDetailedCacheView] = useState(false)
-  const [isSnakeDebugMode, setIsSnakeDebugMode] = useState(() => readLocalBool('isSnakeDebugMode'))
+  const [isSnakeDebugMode, setIsSnakeDebugMode] = useLocalBoolPref('isSnakeDebugMode')
 
-  const hash = torrent.hash
   const cache = useUpdateCache(hash)
   const {
     poster,
@@ -91,28 +92,6 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose }: Deta
     torrent_size: torrentSize,
     file_stats: torrentFileList,
   } = torrent
-
-  useEffect(() => {
-    setTorrent(initialTorrent)
-  }, [initialTorrent])
-
-  useEffect(() => {
-    let cancelled = false
-    const poll = async () => {
-      try {
-        const next = await getTorrent(hash)
-        if (!cancelled) setTorrent(next)
-      } catch {
-        // keep last good state
-      }
-    }
-    void poll()
-    const timer = window.setInterval(poll, 1000)
-    return () => {
-      cancelled = true
-      window.clearInterval(timer)
-    }
-  }, [hash])
 
   const playableFileList = useMemo(
     () => torrentFileList?.map(toPlayableFile).filter(({ path }) => isFilePlayable(path)),
@@ -132,12 +111,13 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose }: Deta
   }, [playableFileList, seasonAmount])
 
   useEffect(() => {
-    axios.post(viewedHost(), { action: 'list', hash }).then(({ data }) => {
-      if (data) {
-        const lst = (data as ViewedFileEntry[]).map(itm => itm.file_index).sort((a, b) => a - b)
-        setViewedFileList(lst)
-      } else setViewedFileList(undefined)
+    let cancelled = false
+    void listViewedFiles(hash).then(list => {
+      if (!cancelled) setViewedFileList(list)
     })
+    return () => {
+      cancelled = true
+    }
   }, [hash])
 
   const statusLabel = (value?: number) => {
@@ -276,7 +256,6 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose }: Deta
                         checked={isSnakeDebugMode}
                         onChange={(_, checked) => {
                           setIsSnakeDebugMode(checked)
-                          writeLocalJson('isSnakeDebugMode', checked)
                         }}
                       />
                     }

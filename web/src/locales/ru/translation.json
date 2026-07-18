@@ -209,7 +209,11 @@
     "ViewedStorageHint": "Выберите, где хранить историю просмотренного.",
     "SettingsSaveFailed": "Не удалось сохранить настройки",
     "AppTabHint": "Настройки TMDB применяются после «Сохранить» (возможен перезапуск сервера). Кнопки плееров сохраняются сразу в этом браузере.",
-    "MobileAppInstantHint": "Эти переключатели сохраняются сразу в браузере — кнопка «Сохранить» не нужна."
+    "MobileAppInstantHint": "Эти переключатели сохраняются сразу в браузере — кнопка «Сохранить» не нужна.",
+    "UseDisk": "Use disk cache",
+    "StorageSettings": "Storage",
+    "RateLimitHint": "0 = unlimited",
+    "StoreSettingsInJson": "Store settings in JSON"
   },
   "Size": "Размер",
   "SpecialThanks": "Отдельное спасибо",
@@ -254,7 +258,8 @@
     "SortDescending": "По убыванию",
     "Test": "Тест",
     "TorrentAddedSuccessfully": "Торрент успешно добавлен",
-    "TorznabHostURL": "URL хоста Torznab"
+    "TorznabHostURL": "URL хоста Torznab",
+    "Tab": "Torznab"
   },
   "GStreamer": {
     "Tab": "GStreamer",
@@ -347,5 +352,11 @@
   "Theme": "Тема",
   "Language": "Язык",
   "Back": "Назад",
-  "DLNA": "DLNA-медиасервер"
+  "DLNA": "DLNA-медиасервер",
+  "AddFirstTorrent": "Add your first torrent",
+  "Network": "Network",
+  "NoResults": "No results",
+  "SearchQuery": "Search query",
+  "Seeders": "Seeders",
+  "TorrentAdded": "Torrent added"
 }

@@ -209,7 +209,11 @@
     "ViewedStorageHint": "Alegeți unde să stocați istoricul vizualizat",
     "SettingsSaveFailed": "Salvarea setărilor a eșuat",
     "AppTabHint": "Setările TMDB se aplică după Salvare (poate reporni serverul). Butoanele player se salvează imediat în acest browser.",
-    "MobileAppInstantHint": "Aceste comutatoare se salvează imediat în browser — Salvare nu este necesară."
+    "MobileAppInstantHint": "Aceste comutatoare se salvează imediat în browser — Salvare nu este necesară.",
+    "UseDisk": "Use disk cache",
+    "StorageSettings": "Storage",
+    "RateLimitHint": "0 = unlimited",
+    "StoreSettingsInJson": "Store settings in JSON"
   },
   "Size": "Mărime",
   "SpecialThanks": "Mulțumiri speciale",
@@ -254,7 +258,8 @@
     "TorznabHostURL": "URL-ul gazdei Torznab",
     "HostHint": "Jackett: …/indexers/all/results/torznab/ — Prowlarr: http://localhost:9696/1. TorrServer appends /api when needed.",
     "NoIndexersConfigured": "Torznab is enabled but no indexers are configured. Add a Host URL and API key below.",
-    "NoSearchSources": "No search sources enabled. Turn on RuTor and/or Torznab in Settings → Search."
+    "NoSearchSources": "No search sources enabled. Turn on RuTor and/or Torznab in Settings → Search.",
+    "Tab": "Torznab"
   },
   "GStreamer": {
     "X264Ultrafast": "Use x264 ultrafast preset",
@@ -348,5 +353,11 @@
   "Theme": "Theme",
   "Language": "Language",
   "Back": "Back",
-  "DLNA": "Server media DLNA"
+  "DLNA": "Server media DLNA",
+  "AddFirstTorrent": "Add your first torrent",
+  "Network": "Network",
+  "NoResults": "No results",
+  "SearchQuery": "Search query",
+  "Seeders": "Seeders",
+  "TorrentAdded": "Torrent added"
 }

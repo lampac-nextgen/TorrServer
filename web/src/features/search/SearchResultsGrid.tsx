@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
-import { DataGrid, type GridColDef } from '@mui/x-data-grid'
+import { DataGrid, type GridColDef, type GridRenderCellParams } from '@mui/x-data-grid'
 import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
 import { useTranslation } from 'react-i18next'
 import type { SearchResultItem } from 'shared/api/types'
@@ -15,7 +16,7 @@ interface SearchResultsGridProps {
   onAdd: (item: SearchResultItem) => void
 }
 
-/** Torznab search results as MUI X Data Grid. */
+/** Torznab/Rutor search results as MUI X Data Grid. */
 export default function SearchResultsGrid({
   results,
   loading,
@@ -34,6 +35,7 @@ export default function SearchResultsGrid({
         return {
           id: key,
           title: item.Title || '—',
+          poster: item.Poster || '',
           size: formatSize(item),
           seeders: item.Seed ?? '—',
           peers: item.Peer ?? '—',
@@ -45,12 +47,54 @@ export default function SearchResultsGrid({
 
   const columns = useMemo<GridColDef[]>(
     () => [
-      { field: 'title', headerName: t('Name', { defaultValue: 'Name' }), flex: 2, minWidth: 180 },
-      { field: 'size', headerName: t('Size', { defaultValue: 'Size' }), width: 100 },
-      { field: 'seeders', headerName: t('Seeders', { defaultValue: 'Seeders' }), width: 90 },
-      { field: 'peers', headerName: t('Peers', { defaultValue: 'Peers' }), width: 90 },
+      {
+        field: 'poster',
+        headerName: '',
+        width: 56,
+        sortable: false,
+        filterable: false,
+        renderCell: (params: GridRenderCellParams) =>
+          params.value ? (
+            <Box
+              component='img'
+              src={String(params.value)}
+              alt=''
+              sx={{ width: 36, height: 54, objectFit: 'cover', borderRadius: 0.5, my: 0.5 }}
+            />
+          ) : (
+            <Box sx={{ width: 36, height: 54, bgcolor: 'action.hover', borderRadius: 0.5, my: 0.5 }} />
+          ),
+      },
+      { field: 'title', headerName: t('Name'), flex: 2, minWidth: 180 },
+      { field: 'size', headerName: t('Size'), width: 100 },
+      { field: 'seeders', headerName: t('Seeders'), width: 90 },
+      { field: 'peers', headerName: t('Peers'), width: 90 },
+      {
+        field: 'actions',
+        headerName: '',
+        width: 100,
+        sortable: false,
+        filterable: false,
+        renderCell: (params: GridRenderCellParams) => {
+          const key = String(params.id)
+          const busy = adding && addingKey === key
+          return (
+            <Button
+              size='small'
+              variant='contained'
+              disabled={adding}
+              onClick={e => {
+                e.stopPropagation()
+                onAdd(params.row.item as SearchResultItem)
+              }}
+            >
+              {busy ? <CircularProgress size={16} color='inherit' /> : t('Add')}
+            </Button>
+          )
+        },
+      },
     ],
-    [t],
+    [t, adding, addingKey, onAdd],
   )
 
   if (loading) {
@@ -69,15 +113,13 @@ export default function SearchResultsGrid({
       disableRowSelectionOnClick
       pageSizeOptions={[25, 50]}
       initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
-      onRowClick={params => {
-        if (!adding) onAdd(params.row.item as SearchResultItem)
-      }}
+      getRowHeight={() => 'auto'}
       sx={{
         border: 0,
         minHeight: 280,
         height: '100%',
-        cursor: adding ? 'wait' : 'pointer',
-        opacity: adding ? 0.7 : 1,
+        opacity: adding ? 0.85 : 1,
+        '& .MuiDataGrid-cell': { py: 0.5 },
         '& .MuiDataGrid-row': {
           ...(addingKey
             ? {

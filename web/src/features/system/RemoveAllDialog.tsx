@@ -3,7 +3,7 @@ import DialogActions from '@mui/material/DialogActions'
 import DialogTitle from '@mui/material/DialogTitle'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { useTranslation } from 'react-i18next'
-import { torrentsHost } from 'shared/api/hosts'
+import { wipeTorrents, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import AppDialog from 'shared/ui/AppDialog'
 import UnsafeButton from 'shared/ui/UnsafeButton'
 import { useQueryClient } from '@tanstack/react-query'
@@ -18,15 +18,8 @@ export default function RemoveAllDialog({ open, onClose }: RemoveAllDialogProps)
   const queryClient = useQueryClient()
 
   const handleRemove = async () => {
-    await fetch(torrentsHost(), {
-      method: 'post',
-      body: JSON.stringify({ action: 'wipe' }),
-      headers: {
-        Accept: 'application/json, text/plain, */*',
-        'Content-Type': 'application/json',
-      },
-    })
-    await queryClient.invalidateQueries({ queryKey: ['torrents'] })
+    await wipeTorrents()
+    await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
     onClose()
   }
 

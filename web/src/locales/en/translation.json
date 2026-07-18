@@ -209,7 +209,11 @@
     "ViewedStorageHint": "Choose where to store viewed history",
     "SettingsSaveFailed": "Failed to save settings",
     "AppTabHint": "TMDB settings apply after Save (may restart the server). Player buttons save instantly in this browser.",
-    "MobileAppInstantHint": "These toggles save immediately in this browser — Save is not required."
+    "MobileAppInstantHint": "These toggles save immediately in this browser — Save is not required.",
+    "UseDisk": "Use disk cache",
+    "StorageSettings": "Storage",
+    "RateLimitHint": "0 = unlimited",
+    "StoreSettingsInJson": "Store settings in JSON"
   },
   "Size": "Size",
   "SpecialThanks": "Special Thanks",
@@ -254,7 +258,8 @@
     "SortDescending": "Sort Descending",
     "Test": "Test",
     "TorrentAddedSuccessfully": "Torrent added successfully",
-    "TorznabHostURL": "Torznab Host URL"
+    "TorznabHostURL": "Torznab Host URL",
+    "Tab": "Torznab"
   },
   "GStreamer": {
     "Tab": "GStreamer",
@@ -347,5 +352,11 @@
   "Theme": "Theme",
   "Language": "Language",
   "Back": "Back",
-  "DLNA": "DLNA Media Server"
+  "DLNA": "DLNA Media Server",
+  "AddFirstTorrent": "Add your first torrent",
+  "Network": "Network",
+  "NoResults": "No results",
+  "SearchQuery": "Search query",
+  "Seeders": "Seeders",
+  "TorrentAdded": "Torrent added"
 }

@@ -1,5 +1,4 @@
 import { memo, useState } from 'react'
-import axios from 'axios'
 import Button from '@mui/material/Button'
 import Dialog from '@mui/material/Dialog'
 import DialogActions from '@mui/material/DialogActions'
@@ -9,9 +8,12 @@ import DialogTitle from '@mui/material/DialogTitle'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import ptt from 'parse-torrent-title'
+import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { PlayableFile } from 'shared/api/types'
-import { playlistTorrHost, torrentsHost, viewedHost } from 'shared/api/hosts'
+import { playlistTorrHost } from 'shared/api/hosts'
+import { dropTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
+import { clearViewedFiles } from 'shared/api/viewed'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
 export interface TorrentActionsProps {
@@ -37,6 +39,7 @@ function TorrentActions({
 }: TorrentActionsProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
+  const queryClient = useQueryClient()
   const [confirm, setConfirm] = useState<ConfirmKind>(null)
 
   const latestViewedFileId = viewedFileList?.[viewedFileList.length - 1]
@@ -49,17 +52,16 @@ function TorrentActions({
 
   const runConfirmed = () => {
     if (confirm === 'drop') {
-      axios
-        .post(torrentsHost(), { action: 'drop', hash })
-        .then(() => {
+      void dropTorrent(hash)
+        .then(async () => {
           toast?.showToast({ message: t('DropTorrent'), severity: 'success' })
+          await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
           onDropped?.()
         })
         .catch(() => toast?.showToast({ message: t('PlaybackError'), severity: 'error' }))
     }
     if (confirm === 'views') {
-      axios
-        .post(viewedHost(), { action: 'rem', hash, file_index: -1 })
+      void clearViewedFiles(hash)
         .then(() => {
           setViewedFileList(undefined)
           toast?.showToast({ message: t('RemoveViews'), severity: 'success' })
@@ -74,7 +76,7 @@ function TorrentActions({
       await navigator.clipboard.writeText(magnet)
       toast?.showToast({ message: t('Copied'), severity: 'success' })
     } catch {
-      toast?.showToast({ message: t('Error', { defaultValue: 'Error' }), severity: 'error' })
+      toast?.showToast({ message: t('Error'), severity: 'error' })
     }
   }
 

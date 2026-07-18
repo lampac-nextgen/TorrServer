@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
-import axios from 'axios'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
@@ -18,8 +17,8 @@ import useMediaQuery from '@mui/material/useMediaQuery'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useDropzone } from 'react-dropzone'
-import { torrentsHost } from 'shared/api/hosts'
-import { checkTorrentSource } from 'shared/lib/torrentHelpers'
+import { addTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
+import { checkTorrentSource, getMoviePosters, shortenTitleForPosterSearch } from 'shared/lib/torrentHelpers'
 import { queryMax } from 'shared/theme/breakpoints'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import AppDialog from 'shared/ui/AppDialog'
@@ -35,7 +34,7 @@ export interface AddDialogProps {
 }
 
 export default function AddDialog({ open, onClose, initialSource }: AddDialogProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()
   const toast = useOptionalAppToast()
   const isMobile = useMediaQuery(queryMax('mobile'))
@@ -43,8 +42,12 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
   const [source, setSource] = useState(initialSource || '')
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('')
+  const [poster, setPoster] = useState('')
+  const [posterOptions, setPosterOptions] = useState<string[]>([])
+  const [postersLoading, setPostersLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [multiFiles, setMultiFiles] = useState<File[] | null>(null)
+  const posterRequestRef = useRef(0)
 
   useSyncModalOpen(open && !multiFiles)
 
@@ -56,14 +59,12 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
     setSource('')
     setTitle('')
     setCategory('')
+    setPoster('')
+    setPosterOptions([])
   }
 
   const handleFiles = useCallback((files: File[]) => {
     if (!files.length) return
-    if (files.length === 1) {
-      setMultiFiles(files)
-      return
-    }
     setMultiFiles(files)
   }, [])
 
@@ -75,12 +76,37 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
     disabled: saving,
   })
 
+  useEffect(() => {
+    const query = shortenTitleForPosterSearch(title.trim()) || title.trim()
+    if (!query || query.length < 2) {
+      setPosterOptions([])
+      return undefined
+    }
+
+    const requestId = ++posterRequestRef.current
+    const timer = window.setTimeout(() => {
+      setPostersLoading(true)
+      const lang = i18n.language?.startsWith('ru') ? 'ru' : 'en'
+      void getMoviePosters(query, lang)
+        .then(urls => {
+          if (requestId !== posterRequestRef.current) return
+          setPosterOptions(urls || [])
+          setPoster(prev => prev || urls?.[0] || '')
+        })
+        .finally(() => {
+          if (requestId === posterRequestRef.current) setPostersLoading(false)
+        })
+    }, 450)
+
+    return () => window.clearTimeout(timer)
+  }, [title, i18n.language])
+
   const handleAdd = async () => {
     const trimmed = source.trim()
     if (!trimmed) return
     if (!checkTorrentSource(trimmed)) {
       toast?.showToast({
-        message: t('AddDialog.InvalidSource', { defaultValue: 'Invalid magnet, hash, or torrent link' }),
+        message: t('AddDialog.WrongTorrentSource'),
         severity: 'error',
       })
       return
@@ -88,20 +114,18 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
 
     setSaving(true)
     try {
-      await axios.post(torrentsHost(), {
-        action: 'add',
+      await addTorrent({
         link: trimmed,
         title: title || undefined,
         category: category || undefined,
-        poster: '',
-        save_to_db: true,
+        poster: poster || '',
       })
-      await queryClient.invalidateQueries({ queryKey: ['torrents'] })
-      toast?.showToast({ message: t('TorrentAdded', { defaultValue: 'Torrent added' }), severity: 'success' })
+      await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
+      toast?.showToast({ message: t('TorrentAdded'), severity: 'success' })
       resetForm()
       onClose()
     } catch {
-      toast?.showToast({ message: t('Error', { defaultValue: 'Error' }), severity: 'error' })
+      toast?.showToast({ message: t('Error'), severity: 'error' })
     } finally {
       setSaving(false)
     }
@@ -124,7 +148,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
 
   return (
     <AppDialog open={open} onClose={onClose} fullWidth maxWidth='sm'>
-      <DialogTitle>{t('AddTorrent', { defaultValue: 'Add torrent' })}</DialogTitle>
+      <DialogTitle>{t('AddNewTorrent')}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
           <TextField
@@ -132,7 +156,8 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
             fullWidth
             multiline
             minRows={2}
-            label={t('MagnetOrHash', { defaultValue: 'Magnet link or hash' })}
+            label={t('AddDialog.TorrentSourceLink')}
+            helperText={t('AddDialog.TorrentSourceOptions')}
             value={source}
             onChange={e => setSource(e.target.value)}
             disabled={saving}
@@ -140,16 +165,17 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
 
           <TextField
             fullWidth
-            label={t('AddDialog.TitleBlank', { defaultValue: 'Title (optional)' })}
+            label={t('AddDialog.TitleBlank')}
+            helperText={t('AddDialog.CustomTorrentTitleHelperText')}
             value={title}
             onChange={e => setTitle(e.target.value)}
             disabled={saving}
           />
 
           <FormControl fullWidth disabled={saving}>
-            <InputLabel>{t('AddDialog.CategoryHelperText', { defaultValue: 'Category' })}</InputLabel>
+            <InputLabel>{t('AddDialog.CategoryHelperText')}</InputLabel>
             <Select
-              label={t('AddDialog.CategoryHelperText', { defaultValue: 'Category' })}
+              label={t('AddDialog.CategoryHelperText')}
               value={category}
               onChange={e => setCategory(e.target.value)}
             >
@@ -163,6 +189,48 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
               ))}
             </Select>
           </FormControl>
+
+          {(postersLoading || posterOptions.length > 0 || poster) && (
+            <Box>
+              <Typography variant='caption' color='text.secondary' sx={{ mb: 1, display: 'block' }}>
+                {t('AddDialog.AddPosterLinkInput')}
+                {postersLoading ? '…' : ''}
+              </Typography>
+              <Stack direction='row' spacing={1} sx={{ overflowX: 'auto', pb: 0.5 }}>
+                {posterOptions.map(url => (
+                  <Box
+                    key={url}
+                    component='button'
+                    type='button'
+                    onClick={() => setPoster(url)}
+                    sx={{
+                      p: 0,
+                      border: 2,
+                      borderColor: poster === url ? 'primary.main' : 'divider',
+                      borderRadius: 1,
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      bgcolor: 'transparent',
+                      flexShrink: 0,
+                      width: 64,
+                      height: 96,
+                    }}
+                  >
+                    <Box component='img' src={url} alt='' sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </Box>
+                ))}
+              </Stack>
+              <TextField
+                fullWidth
+                size='small'
+                margin='dense'
+                label={t('AddDialog.AddPosterLinkInput')}
+                value={poster}
+                onChange={e => setPoster(e.target.value)}
+                disabled={saving}
+              />
+            </Box>
+          )}
 
           <Box
             {...getRootProps()}
@@ -183,7 +251,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
             <input {...getInputProps()} />
             <CloudUploadIcon color='action' />
             <Typography variant='body2' color='text.secondary'>
-              {t('AddDialog.AppendFile.ClickOrDrag', { defaultValue: 'Click or drag .torrent files here' })}
+              {t('AddDialog.AppendFile.ClickOrDrag')}
             </Typography>
           </Box>
         </Stack>
@@ -198,7 +266,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
           disabled={saving || !source.trim()}
           sx={footerButtonSx}
         >
-          {saving ? <CircularProgress size={20} color='inherit' /> : t('Add', { defaultValue: 'Add' })}
+          {saving ? <CircularProgress size={20} color='inherit' /> : t('Add')}
         </Button>
       </DialogActions>
     </AppDialog>

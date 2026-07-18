@@ -209,7 +209,11 @@
     "ViewedStorageHint": "Виберіть місце збереження історії переглядів серій",
     "SettingsSaveFailed": "Не вдалося зберегти налаштування",
     "AppTabHint": "Налаштування TMDB застосовуються після «Зберегти» (можливий перезапуск сервера). Кнопки плеєрів зберігаються одразу в цьому браузері.",
-    "MobileAppInstantHint": "Ці перемикачі зберігаються одразу в браузері — «Зберегти» не потрібно."
+    "MobileAppInstantHint": "Ці перемикачі зберігаються одразу в браузері — «Зберегти» не потрібно.",
+    "UseDisk": "Use disk cache",
+    "StorageSettings": "Storage",
+    "RateLimitHint": "0 = unlimited",
+    "StoreSettingsInJson": "Store settings in JSON"
   },
   "Size": "Розмір",
   "SpecialThanks": "Окрема подяка",
@@ -254,7 +258,8 @@
     "TorznabHostURL": "URL хосту Torznab",
     "HostHint": "Jackett: …/indexers/all/results/torznab/ — Prowlarr: http://localhost:9696/1. TorrServer appends /api when needed.",
     "NoIndexersConfigured": "Torznab is enabled but no indexers are configured. Add a Host URL and API key below.",
-    "NoSearchSources": "No search sources enabled. Turn on RuTor and/or Torznab in Settings → Search."
+    "NoSearchSources": "No search sources enabled. Turn on RuTor and/or Torznab in Settings → Search.",
+    "Tab": "Torznab"
   },
   "GStreamer": {
     "Tab": "GStreamer",
@@ -347,5 +352,11 @@
   "Theme": "Theme",
   "Language": "Language",
   "Back": "Back",
-  "DLNA": "DLNA-медиасервер"
+  "DLNA": "DLNA-медиасервер",
+  "AddFirstTorrent": "Add your first torrent",
+  "Network": "Network",
+  "NoResults": "No results",
+  "SearchQuery": "Search query",
+  "Seeders": "Seeders",
+  "TorrentAdded": "Torrent added"
 }

@@ -15,13 +15,12 @@ import {
   Sort as SortIcon,
   SortByAlpha as SortByAlphaIcon,
 } from '@mui/icons-material'
-import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { echoHost } from 'shared/api/hosts'
-import { getTorrents } from 'shared/api/torrents'
 import useChangeLanguage from 'shared/lib/useChangeLanguage'
 import useLaunchHandler from 'shared/lib/useLaunchHandler'
 import { detectApplePlatform, isStandaloneApp } from 'shared/lib/platform'
+import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
 import { queryMax } from 'shared/theme/breakpoints'
 import { THEME_MODES, useThemePreference } from 'shared/theme/useThemePreference'
 import { TorrentsPage } from 'features/torrents'
@@ -54,7 +53,6 @@ export default function Shell() {
   const [torrServerVersion, setTorrServerVersion] = useState('')
   const [sortABC, setSortABC] = useState(false)
   const [globalCategoryFilter, setGlobalCategoryFilter] = useState('all')
-  const [listPollMs, setListPollMs] = useState(1000)
 
   const [addOpen, setAddOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -64,26 +62,8 @@ export default function Shell() {
   const [closeServerOpen, setCloseServerOpen] = useState(false)
   const [removeAllOpen, setRemoveAllOpen] = useState(false)
 
-  const { isLoading, isError, isSuccess } = useQuery({
-    queryKey: ['torrents'],
-    queryFn: getTorrents,
-    retry: 1,
-    refetchInterval: listPollMs,
-  })
-
-  const [isOffline, setIsOffline] = useState(false)
-
-  useEffect(() => {
-    if (isError) setIsOffline(true)
-    if (isSuccess) setIsOffline(false)
-  }, [isError, isSuccess])
-
-  useEffect(() => {
-    const syncPoll = () => setListPollMs(document.hidden ? 5000 : 1000)
-    syncPoll()
-    document.addEventListener('visibilitychange', syncPoll)
-    return () => document.removeEventListener('visibilitychange', syncPoll)
-  }, [])
+  const { isLoading, isError } = useTorrentsQuery()
+  const isOffline = isError
 
   useEffect(() => {
     axios.get(echoHost()).then(({ data }) => setTorrServerVersion(String(data)))

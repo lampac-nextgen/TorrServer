@@ -209,7 +209,11 @@
     "ViewedStorageHint": "存储查看历史记录的位置",
     "SettingsSaveFailed": "保存设置失败",
     "AppTabHint": "TMDB 设置在保存后生效（可能重启服务器）。播放器按钮会立即保存在本浏览器中。",
-    "MobileAppInstantHint": "这些开关会立即保存在本浏览器中，无需点击保存。"
+    "MobileAppInstantHint": "这些开关会立即保存在本浏览器中，无需点击保存。",
+    "UseDisk": "Use disk cache",
+    "StorageSettings": "Storage",
+    "RateLimitHint": "0 = unlimited",
+    "StoreSettingsInJson": "Store settings in JSON"
   },
   "Size": "大小",
   "SpecialThanks": "特别感谢",
@@ -254,7 +258,8 @@
     "TorznabHostURL": "Torznab主机URL",
     "HostHint": "Jackett: …/indexers/all/results/torznab/ — Prowlarr: http://localhost:9696/1. TorrServer appends /api when needed.",
     "NoIndexersConfigured": "Torznab is enabled but no indexers are configured. Add a Host URL and API key below.",
-    "NoSearchSources": "No search sources enabled. Turn on RuTor and/or Torznab in Settings → Search."
+    "NoSearchSources": "No search sources enabled. Turn on RuTor and/or Torznab in Settings → Search.",
+    "Tab": "Torznab"
   },
   "GStreamer": {
     "Tab": "GStreamer",
@@ -347,5 +352,11 @@
   "Theme": "Theme",
   "Language": "Language",
   "Back": "Back",
-  "DLNA": "DLNA媒体服务器"
+  "DLNA": "DLNA媒体服务器",
+  "AddFirstTorrent": "Add your first torrent",
+  "Network": "Network",
+  "NoResults": "No results",
+  "SearchQuery": "Search query",
+  "Seeders": "Seeders",
+  "TorrentAdded": "Torrent added"
 }

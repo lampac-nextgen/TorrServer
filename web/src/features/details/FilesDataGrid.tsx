@@ -16,7 +16,7 @@ import {
   shouldUseGStreamerPlayer,
   useGStreamerRuntime,
 } from 'shared/lib/gstreamer'
-import { readLocalBool } from 'shared/lib/localPrefs'
+import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
 import { humanizeSize } from 'shared/lib/format'
 import { detectStandaloneApp, isAppleDevice, isMacOS } from 'shared/lib/platform'
 import { queryMax } from 'shared/theme/breakpoints'
@@ -100,10 +100,10 @@ const FilesDataGrid = memo(
     const fileHasResolutionText = !!playableFileList?.find(({ path }) => ptt.parse(path).resolution)
     const shouldDisplayFullFileName = (playableFileList?.length ?? 0) > 1 && !fileHasEpisodeText
 
-    const isVlcUsed = readLocalBool('isVlcUsed')
-    const isInfuseUsed = readLocalBool('isInfuseUsed')
-    const isSenPlayerUsed = readLocalBool('isSenPlayerUsed')
-    const isIinaUsed = readLocalBool('isIinaUsed')
+    const [isVlcUsed] = useLocalBoolPref('isVlcUsed')
+    const [isInfuseUsed] = useLocalBoolPref('isInfuseUsed')
+    const [isSenPlayerUsed] = useLocalBoolPref('isSenPlayerUsed')
+    const [isIinaUsed] = useLocalBoolPref('isIinaUsed')
     const isStandalone = detectStandaloneApp()
     const isMac = isMacOS()
     const isApple = isAppleDevice()

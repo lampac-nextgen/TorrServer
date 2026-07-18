@@ -209,7 +209,11 @@
     "ViewedStorageHint": "Choisissez où stocker l'historique des vues",
     "SettingsSaveFailed": "Échec de l'enregistrement des paramètres",
     "AppTabHint": "Les paramètres TMDB s'appliquent après Enregistrer (redémarrage possible). Les boutons lecteurs s'enregistrent immédiatement dans ce navigateur.",
-    "MobileAppInstantHint": "Ces options s'enregistrent immédiatement dans ce navigateur — Enregistrer n'est pas nécessaire."
+    "MobileAppInstantHint": "Ces options s'enregistrent immédiatement dans ce navigateur — Enregistrer n'est pas nécessaire.",
+    "UseDisk": "Use disk cache",
+    "StorageSettings": "Storage",
+    "RateLimitHint": "0 = unlimited",
+    "StoreSettingsInJson": "Store settings in JSON"
   },
   "Size": "Taille",
   "SpecialThanks": "Remerciements spéciaux",
@@ -254,7 +258,8 @@
     "TorznabHostURL": "URL de l'hôte Torznab",
     "HostHint": "Jackett: …/indexers/all/results/torznab/ — Prowlarr: http://localhost:9696/1. TorrServer appends /api when needed.",
     "NoIndexersConfigured": "Torznab is enabled but no indexers are configured. Add a Host URL and API key below.",
-    "NoSearchSources": "No search sources enabled. Turn on RuTor and/or Torznab in Settings → Search."
+    "NoSearchSources": "No search sources enabled. Turn on RuTor and/or Torznab in Settings → Search.",
+    "Tab": "Torznab"
   },
   "GStreamer": {
     "Tab": "GStreamer",
@@ -347,5 +352,11 @@
   "Theme": "Theme",
   "Language": "Language",
   "Back": "Back",
-  "DLNA": "Serveur multimédia DLNA"
+  "DLNA": "Serveur multimédia DLNA",
+  "AddFirstTorrent": "Add your first torrent",
+  "Network": "Network",
+  "NoResults": "No results",
+  "SearchQuery": "Search query",
+  "Seeders": "Seeders",
+  "TorrentAdded": "Torrent added"
 }

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import axios from 'axios'
 import DeleteIcon from '@mui/icons-material/Delete'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
@@ -16,11 +15,11 @@ import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import useMediaQuery from '@mui/material/useMediaQuery'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import type { MultiAddFileState, TorrentStat } from 'shared/api/types'
-import { torrentUploadHost } from 'shared/api/hosts'
-import { getTorrents } from 'shared/api/torrents'
+import type { MultiAddFileState } from 'shared/api/types'
+import { TORRENTS_QUERY_KEY, uploadTorrent } from 'shared/api/torrents'
+import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
 import {
   checkImageURL,
   getMoviePosters,
@@ -63,11 +62,7 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
   const isMobile = useMediaQuery(queryMax('mobile'))
   useSyncModalOpen(open)
 
-  const { data: existingTorrents = [] } = useQuery({
-    queryKey: ['torrents'],
-    queryFn: getTorrents,
-    staleTime: 5000,
-  })
+  const { data: existingTorrents = [] } = useTorrentsQuery()
 
   const [fileList, setFileList] = useState<MultiAddFileState[]>(() => createInitialState(files))
   const [saving, setSaving] = useState(false)
@@ -89,9 +84,7 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
           if (cancelled) return
 
           if (infoHash) {
-            const existing = (existingTorrents as TorrentStat[]).find(
-              tor => tor.hash?.toLowerCase() === infoHash.toLowerCase(),
-            )
+            const existing = existingTorrents.find(tor => tor.hash?.toLowerCase() === infoHash.toLowerCase())
             if (existing) {
               handleUpdate(index, {
                 infoHash,
@@ -161,24 +154,22 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
     setSaving(true)
     try {
       await Promise.all(
-        visibleFiles.map(item => {
-          const data = new FormData()
-          data.append('save', 'true')
-          data.append('file', item.file)
-          if (item.title) data.append('title', item.title)
-          if (item.category) data.append('category', item.category)
-          if (item.poster) data.append('poster', item.poster)
-          return axios.post(torrentUploadHost(), data)
-        }),
+        visibleFiles.map(item =>
+          uploadTorrent(item.file, {
+            title: item.title,
+            category: item.category,
+            poster: item.poster,
+          }),
+        ),
       )
-      await queryClient.invalidateQueries({ queryKey: ['torrents'] })
+      await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
       toast?.showToast({
-        message: t('TorrentAdded', { defaultValue: 'Torrent added' }),
+        message: t('TorrentAdded'),
         severity: 'success',
       })
       onClose()
     } catch {
-      toast?.showToast({ message: t('Error', { defaultValue: 'Error' }), severity: 'error' })
+      toast?.showToast({ message: t('Error'), severity: 'error' })
     } finally {
       setSaving(false)
     }

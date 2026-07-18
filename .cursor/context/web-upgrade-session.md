@@ -3,9 +3,18 @@
 **Saved:** 2026-07-18  
 **Transcript:** [Web MUI production](98d7e6a7-6a2f-4721-ae12-0e4a1c6657ef)  
 **Branch (typical):** `feature/web-upgrade`  
-**Phase:** **Greenfield complete** — Material UI 9.2 + MUI X 9.10 Community
+**Phase:** **Modern greenfield product** — Material UI 9.2 + MUI X 9.10 Community
 
 Use this file + skill `.cursor/skills/torrserver-web/` to continue.
+
+---
+
+## Doctrine
+
+- Live tree only: `app/` + `features/` + `shared/` + `locales/`
+- Source of truth: server HTTP contracts + product UX — **never** port legacy UI
+- Frame work as complete modern product, not legacy parity
+- Prefer `shared/api/*` + React Query hooks
 
 ---
 
@@ -17,44 +26,32 @@ Use this file + skill `.cursor/skills/torrserver-web/` to continue.
 | UI | `@mui/material@9.2` + Emotion (no styled-components) |
 | Theme | `createAppTheme()` — `cssVariables` + `colorSchemes` + `useColorScheme` / `forceThemeRerender` |
 | MUI X | data-grid / charts / tree-view / date-pickers **@9.10** Community |
-| Architecture | `app/` + `features/` + `shared/` only (legacy `components/` deleted) |
+| Architecture | `app/` + `features/` + `shared/` only |
 | Ship | `yarn typecheck && yarn lint && yarn test && yarn build` → `go run gen_web.go --clean` |
 | Browsers | Safari **17+** |
 
 ---
 
-## Done
+## Done (modern plan 2026-07-18)
 
-- Full greenfield rewrite; purged `components/`, `style/`, `utils/`, `icons/`, old `types/`
-- Theme + chrome + ModalOpenProvider
-- Torrents DataGrid / cards; Search DataGrid; Details FileBrowser + SpeedCharts + **TorrentCache snake**
-- Settings / Add / Player / About / system dialogs under `features/`
-- vite aliases: `app`, `features`, `shared`, `locales` only
-- **Wave 2026-07-18 shipped:**
-  - Settings App tab: TMDB + mobile external player toggles (VLC/Infuse/SenPlayer/IINA)
-  - GStreamer settings panel depth + echo host
-  - Details `TorrentActions`: magnet, M3U Full/FromLatest, clear viewed, drop
-  - MultiAdd: parse-torrent hash/dedup, TMDB posters, skip existing
-  - AddDialog source validation via `checkTorrentSource`
-  - PWA install guide (iOS, non-standalone) lazy in Shell
-  - Empty torrents CTA → Add; ErrorBoundary plain HTML outside theme
-  - `parse-torrent` + minimal node polyfills allowed for MultiAdd only
+- Doctrine locked in skill / PROMPT / session
+- `shared/api`: torrents (add/drop/wipe/upload), settings, viewed, search, gst
+- Hooks: `useTorrentsQuery`, `useTorrentDetail`, `useSettingsQuery`, `useLocalPref`
+- Single torrents poll; Details via React Query
+- Modern `TorrentCard` (poster/status/speeds/peers)
+- AddDialog TMDB poster picker; Search posters + explicit Add
+- Settings composed panels + SSL/retrackers/encrypt/LPD/protocol/FS knobs
+- Clipboard via `navigator.clipboard`; player prefs reactive
+- Removed `react-copy-to-clipboard`
+- Ship gate green + embed updated
 
 ---
 
-## Optional follow-ups
+## Optional later
 
-- Deeper AddDialog (poster picker / edit-hash) if parity still thin
-- i18n: promote `defaultValue` keys into all 7 locale files
-- Soften remaining `react-hooks/set-state-in-effect` / purity warns (non-blocking)
-- Split oversized `mui` chunk only after lazy-loading keeps X off the critical path
-- Exhaustive-deps warnings in FilesDataGrid / SimpleTorrentsDataGrid
-
-## Fixed 2026-07-18 (audit pass)
-
-- Circular mui↔mui-x manualChunks TDZ crash
-- share_target enctype in webmanifest
-- Lazy DetailsDialog; launch handler; drop unused LocalizationProvider; dedupe categories
+- Soften remaining react-hooks warnings (non-blocking)
+- Split oversized `mui` chunk further after more lazy X usage
+- Feature UI tests beyond shared lib coverage
 
 ---
 

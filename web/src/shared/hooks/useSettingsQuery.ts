@@ -1,0 +1,25 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
+import { getSettings, setSettings, SETTINGS_QUERY_KEY } from 'shared/api/settings'
+import type { BTSets } from 'shared/api/types'
+import { notifySettingsChanged } from 'shared/lib/settingsEvents'
+
+export function useSettingsQuery(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: SETTINGS_QUERY_KEY,
+    queryFn: ({ signal }) => getSettings(signal),
+    enabled: options?.enabled ?? true,
+    staleTime: 30_000,
+  })
+}
+
+export function useSaveSettingsMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (sets: BTSets) => setSettings(sets),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEY })
+      notifySettingsChanged()
+    },
+  })
+}

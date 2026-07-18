@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import Box from '@mui/material/Box'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import FormGroup from '@mui/material/FormGroup'
@@ -7,7 +6,7 @@ import Link from '@mui/material/Link'
 import Switch from '@mui/material/Switch'
 import Typography from '@mui/material/Typography'
 import { useTranslation } from 'react-i18next'
-import { readLocalBool, writeLocalJson } from 'shared/lib/localPrefs'
+import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
 import { isAppleDevice, isDesktop, isMacOS } from 'shared/lib/platform'
 
 const PLAYER_KEYS = {
@@ -25,15 +24,10 @@ export default function MobilePlayersSection() {
   const isApple = isAppleDevice()
   const isDesktopPlatform = isDesktop()
 
-  const [isVlcUsed, setIsVlcUsed] = useState(() => readLocalBool(PLAYER_KEYS.vlc))
-  const [isInfuseUsed, setIsInfuseUsed] = useState(() => readLocalBool(PLAYER_KEYS.infuse))
-  const [isSenPlayerUsed, setIsSenPlayerUsed] = useState(() => readLocalBool(PLAYER_KEYS.senPlayer))
-  const [isIinaUsed, setIsIinaUsed] = useState(() => readLocalBool(PLAYER_KEYS.iina))
-
-  const togglePref = (key: string, checked: boolean, setChecked: (v: boolean) => void) => {
-    setChecked(checked)
-    writeLocalJson(key, checked)
-  }
+  const [isVlcUsed, setIsVlcUsed] = useLocalBoolPref(PLAYER_KEYS.vlc)
+  const [isInfuseUsed, setIsInfuseUsed] = useLocalBoolPref(PLAYER_KEYS.infuse)
+  const [isSenPlayerUsed, setIsSenPlayerUsed] = useLocalBoolPref(PLAYER_KEYS.senPlayer)
+  const [isIinaUsed, setIsIinaUsed] = useLocalBoolPref(PLAYER_KEYS.iina)
 
   return (
     <Box sx={{ mt: 3 }}>
@@ -46,7 +40,7 @@ export default function MobilePlayersSection() {
           control={
             <Switch
               checked={isVlcUsed}
-              onChange={(_, checked) => togglePref(PLAYER_KEYS.vlc, checked, setIsVlcUsed)}
+              onChange={(_, checked) => setIsVlcUsed(checked)}
               color='secondary'
               sx={touchTargetSx}
             />
@@ -76,7 +70,7 @@ export default function MobilePlayersSection() {
               control={
                 <Switch
                   checked={isInfuseUsed}
-                  onChange={(_, checked) => togglePref(PLAYER_KEYS.infuse, checked, setIsInfuseUsed)}
+                  onChange={(_, checked) => setIsInfuseUsed(checked)}
                   color='secondary'
                   sx={touchTargetSx}
                 />
@@ -91,7 +85,7 @@ export default function MobilePlayersSection() {
               control={
                 <Switch
                   checked={isSenPlayerUsed}
-                  onChange={(_, checked) => togglePref(PLAYER_KEYS.senPlayer, checked, setIsSenPlayerUsed)}
+                  onChange={(_, checked) => setIsSenPlayerUsed(checked)}
                   color='secondary'
                   sx={touchTargetSx}
                 />
@@ -110,7 +104,7 @@ export default function MobilePlayersSection() {
               control={
                 <Switch
                   checked={isIinaUsed}
-                  onChange={(_, checked) => togglePref(PLAYER_KEYS.iina, checked, setIsIinaUsed)}
+                  onChange={(_, checked) => setIsIinaUsed(checked)}
                   color='secondary'
                   sx={touchTargetSx}
                 />

@@ -22,8 +22,10 @@ import Typography from '@mui/material/Typography'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
-import type { BTSets, SearchResultItem, TorznabUrl } from 'shared/api/types'
-import { searchHost, settingsHost, torrentsHost, torznabSearchHost } from 'shared/api/hosts'
+import type { SearchResultItem, TorznabUrl } from 'shared/api/types'
+import { searchRutor, searchTorznab } from 'shared/api/search'
+import { getSettings } from 'shared/api/settings'
+import { addTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { queryMax } from 'shared/theme/breakpoints'
 import { formatSizeToClassicUnits, parseSizeToBytes } from 'shared/lib/format'
 import AppDialog from 'shared/ui/AppDialog'
@@ -104,21 +106,16 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
     if (!open) return
     const ac = new AbortController()
     setSettingsLoaded(false)
-    axios
-      .post(settingsHost(), { action: 'get' }, { signal: ac.signal })
-      .then(({ data }: { data?: BTSets }) => {
-        if (!data) return
+    getSettings(ac.signal)
+      .then(data => {
         const urls = data.TorznabUrls || []
         const torznabOn = Boolean(data.EnableTorznabSearch)
         const rutorOn = Boolean(data.EnableRutorSearch)
         setTrackers(urls)
         setEnableTorznab(torznabOn)
         setEnableRutor(rutorOn)
-        if (torznabOn && urls.length > 0) {
-          setSelectedTracker(-1)
-        } else if (rutorOn) {
-          setSelectedTracker('rutor')
-        }
+        if (torznabOn && urls.length > 0) setSelectedTracker(-1)
+        else if (rutorOn) setSelectedTracker('rutor')
       })
       .catch(() => {})
       .finally(() => {
@@ -146,23 +143,11 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
     try {
       if (selectedTracker === -1) {
         const requests: Promise<SearchResultItem[]>[] = []
-        if (hasTorznab) {
-          requests.push(
-            axios
-              .get<SearchResultItem[]>(torznabSearchHost(), { params: { query: q }, signal: ac.signal })
-              .then(({ data }) => data || []),
-          )
-        }
-        if (hasRutor) {
-          requests.push(
-            axios
-              .get<SearchResultItem[]>(searchHost(), { params: { query: q }, signal: ac.signal })
-              .then(({ data }) => data || []),
-          )
-        }
+        if (hasTorznab) requests.push(searchTorznab(q, undefined, ac.signal))
+        if (hasRutor) requests.push(searchRutor(q, ac.signal))
         if (requests.length === 0) {
           if (isCurrentSearch(gen, searchGenRef.current, ac.signal)) {
-            setErrorMsg(t('Torznab.NoSearchSources', { defaultValue: 'No search sources enabled' }))
+            setErrorMsg(t('Torznab.NoSearchSources'))
           }
           return
         }
@@ -179,7 +164,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
           }
         }
         if (lists.length === 0) {
-          throw firstError || new Error(t('Torznab.SearchFailed', { defaultValue: 'Search failed' }))
+          throw firstError || new Error(t('Torznab.SearchFailed'))
         }
         const merged = mergeSearchResults(...lists)
         setResults(merged)
@@ -190,18 +175,13 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
         return
       }
 
-      let url = torznabSearchHost()
-      const params: { query: string; index?: number } = { query: q }
-
+      let next: SearchResultItem[] = []
       if (selectedTracker === 'rutor') {
-        url = searchHost()
+        next = await searchRutor(q, ac.signal)
       } else if (typeof selectedTracker === 'number') {
-        params.index = selectedTracker
+        next = await searchTorznab(q, selectedTracker, ac.signal)
       }
-
-      const { data } = await axios.get<SearchResultItem[]>(url, { params, signal: ac.signal })
       if (!isCurrentSearch(gen, searchGenRef.current, ac.signal)) return
-      const next = data || []
       setResults(next)
       if (!userSortedRef.current && next.length > 0) {
         setSortField('seeds')
@@ -210,7 +190,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
     } catch (err) {
       if (axios.isCancel(err) || (isAxiosError(err) && err.code === 'ERR_CANCELED')) return
       if (!isCurrentSearch(gen, searchGenRef.current, ac.signal)) return
-      setErrorMsg(axiosErrorMessage(err, t('Torznab.SearchFailed', { defaultValue: 'Search failed' })))
+      setErrorMsg(axiosErrorMessage(err, t('Torznab.SearchFailed')))
     } finally {
       if (gen === searchGenRef.current) setLoading(false)
     }
@@ -224,17 +204,15 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
     setAdding(true)
     setAddingKey(key)
     try {
-      await axios.post(torrentsHost(), {
-        action: 'add',
+      await addTorrent({
         link,
         title: item.Title,
-        save_to_db: true,
         poster: item.Poster || '',
       })
-      await queryClient.invalidateQueries({ queryKey: ['torrents'] })
-      setSuccessMsg(t('TorrentAdded', { defaultValue: 'Torrent added' }))
+      await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
+      setSuccessMsg(t('TorrentAdded'))
     } catch {
-      toast?.showToast({ message: t('Error', { defaultValue: 'Error' }), severity: 'error' })
+      toast?.showToast({ message: t('Error'), severity: 'error' })
     } finally {
       setAdding(false)
       setAddingKey(null)
@@ -286,20 +264,18 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
   const emptyMessage = (() => {
     if (!settingsLoaded) return null
     if (!hasAnySource) {
-      if (enableTorznab && trackers.length === 0) {
-        return t('Torznab.NoIndexersConfigured', { defaultValue: 'No Torznab indexers configured' })
-      }
-      return t('Torznab.NoSearchSources', { defaultValue: 'No search sources enabled' })
+      if (enableTorznab && trackers.length === 0) return t('Torznab.NoIndexersConfigured')
+      return t('Torznab.NoSearchSources')
     }
     if (loading) return null
-    if (searched && results.length === 0) return t('NoResults', { defaultValue: 'No results' })
+    if (searched && results.length === 0) return t('NoResults')
     return null
   })()
 
   const sortFields: { field: SortField; label: string }[] = [
-    { field: 'size', label: t('Torznab.SortBySize', { defaultValue: 'Size' }) },
-    { field: 'seeds', label: t('Torznab.SortBySeeds', { defaultValue: 'Seeds' }) },
-    { field: 'peers', label: t('Torznab.SortByPeers', { defaultValue: 'Peers' }) },
+    { field: 'size', label: t('Torznab.SortBySize') },
+    { field: 'seeds', label: t('Torznab.SortBySeeds') },
+    { field: 'peers', label: t('Torznab.SortByPeers') },
   ]
 
   const footerButtonSx = isMobile ? { minHeight: 44, px: 2.5 } : undefined
@@ -310,18 +286,16 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
       <DialogContent>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ pt: 1, pb: 2, alignItems: { sm: 'center' } }}>
           <FormControl size='small' sx={{ minWidth: { sm: 180 } }} disabled={!hasAnySource}>
-            <InputLabel>{t('Tracker', { defaultValue: 'Tracker' })}</InputLabel>
+            <InputLabel>{t('Tracker')}</InputLabel>
             <Select
               value={selectedTracker}
-              label={t('Tracker', { defaultValue: 'Tracker' })}
+              label={t('Tracker')}
               onChange={(e: SelectChangeEvent<TrackerSelection>) =>
                 setSelectedTracker(e.target.value as TrackerSelection)
               }
             >
-              {showAllTrackers ? (
-                <MenuItem value={-1}>{t('AllTrackers', { defaultValue: 'All trackers' })}</MenuItem>
-              ) : null}
-              {hasRutor ? <MenuItem value='rutor'>{t('Rutor', { defaultValue: 'Rutor' })}</MenuItem> : null}
+              {showAllTrackers ? <MenuItem value={-1}>{t('AllTrackers')}</MenuItem> : null}
+              {hasRutor ? <MenuItem value='rutor'>{t('Rutor')}</MenuItem> : null}
               {hasTorznab
                 ? trackers.map((tracker, index) => (
                     <MenuItem key={`${tracker.Host}-${tracker.Key}`} value={index}>
@@ -335,7 +309,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
           <TextField
             fullWidth
             size='small'
-            label={t('SearchQuery', { defaultValue: 'Search query' })}
+            label={t('SearchQuery')}
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
@@ -357,7 +331,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
         {searched && sortedResults.length > 0 ? (
           <Stack direction='row' spacing={1} sx={{ mb: 1, flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
             <Typography variant='body2' color='text.secondary'>
-              {t('Torznab.ResultsCount', { count: sortedResults.length, defaultValue: '{{count}} results' })}
+              {t('Torznab.ResultsCount', { count: sortedResults.length })}
             </Typography>
             <ToggleButtonGroup
               exclusive
@@ -414,7 +388,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose} sx={footerButtonSx}>
-          {t('Close', { defaultValue: 'Close' })}
+          {t('Close')}
         </Button>
       </DialogActions>
 

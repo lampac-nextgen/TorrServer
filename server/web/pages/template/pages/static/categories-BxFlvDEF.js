@@ -1,1 +1,0 @@
-import{$ as e,Q as t,Rt as n,X as r,Z as i}from"./mui-Dt1R0mCI.js";var a=n(),o=[{key:`movie`,name:`Movies`,icon:(0,a.jsx)(i,{})},{key:`tv`,name:`Series`,icon:(0,a.jsx)(e,{})},{key:`music`,name:`Music`,icon:(0,a.jsx)(r,{})},{key:`other`,name:`Other`,icon:(0,a.jsx)(t,{})}];export{o as t};
