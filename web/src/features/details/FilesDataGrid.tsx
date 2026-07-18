@@ -3,7 +3,6 @@ import { memo, useMemo, useState, type ReactNode } from 'react'
 import ptt from 'parse-torrent-title'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { fetchFfp } from 'shared/api/extras'
 import { streamHost } from 'shared/api/hosts'
 import type { PlayableFile, TorrentFileStat } from 'shared/api/types'
 import { listViewedEntries, remViewedFile, VIEWED_QUERY_KEY } from 'shared/api/viewed'
@@ -20,6 +19,7 @@ import { useOptionalAppToast } from 'shared/ui/Toast'
 import { findCaptionSrc } from 'features/player/usePlayLauncher'
 
 import FileRowActions from './FileRowActions'
+import MediaInfoDialog from './MediaInfoDialog'
 
 /**
  * Global `parse-torrent-title` handler extensions for Russian-language release
@@ -132,6 +132,7 @@ const FilesDataGrid = memo(
     const toast = useOptionalAppToast()
     const queryClient = useQueryClient()
     const [unsupportedPlayerKeys, setUnsupportedPlayerKeys] = useState<Record<string, boolean>>({})
+    const [mediaInfo, setMediaInfo] = useState<{ fileId: number; fileName: string } | null>(null)
     const gstRuntime = useGStreamerRuntime()
     const { buildExternalPlayers, shouldShowOpenLink } = useExternalPlayers()
     const { data: settings } = useSettingsQuery()
@@ -160,27 +161,6 @@ const FilesDataGrid = memo(
       try {
         await remViewedFile(hash, fileId)
         notifyViewedChange()
-      } catch {
-        toast?.showToast({ message: t('Error'), severity: 'error' })
-      }
-    }
-
-    const showFfp = async (fileId: number, fileName: string) => {
-      try {
-        const data = await fetchFfp(hash, fileId)
-        const video = data.streams?.find(stream => stream.codec_type === 'video')
-        const audio = data.streams?.find(stream => stream.codec_type === 'audio')
-        const duration = data.format?.duration || video?.duration
-        const parts = [
-          data.format?.format_name,
-          video ? `${video.codec_name || '?'}${video.width && video.height ? ` ${video.width}x${video.height}` : ''}` : null,
-          audio ? `a:${audio.codec_name || '?'}` : null,
-          duration ? `${Math.round(Number(duration))}s` : null,
-        ].filter(Boolean)
-        toast?.showToast({
-          message: `${fileName}: ${parts.join(' · ') || t('NoData', { defaultValue: 'No probe data' })}`,
-          severity: 'success',
-        })
       } catch {
         toast?.showToast({ message: t('Error'), severity: 'error' })
       }
@@ -284,11 +264,21 @@ const FilesDataGrid = memo(
                 initialTimecode={timecodeByFile.get(row.id) ?? 0}
                 trackTimecode={trackTimecode}
                 onViewedChange={notifyViewedChange}
-                onProbeMedia={() => void showFfp(row.id, row.name)}
+                onProbeMedia={() => setMediaInfo({ fileId: row.id, fileName: row.name })}
               />
             }
           />
         ))}
+
+        {mediaInfo ? (
+          <MediaInfoDialog
+            open
+            hash={hash}
+            fileId={mediaInfo.fileId}
+            fileName={mediaInfo.fileName}
+            onClose={() => setMediaInfo(null)}
+          />
+        ) : null}
       </div>
     )
   },

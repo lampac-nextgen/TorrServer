@@ -11,12 +11,24 @@ export const playlistAllUrl = (opts?: { category?: string; search?: string }): s
 }
 
 export interface FfpStream {
+  index?: number
   codec_type?: string
   codec_name?: string
+  codec_long_name?: string
+  profile?: string
   width?: number
   height?: number
+  display_aspect_ratio?: string
+  pix_fmt?: string
+  r_frame_rate?: string
   bit_rate?: string
   duration?: string
+  sample_rate?: string
+  channels?: number
+  channel_layout?: string
+  color_space?: string
+  color_transfer?: string
+  color_primaries?: string
   tags?: Record<string, string>
   [key: string]: unknown
 }
@@ -24,6 +36,7 @@ export interface FfpStream {
 export interface FfpProbeResult {
   format?: {
     format_name?: string
+    format_long_name?: string
     duration?: string
     bit_rate?: string
     size?: string

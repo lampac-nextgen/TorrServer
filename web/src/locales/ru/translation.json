@@ -128,7 +128,7 @@
   "Reload": "Перезагрузить",
   "SomethingWentWrong": "Что-то пошло не так",
   "UnexpectedError": "Неожиданная ошибка",
-  "Resolution": "Разреш.",
+  "Resolution": "Разрешение",
   "Save": "Сохранить",
   "Saved": "Сохранено",
   "ScrollDown": "прокрутите вниз",
@@ -423,5 +423,18 @@
   "SpeedTest": "Тест скорости",
   "NoData": "Нет данных",
   "SpeedTestSize": "Размер теста",
-  "SpeedTestRun": "Запуск"
+  "SpeedTestRun": "Запуск",
+  "FfpContainer": "Контейнер",
+  "FfpDuration": "Длительность",
+  "FfpBitrate": "Битрейт",
+  "FfpVideo": "Видео",
+  "FfpAudio": "Аудио",
+  "FfpSubtitle": "Субтитры",
+  "FfpOther": "Прочее",
+  "FfpCodec": "Кодек",
+  "FfpPixel": "Пиксели",
+  "FfpFps": "Кадр/с",
+  "FfpColor": "Цвет",
+  "FfpSampleRate": "Частота",
+  "FfpChannels": "Каналы"
 }

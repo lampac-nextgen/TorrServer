@@ -423,5 +423,18 @@
   "SpeedTest": "Speed test",
   "NoData": "No probe data",
   "SpeedTestSize": "Test size",
-  "SpeedTestRun": "Run"
+  "SpeedTestRun": "Run",
+  "FfpContainer": "Container",
+  "FfpDuration": "Duration",
+  "FfpBitrate": "Bitrate",
+  "FfpVideo": "Video",
+  "FfpAudio": "Audio",
+  "FfpSubtitle": "Subtitles",
+  "FfpOther": "Other",
+  "FfpCodec": "Codec",
+  "FfpPixel": "Pixel format",
+  "FfpFps": "FPS",
+  "FfpColor": "Color",
+  "FfpSampleRate": "Sample rate",
+  "FfpChannels": "Channels"
 }
