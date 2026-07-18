@@ -42,9 +42,11 @@ export const PLAYER_DIALOG_MOBILE: CSSProperties = {
   borderRadius: 0,
 }
 
-/** Sheet L + stable height so short tabs (Storage) don't collapse the window. */
+/** Settings — fixed height so tab switches (Storage ↔ Network ↔ Torznab) don't resize the window. */
 export const DIALOG_SETTINGS: CSSProperties = {
   ...DIALOG_SHEET_L,
+  height: 'min(78dvh, 44rem)',
+  maxHeight: 'min(78dvh, 44rem)',
   minHeight: 'min(78dvh, 44rem)',
 }
 

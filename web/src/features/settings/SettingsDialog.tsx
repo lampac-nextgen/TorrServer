@@ -369,23 +369,16 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
       onClose={onClose}
       size='lg'
       fullScreen={isFullScreenBreakpoint}
+      dialogClassName='flex flex-col overflow-hidden'
       dialogStyle={isMobile ? undefined : DIALOG_SETTINGS}
     >
-      <Modal.Header>
+      <Modal.Header className='shrink-0'>
         <Modal.Heading>{t('SettingsDialog.Settings')}</Modal.Heading>
         <Modal.CloseTrigger aria-label={t('Close')} />
       </Modal.Header>
-      <Modal.Body
-        className={
-          loading
-            ? undefined
-            : isMobile
-              ? 'flex min-h-0 flex-col overflow-hidden'
-              : 'flex min-h-[min(60dvh,32rem)] flex-col overflow-hidden'
-        }
-      >
+      <Modal.Body className='flex min-h-0 flex-1 flex-col overflow-hidden'>
         {loading ? (
-          <div className='grid place-items-center py-16'>
+          <div className='grid min-h-0 flex-1 place-items-center'>
             <Spinner size='lg' />
           </div>
         ) : isMobile ? (
@@ -450,7 +443,11 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
           </Tabs.Root>
         )}
       </Modal.Body>
-      <Modal.Footer className={isMobile ? 'flex flex-col-reverse gap-2 sm:flex-row sm:justify-end' : undefined}>
+      <Modal.Footer
+        className={
+          isMobile ? 'flex shrink-0 flex-col-reverse gap-2 sm:flex-row sm:justify-end' : 'shrink-0'
+        }
+      >
         <div className={isMobile ? 'grid grid-cols-2 gap-2' : 'contents'}>
           <Button
             onPress={() => void handleResetDefaults()}

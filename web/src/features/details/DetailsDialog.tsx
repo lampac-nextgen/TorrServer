@@ -8,7 +8,7 @@ import {
   useMediaQuery,
   useOverlayState,
 } from '@heroui/react'
-import { Pencil, X } from 'lucide-react'
+import { ImagePlus, Pencil, X } from 'lucide-react'
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import ptt from 'parse-torrent-title'
 import { useTranslation } from 'react-i18next'
@@ -29,6 +29,7 @@ import { toPlayableFile } from 'shared/torrent/toPlayableFile'
 
 import FileBrowser from './FileBrowser'
 import CacheMapDialog from './CacheMapDialog'
+import EditPosterDialog from './EditPosterDialog'
 import SpeedCharts from './SpeedCharts'
 import TorrentActions from './TorrentActions'
 import TorrentCache from './TorrentCache'
@@ -45,14 +46,18 @@ export interface DetailsDialogProps {
 type DetailsTab = 'overview' | 'files' | 'cache'
 
 function StatWidget({ label, value }: { label: string; value: string }) {
+  const shown = value || '—'
   return (
-    <div className='min-w-0 flex-1 rounded-lg border border-border bg-surface-secondary px-2.5 py-2 text-center sm:min-w-[104px] sm:px-3'>
-      <span className='block text-[11px] leading-tight text-muted sm:text-xs'>{label}</span>
+    <div className='min-w-0 rounded-lg border border-border bg-surface-secondary px-2.5 py-2 text-center sm:min-w-[104px] sm:px-3'>
+      <span className='block truncate text-[11px] leading-tight text-muted sm:text-xs' title={label}>
+        {label}
+      </span>
+      {/* Single-line value — long CacheFilled must not wrap and grow the hero. */}
       <span
-        className='mt-1 block break-words text-sm font-bold tabular-nums text-foreground sm:text-base'
-        title={value}
+        className='mt-1 block h-5 truncate text-sm leading-5 font-bold tabular-nums text-foreground sm:h-6 sm:text-base sm:leading-6'
+        title={shown}
       >
-        {value || '—'}
+        {shown}
       </span>
     </div>
   )
@@ -115,6 +120,7 @@ export default function DetailsDialog({
   const [selectedSeason, setSelectedSeason] = useState<number | undefined>()
   const [isSnakeDebugMode, setIsSnakeDebugMode] = useLocalBoolPref('isSnakeDebugMode')
   const [cacheMapOpen, setCacheMapOpen] = useState(false)
+  const [posterEditOpen, setPosterEditOpen] = useState(false)
 
   const {
     poster,
@@ -238,8 +244,15 @@ export default function DetailsDialog({
 
             <Modal.Body className='flex min-h-0 flex-1 flex-col gap-4 overflow-hidden'>
               <div className='flex shrink-0 flex-col gap-4 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-4 sm:flex-row sm:items-start'>
-                {poster ? (
-                  <div className='mx-auto grid aspect-[2/3] w-full max-w-[120px] shrink-0 place-items-center overflow-hidden rounded-lg bg-surface-secondary sm:mx-0'>
+                {/* Always reserve poster column so late poster URL doesn't reflow the stats grid. */}
+                <button
+                  type='button'
+                  onClick={() => setPosterEditOpen(true)}
+                  aria-label={t('AddDialog.AddPosterLinkInput')}
+                  title={t('AddDialog.AddPosterLinkInput')}
+                  className='group relative mx-auto grid aspect-[2/3] w-full max-w-[120px] shrink-0 place-items-center overflow-hidden rounded-lg bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2 sm:mx-0'
+                >
+                  {poster ? (
                     <img
                       src={poster}
                       alt=''
@@ -248,20 +261,29 @@ export default function DetailsDialog({
                         event.currentTarget.style.display = 'none'
                       }}
                     />
-                  </div>
-                ) : null}
+                  ) : (
+                    <ImagePlus className='size-8 text-muted' aria-hidden />
+                  )}
+                  <span className='pointer-events-none absolute inset-0 grid place-items-center bg-black/0 px-2 text-center text-xs font-medium text-white opacity-0 transition-opacity group-hover:bg-black/45 group-hover:opacity-100 group-focus-visible:bg-black/45 group-focus-visible:opacity-100'>
+                    {t('AddDialog.AddPosterLinkInput')}
+                  </span>
+                </button>
 
                 <div className='min-w-0 flex-1'>
                   <h2 className='mb-1 break-words text-lg font-bold text-foreground'>{displayTitle}</h2>
-                  {subtitle ? <p className='mb-3 text-sm text-muted'>{subtitle}</p> : null}
+                  {/* Reserve subtitle line so title-only torrents don't collapse hero height. */}
+                  <p className={`mb-3 truncate text-sm ${subtitle ? 'text-muted' : 'invisible'}`} aria-hidden={!subtitle}>
+                    {subtitle || '\u00a0'}
+                  </p>
 
-                  <div className='grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'>
+                  {/* 9 slots → 2 rows on xl (5+4). min-h locks row stack so value updates never grow hero. */}
+                  <div className='grid grid-cols-2 gap-2 sm:grid-cols-3 sm:min-h-[11.5rem] lg:grid-cols-4 lg:min-h-[7.75rem] xl:grid-cols-5 xl:min-h-[7.75rem]'>
                     <StatWidget label={t('DownloadSpeed')} value={humanizeSpeed(downloadSpeed)} />
                     <StatWidget label={t('UploadSpeed')} value={humanizeSpeed(uploadSpeed)} />
                     <StatWidget label={t('Peers')} value={getPeerString(torrent) || '—'} />
                     <StatWidget label={t('Size')} value={humanizeSize(torrentSize)} />
                     <StatWidget label={t('Status')} value={statusLabel(stat)} />
-                    {category ? <StatWidget label={t('Category')} value={category} /> : null}
+                    <StatWidget label={t('Category')} value={category || '—'} />
                     <StatWidget
                       label={t('PiecesCount')}
                       value={cache.PiecesCount != null ? String(cache.PiecesCount) : '—'}
@@ -358,40 +380,48 @@ export default function DetailsDialog({
 
                 <Tabs.Panel id='files' className='min-h-0 flex-1 overflow-y-auto overscroll-contain pt-4'>
                   <div className='rounded-xl bg-surface-secondary p-4'>
-                    {isLoadingMetadata ? (
-                      <p className='text-sm text-muted'>{t('TorrentGettingInfo')}</p>
-                    ) : (
-                      <>
+                    {/* Reserve chip-row height while metadata loads or when multi-season — list won't jump. */}
+                    {hasMultipleSeasons || isLoadingMetadata ? (
+                      <div className='mb-4 min-h-11'>
                         {hasMultipleSeasons ? (
-                          <div className='mb-4'>
-                            <ToggleButtonGroup
-                              selectionMode='single'
-                              selectedKeys={selectedSeason != null ? [String(selectedSeason)] : []}
-                              onSelectionChange={keys => {
-                                const value = [...keys][0]
-                                if (value != null) setSelectedSeason(Number(value))
-                              }}
-                              className='flex flex-wrap gap-2'
-                            >
-                              {seasonList!.map(season => (
-                                <ToggleButton key={season} id={String(season)}>
-                                  {t('Season')} {season}
-                                </ToggleButton>
-                              ))}
-                            </ToggleButtonGroup>
-                          </div>
+                          <ToggleButtonGroup
+                            selectionMode='single'
+                            selectedKeys={selectedSeason != null ? [String(selectedSeason)] : []}
+                            onSelectionChange={keys => {
+                              const value = [...keys][0]
+                              if (value != null) setSelectedSeason(Number(value))
+                            }}
+                            className='flex flex-wrap gap-2'
+                          >
+                            {seasonList!.map(season => (
+                              <ToggleButton key={season} id={String(season)}>
+                                {t('Season')} {season}
+                              </ToggleButton>
+                            ))}
+                          </ToggleButtonGroup>
                         ) : null}
+                      </div>
+                    ) : null}
 
-                        <FileBrowser
-                          hash={hash}
-                          playableFileList={playableFileList || []}
-                          viewedFileList={viewedFileList}
-                          selectedSeason={selectedSeason}
-                          seasonAmount={seasonList}
-                          allFileStats={fileStats}
-                          onViewedChange={refreshViewed}
-                        />
-                      </>
+                    {isLoadingMetadata ? (
+                      <div className='space-y-2' aria-busy aria-label={t('TorrentGettingInfo')}>
+                        {Array.from({ length: 4 }, (_, i) => (
+                          <div
+                            key={i}
+                            className='h-[4.5rem] animate-pulse rounded-xl border border-border bg-surface sm:h-[3.25rem]'
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <FileBrowser
+                        hash={hash}
+                        playableFileList={playableFileList || []}
+                        viewedFileList={viewedFileList}
+                        selectedSeason={selectedSeason}
+                        seasonAmount={seasonList}
+                        allFileStats={fileStats}
+                        onViewedChange={refreshViewed}
+                      />
                     )}
                   </div>
                 </Tabs.Panel>
@@ -430,6 +460,11 @@ export default function DetailsDialog({
         cache={cache}
         isSnakeDebugMode={isSnakeDebugMode}
         onSnakeDebugModeChange={setIsSnakeDebugMode}
+      />
+      <EditPosterDialog
+        torrent={torrent}
+        open={posterEditOpen}
+        onClose={() => setPosterEditOpen(false)}
       />
     </Modal.Root>
   )
