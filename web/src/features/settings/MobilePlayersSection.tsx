@@ -1,5 +1,5 @@
 import { Clapperboard } from 'lucide-react'
-import { Description, Label, Link, Switch } from '@heroui/react'
+import { Description, Link, Switch } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
 
 import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
@@ -26,12 +26,12 @@ function PlayerSwitch({
   onChange: (checked: boolean) => void
 }) {
   return (
-    <div className='flex min-h-12 items-start justify-between gap-3 sm:gap-4'>
-      <div className='min-w-0 flex-1 pr-2 sm:pr-4'>
-        <Label className='text-sm leading-snug text-wrap'>{label}</Label>
-        <Description className='mt-1 text-wrap leading-relaxed'>{helper}</Description>
+    <div className='flex min-h-12 items-start justify-between gap-4 py-1.5'>
+      <div className='min-w-0 flex-1'>
+        <p className='block text-sm font-medium leading-snug text-foreground'>{label}</p>
+        <p className='mt-1.5 block text-sm leading-relaxed text-muted'>{helper}</p>
       </div>
-      <Switch isSelected={checked} onChange={onChange} className='shrink-0'>
+      <Switch isSelected={checked} onChange={onChange} className='mt-0.5 shrink-0'>
         <Switch.Content>
           <Switch.Control>
             <Switch.Thumb />

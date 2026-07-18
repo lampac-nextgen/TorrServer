@@ -79,7 +79,7 @@ export default function NetworkSettingsPanel({
       <p className='text-xs font-semibold tracking-wide text-muted uppercase'>{t('SettingsDialog.ProMode')}</p>
 
       <SettingsSection icon={<Radio />} title={t('SettingsDialog.SectionProtocols')}>
-        <div className='grid gap-x-6 gap-y-3 sm:grid-cols-2'>
+        <div className='grid gap-x-8 gap-y-4 sm:grid-cols-2'>
           <SettingSwitch
             id='DisableTCP'
             label='TCP'

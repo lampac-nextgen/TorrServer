@@ -1,4 +1,4 @@
-import { Description, Label, Switch } from '@heroui/react'
+import { Switch } from '@heroui/react'
 
 /** Keys whose on-disk value is the inverse of what the switch shows (switch ON = feature enabled). */
 export const DISABLE_SWITCH_IDS = new Set([
@@ -18,17 +18,20 @@ export interface SettingSwitchProps {
   onChange: (id: string, checked: boolean) => void
 }
 
-/** Reusable labeled toggle row shared across settings panels. */
+/**
+ * Labeled toggle row. Uses plain block text (not HeroUI Label+Description inline pairing) so the
+ * title and helper never run together on one line — that was especially visible in Network protocols.
+ */
 export function SettingSwitch({ id, label, helper, checked, onChange }: SettingSwitchProps) {
   return (
-    <div className='flex min-h-12 items-start justify-between gap-3 py-1 sm:gap-4'>
-      <div className='min-w-0 flex-1 pr-2 sm:pr-4'>
-        <Label htmlFor={id} className='text-sm leading-snug text-wrap'>
+    <div className='flex min-h-12 items-start justify-between gap-4 py-1.5'>
+      <div className='min-w-0 flex-1'>
+        <label htmlFor={id} className='block text-sm font-medium leading-snug text-foreground'>
           {label}
-        </Label>
-        {helper ? <Description className='mt-1 text-wrap leading-relaxed'>{helper}</Description> : null}
+        </label>
+        {helper ? <p className='mt-1.5 block text-sm leading-relaxed text-muted'>{helper}</p> : null}
       </div>
-      <Switch id={id} isSelected={checked} onChange={value => onChange(id, value)} className='shrink-0'>
+      <Switch id={id} isSelected={checked} onChange={value => onChange(id, value)} className='mt-0.5 shrink-0'>
         <Switch.Content>
           <Switch.Control>
             <Switch.Thumb />
