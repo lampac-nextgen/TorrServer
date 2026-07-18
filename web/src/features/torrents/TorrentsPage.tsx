@@ -90,11 +90,38 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
     return listContinueWatching(hashes).slice(0, 6)
   }, [torrents, continueTick])
 
+  const visibleHashKey = useMemo(() => visibleTorrents.map(torrent => torrent.hash).join(','), [visibleTorrents])
+  const prevHashesRef = useRef<Set<string>>(new Set())
+  const prevViewRef = useRef({ sortABC, sortCategory, libraryQuery })
+
   useGSAP(
     () => {
       if (prefersReducedMotion()) return
-      const tiles = gridRef.current?.querySelectorAll('.torrent-card')
-      if (!tiles?.length) return
+      const root = gridRef.current
+      if (!root) return
+
+      const currentHashes = visibleHashKey ? visibleHashKey.split(',') : []
+      const prevHashes = prevHashesRef.current
+      const viewChanged =
+        prevViewRef.current.sortABC !== sortABC ||
+        prevViewRef.current.sortCategory !== sortCategory ||
+        prevViewRef.current.libraryQuery !== libraryQuery
+
+      prevViewRef.current = { sortABC, sortCategory, libraryQuery }
+
+      let tiles: Element[] = []
+      if (viewChanged || prevHashes.size === 0) {
+        tiles = Array.from(root.querySelectorAll('.torrent-card'))
+      } else {
+        const newHashes = currentHashes.filter(hash => hash && !prevHashes.has(hash))
+        tiles = newHashes
+          .map(hash => root.querySelector(`.torrent-card[data-hash="${CSS.escape(hash)}"]`))
+          .filter((node): node is Element => node != null)
+      }
+
+      prevHashesRef.current = new Set(currentHashes)
+
+      if (!tiles.length) return
       gsap.from(tiles, {
         opacity: 0,
         y: 18,
@@ -104,7 +131,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
         clearProps: 'opacity,transform',
       })
     },
-    { scope: gridRef, dependencies: [visibleTorrents.length, sortABC, sortCategory, libraryQuery] },
+    { scope: gridRef, dependencies: [visibleHashKey, sortABC, sortCategory, libraryQuery] },
   )
 
   const toggleSelect = (hash: string) => {
@@ -125,6 +152,10 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
     const hashes = [...selectedHashes]
     if (!hashes.length) return
     const mutate = action === 'drop' ? dropTorrent : removeTorrent
+    const previous = queryClient.getQueryData<TorrentStat[]>(TORRENTS_QUERY_KEY)
+    const remove = new Set(hashes)
+    queryClient.setQueryData<TorrentStat[]>(TORRENTS_QUERY_KEY, prev => prev?.filter(item => !remove.has(item.hash)))
+    exitSelection()
     try {
       await Promise.all(hashes.map(hash => mutate(hash)))
       await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
@@ -132,8 +163,8 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
         message: action === 'drop' ? t('DropTorrent') : t('Delete'),
         severity: 'success',
       })
-      exitSelection()
     } catch {
+      if (previous) queryClient.setQueryData(TORRENTS_QUERY_KEY, previous)
       toast?.showToast({ message: t('Error'), severity: 'error' })
     }
   }

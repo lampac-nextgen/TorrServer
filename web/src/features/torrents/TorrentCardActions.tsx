@@ -79,12 +79,18 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
     const successMessage = action === 'drop' ? t('DropTorrent') : t('Delete')
     if (!mutate) return
 
+    const previous = queryClient.getQueryData<TorrentStat[]>(TORRENTS_QUERY_KEY)
+    queryClient.setQueryData<TorrentStat[]>(TORRENTS_QUERY_KEY, prev => prev?.filter(item => item.hash !== hash))
+
     void mutate(hash)
       .then(async () => {
         toast?.showToast({ message: successMessage, severity: 'success' })
         await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
       })
-      .catch(() => toast?.showToast({ message: t('Error'), severity: 'error' }))
+      .catch(() => {
+        if (previous) queryClient.setQueryData(TORRENTS_QUERY_KEY, previous)
+        toast?.showToast({ message: t('Error'), severity: 'error' })
+      })
   }
 
   const overlayButtonClass =
