@@ -177,11 +177,7 @@ function TorrentActions({
   }
 
   const confirmHeading =
-    pendingConfirm === 'drop'
-      ? t('DropTorrent')
-      : pendingConfirm === 'delete'
-        ? t('Delete')
-        : t('RemoveViews')
+    pendingConfirm === 'drop' ? t('DropTorrent') : pendingConfirm === 'delete' ? t('Delete') : t('RemoveViews')
   const confirmBody =
     pendingConfirm === 'drop'
       ? t('ConfirmDropTorrent')

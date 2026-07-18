@@ -366,11 +366,7 @@ export const buildFocusModel = (
 }
 
 /** Visible cell budget for the 1:1 window (cols × rows). */
-export const resolveFocusVisibleCells = (
-  containerWidth: number,
-  isMini = false,
-  containerHeight = 0,
-): number => {
+export const resolveFocusVisibleCells = (containerWidth: number, isMini = false, containerHeight = 0): number => {
   const defaultRows = isMini ? SNAKE_FOCUS_TARGET_ROWS_MINI : SNAKE_FOCUS_TARGET_ROWS
   const cellFootprint = isMini ? 26 + 5 : 20 + 4
   if (!containerWidth || containerWidth <= 0) return 10 * defaultRows

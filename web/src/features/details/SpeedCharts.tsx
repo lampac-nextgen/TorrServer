@@ -46,9 +46,7 @@ export default function SpeedCharts({ downloadSpeed, uploadSpeed, compact = fals
   const uploadPath = useMemo(() => buildAreaPath(uploadHistory, peak), [uploadHistory, peak])
 
   return (
-    <div
-      className={`w-full min-w-0 rounded-xl border border-border bg-surface-secondary ${compact ? 'p-2.5' : 'p-4'}`}
-    >
+    <div className={`w-full min-w-0 rounded-xl border border-border bg-surface-secondary ${compact ? 'p-2.5' : 'p-4'}`}>
       {compact ? null : (
         <div className='mb-3 flex flex-wrap items-center gap-4'>
           <div className='flex items-center gap-2'>

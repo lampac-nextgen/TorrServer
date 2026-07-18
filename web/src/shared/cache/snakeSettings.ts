@@ -20,20 +20,22 @@ export interface SnakePieceSettings {
 }
 
 /** Layout-only defaults — colors come from {@link resolveSnakeSettings} via CSS vars. */
-const layoutDefaults: Record<SnakeVariant, Pick<SnakePieceSettings, 'borderWidth' | 'pieceSize' | 'gapBetweenPieces' | 'cacheMaxHeight'>> =
-  {
-    default: {
-      borderWidth: 1,
-      pieceSize: 20,
-      gapBetweenPieces: 4,
-    },
-    mini: {
-      cacheMaxHeight: 420,
-      borderWidth: 2,
-      pieceSize: 26,
-      gapBetweenPieces: 5,
-    },
-  }
+const layoutDefaults: Record<
+  SnakeVariant,
+  Pick<SnakePieceSettings, 'borderWidth' | 'pieceSize' | 'gapBetweenPieces' | 'cacheMaxHeight'>
+> = {
+  default: {
+    borderWidth: 1,
+    pieceSize: 20,
+    gapBetweenPieces: 4,
+  },
+  mini: {
+    cacheMaxHeight: 420,
+    borderWidth: 2,
+    pieceSize: 26,
+    gapBetweenPieces: 5,
+  },
+}
 
 /** Fallback when CSS vars are unavailable (SSR / tests). Matches forest palette. */
 const forestFallback = {

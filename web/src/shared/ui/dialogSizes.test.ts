@@ -18,7 +18,9 @@ describe('dialogSizes', () => {
 
   it('extends the large sheet with a stable settings height', () => {
     expect(DIALOG_SETTINGS.minWidth).toBe(DIALOG_SHEET_L.minWidth)
-    expect(DIALOG_SETTINGS.minHeight).toBe('min(78dvh, 44rem)')
+    expect(DIALOG_SETTINGS.height).toBe('min(72dvh, 40rem)')
+    expect(DIALOG_SETTINGS.maxHeight).toBe('min(72dvh, 40rem)')
+    expect(DIALOG_SETTINGS.minHeight).toBe('min(72dvh, 40rem)')
   })
 
   it('exports player normal and expanded sizes', () => {

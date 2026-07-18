@@ -5,12 +5,12 @@ import { Button, Input, Label, Spinner, TextField, useMediaQuery } from '@heroui
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CheckSquare, CloudOff, FolderPlus, ListMusic, Search, SearchX, Share2, Trash2, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import type { TorrentStat } from 'shared/api/types'
+import type { TorrentStat, ViewedFileEntry } from 'shared/api/types'
 import { filteredPlaylistAllUrl } from 'shared/api/extras'
 import { dropTorrent, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { useLocalJsonPref } from 'shared/hooks/useLocalPref'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
-import { ALL_VIEWED_QUERY_KEY, listAllViewedEntries } from 'shared/api/viewed'
+import { ALL_VIEWED_QUERY_KEY, listAllViewedEntries, remViewedFile } from 'shared/api/viewed'
 import { buildContinueWatchShelf } from 'shared/lib/serverContinueWatching'
 import { removeContinueWatching } from 'shared/lib/continueWatching'
 import { queryMax } from 'shared/theme/breakpoints'
@@ -89,9 +89,10 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
     staleTime: 15_000,
   })
 
-  const [smartCollection, setSmartCollection] = useLocalJsonPref<
-    'all' | 'active' | 'noPoster' | 'unwatched'
-  >('smartCollection', 'all')
+  const [smartCollection, setSmartCollection] = useLocalJsonPref<'all' | 'active' | 'noPoster' | 'unwatched'>(
+    'smartCollection',
+    'all',
+  )
   const [exportOpen, setExportOpen] = useState(false)
 
   const visibleTorrents = useMemo(() => {
@@ -100,7 +101,8 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
     let list = sorted
     if (q) {
       list = list.filter(torrent => {
-        const hay = `${torrent.title || ''} ${torrent.name || ''} ${torrent.category || ''} ${torrent.hash}`.toLowerCase()
+        const hay =
+          `${torrent.title || ''} ${torrent.name || ''} ${torrent.category || ''} ${torrent.hash}`.toLowerCase()
         return hay.includes(q)
       })
     }
@@ -305,9 +307,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
           <p className='text-lg font-semibold text-foreground'>
             {unauthorized ? t('AuthRequiredTitle') : t('NoServerConnection')}
           </p>
-          {unauthorized ? (
-            <p className='max-w-md text-sm text-muted'>{t('AuthRequiredHint')}</p>
-          ) : null}
+          {unauthorized ? <p className='max-w-md text-sm text-muted'>{t('AuthRequiredHint')}</p> : null}
           <Button variant='primary' onPress={() => void refetch()}>
             {t('Retry')}
           </Button>
@@ -367,32 +367,44 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
               const torrent = torrents.find(item => item.hash === entry.hash)
               if (!torrent) return null
               return (
-                <button
+                <div
                   key={`${entry.hash}:${entry.fileIndex}`}
-                  type='button'
-                  className='flex min-w-[220px] max-w-[280px] shrink-0 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-left hover-fine:bg-surface-secondary'
-                  onClick={() => {
-                    setResumePlay({ fileIndex: entry.fileIndex, timecode: entry.timecode })
-                    setDetailsTorrent(torrent)
-                  }}
+                  className='flex min-w-[220px] max-w-[280px] shrink-0 items-center gap-1 rounded-xl border border-border bg-surface pr-1 text-left hover-fine:bg-surface-secondary'
                 >
-                  <div className='min-w-0 flex-1'>
-                    <p className='truncate text-sm font-semibold'>{entry.title}</p>
-                    <p className='truncate text-xs text-muted'>{entry.fileName}</p>
-                  </div>
                   <button
                     type='button'
-                    className='rounded-md p-1 text-muted hover-fine:bg-surface-tertiary hover-fine:text-foreground'
+                    className='min-w-0 flex-1 px-3 py-2 text-left'
+                    onClick={() => {
+                      setResumePlay({ fileIndex: entry.fileIndex, timecode: entry.timecode })
+                      setDetailsTorrent(torrent)
+                    }}
+                  >
+                    <p className='truncate text-sm font-semibold'>{entry.title}</p>
+                    <p className='truncate text-xs text-muted'>{entry.fileName}</p>
+                  </button>
+                  <button
+                    type='button'
+                    className='shrink-0 rounded-md p-1.5 text-muted hover-fine:bg-surface-tertiary hover-fine:text-foreground'
                     aria-label={t('Clear')}
-                    onClick={event => {
-                      event.stopPropagation()
+                    onClick={() => {
                       removeContinueWatching(entry.hash, entry.fileIndex)
                       setContinueTick(v => v + 1)
+                      queryClient.setQueryData<ViewedFileEntry[]>(ALL_VIEWED_QUERY_KEY, old =>
+                        (old || []).filter(
+                          row => !(row.hash === entry.hash && row.file_index === entry.fileIndex),
+                        ),
+                      )
+                      void remViewedFile(entry.hash, entry.fileIndex)
+                        .then(() => queryClient.invalidateQueries({ queryKey: ALL_VIEWED_QUERY_KEY }))
+                        .catch(() => {
+                          void queryClient.invalidateQueries({ queryKey: ALL_VIEWED_QUERY_KEY })
+                          toast?.showToast({ message: t('Error'), severity: 'error' })
+                        })
                     }}
                   >
                     <X {...iconMenu} aria-hidden />
                   </button>
-                </button>
+                </div>
               )
             })}
           </div>
@@ -466,11 +478,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
 
       <Suspense fallback={lazyDialogFallback}>
         <DialogErrorBoundary onClose={() => setExportOpen(false)}>
-          <ExportLibraryDialog
-            open={exportOpen}
-            onClose={() => setExportOpen(false)}
-            torrents={visibleTorrents}
-          />
+          <ExportLibraryDialog open={exportOpen} onClose={() => setExportOpen(false)} torrents={visibleTorrents} />
         </DialogErrorBoundary>
       </Suspense>
     </>

@@ -13,12 +13,7 @@ import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
 import { OPEN_SETTINGS_EVENT, type SettingsDeepLinkTab } from 'shared/lib/settingsEvents'
 import { MEDIA_SHORT_VIEWPORT, queryMax } from 'shared/theme/breakpoints'
 import { THEME_PALETTE_SWATCHES } from 'shared/theme/paletteSwatches'
-import {
-  THEME_MODES,
-  THEME_PALETTE_IDS,
-  useThemePreference,
-  type ThemePalette,
-} from 'shared/theme/useThemePreference'
+import { THEME_MODES, THEME_PALETTE_IDS, useThemePreference, type ThemePalette } from 'shared/theme/useThemePreference'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import { TorrentsPage } from 'features/torrents'
 import { iconBtn } from 'shared/ui/controlClasses'
@@ -246,12 +241,7 @@ export default function Shell() {
           <ThemeIcon {...iconNav} />
         </HeaderIconButton>
 
-        <PaletteMenu
-          current={palette}
-          label={t('ThemePalette')}
-          onChange={setPalette}
-          labels={paletteLabels}
-        />
+        <PaletteMenu current={palette} label={t('ThemePalette')} onChange={setPalette} labels={paletteLabels} />
 
         <LanguageMenu
           currentLang={LANG_CYCLE.includes(currentLang as (typeof LANG_CYCLE)[number]) ? currentLang : 'en'}

@@ -80,7 +80,6 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
   const [settings, setLocalSettings] = useState<BTSets>({ ...defaultSettings })
   const [cacheSizeMb, setCacheSizeMb] = useState(defaultSettings.CacheSize ?? 64)
   const [gstConfig, setGstConfig] = useState<GStreamerConfig>(emptyGstConfig())
-  const [gstDefaults, setGstDefaults] = useState<GStreamerConfig>(emptyGstConfig())
   const [storageBackends, setStorageBackends] = useState<StorageSettings>(defaultStorageSettings())
   /** False when `/storage/settings` failed — Save still works for BTSets/GST; storage write is skipped. */
   const [storageLoadedOk, setStorageLoadedOk] = useState(false)
@@ -172,7 +171,6 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
       const data = await getGstSettings(signal)
       if (!data.built_in) return
       setGstConfig({ ...emptyGstConfig(), ...(data.config || {}) })
-      setGstDefaults({ ...emptyGstConfig(), ...(data.defaults || {}) })
     } catch {
       // GST is optional — not built in on this platform/build.
     }
@@ -358,7 +356,6 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
                 void resetGstSettings()
                   .then(data => {
                     setGstConfig({ ...emptyGstConfig(), ...(data.config || data.defaults || {}) })
-                    setGstDefaults({ ...emptyGstConfig(), ...(data.defaults || {}) })
                     toast?.showToast({ message: t('SettingsDialog.ResetToDefault'), severity: 'success' })
                   })
                   .catch(() => toast?.showToast({ message: t('Error'), severity: 'error' }))
@@ -491,7 +488,13 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
             >
               {t('SettingsDialog.ResetToDefault')}
             </Button>
-            <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName} autoFocus>
+            <Button
+              onPress={onClose}
+              isDisabled={saving}
+              variant='secondary'
+              className={footerButtonClassName}
+              autoFocus
+            >
               {t('Cancel')}
             </Button>
             <Button

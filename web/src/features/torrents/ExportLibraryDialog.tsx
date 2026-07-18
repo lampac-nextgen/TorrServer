@@ -66,13 +66,28 @@ export default function ExportLibraryDialog({ open, onClose, torrents }: ExportL
       <Modal.Body className='space-y-3'>
         <p className='text-sm text-muted'>{torrents.length}</p>
         <div className='flex flex-col gap-2'>
-          <Button variant='secondary' className='min-h-11' onPress={() => void copy(magnets)} isDisabled={!torrents.length}>
+          <Button
+            variant='secondary'
+            className='min-h-11'
+            onPress={() => void copy(magnets)}
+            isDisabled={!torrents.length}
+          >
             {t('ExportMagnets')}
           </Button>
-          <Button variant='secondary' className='min-h-11' onPress={() => void copy(torrs)} isDisabled={!torrents.length}>
+          <Button
+            variant='secondary'
+            className='min-h-11'
+            onPress={() => void copy(torrs)}
+            isDisabled={!torrents.length}
+          >
             {t('ExportTorrs')}
           </Button>
-          <Button variant='secondary' className='min-h-11' onPress={() => void copy(json)} isDisabled={!torrents.length}>
+          <Button
+            variant='secondary'
+            className='min-h-11'
+            onPress={() => void copy(json)}
+            isDisabled={!torrents.length}
+          >
             {t('ExportJson')}
           </Button>
         </div>

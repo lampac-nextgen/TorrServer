@@ -24,9 +24,7 @@ export default function CacheHeatSparkline({ filled, capacity }: CacheHeatSparkl
     const w = 120
     const h = 28
     const step = w / (HISTORY - 1)
-    return history
-      .map((v, i) => `${i === 0 ? 'M' : 'L'} ${i * step},${h - v * h}`)
-      .join(' ')
+    return history.map((v, i) => `${i === 0 ? 'M' : 'L'} ${i * step},${h - v * h}`).join(' ')
   }, [history])
 
   return (

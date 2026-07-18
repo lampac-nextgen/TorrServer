@@ -66,9 +66,7 @@ function StatWidget({ label, value, dense = false }: { label: string; value: str
       {/* Single-line value — long CacheFilled must not wrap and grow the hero. */}
       <span
         className={`mt-0.5 block truncate font-bold tabular-nums text-foreground ${
-          dense
-            ? 'h-4 text-xs leading-4'
-            : 'mt-1 h-5 text-sm leading-5 sm:h-6 sm:text-base sm:leading-6'
+          dense ? 'h-4 text-xs leading-4' : 'mt-1 h-5 text-sm leading-5 sm:h-6 sm:text-base sm:leading-6'
         }`}
         title={shown}
       >
@@ -255,11 +253,7 @@ export default function DetailsDialog({
     <>
       <StatWidget dense label={t('Status')} value={statusLabel(stat)} />
       <StatWidget dense label={t('Category')} value={category || '—'} />
-      <StatWidget
-        dense
-        label={t('PiecesCount')}
-        value={cache.PiecesCount != null ? String(cache.PiecesCount) : '—'}
-      />
+      <StatWidget dense label={t('PiecesCount')} value={cache.PiecesCount != null ? String(cache.PiecesCount) : '—'} />
       <StatWidget
         dense
         label={t('PiecesLength')}
@@ -331,7 +325,9 @@ export default function DetailsDialog({
                         </span>
                       </button>
                       <div className='min-w-0 flex-1'>
-                        <h2 className='line-clamp-2 text-base font-bold leading-snug text-foreground'>{displayTitle}</h2>
+                        <h2 className='line-clamp-2 text-base font-bold leading-snug text-foreground'>
+                          {displayTitle}
+                        </h2>
                         {subtitle ? (
                           <p className='mt-0.5 line-clamp-1 text-xs text-muted' title={subtitle}>
                             {subtitle}
@@ -426,19 +422,12 @@ export default function DetailsDialog({
                   </Tabs.List>
                 </Tabs.ListContainer>
 
-                <Tabs.Panel
-                  id='overview'
-                  className='min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pt-3'
-                >
+                <Tabs.Panel id='overview' className='min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pt-3'>
                   {isFullScreen ? (
                     <div className='grid grid-cols-2 gap-1.5 sm:grid-cols-3'>{secondaryStats}</div>
                   ) : null}
 
-                  <SpeedCharts
-                    downloadSpeed={downloadSpeed}
-                    uploadSpeed={uploadSpeed}
-                    compact
-                  />
+                  <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
 
                   <SwarmStatsPanel torrent={torrent} />
 
@@ -455,7 +444,12 @@ export default function DetailsDialog({
                         {t('Cache')}
                         <ChevronRight size={16} strokeWidth={1.75} aria-hidden />
                       </Button>
-                      <Button size='sm' variant='ghost' className='min-h-11 shrink-0' onPress={() => setCacheMapOpen(true)}>
+                      <Button
+                        size='sm'
+                        variant='ghost'
+                        className='min-h-11 shrink-0'
+                        onPress={() => setCacheMapOpen(true)}
+                      >
                         {t('DetailedCacheView.button')}
                       </Button>
                     </div>
@@ -536,10 +530,15 @@ export default function DetailsDialog({
                   </div>
                 </Tabs.Panel>
 
-                <Tabs.Panel id='cache' className='flex min-h-0 flex-1 flex-col gap-2 overflow-hidden pt-3 sm:gap-4 sm:pt-4'>
+                <Tabs.Panel
+                  id='cache'
+                  className='flex min-h-0 flex-1 flex-col gap-2 overflow-hidden pt-3 sm:gap-4 sm:pt-4'
+                >
                   <div className='flex shrink-0 items-center justify-between gap-2'>
                     {isFullScreen ? null : <p className='text-sm font-semibold text-muted'>{t('Cache')}</p>}
-                    <div className={`flex flex-wrap items-center gap-2 ${isFullScreen ? 'w-full justify-between' : ''}`}>
+                    <div
+                      className={`flex flex-wrap items-center gap-2 ${isFullScreen ? 'w-full justify-between' : ''}`}
+                    >
                       <Checkbox isSelected={isSnakeDebugMode} onChange={setIsSnakeDebugMode}>
                         <Checkbox.Content>
                           <Checkbox.Control>

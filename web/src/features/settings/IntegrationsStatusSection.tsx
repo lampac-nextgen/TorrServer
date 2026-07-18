@@ -30,9 +30,7 @@ export default function IntegrationsStatusSection() {
     </div>
   )
 
-  const webdavUrl = data?.webdav_enabled
-    ? `${getTorrServerHost()}${data.webdav_path || '/dav'}`
-    : null
+  const webdavUrl = data?.webdav_enabled ? `${getTorrServerHost()}${data.webdav_path || '/dav'}` : null
 
   return (
     <SettingsSection icon={<Cable />} title={t('IntegrationsStatus')}>

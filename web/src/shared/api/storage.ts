@@ -21,10 +21,9 @@ export const defaultStorageSettings = (): StorageSettings => ({
 
 /** Coerces unknown server values to the two known backends (safe defaults on garbage). */
 export const getStorageSettings = async (signal?: AbortSignal): Promise<StorageSettings> => {
-  const { data } = await axios.get<Partial<StorageSettings> & { viewedCount?: number }>(
-    storageSettingsHost(),
-    { signal },
-  )
+  const { data } = await axios.get<Partial<StorageSettings> & { viewedCount?: number }>(storageSettingsHost(), {
+    signal,
+  })
   return {
     settings: data.settings === 'bbolt' ? 'bbolt' : 'json',
     viewed: data.viewed === 'json' ? 'json' : 'bbolt',

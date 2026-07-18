@@ -43,13 +43,48 @@ export default function CommandPalette({
       onClose()
     }
     return [
-      { id: 'add', label: t('AddNewTorrent'), run: () => { onAdd(); onClose() } },
-      { id: 'search', label: t('Search.Search'), run: () => { onSearch(); onClose() } },
-      { id: 'status', label: t('ServerStatus'), run: () => { onServerStatus(); onClose() } },
+      {
+        id: 'add',
+        label: t('AddNewTorrent'),
+        run: () => {
+          onAdd()
+          onClose()
+        },
+      },
+      {
+        id: 'search',
+        label: t('Search.Search'),
+        run: () => {
+          onSearch()
+          onClose()
+        },
+      },
+      {
+        id: 'status',
+        label: t('ServerStatus'),
+        run: () => {
+          onServerStatus()
+          onClose()
+        },
+      },
       { id: 'settings', label: t('Search.Settings'), run: () => openSettings('primary') },
       { id: 'appearance', label: t('SettingsDialog.SectionAppearance'), run: () => openSettings('appearance') },
-      { id: 'theme', label: t('Theme'), run: () => { onToggleTheme(); onClose() } },
-      { id: 'about', label: t('About'), run: () => { onAbout(); onClose() } },
+      {
+        id: 'theme',
+        label: t('Theme'),
+        run: () => {
+          onToggleTheme()
+          onClose()
+        },
+      },
+      {
+        id: 'about',
+        label: t('About'),
+        run: () => {
+          onAbout()
+          onClose()
+        },
+      },
     ]
   }, [t, onAdd, onSearch, onAbout, onServerStatus, onToggleTheme, onClose])
 

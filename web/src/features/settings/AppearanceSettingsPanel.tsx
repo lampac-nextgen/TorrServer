@@ -6,12 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { DIALOGS_FULLSCREEN_PREF } from 'shared/hooks/useDialogFullScreen'
 import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
 import { THEME_PALETTE_SWATCHES } from 'shared/theme/paletteSwatches'
-import {
-  THEME_MODES,
-  THEME_PALETTE_IDS,
-  useThemePreference,
-  type ThemePalette,
-} from 'shared/theme/useThemePreference'
+import { THEME_MODES, THEME_PALETTE_IDS, useThemePreference, type ThemePalette } from 'shared/theme/useThemePreference'
 import { iconMenu } from 'shared/ui/iconProps'
 
 import { SettingSwitch } from './SettingSwitch'
@@ -29,8 +24,7 @@ export default function AppearanceSettingsPanel() {
   const [query, setQuery] = useState('')
 
   const labels = useMemo(
-    () =>
-      Object.fromEntries(THEME_PALETTE_IDS.map(id => [id, t(paletteLabelKey(id))])) as Record<ThemePalette, string>,
+    () => Object.fromEntries(THEME_PALETTE_IDS.map(id => [id, t(paletteLabelKey(id))])) as Record<ThemePalette, string>,
     [t],
   )
 
@@ -58,15 +52,27 @@ export default function AppearanceSettingsPanel() {
             className='flex flex-wrap gap-1'
             aria-label={t('Theme')}
           >
-            <ToggleButton id={THEME_MODES.LIGHT} onPress={() => setPreference(THEME_MODES.LIGHT)} className='min-h-11 gap-2'>
+            <ToggleButton
+              id={THEME_MODES.LIGHT}
+              onPress={() => setPreference(THEME_MODES.LIGHT)}
+              className='min-h-11 gap-2'
+            >
               <Sun {...iconMenu} aria-hidden />
               {t('ThemeLight')}
             </ToggleButton>
-            <ToggleButton id={THEME_MODES.DARK} onPress={() => setPreference(THEME_MODES.DARK)} className='min-h-11 gap-2'>
+            <ToggleButton
+              id={THEME_MODES.DARK}
+              onPress={() => setPreference(THEME_MODES.DARK)}
+              className='min-h-11 gap-2'
+            >
               <Moon {...iconMenu} aria-hidden />
               {t('ThemeDark')}
             </ToggleButton>
-            <ToggleButton id={THEME_MODES.AUTO} onPress={() => setPreference(THEME_MODES.AUTO)} className='min-h-11 gap-2'>
+            <ToggleButton
+              id={THEME_MODES.AUTO}
+              onPress={() => setPreference(THEME_MODES.AUTO)}
+              className='min-h-11 gap-2'
+            >
               <SunMoon {...iconMenu} aria-hidden />
               {t('ThemeAuto')}
             </ToggleButton>
