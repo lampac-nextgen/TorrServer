@@ -37,6 +37,7 @@ const SettingsDialog = lazy(() => import('features/settings/SettingsDialog'))
 const AboutDialog = lazy(() => import('features/about/AboutDialog'))
 const CloseServerDialog = lazy(() => import('features/system/CloseServerDialog'))
 const RemoveAllDialog = lazy(() => import('features/system/RemoveAllDialog'))
+const ServerStatusDialog = lazy(() => import('features/system/ServerStatusDialog'))
 const CategoriesDrawer = lazy(() => import('features/categories/CategoriesDrawer'))
 const PWAInstallationGuide = lazy(() => import('features/pwa/PWAInstallationGuide'))
 const AndroidInstallBanner = lazy(() => import('features/pwa/AndroidInstallBanner'))
@@ -92,6 +93,7 @@ export default function Shell() {
   const [closeServerOpen, setCloseServerOpen] = useState(false)
   const [removeAllOpen, setRemoveAllOpen] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
+  const [serverStatusOpen, setServerStatusOpen] = useState(false)
 
   const { isLoading, isError } = useTorrentsQuery()
   const isOffline = isError
@@ -160,6 +162,7 @@ export default function Shell() {
     onCategories: () => setCategoriesOpen(true),
     onSettings: () => setSettingsOpen(true),
     onAbout: () => setAboutOpen(true),
+    onServerStatus: () => setServerStatusOpen(true),
     onCloseServer: () => setCloseServerOpen(true),
     onRemoveAll: () => setRemoveAllOpen(true),
   }
@@ -323,13 +326,20 @@ export default function Shell() {
           />
         </DialogErrorBoundary>
         <DialogErrorBoundary onClose={() => setAboutOpen(false)}>
-          <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
+          <AboutDialog
+            open={aboutOpen}
+            onClose={() => setAboutOpen(false)}
+            onOpenServerStatus={() => setServerStatusOpen(true)}
+          />
         </DialogErrorBoundary>
         <DialogErrorBoundary onClose={() => setCloseServerOpen(false)}>
           <CloseServerDialog open={closeServerOpen} onClose={() => setCloseServerOpen(false)} />
         </DialogErrorBoundary>
         <DialogErrorBoundary onClose={() => setRemoveAllOpen(false)}>
           <RemoveAllDialog open={removeAllOpen} onClose={() => setRemoveAllOpen(false)} />
+        </DialogErrorBoundary>
+        <DialogErrorBoundary onClose={() => setServerStatusOpen(false)}>
+          <ServerStatusDialog open={serverStatusOpen} onClose={() => setServerStatusOpen(false)} />
         </DialogErrorBoundary>
         <DialogErrorBoundary onClose={() => setCommandPaletteOpen(false)}>
           <CommandPalette
@@ -338,6 +348,7 @@ export default function Shell() {
             onAdd={() => setAddOpen(true)}
             onSearch={() => setSearchOpen(true)}
             onAbout={() => setAboutOpen(true)}
+            onServerStatus={() => setServerStatusOpen(true)}
             onToggleTheme={cycleTheme}
           />
         </DialogErrorBoundary>

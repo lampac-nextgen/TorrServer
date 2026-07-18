@@ -1,6 +1,6 @@
 import { Button, Link, ListBox, Modal, Select, Spinner, useMediaQuery } from '@heroui/react'
 import axios from 'axios'
-import { Gauge, Heart, SquareArrowOutUpRight } from 'lucide-react'
+import { Activity, Gauge, Heart, SquareArrowOutUpRight } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -19,6 +19,7 @@ import { CONTRIBUTORS } from './contributors'
 export interface AboutDialogProps {
   open: boolean
   onClose: () => void
+  onOpenServerStatus?: () => void
 }
 
 /** Download sizes for `/download/:size` (path unit is MB). */
@@ -49,7 +50,7 @@ function contributorInitials(name: string): string {
 }
 
 /** About dialog: version, links, speedtest, and Special Thanks contributor grid (no Donate). */
-export default function AboutDialog({ open, onClose }: AboutDialogProps) {
+export default function AboutDialog({ open, onClose, onOpenServerStatus }: AboutDialogProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
   const isFullScreenBreakpoint = useDialogFullScreen()
@@ -126,6 +127,25 @@ export default function AboutDialog({ open, onClose }: AboutDialogProps) {
           <AboutLink name={t('Releases')} href='https://github.com/YouROK/TorrServer/releases' />
           <AboutLink name={t('NasReleases')} href='https://github.com/vladlenas' />
           <AboutLink name={t('ApiDocs')} href={publicUrl('swagger/index.html')} />
+        </div>
+
+        <div className='mt-3 rounded-lg border border-border bg-surface-secondary p-3'>
+          <p className='mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted'>{t('ServerStatus')}</p>
+          <div className='px-1'>
+            <Button
+              size='sm'
+              variant='secondary'
+              className='min-h-10 gap-2'
+              onPress={() => {
+                onClose()
+                onOpenServerStatus?.()
+              }}
+              isDisabled={!onOpenServerStatus}
+            >
+              <Activity {...iconMenu} aria-hidden />
+              {t('ServerStatus')}
+            </Button>
+          </div>
         </div>
 
         <div className='mt-3 rounded-lg border border-border bg-surface-secondary p-3'>

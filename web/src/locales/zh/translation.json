@@ -549,5 +549,15 @@
   "FuseStatus": "FUSE mount",
   "Enabled": "Enabled",
   "Disabled": "Disabled",
-  "CopyWebDavUrl": "Copy WebDAV URL"
+  "CopyWebDavUrl": "Copy WebDAV URL",
+  "ServerStatus": "Server status",
+  "ServerStatusClient": "BitTorrent client",
+  "ServerStatusListenPort": "Listen port",
+  "ServerStatusTorrents": "Torrents",
+  "ServerStatusStreams": "Active streams",
+  "ServerStatusBannedIPs": "Banned IPs",
+  "ServerStatusSeeders": "Seeders",
+  "ServerStatusLoaded": "Loaded",
+  "ServerStatusRaw": "Raw /stat",
+  "Refresh": "Refresh"
 }

@@ -4,11 +4,12 @@ import (
 	"net/http"
 
 	sets "server/settings"
+	"server/torr"
 
 	"github.com/gin-gonic/gin"
 )
 
-// RuntimeStatus is a read-only snapshot of sidecar integrations for the web UI.
+// RuntimeStatus is a read-only snapshot for the web UI: integrations + BT client stats.
 type RuntimeStatus struct {
 	DLNAEnabled    bool   `json:"dlna_enabled"`
 	BonjourEnabled bool   `json:"bonjour_enabled"`
@@ -17,12 +18,15 @@ type RuntimeStatus struct {
 	WebDAVPath     string `json:"webdav_path"`
 	FusePath       string `json:"fuse_path"`
 	FuseEnabled    bool   `json:"fuse_enabled"`
+
+	// BitTorrent client (structured alternative to plaintext GET /stat).
+	BT *torr.ClientStatusSnapshot `json:"bt,omitempty"`
 }
 
 // runtimeStatus godoc
 //
-//	@Summary		Runtime integration status
-//	@Description	Read-only flags for DLNA, Bonjour, WebDAV, and FUSE.
+//	@Summary		Runtime integration + BitTorrent status
+//	@Description	Read-only flags for DLNA/Bonjour/WebDAV/FUSE plus structured BT stats (and raw /stat text).
 //	@Tags			API
 //	@Produce		json
 //	@Security		BasicAuth
@@ -38,6 +42,7 @@ func runtimeStatus(c *gin.Context) {
 		bonjour = sets.BTsets.EnableBonjour
 	}
 	fusePath := sets.Args.FusePath
+	bt := torr.SnapshotClientStatus()
 	c.JSON(http.StatusOK, RuntimeStatus{
 		DLNAEnabled:    dlna,
 		BonjourEnabled: bonjour,
@@ -46,5 +51,6 @@ func runtimeStatus(c *gin.Context) {
 		WebDAVPath:     "/dav",
 		FusePath:       fusePath,
 		FuseEnabled:    fusePath != "",
+		BT:             &bt,
 	})
 }

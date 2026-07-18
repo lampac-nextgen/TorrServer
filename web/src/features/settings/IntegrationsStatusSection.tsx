@@ -3,7 +3,7 @@ import { Button } from '@heroui/react'
 import { Cable } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { getRuntimeStatus } from 'shared/api/runtime'
+import { getRuntimeStatus, RUNTIME_STATUS_QUERY_KEY } from 'shared/api/runtime'
 import { getTorrServerHost } from 'shared/api/hosts'
 import { copyToClipboard } from 'shared/lib/clipboard'
 import { useOptionalAppToast } from 'shared/ui/Toast'
@@ -15,7 +15,7 @@ export default function IntegrationsStatusSection() {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['runtime-status'],
+    queryKey: RUNTIME_STATUS_QUERY_KEY,
     queryFn: ({ signal }) => getRuntimeStatus(signal),
     staleTime: 30_000,
   })

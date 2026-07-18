@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react'
 import { Button, Modal, useOverlayState } from '@heroui/react'
-import { Ellipsis, FolderPlus, Info, Layers, Power, Search, Settings, Trash2 } from 'lucide-react'
+import { Activity, Ellipsis, FolderPlus, Info, Layers, Power, Search, Settings, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { iconNav, iconNavMobile } from 'shared/ui/iconProps'
@@ -17,6 +17,7 @@ export default function BottomNav({
   onCategories,
   onSettings,
   onAbout,
+  onServerStatus,
   onCloseServer,
   onRemoveAll,
 }: ShellNavProps) {
@@ -80,6 +81,7 @@ export default function BottomNav({
             <Modal.Dialog aria-label={t('nav.More')}>
               <Modal.Body className='flex flex-col gap-1 pb-[env(safe-area-inset-bottom,0px)] pt-2'>
                 {sheetAction(t('RemoveAll'), <Trash2 {...iconNav} />, onRemoveAll, disabled)}
+                {sheetAction(t('ServerStatus'), <Activity {...iconNav} />, onServerStatus, disabled)}
                 {sheetAction(t('nav.Settings'), <Settings {...iconNav} />, onSettings, disabled)}
                 {sheetAction(t('About'), <Info {...iconNav} />, onAbout)}
                 {sheetAction(t('CloseServer'), <Power {...iconNav} />, onCloseServer, disabled, true)}

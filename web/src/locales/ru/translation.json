@@ -549,5 +549,15 @@
   "FuseStatus": "FUSE",
   "Enabled": "Вкл.",
   "Disabled": "Выкл.",
-  "CopyWebDavUrl": "Копировать URL WebDAV"
+  "CopyWebDavUrl": "Копировать URL WebDAV",
+  "ServerStatus": "Статус сервера",
+  "ServerStatusClient": "BitTorrent-клиент",
+  "ServerStatusListenPort": "Порт",
+  "ServerStatusTorrents": "Торренты",
+  "ServerStatusStreams": "Активные стримы",
+  "ServerStatusBannedIPs": "Забаненные IP",
+  "ServerStatusSeeders": "Сиды",
+  "ServerStatusLoaded": "Загружено",
+  "ServerStatusRaw": "Сырой /stat",
+  "Refresh": "Обновить"
 }

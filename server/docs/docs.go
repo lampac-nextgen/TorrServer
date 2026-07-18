@@ -736,14 +736,14 @@ const docTemplate = `{
                         "BasicAuth": []
                     }
                 ],
-                "description": "Read-only flags for DLNA, Bonjour, WebDAV, and FUSE.",
+                "description": "Read-only flags for DLNA/Bonjour/WebDAV/FUSE plus structured BT stats (and raw /stat text).",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "API"
                 ],
-                "summary": "Runtime integration status",
+                "summary": "Runtime integration + BitTorrent status",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1311,6 +1311,14 @@ const docTemplate = `{
             "properties": {
                 "bonjour_enabled": {
                     "type": "boolean"
+                },
+                "bt": {
+                    "description": "BitTorrent client (structured alternative to plaintext GET /stat).",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/torr.ClientStatusSnapshot"
+                        }
+                    ]
                 },
                 "dlna_enabled": {
                     "type": "boolean"
@@ -1980,6 +1988,109 @@ const docTemplate = `{
                 },
                 "torrs_hash": {
                     "type": "string"
+                },
+                "total_peers": {
+                    "type": "integer"
+                },
+                "upload_speed": {
+                    "type": "number"
+                }
+            }
+        },
+        "torr.ClientStatusSnapshot": {
+            "type": "object",
+            "properties": {
+                "active_peers": {
+                    "type": "integer"
+                },
+                "active_streams": {
+                    "type": "integer"
+                },
+                "banned_ips": {
+                    "type": "integer"
+                },
+                "bytes_read": {
+                    "type": "integer"
+                },
+                "bytes_written": {
+                    "type": "integer"
+                },
+                "connected_seeders": {
+                    "type": "integer"
+                },
+                "download_speed": {
+                    "type": "number"
+                },
+                "listen_port": {
+                    "type": "integer"
+                },
+                "loaded_size": {
+                    "type": "integer"
+                },
+                "peer_id": {
+                    "type": "string"
+                },
+                "raw_stat": {
+                    "type": "string"
+                },
+                "torrent_count": {
+                    "type": "integer"
+                },
+                "torrents": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/torr.TorrentStatusBrief"
+                    }
+                },
+                "total_peers": {
+                    "type": "integer"
+                },
+                "total_size": {
+                    "type": "integer"
+                },
+                "upload_speed": {
+                    "type": "number"
+                }
+            }
+        },
+        "torr.TorrentStatusBrief": {
+            "type": "object",
+            "properties": {
+                "active_peers": {
+                    "type": "integer"
+                },
+                "connected_seeders": {
+                    "type": "integer"
+                },
+                "download_speed": {
+                    "type": "number"
+                },
+                "hash": {
+                    "type": "string"
+                },
+                "loaded_size": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "preload_size": {
+                    "type": "integer"
+                },
+                "preloaded_bytes": {
+                    "type": "integer"
+                },
+                "stat": {
+                    "type": "integer"
+                },
+                "stat_string": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "torrent_size": {
+                    "type": "integer"
                 },
                 "total_peers": {
                     "type": "integer"
