@@ -274,7 +274,7 @@ export default function DetailsDialog({
             className='flex flex-col overflow-hidden'
             style={isFullScreen ? DIALOG_FULLSCREEN : DIALOG_DETAILS}
           >
-            <Modal.Header className='flex shrink-0 flex-nowrap items-center gap-1 sm:gap-2'>
+            <Modal.Header className='relative flex shrink-0 flex-nowrap items-center gap-1 pr-12 sm:gap-2'>
               <Modal.Heading className='min-w-0 flex-1 truncate'>{t('TorrentDetails')}</Modal.Heading>
               {onEdit ? (
                 <Button

@@ -2293,21 +2293,64 @@ body[data-immersive='true'] .ts-bottom-nav {
 }
 
 /**
- * Fullscreen dialogs (Settings/Add/Search/Details/VideoPlayer on narrow screens) fill the
- * physical viewport edge-to-edge. HeroUI's `.modal__dialog` only gives them a flat 1.5rem (p-6)
- * inset, which isn't enough to clear a notch/Dynamic Island or the home-indicator bar on iOS
- * PWAs (`viewport-fit=cover`). Add the safe-area insets on top of that existing padding.
+ * Fullscreen dialogs on iOS PWA (`viewport-fit=cover` + `black-translucent`):
+ *
+ * HeroUI's `.modal__close-trigger` is `position: absolute; top: 1rem` relative to the dialog.
+ * Putting safe-area on dialog `padding-top` does NOT move that absolute close button — it still
+ * sits under the status bar / Dynamic Island and becomes untappable. Dialog `padding-bottom`
+ * with `1.5rem + safe-area` also creates a permanent empty strip under short content.
+ *
+ * Fix: zero dialog chrome padding; push safe-area into header / close / body / footer instead.
  */
 .modal__dialog--full {
-  padding-top: calc(1.5rem + env(safe-area-inset-top, 0px));
-  padding-right: calc(1.5rem + env(safe-area-inset-right, 0px));
-  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
-  padding-left: calc(1.5rem + env(safe-area-inset-left, 0px));
+  padding: 0;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+.modal__dialog--full > .modal__header {
+  padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+  padding-right: 3.5rem; /* clearance for absolute close */
+  padding-bottom: 0.5rem;
+  padding-left: 1rem;
+}
+
+.modal__dialog--full > .modal__body {
+  padding-right: 1rem;
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  padding-left: 1rem;
+}
+
+.modal__dialog--full > .modal__footer {
+  padding-right: 1rem;
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  padding-left: 1rem;
+}
+
+/* Absolute close must clear the status bar itself — padding on the dialog does not affect it. */
+.modal__dialog--full > .modal__close-trigger,
+.modal__dialog--full > .modal__header .modal__close-trigger {
+  top: max(0.5rem, env(safe-area-inset-top, 0px));
+  right: max(0.5rem, env(safe-area-inset-right, 0px));
+  z-index: 20;
+  display: grid;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  place-items: center;
 }
 
 /* Video player owns its own safe-area chrome — kill HeroUI full-dialog padding. */
 .ts-player-modal-full .modal__dialog--full,
 .modal__dialog--full:has(.ts-player) {
+  padding: 0;
+}
+
+.ts-player-modal-full .modal__dialog--full > .modal__header,
+.modal__dialog--full:has(.ts-player) > .modal__header,
+.ts-player-modal-full .modal__dialog--full > .modal__body,
+.modal__dialog--full:has(.ts-player) > .modal__body,
+.ts-player-modal-full .modal__dialog--full > .modal__footer,
+.modal__dialog--full:has(.ts-player) > .modal__footer {
   padding: 0;
 }
 
