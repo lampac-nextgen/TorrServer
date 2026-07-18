@@ -92,8 +92,7 @@ export default function ExportLibraryDialog({ open, onClose, torrents }: ExportL
     toast?.showToast({ message: t('ExportDownloaded'), severity: 'success' })
   }
 
-  const copyLabel = (kind: ExportKind, idle: string) =>
-    copiedKind === kind ? t('Copied') : idle
+  const copyLabel = (kind: ExportKind, idle: string) => (copiedKind === kind ? t('Copied') : idle)
 
   return (
     <AppDialog open={open} onClose={onClose} size='sm' fullScreen={isFullScreen}>
@@ -139,20 +138,10 @@ export default function ExportLibraryDialog({ open, onClose, torrents }: ExportL
           >
             {t('ExportDownloadMagnets')}
           </Button>
-          <Button
-            variant='ghost'
-            className='min-h-11'
-            isDisabled={!torrents.length}
-            onPress={() => download('torrs')}
-          >
+          <Button variant='ghost' className='min-h-11' isDisabled={!torrents.length} onPress={() => download('torrs')}>
             {t('ExportDownloadTorrs')}
           </Button>
-          <Button
-            variant='ghost'
-            className='min-h-11'
-            isDisabled={!torrents.length}
-            onPress={() => download('json')}
-          >
+          <Button variant='ghost' className='min-h-11' isDisabled={!torrents.length} onPress={() => download('json')}>
             {t('ExportDownloadJson')}
           </Button>
         </div>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, type RefObject } from 'react'
 import { setViewedFile } from 'shared/api/viewed'
 import { rememberContinueWatching } from 'shared/lib/continueWatching'
 
@@ -11,7 +11,7 @@ export interface UseTimecodePersistOptions {
   fileIndex?: number
   title?: string
   initialTimecode?: number
-  video: HTMLVideoElement | null
+  videoRef: RefObject<HTMLVideoElement | null>
   onViewedChange?: () => void
 }
 
@@ -22,7 +22,7 @@ export function useTimecodePersist({
   fileIndex,
   title,
   initialTimecode = 0,
-  video,
+  videoRef,
   onViewedChange,
 }: UseTimecodePersistOptions) {
   const lastSaveRef = useRef(0)
@@ -58,22 +58,22 @@ export function useTimecodePersist({
   )
 
   const flushTimecode = useCallback(() => {
-    const el = video
+    const el = videoRef.current
     if (!el || !enabled) return
     void saveTimecode(el.currentTime)
-  }, [video, enabled, saveTimecode])
+  }, [videoRef, enabled, saveTimecode])
 
   const onTimeUpdate = useCallback(() => {
-    const el = video
+    const el = videoRef.current
     if (!el || !enabled) return
     const now = Date.now()
     if (now - lastSaveRef.current < TIMECODE_SAVE_INTERVAL_MS) return
     lastSaveRef.current = now
     void saveTimecode(el.currentTime)
-  }, [video, enabled, saveTimecode])
+  }, [videoRef, enabled, saveTimecode])
 
   const applyResumeIfNeeded = useCallback(() => {
-    const el = video
+    const el = videoRef.current
     if (!el || resumeAppliedRef.current) return
     if (!(initialTimecode > TIMECODE_RESUME_MARGIN_SEC)) {
       resumeAppliedRef.current = true
@@ -84,9 +84,10 @@ export function useTimecodePersist({
       resumeAppliedRef.current = true
       return
     }
+
     el.currentTime = initialTimecode
     resumeAppliedRef.current = true
-  }, [video, initialTimecode])
+  }, [videoRef, initialTimecode])
 
   return { flushTimecode, onTimeUpdate, applyResumeIfNeeded, saveTimecode }
 }

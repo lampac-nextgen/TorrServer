@@ -1,4 +1,4 @@
-import { Button, Link, ListBox, Modal, Select, Spinner, useMediaQuery } from '@heroui/react'
+import { Button, Link, ListBox, Modal, Select, Spinner } from '@heroui/react'
 import axios from 'axios'
 import { Activity, CreditCard, Gauge, Heart, SquareArrowOutUpRight } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -8,7 +8,6 @@ import { runSpeedTest } from 'shared/api/extras'
 import { echoHost } from 'shared/api/hosts'
 import { publicUrl } from 'shared/lib/publicUrl'
 import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
-import { queryMax } from 'shared/theme/breakpoints'
 import AppDialog from 'shared/ui/AppDialog'
 import { DIALOG_SHEET_M } from 'shared/ui/dialogSizes'
 import { iconMenu } from 'shared/ui/iconProps'
@@ -55,7 +54,6 @@ export default function AboutDialog({ open, onClose, onOpenServerStatus, onOpenD
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
   const isFullScreenBreakpoint = useDialogFullScreen()
-  const isMobile = useMediaQuery(queryMax('mobile'))
   const [version, setVersion] = useState<string | null>(null)
   const [speedTesting, setSpeedTesting] = useState(false)
   const [speedResult, setSpeedResult] = useState<string | null>(null)

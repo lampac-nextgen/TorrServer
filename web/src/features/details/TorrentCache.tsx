@@ -98,7 +98,10 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
 
   const variant = isMiniView ? 'mini' : 'default'
   // Re-resolve when palette changes so canvas accents track CSS `--accent`.
-  const baseSettings = useMemo(() => resolveSnakeSettings(theme, variant), [theme, variant, palette])
+  const baseSettings = useMemo(() => {
+    void palette
+    return resolveSnakeSettings(theme, variant)
+  }, [theme, variant, palette])
 
   const { pieceSize, gap } = useMemo(
     () => resolvePieceMetrics(baseSettings, containerWidth, isMiniView, cells.length),

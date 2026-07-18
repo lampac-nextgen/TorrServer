@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-} from 'react'
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
 import axios from 'axios'
 import Hls from 'hls.js'
 import { Alert, Button, Modal, Popover, useMediaQuery, useOverlayState } from '@heroui/react'
@@ -102,7 +96,7 @@ export default function VideoPlayer({
   const pendingSeekRef = useRef<number | null>(null)
 
   const [open, setOpen] = useState(initiallyOpen)
-  const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null)
+  const [videoEpoch, setVideoEpoch] = useState(0)
   const [loading, setLoading] = useState(true)
   const [mediaError, setMediaError] = useState(false)
   const [fullscreen, setFullscreen] = useState(false)
@@ -128,14 +122,16 @@ export default function VideoPlayer({
 
   const attachVideoNode = useCallback((node: HTMLVideoElement | null) => {
     videoRef.current = node
-    setVideoElement(node)
+    setVideoEpoch(epoch => epoch + 1)
   }, [])
 
   useEffect(() => {
     onNotSupportedRef.current = onNotSupported
   }, [onNotSupported])
 
+  // Reset media session when the launcher hands a new source / audio track.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- remount playback session for new src/audio props
     setPlaybackSrc(videoSrc)
     setActiveAudioIndex(audioIndex)
     setResolvedAudioTracks(audioTracks)
@@ -146,7 +142,8 @@ export default function VideoPlayer({
   useHlsAttach({
     enabled: hls,
     open,
-    video: videoElement,
+    videoRef,
+    videoEpoch,
     src: playbackSrc,
     onLoading: setLoading,
     onError: () => setMediaError(true),
@@ -160,7 +157,7 @@ export default function VideoPlayer({
     fileIndex,
     title,
     initialTimecode,
-    video: videoElement,
+    videoRef,
     onViewedChange,
   })
 
@@ -214,6 +211,7 @@ export default function VideoPlayer({
 
   // Progressive: set src on the element when not using hls.js
   useEffect(() => {
+    const videoElement = videoRef.current
     if (!open || hls || !videoElement) return undefined
     setLoading(true)
     videoElement.src = playbackSrc
@@ -224,7 +222,7 @@ export default function VideoPlayer({
       videoElement.removeAttribute('src')
       videoElement.load()
     }
-  }, [open, hls, videoElement, playbackSrc])
+  }, [open, hls, videoEpoch, playbackSrc])
 
   useEffect(() => {
     if (!open || !heartbeatSrc) return undefined
@@ -242,6 +240,7 @@ export default function VideoPlayer({
 
   // Restore position after GST audio remount
   useEffect(() => {
+    const videoElement = videoRef.current
     if (!videoElement || pendingSeekRef.current == null) return undefined
     const target = pendingSeekRef.current
     const apply = () => {
@@ -252,11 +251,12 @@ export default function VideoPlayer({
     }
     videoElement.addEventListener('loadedmetadata', apply, { once: true })
     return () => videoElement.removeEventListener('loadedmetadata', apply)
-  }, [videoElement, playbackSrc])
+  }, [videoEpoch, playbackSrc])
 
   useEffect(() => {
     if (!open || !hls || !hash || fileIndex == null) return undefined
     if (audioTracks.length) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- adopt probe tracks passed from launcher
       setResolvedAudioTracks(audioTracks)
       return undefined
     }
@@ -285,59 +285,57 @@ export default function VideoPlayer({
 
   const chromeIcon = iconPlayerCompact
 
-  const audioExtra =
-    canSwitchAudio ? (
-      <Popover isOpen={audioMenuOpen} onOpenChange={setAudioMenuOpen}>
-        <Popover.Trigger>
-          <Button
-            isIconOnly
-            variant='ghost'
-            className={`${iconBtn} text-white hover-fine:bg-white/15`}
-            aria-label={t('SelectAudioTrack')}
-          >
-            <Music2 {...chromeIcon} aria-hidden />
-          </Button>
-        </Popover.Trigger>
-        <Popover.Content
-          placement='bottom end'
-          className='max-h-72 w-72 overflow-y-auto border border-white/10 bg-neutral-950/95 p-1 backdrop-blur-xl'
+  const audioExtra = canSwitchAudio ? (
+    <Popover isOpen={audioMenuOpen} onOpenChange={setAudioMenuOpen}>
+      <Popover.Trigger>
+        <Button
+          isIconOnly
+          variant='ghost'
+          className={`${iconBtn} text-white hover-fine:bg-white/15`}
+          aria-label={t('SelectAudioTrack')}
         >
-          <p className='px-2 py-1.5 text-[11px] font-semibold tracking-wide text-muted uppercase'>
-            {t('SelectAudioTrack')}
-          </p>
-          {resolvedAudioTracks.map((track, index) => {
-            const { title: trackTitle, meta } = formatAudioTrackDisplay(track, index)
-            const selected = index === activeAudioIndex
-            return (
-              <Button
-                key={index}
-                variant={selected ? 'secondary' : 'ghost'}
-                className='h-auto w-full justify-start gap-2 py-2'
-                onPress={() => switchAudioTrack(index)}
-              >
-                <span className='min-w-0 flex-1 text-left'>
-                  <span className='block truncate text-sm font-medium'>{trackTitle}</span>
-                  {meta ? <span className='mt-0.5 block truncate text-xs text-muted'>{meta}</span> : null}
-                </span>
-              </Button>
-            )
-          })}
-        </Popover.Content>
-      </Popover>
-    ) : null
-
-  const expandExtra =
-    !isMobile ? (
-      <Button
-        isIconOnly
-        variant='ghost'
-        className={`${iconBtn} text-white hover-fine:bg-white/15`}
-        aria-label={expanded ? t('ExitFullscreen') : t('ExpandPlayer')}
-        onPress={() => setExpanded(v => !v)}
+          <Music2 {...chromeIcon} aria-hidden />
+        </Button>
+      </Popover.Trigger>
+      <Popover.Content
+        placement='bottom end'
+        className='max-h-72 w-72 overflow-y-auto border border-white/10 bg-neutral-950/95 p-1 backdrop-blur-xl'
       >
-        {expanded ? <Minimize2 {...chromeIcon} aria-hidden /> : <Maximize2 {...chromeIcon} aria-hidden />}
-      </Button>
-    ) : null
+        <p className='px-2 py-1.5 text-[11px] font-semibold tracking-wide text-muted uppercase'>
+          {t('SelectAudioTrack')}
+        </p>
+        {resolvedAudioTracks.map((track, index) => {
+          const { title: trackTitle, meta } = formatAudioTrackDisplay(track, index)
+          const selected = index === activeAudioIndex
+          return (
+            <Button
+              key={index}
+              variant={selected ? 'secondary' : 'ghost'}
+              className='h-auto w-full justify-start gap-2 py-2'
+              onPress={() => switchAudioTrack(index)}
+            >
+              <span className='min-w-0 flex-1 text-left'>
+                <span className='block truncate text-sm font-medium'>{trackTitle}</span>
+                {meta ? <span className='mt-0.5 block truncate text-xs text-muted'>{meta}</span> : null}
+              </span>
+            </Button>
+          )
+        })}
+      </Popover.Content>
+    </Popover>
+  ) : null
+
+  const expandExtra = !isMobile ? (
+    <Button
+      isIconOnly
+      variant='ghost'
+      className={`${iconBtn} text-white hover-fine:bg-white/15`}
+      aria-label={expanded ? t('ExitFullscreen') : t('ExpandPlayer')}
+      onPress={() => setExpanded(v => !v)}
+    >
+      {expanded ? <Minimize2 {...chromeIcon} aria-hidden /> : <Maximize2 {...chromeIcon} aria-hidden />}
+    </Button>
+  ) : null
 
   return (
     <>
@@ -420,6 +418,7 @@ export default function VideoPlayer({
                     extraControls={null}
                   >
                     <video
+                      key={playbackSrc}
                       slot='media'
                       ref={attachVideoNode}
                       autoPlay

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Button, Input, Modal, TextField } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
 import AppDialog from 'shared/ui/AppDialog'
@@ -34,10 +34,6 @@ export default function CommandPalette({
 }: CommandPaletteProps) {
   const { t } = useTranslation()
   const [query, setQuery] = useState('')
-
-  useEffect(() => {
-    if (open) setQuery('')
-  }, [open])
 
   const commands = useMemo<CommandItem[]>(() => {
     const openSettings = (tab: SettingsDeepLinkTab) => {

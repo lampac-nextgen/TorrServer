@@ -340,16 +340,19 @@ export default function Shell() {
           <ServerStatusDialog open={serverStatusOpen} onClose={() => setServerStatusOpen(false)} />
         </DialogErrorBoundary>
         <DialogErrorBoundary onClose={() => setCommandPaletteOpen(false)}>
-          <CommandPalette
-            open={commandPaletteOpen}
-            onClose={() => setCommandPaletteOpen(false)}
-            onAdd={() => setAddOpen(true)}
-            onSearch={() => setSearchOpen(true)}
-            onAbout={() => setAboutOpen(true)}
-            onDonate={() => setDonateOpen(true)}
-            onServerStatus={() => setServerStatusOpen(true)}
-            onToggleTheme={cycleTheme}
-          />
+          {commandPaletteOpen ? (
+            <CommandPalette
+              key='cmdk'
+              open
+              onClose={() => setCommandPaletteOpen(false)}
+              onAdd={() => setAddOpen(true)}
+              onSearch={() => setSearchOpen(true)}
+              onAbout={() => setAboutOpen(true)}
+              onDonate={() => setDonateOpen(true)}
+              onServerStatus={() => setServerStatusOpen(true)}
+              onToggleTheme={cycleTheme}
+            />
+          ) : null}
         </DialogErrorBoundary>
         <DialogErrorBoundary onClose={() => setCategoriesOpen(false)}>
           <CategoriesDrawer

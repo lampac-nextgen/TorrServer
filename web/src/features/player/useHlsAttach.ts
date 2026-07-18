@@ -10,7 +10,9 @@ export interface SubtitleTrackInfo {
 export interface UseHlsAttachOptions {
   enabled: boolean
   open: boolean
-  video: HTMLVideoElement | null
+  videoRef: RefObject<HTMLVideoElement | null>
+  /** Bumps when the video node attaches / detaches so the effect re-runs. */
+  videoEpoch: number
   src: string
   playbackRate?: number
   onLoading?: (loading: boolean) => void
@@ -31,7 +33,8 @@ const supportsNativeHls = (video: HTMLVideoElement): boolean =>
 export function useHlsAttach({
   enabled,
   open,
-  video,
+  videoRef,
+  videoEpoch,
   src,
   playbackRate = 1,
   onLoading,
@@ -59,6 +62,7 @@ export function useHlsAttach({
   })
 
   useEffect(() => {
+    const video = videoRef.current
     if (!enabled || !open || !video || !src) return undefined
 
     let hlsPlayer: Hls | null = null
@@ -129,7 +133,7 @@ export function useHlsAttach({
     }
     // playbackRate applied on manifest parse; remount when source changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, open, video, src])
+  }, [enabled, open, videoRef, videoEpoch, src])
 
   return hlsRef
 }
