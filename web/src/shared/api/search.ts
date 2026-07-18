@@ -13,25 +13,11 @@ export type TorznabSearchOptions = {
   signal?: AbortSignal
 }
 
-const resolveTorznabSearchOptions = (
-  optionsOrIndex?: TorznabSearchOptions | number,
-  signal?: AbortSignal,
-): TorznabSearchOptions | undefined => {
-  if (optionsOrIndex == null) return signal ? { signal } : undefined
-  if (typeof optionsOrIndex === 'number') return { index: optionsOrIndex, signal }
-  return signal ? { ...optionsOrIndex, signal } : optionsOrIndex
-}
-
-/**
- * Torznab indexer search.
- * Second arg may be a numeric indexer `index` (legacy) or a full {@link TorznabSearchOptions} object.
- */
+/** Torznab indexer search (`/torznab/search/`). */
 export const searchTorznab = async (
   query: string,
-  optionsOrIndex?: TorznabSearchOptions | number,
-  signal?: AbortSignal,
+  options?: TorznabSearchOptions,
 ): Promise<SearchResultItem[]> => {
-  const options = resolveTorznabSearchOptions(optionsOrIndex, signal)
   const params: Record<string, string | number> = { query }
 
   if (options?.index != null) params.index = options.index

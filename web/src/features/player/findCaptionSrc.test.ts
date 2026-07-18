@@ -39,7 +39,7 @@ describe('findCaptionSrc', () => {
     expect(findCaptionSrc(video, files, 'hash')).toBe('')
   })
 
-  it('accepts legacy Path/Id field casing on torrent files', async () => {
+  it('accepts Path/Id field casing on torrent files', async () => {
     const { findCaptionSrc } = await import('./usePlayLauncher')
     const video = { Id: 2, Path: 'film.mp4', Length: 100 }
     const files: TorrentFileStat[] = [video, { Id: 3, Path: 'film.vtt', Length: 1 }]

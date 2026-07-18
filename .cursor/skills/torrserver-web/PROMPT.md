@@ -6,7 +6,7 @@ Use the project skill torrserver-web and read .cursor/context/web-upgrade-sessio
 Continuing TorrServer-Go web — new client to TorrServer API (rewrite-first).
 
 Stack: React 19 + Vite 8.1 + TypeScript 6 + HeroUI v3 + Tailwind v4 + GSAP + lucide + sonner + TanStack Query.
-Greenfield only (app/features/shared/locales). Master = feature contract only — never port legacy UI.
+Greenfield only (app/features/shared/locales). Server/API = feature contract only — never port old UI.
 No MUI/Emotion. Safari 17+.
 Ship: cd web && yarn typecheck && yarn lint && yarn test && yarn build && cd .. && go run gen_web.go --clean
 

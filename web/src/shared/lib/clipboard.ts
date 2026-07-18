@@ -7,7 +7,7 @@
  * works from a user gesture on iOS Safari / Android Chrome over plain HTTP.
  *
  * @param text - Plain string to place on the system clipboard.
- * @throws If both the Clipboard API and the legacy `execCommand` path fail.
+ * @throws If both the Clipboard API and the `execCommand` fallback fail.
  */
 export async function copyToClipboard(text: string): Promise<void> {
   const secure =
@@ -20,7 +20,7 @@ export async function copyToClipboard(text: string): Promise<void> {
       await navigator.clipboard.writeText(text)
       return
     } catch {
-      // Fall through to legacy path (permissions / transient failures).
+      // Fall through to execCommand fallback (permissions / transient failures).
     }
   }
 

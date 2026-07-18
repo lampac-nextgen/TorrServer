@@ -20,8 +20,7 @@ description: >-
 - **UI:** **HeroUI v3** (`@heroui/react` + `@heroui/styles`) + **Tailwind CSS v4** (HeroUI peer) + **GSAP** (`gsap` + `@gsap/react`) + **lucide-react** + **sonner**.
 - **No MUI / Emotion / styled-components.**
 - **Greenfield tree:** `web/src/{app,features,shared,locales}` only.
-- **Doctrine:** new web client to TorrServer API — rewrite UI freely; master = feature/behavior contract only; never port legacy visuals.
-- **`web-legacy-old/`** is a frozen, gitignored reference copy of the pre-rewrite client. It is **read-only**: never edit it, never import from it at runtime. Use it only to look up functional/API behavior (hooks, gstreamer/HLS logic, cache-map math, i18n strings) while rewriting a feature's UI in `web/` from scratch. Safe to delete once `web/` reaches full parity.
+- **Doctrine:** new web client to TorrServer API — rewrite UI freely; server/API = feature/behavior contract only; never port old visuals.
 - Prefer `shared/api/*` + React Query hooks.
 - Brand accent OK; streaming poster library; Safari **17+**.
 - Donate removed. Adaptive shell + `ModalOpenProvider`.

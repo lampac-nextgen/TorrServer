@@ -68,7 +68,7 @@ describe('copyToClipboard', () => {
     expect(doc.execCommand).toHaveBeenCalledWith('copy')
   })
 
-  it('throws when legacy copy also fails', async () => {
+  it('throws when execCommand fallback also fails', async () => {
     vi.stubGlobal('isSecureContext', false)
     vi.stubGlobal('navigator', {})
     installDom(false)

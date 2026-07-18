@@ -29,8 +29,6 @@ import {
 import { waitForPlayableFiles } from './waitForPlayableFiles'
 import { toPlayableFile } from 'shared/torrent/toPlayableFile'
 
-export { toPlayableFile } from 'shared/torrent/toPlayableFile'
-
 /** Lazy: keeps hls.js out of the initial bundle — only fetched once a file is actually played. */
 const VideoPlayer = lazy(() => import('features/player/VideoPlayer'))
 
@@ -458,8 +456,6 @@ export function usePlayLauncher({
     playFile,
     isResolving,
     resolvingFileId,
-    /** @deprecated Prefer `isResolving` — kept for existing callers. */
-    resolvingAudio: isResolving,
     playerModals,
   }
 }

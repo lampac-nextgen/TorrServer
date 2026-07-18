@@ -186,7 +186,7 @@ function TorrentActions({
           isPending={isResolving}
           onPress={() => {
             // Series / multi-file: jump to the Content tab (per-file Play/Copy/external) instead of
-            // opening a second file-picker modal — matches the legacy details UX.
+            // opening a second file-picker modal.
             if (!isSingleFileTorrent && onShowFiles) {
               onShowFiles()
               return

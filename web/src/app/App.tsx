@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { useMediaQuery } from '@heroui/react'
 import { Toaster } from 'sonner'
 
@@ -16,19 +15,6 @@ function SettingsQueryBootstrap() {
   return null
 }
 
-/** One-time migration of the pre-rewrite `themeMode` localStorage key. */
-function migrateLegacyThemeKey() {
-  try {
-    const legacy = localStorage.getItem('themeMode')
-    if (legacy === 'auto') localStorage.setItem('ts-color-scheme', 'system')
-    else if ((legacy === 'light' || legacy === 'dark') && !localStorage.getItem('ts-color-scheme')) {
-      localStorage.setItem('ts-color-scheme', legacy)
-    }
-  } catch {
-    /* localStorage unavailable (privacy mode, etc.) */
-  }
-}
-
 /**
  * Root providers: modal-open chrome, snackbars, settings cache bootstrap, Shell.
  * Toaster offset clears the mobile BottomNav when present.
@@ -36,10 +22,6 @@ function migrateLegacyThemeKey() {
 export default function App() {
   // Shell only renders its fixed BottomNav below this breakpoint — toasts must clear it, not sit under it.
   const hasBottomNav = useMediaQuery(queryMax('mobile'))
-
-  useEffect(() => {
-    migrateLegacyThemeKey()
-  }, [])
 
   return (
     <ModalOpenProvider>

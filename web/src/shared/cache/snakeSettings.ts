@@ -35,7 +35,7 @@ export interface SnakePieceSettings {
 /**
  * Visual hierarchy:
  * 1. reader (playhead) — black square outline
- * 2. range — warm window (not legacy violet in dark)
+ * 2. range — warm amber window (not violet in dark)
  * 3. cached — brand green
  * 4. idle — quiet empty
  */

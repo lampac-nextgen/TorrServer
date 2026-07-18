@@ -45,8 +45,6 @@ toolchains/
 # Generated for Windows gst embed (//go:embed); created by goreleaser before hooks
 /server/gstreamer/embedded_gstlib_windows_amd64.zip
 
-/web-legacy-old
-
 # Local runtime settings accidentally created next to the binary
 /config.db
 /settings.json

@@ -21,7 +21,7 @@ describe('audioTrackLabel', () => {
     expect(probeField(tracks[0], 'Title')).toBe('DUB')
   })
 
-  it('formats two-line display like legacy picker', () => {
+  it('formats two-line display for the track picker', () => {
     const display = formatAudioTrackDisplay(
       {
         Type: 'audio',
