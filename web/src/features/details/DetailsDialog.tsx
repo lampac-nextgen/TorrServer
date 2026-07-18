@@ -212,7 +212,14 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                   <div className='rounded-xl border border-border bg-surface-secondary p-4'>
                     <div className='mb-3 flex items-center justify-between gap-2'>
                       <p className='text-sm font-semibold text-muted'>{t('Cache')}</p>
-                      <Button size='sm' variant='ghost' onPress={() => setActiveTab('cache')}>
+                      <Button
+                        size='sm'
+                        variant='ghost'
+                        onPress={() => {
+                          setIsDetailedCacheView(true)
+                          setActiveTab('cache')
+                        }}
+                      >
                         {t('DetailedCacheView.button')}
                       </Button>
                     </div>

@@ -2,15 +2,13 @@ import { lazy, Suspense } from 'react'
 import { Button, Tooltip } from '@heroui/react'
 import { Copy, Download, ExternalLink, Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import type { ExternalPlayerLink } from 'shared/lib/externalPlayers'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
 /** Lazy: keeps hls.js out of the Details bundle — only fetched once a file is actually played. */
 const VideoPlayer = lazy(() => import('features/player/VideoPlayer'))
 
-export interface ExternalPlayerLink {
-  label: string
-  href: string
-}
+export type { ExternalPlayerLink }
 
 export interface FileRowActionsProps {
   preloadLabel: string

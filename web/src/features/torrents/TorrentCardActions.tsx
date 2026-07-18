@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 import { Button, Dropdown, Modal, Tooltip, useOverlayState } from '@heroui/react'
-import { Info, ListMusic, Loader2, MoreVertical, Pencil, Play, Trash2, X } from 'lucide-react'
+import { ExternalLink, Info, ListMusic, Loader2, MoreVertical, Pencil, Play, Trash2, X } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
-import { playlistTorrHost } from 'shared/api/hosts'
+import { playlistTorrHost, streamHost } from 'shared/api/hosts'
 import { dropTorrent, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
+import { useExternalPlayers } from 'shared/lib/externalPlayers'
 import { isFilePlayable } from 'shared/torrent/playable'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 import { toPlayableFile, usePlayLauncher } from 'features/player/usePlayLauncher'
@@ -42,6 +43,17 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
   }, [torrent.file_stats])
 
   const { handlePlay, resolvingAudio, playerModals } = usePlayLauncher({ hash, displayName, knownPlayableFiles })
+
+  /** Only offer app deep links when there's exactly one obvious file to hand off — otherwise Play's file picker covers it. */
+  const { buildExternalPlayers } = useExternalPlayers()
+  const externalPlayers = useMemo(() => {
+    if (knownPlayableFiles.length !== 1) return []
+    const file = knownPlayableFiles[0]
+    const fileName = file.path.split('\\').pop()?.split('/').pop() || file.path
+    const link = `${streamHost()}/${encodeURIComponent(fileName)}?link=${hash}&index=${file.id}&play`
+    const fullLink = new URL(link, window.location.href).toString()
+    return buildExternalPlayers(fullLink)
+  }, [knownPlayableFiles, hash, buildExternalPlayers])
 
   const runConfirmedAction = () => {
     const action = confirmKind
@@ -124,6 +136,17 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
                   {t('EditTorrent')}
                 </Dropdown.Item>
               ) : null}
+              {externalPlayers.map(player => (
+                <Dropdown.Item
+                  key={player.label}
+                  onPress={() => {
+                    window.location.href = player.href
+                  }}
+                >
+                  <ExternalLink size={16} />
+                  {player.label}
+                </Dropdown.Item>
+              ))}
               <Dropdown.Item
                 onPress={() => {
                   setConfirmKind('drop')

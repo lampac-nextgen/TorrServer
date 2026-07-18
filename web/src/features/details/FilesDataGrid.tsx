@@ -11,12 +11,11 @@ import {
   shouldUseGStreamerPlayer,
   useGStreamerRuntime,
 } from 'shared/lib/gstreamer'
-import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
+import { useExternalPlayers } from 'shared/lib/externalPlayers'
 import { humanizeSize } from 'shared/lib/format'
-import { detectStandaloneApp, isAppleDevice, isMacOS } from 'shared/lib/platform'
 import { queryMax } from 'shared/theme/breakpoints'
 
-import FileRowActions, { type ExternalPlayerLink } from './FileRowActions'
+import FileRowActions from './FileRowActions'
 
 /**
  * Global `parse-torrent-title` handler extensions for Russian-language release
@@ -47,9 +46,6 @@ interface FileRow {
   link: string
   player: { key: string; src: string; hls: boolean; heartbeatSrc: string }
   fullLink: string
-  infuseLink: string
-  senPlayerLink: string
-  iinaLink: string
 }
 
 function FileCard({
@@ -96,17 +92,7 @@ const FilesDataGrid = memo(
     const isCompactLayout = useMediaQuery(queryMax('shortTable'))
     const [unsupportedPlayerKeys, setUnsupportedPlayerKeys] = useState<Record<string, boolean>>({})
     const gstRuntime = useGStreamerRuntime()
-
-    const [isVlcUsed] = useLocalBoolPref('isVlcUsed')
-    const [isInfuseUsed] = useLocalBoolPref('isInfuseUsed')
-    const [isSenPlayerUsed] = useLocalBoolPref('isSenPlayerUsed')
-    const [isIinaUsed] = useLocalBoolPref('isIinaUsed')
-    const isStandaloneApp = detectStandaloneApp()
-    const isMac = isMacOS()
-    const isApple = isAppleDevice()
-    const shouldShowOpenLink =
-      !isStandaloneApp ||
-      (!(isApple && isInfuseUsed) && !(isApple && isSenPlayerUsed) && !isVlcUsed && !(isMac && isIinaUsed))
+    const { buildExternalPlayers, shouldShowOpenLink } = useExternalPlayers()
 
     const preloadBuffer = (fileId: number) => void fetch(`${streamHost()}?link=${hash}&index=${fileId}&preload`)
 
@@ -127,15 +113,6 @@ const FilesDataGrid = memo(
 
     const markPlayerUnsupported = (key: string) => {
       setUnsupportedPlayerKeys(current => ({ ...current, [key]: true }))
-    }
-
-    const buildExternalPlayers = (fullLink: string, infuseLink: string, senPlayerLink: string, iinaLink: string) => {
-      const links: ExternalPlayerLink[] = []
-      if (isApple && isInfuseUsed) links.push({ label: t('Infuse'), href: infuseLink })
-      if (isApple && isSenPlayerUsed) links.push({ label: t('SenPlayer'), href: senPlayerLink })
-      if (isVlcUsed) links.push({ label: 'VLC', href: `vlc://${fullLink}` })
-      if (isMac && isIinaUsed) links.push({ label: 'IINA', href: iinaLink })
-      return links
     }
 
     const fileHasEpisodeText = !!playableFileList?.find(({ path }) => ptt.parse(path).episode)
@@ -177,9 +154,6 @@ const FilesDataGrid = memo(
             link,
             player,
             fullLink,
-            infuseLink: `infuse://x-callback-url/play?url=${encodeURIComponent(fullLink)}`,
-            senPlayerLink: `senplayer://x-callback-url/play?url=${encodeURIComponent(fullLink)}`,
-            iinaLink: `iina://weblink?url=${encodeURIComponent(fullLink)}`,
           }
         }),
       // eslint-disable-next-line react-hooks/exhaustive-deps -- link builders close over hash/gstRuntime
@@ -200,7 +174,7 @@ const FilesDataGrid = memo(
         openLinkHref={row.link}
         showOpenLink={shouldShowOpenLink}
         copyText={row.fullLink}
-        externalPlayers={buildExternalPlayers(row.fullLink, row.infuseLink, row.senPlayerLink, row.iinaLink)}
+        externalPlayers={buildExternalPlayers(row.fullLink)}
       />
     )
 
