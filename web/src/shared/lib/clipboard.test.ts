@@ -19,8 +19,10 @@ function installDom(execOk = true) {
 
   const doc = {
     body,
+    activeElement: null,
     createElement: vi.fn(() => textarea),
     getSelection: vi.fn(() => null),
+    querySelector: vi.fn(() => null),
     execCommand: vi.fn(() => execOk),
   }
 
@@ -54,6 +56,42 @@ describe('copyToClipboard', () => {
     expect(doc.execCommand).toHaveBeenCalledWith('copy')
     expect(body.appendChild).toHaveBeenCalled()
     expect(body.removeChild).toHaveBeenCalled()
+  })
+
+  it('mounts the fallback textarea inside an open dialog when focused there', async () => {
+    vi.stubGlobal('isSecureContext', false)
+    vi.stubGlobal('navigator', {})
+
+    const dialog = {
+      appendChild: vi.fn(),
+      removeChild: vi.fn(),
+    }
+    const button = {
+      closest: vi.fn((selector: string) => (selector === '[role="dialog"]' ? dialog : null)),
+    }
+    const textarea = {
+      value: '',
+      style: {} as Record<string, string>,
+      focus: vi.fn(),
+      select: vi.fn(),
+      setSelectionRange: vi.fn(),
+      setAttribute: vi.fn(),
+    }
+    const doc = {
+      body: { appendChild: vi.fn(), removeChild: vi.fn() },
+      activeElement: button,
+      createElement: vi.fn(() => textarea),
+      getSelection: vi.fn(() => null),
+      querySelector: vi.fn(),
+      execCommand: vi.fn(() => true),
+    }
+    vi.stubGlobal('document', doc)
+
+    await copyToClipboard('inside-modal')
+
+    expect(dialog.appendChild).toHaveBeenCalled()
+    expect(dialog.removeChild).toHaveBeenCalled()
+    expect(doc.body.appendChild).not.toHaveBeenCalled()
   })
 
   it('falls back when clipboard.writeText rejects', async () => {

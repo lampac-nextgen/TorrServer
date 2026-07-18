@@ -482,7 +482,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
 
       <Suspense fallback={lazyDialogFallback}>
         <DialogErrorBoundary onClose={() => setExportOpen(false)}>
-          <ExportLibraryDialog open={exportOpen} onClose={() => setExportOpen(false)} torrents={visibleTorrents} />
+          <ExportLibraryDialog open={exportOpen} onClose={() => setExportOpen(false)} torrents={torrents ?? []} />
         </DialogErrorBoundary>
       </Suspense>
     </>

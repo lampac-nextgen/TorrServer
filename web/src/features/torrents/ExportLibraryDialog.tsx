@@ -1,5 +1,5 @@
 import { Button, Modal } from '@heroui/react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
 import { torrsShareUrl } from 'shared/api/extras'
@@ -14,11 +14,28 @@ export interface ExportLibraryDialogProps {
   torrents: TorrentStat[]
 }
 
-/** One-shot export of the visible library as magnets, torrs:// lines, or JSON. */
+type ExportKind = 'magnets' | 'torrs' | 'json'
+
+function downloadText(filename: string, text: string, mime: string) {
+  const blob = new Blob([text], { type: mime })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = filename
+  anchor.rel = 'noopener'
+  document.body.appendChild(anchor)
+  anchor.click()
+  document.body.removeChild(anchor)
+  URL.revokeObjectURL(url)
+}
+
+/** Full-library export (magnets / torrs:// / JSON) — uses the complete torrents list from API, not UI filters. */
 export default function ExportLibraryDialog({ open, onClose, torrents }: ExportLibraryDialogProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
   const isFullScreen = useDialogFullScreen()
+  const [copiedKind, setCopiedKind] = useState<ExportKind | null>(null)
+  const [manualText, setManualText] = useState<string | null>(null)
 
   const magnets = useMemo(
     () =>
@@ -48,14 +65,35 @@ export default function ExportLibraryDialog({ open, onClose, torrents }: ExportL
     [torrents],
   )
 
-  const copy = async (text: string) => {
+  const payload = (kind: ExportKind) => {
+    if (kind === 'magnets') return magnets
+    if (kind === 'torrs') return torrs
+    return json
+  }
+
+  const copy = async (kind: ExportKind) => {
+    const text = payload(kind)
     try {
       await copyToClipboard(text)
+      setCopiedKind(kind)
+      setManualText(null)
       toast?.showToast({ message: t('Copied'), severity: 'success' })
+      window.setTimeout(() => setCopiedKind(current => (current === kind ? null : current)), 2000)
     } catch {
-      toast?.showToast({ message: t('Error'), severity: 'error' })
+      setManualText(text)
+      toast?.showToast({ message: t('ExportCopyFailed'), severity: 'error' })
     }
   }
+
+  const download = (kind: ExportKind) => {
+    if (kind === 'magnets') downloadText('torrserver-magnets.txt', magnets, 'text/plain;charset=utf-8')
+    else if (kind === 'torrs') downloadText('torrserver-torrs.txt', torrs, 'text/plain;charset=utf-8')
+    else downloadText('torrserver-library.json', json, 'application/json;charset=utf-8')
+    toast?.showToast({ message: t('ExportDownloaded'), severity: 'success' })
+  }
+
+  const copyLabel = (kind: ExportKind, idle: string) =>
+    copiedKind === kind ? t('Copied') : idle
 
   return (
     <AppDialog open={open} onClose={onClose} size='sm' fullScreen={isFullScreen}>
@@ -64,33 +102,71 @@ export default function ExportLibraryDialog({ open, onClose, torrents }: ExportL
         <Modal.CloseTrigger aria-label={t('Close')} />
       </Modal.Header>
       <Modal.Body className='space-y-3'>
-        <p className='text-sm text-muted'>{torrents.length}</p>
+        <p className='text-sm text-muted'>{t('ExportLibraryCount', { count: torrents.length })}</p>
         <div className='flex flex-col gap-2'>
           <Button
             variant='secondary'
             className='min-h-11'
-            onPress={() => void copy(magnets)}
             isDisabled={!torrents.length}
+            onPress={() => void copy('magnets')}
           >
-            {t('ExportMagnets')}
+            {copyLabel('magnets', t('ExportMagnets'))}
           </Button>
           <Button
             variant='secondary'
             className='min-h-11'
-            onPress={() => void copy(torrs)}
             isDisabled={!torrents.length}
+            onPress={() => void copy('torrs')}
           >
-            {t('ExportTorrs')}
+            {copyLabel('torrs', t('ExportTorrs'))}
           </Button>
           <Button
             variant='secondary'
             className='min-h-11'
-            onPress={() => void copy(json)}
             isDisabled={!torrents.length}
+            onPress={() => void copy('json')}
           >
-            {t('ExportJson')}
+            {copyLabel('json', t('ExportJson'))}
           </Button>
         </div>
+        <div className='flex flex-col gap-2 border-t border-border/60 pt-3'>
+          <p className='text-xs text-muted'>{t('ExportDownloadHint')}</p>
+          <Button
+            variant='ghost'
+            className='min-h-11'
+            isDisabled={!torrents.length}
+            onPress={() => download('magnets')}
+          >
+            {t('ExportDownloadMagnets')}
+          </Button>
+          <Button
+            variant='ghost'
+            className='min-h-11'
+            isDisabled={!torrents.length}
+            onPress={() => download('torrs')}
+          >
+            {t('ExportDownloadTorrs')}
+          </Button>
+          <Button
+            variant='ghost'
+            className='min-h-11'
+            isDisabled={!torrents.length}
+            onPress={() => download('json')}
+          >
+            {t('ExportDownloadJson')}
+          </Button>
+        </div>
+        {manualText ? (
+          <div className='space-y-2 rounded-xl border border-border bg-surface-secondary p-3'>
+            <p className='text-xs text-muted'>{t('ExportManualCopyHint')}</p>
+            <textarea
+              className='h-32 w-full resize-y rounded-lg border border-border bg-surface p-2 font-mono text-xs text-foreground'
+              readOnly
+              value={manualText}
+              onFocus={event => event.currentTarget.select()}
+            />
+          </div>
+        ) : null}
       </Modal.Body>
       <Modal.Footer>
         <Button variant='secondary' onPress={onClose}>
