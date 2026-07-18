@@ -1,0 +1,1 @@
+import{b as e}from"./heroui-DMxKMzqy.js";import{F as t,rt as n}from"./index-CQtT5T7G.js";var r=`dialogsFullScreen`;function i(){let i=e(n(`dialog`)),[a]=t(r,!1);return i||a}export{i as n,r as t};

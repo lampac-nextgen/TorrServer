@@ -61,8 +61,14 @@ export default function StorageSettingsPanel({ backends, onBackendsChange }: Sto
         </Select>
       </SettingsSection>
 
+      {backends.viewedCount != null ? (
+        <p className='text-sm text-muted'>
+          {t('StorageViewedCount')}: <strong className='text-foreground'>{backends.viewedCount}</strong>
+        </p>
+      ) : null}
+
       <Alert status='accent'>
-        <Alert.Description>{t('SettingsDialog.StorageSettingsApplyHint')}</Alert.Description>
+        <Alert.Description>{t('StorageRestartHint')}</Alert.Description>
       </Alert>
     </div>
   )

@@ -7,6 +7,7 @@ import {
   Modal,
   Select,
   Spinner,
+  Switch,
   TextArea,
   TextField,
   useMediaQuery,
@@ -60,6 +61,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
   const [posterOptions, setPosterOptions] = useState<string[]>([])
   const [postersLoading, setPostersLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [saveToDb, setSaveToDb] = useState(true)
   const [multiFiles, setMultiFiles] = useState<File[] | null>(null)
   const [hashExists, setHashExists] = useState(false)
 
@@ -80,6 +82,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
     setPoster('')
     setPosterOptions([])
     setHashExists(false)
+    setSaveToDb(true)
     titleTouchedRef.current = false
   }
 
@@ -188,6 +191,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
         title: title || undefined,
         category: category || undefined,
         poster: poster || '',
+        save_to_db: saveToDb,
       })
       await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
       toast?.showToast({ message: t('Search.TorrentAdded'), severity: 'success' })
@@ -308,6 +312,20 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
             </TextField>
           </div>
         ) : null}
+
+        <div className='flex min-h-11 items-start justify-between gap-4'>
+          <div className='min-w-0 flex-1'>
+            <p className='text-sm font-medium text-foreground'>{t('AddDialog.SaveToDb')}</p>
+            <p className='mt-0.5 text-xs text-muted'>{t('AddDialog.SaveToDbHint')}</p>
+          </div>
+          <Switch
+            id='add-save-to-db'
+            isSelected={saveToDb}
+            onChange={setSaveToDb}
+            isDisabled={saving}
+            aria-label={t('AddDialog.SaveToDb')}
+          />
+        </div>
       </Modal.Body>
       <Modal.Footer className='shrink-0'>
         <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName}>

@@ -16,7 +16,15 @@ export const notifySettingsChanged = (): void => {
  */
 export const OPEN_SETTINGS_EVENT = 'torrserver:open-settings'
 
-export type SettingsDeepLinkTab = 'app'
+export type SettingsDeepLinkTab =
+  | 'primary'
+  | 'network'
+  | 'features'
+  | 'storage'
+  | 'appearance'
+  | 'app'
+  | 'gstreamer'
+  | 'torznab'
 
 export const requestOpenSettings = (tab: SettingsDeepLinkTab): void => {
   try {

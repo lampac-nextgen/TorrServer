@@ -69,4 +69,6 @@ func SetupRoute(route gin.IRouter) {
 	authorized.POST("/gst/settings", UpdateGStreamerSettings)
 
 	authorized.GET("/ffp/:hash/:id", ffp)
+
+	authorized.GET("/runtime/status", runtimeStatus)
 }

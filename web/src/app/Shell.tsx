@@ -27,7 +27,9 @@ import DialogErrorBoundary from 'shared/ui/DialogErrorBoundary'
 
 import BottomNav from './BottomNav'
 import Sidebar from './Sidebar'
+import NowPlayingBar from './NowPlayingBar'
 
+const CommandPalette = lazy(() => import('./CommandPalette'))
 const AddDialog = lazy(() => import('features/add/AddDialog'))
 const MultiAddDialog = lazy(() => import('features/add/MultiAddDialog'))
 const SearchDialog = lazy(() => import('features/search/SearchDialog'))
@@ -78,8 +80,8 @@ export default function Shell() {
   const [sidebarOpen, setSidebarOpen] = useLocalJsonPref('sidebarOpen', true)
 
   const [torrServerVersion, setTorrServerVersion] = useState('')
-  const [sortABC, setSortABC] = useState(false)
-  const [globalCategoryFilter, setGlobalCategoryFilter] = useState('all')
+  const [sortABC, setSortABC] = useLocalJsonPref('sortABC', false)
+  const [globalCategoryFilter, setGlobalCategoryFilter] = useLocalJsonPref('categoryFilter', 'all')
 
   const [addOpen, setAddOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -89,6 +91,7 @@ export default function Shell() {
   const [categoriesOpen, setCategoriesOpen] = useState(false)
   const [closeServerOpen, setCloseServerOpen] = useState(false)
   const [removeAllOpen, setRemoveAllOpen] = useState(false)
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
 
   const { isLoading, isError } = useTorrentsQuery()
   const isOffline = isError
@@ -113,6 +116,20 @@ export default function Shell() {
     }
     window.addEventListener(OPEN_SETTINGS_EVENT, openWithTab)
     return () => window.removeEventListener(OPEN_SETTINGS_EVENT, openWithTab)
+  }, [])
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'k') return
+      const target = event.target as HTMLElement | null
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return
+      }
+      event.preventDefault()
+      setCommandPaletteOpen(true)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
   }, [])
 
   const closeAdd = () => {
@@ -218,7 +235,7 @@ export default function Shell() {
           ) : null}
         </h1>
 
-        <HeaderIconButton label={sortABC ? t('SortByDate') : t('SortByName')} onPress={() => setSortABC(v => !v)}>
+        <HeaderIconButton label={sortABC ? t('SortByDate') : t('SortByName')} onPress={() => setSortABC(!sortABC)}>
           <SortIcon {...iconNav} />
         </HeaderIconButton>
 
@@ -314,6 +331,16 @@ export default function Shell() {
         <DialogErrorBoundary onClose={() => setRemoveAllOpen(false)}>
           <RemoveAllDialog open={removeAllOpen} onClose={() => setRemoveAllOpen(false)} />
         </DialogErrorBoundary>
+        <DialogErrorBoundary onClose={() => setCommandPaletteOpen(false)}>
+          <CommandPalette
+            open={commandPaletteOpen}
+            onClose={() => setCommandPaletteOpen(false)}
+            onAdd={() => setAddOpen(true)}
+            onSearch={() => setSearchOpen(true)}
+            onAbout={() => setAboutOpen(true)}
+            onToggleTheme={cycleTheme}
+          />
+        </DialogErrorBoundary>
         <DialogErrorBoundary onClose={() => setCategoriesOpen(false)}>
           <CategoriesDrawer
             open={categoriesOpen}
@@ -325,6 +352,7 @@ export default function Shell() {
         {detectApplePlatform().isIOS && !isStandaloneApp ? <PWAInstallationGuide /> : null}
         {!detectApplePlatform().isIOS && !isStandaloneApp ? <AndroidInstallBanner /> : null}
       </Suspense>
+      <NowPlayingBar />
     </div>
   )
 }

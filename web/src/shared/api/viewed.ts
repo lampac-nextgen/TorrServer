@@ -11,6 +11,14 @@ export const listViewedEntries = async (hash: string): Promise<ViewedFileEntry[]
   return Array.isArray(data) ? data : []
 }
 
+/**
+ * Cross-torrent viewed history. Empty hash asks the server for every Viewed key
+ * (`ListViewed("")` on the backend).
+ */
+export const listAllViewedEntries = async (): Promise<ViewedFileEntry[]> => listViewedEntries('')
+
+export const ALL_VIEWED_QUERY_KEY = ['viewed', 'all'] as const
+
 /** Sorted file indexes marked viewed — used by details badges / playlist-from-latest. */
 export const listViewedFiles = async (hash: string): Promise<number[] | undefined> => {
   const entries = await listViewedEntries(hash)

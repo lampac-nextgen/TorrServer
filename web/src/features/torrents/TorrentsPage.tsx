@@ -2,14 +2,17 @@ import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { Button, Input, Label, Spinner, TextField, useMediaQuery } from '@heroui/react'
-import { useQueryClient } from '@tanstack/react-query'
-import { CheckSquare, CloudOff, FolderPlus, ListMusic, Search, SearchX, Trash2, X } from 'lucide-react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { CheckSquare, CloudOff, FolderPlus, ListMusic, Search, SearchX, Share2, Trash2, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
-import { playlistAllUrl } from 'shared/api/extras'
+import { filteredPlaylistAllUrl } from 'shared/api/extras'
 import { dropTorrent, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
+import { useLocalJsonPref } from 'shared/hooks/useLocalPref'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
-import { listContinueWatching, removeContinueWatching } from 'shared/lib/continueWatching'
+import { ALL_VIEWED_QUERY_KEY, listAllViewedEntries } from 'shared/api/viewed'
+import { buildContinueWatchShelf } from 'shared/lib/serverContinueWatching'
+import { removeContinueWatching } from 'shared/lib/continueWatching'
 import { queryMax } from 'shared/theme/breakpoints'
 import { iconBtn } from 'shared/ui/controlClasses'
 import { iconEmpty, iconEmptyLg, iconMenu, iconNav } from 'shared/ui/iconProps'
@@ -20,6 +23,7 @@ import TorrentCard from './TorrentCard'
 
 const DetailsDialog = lazy(() => import('features/details/DetailsDialog'))
 const EditTorrentDialog = lazy(() => import('features/add/EditTorrentDialog'))
+const ExportLibraryDialog = lazy(() => import('./ExportLibraryDialog'))
 
 const lazyDialogFallback = (
   <div className='grid place-items-center p-4'>
@@ -39,7 +43,11 @@ const POSTER_GRID_CLASS = 'torrent-poster-grid grid min-h-full gap-4 p-4 pb-8 sm
 const SKELETON_TILE_COUNT = 12
 
 function sortTorrents(torrents: TorrentStat[], sortABC: boolean, sortCategory: string): TorrentStat[] {
-  const inCategory = torrents.filter(torrent => sortCategory === 'all' || torrent.category === sortCategory)
+  const inCategory = torrents.filter(torrent => {
+    if (sortCategory === 'all') return true
+    if (sortCategory === '') return !torrent.category
+    return torrent.category === sortCategory
+  })
 
   if (sortABC) {
     return [...inCategory].sort((a, b) => (a.title || '').localeCompare(b.title || '') || a.hash.localeCompare(b.hash))
@@ -67,29 +75,50 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
   const [detailsTorrent, setDetailsTorrent] = useState<TorrentStat | null>(null)
   const [resumePlay, setResumePlay] = useState<{ fileIndex: number; timecode: number } | null>(null)
   const [editingTorrent, setEditingTorrent] = useState<TorrentStat | null>(null)
-  const [libraryQuery, setLibraryQuery] = useState('')
+  const [libraryQuery, setLibraryQuery] = useLocalJsonPref('libraryQuery', '')
   const [libraryFilterOpen, setLibraryFilterOpen] = useState(false)
   const [selectionMode, setSelectionMode] = useState(false)
   const [selectedHashes, setSelectedHashes] = useState<Set<string>>(() => new Set())
   const [continueTick, setContinueTick] = useState(0)
 
   const { data: torrents, isLoading, isError, error, refetch } = useTorrentsQuery()
+  const { data: serverViewed } = useQuery({
+    queryKey: ALL_VIEWED_QUERY_KEY,
+    queryFn: listAllViewedEntries,
+    enabled: Boolean(torrents?.length),
+    staleTime: 15_000,
+  })
+
+  const [smartCollection, setSmartCollection] = useLocalJsonPref<
+    'all' | 'active' | 'noPoster' | 'unwatched'
+  >('smartCollection', 'all')
+  const [exportOpen, setExportOpen] = useState(false)
 
   const visibleTorrents = useMemo(() => {
     const sorted = torrents ? sortTorrents(torrents, sortABC, sortCategory) : []
     const q = libraryQuery.trim().toLowerCase()
-    if (!q) return sorted
-    return sorted.filter(torrent => {
-      const hay = `${torrent.title || ''} ${torrent.name || ''} ${torrent.category || ''} ${torrent.hash}`.toLowerCase()
-      return hay.includes(q)
-    })
-  }, [torrents, sortABC, sortCategory, libraryQuery])
+    let list = sorted
+    if (q) {
+      list = list.filter(torrent => {
+        const hay = `${torrent.title || ''} ${torrent.name || ''} ${torrent.category || ''} ${torrent.hash}`.toLowerCase()
+        return hay.includes(q)
+      })
+    }
+    if (smartCollection === 'active') {
+      list = list.filter(tr => (tr.download_speed || 0) > 0 || (tr.upload_speed || 0) > 0 || (tr.active_peers || 0) > 0)
+    } else if (smartCollection === 'noPoster') {
+      list = list.filter(tr => !tr.poster)
+    } else if (smartCollection === 'unwatched') {
+      const viewedHashes = new Set((serverViewed || []).map(v => v.hash).filter(Boolean) as string[])
+      list = list.filter(tr => !viewedHashes.has(tr.hash))
+    }
+    return list
+  }, [torrents, sortABC, sortCategory, libraryQuery, smartCollection, serverViewed])
 
-  const continueEntries = useMemo(() => {
-    void continueTick
-    const hashes = new Set((torrents || []).map(item => item.hash))
-    return listContinueWatching(hashes).slice(0, 6)
-  }, [torrents, continueTick])
+  const continueEntries = useMemo(
+    () => buildContinueWatchShelf(torrents, serverViewed, continueTick),
+    [torrents, serverViewed, continueTick],
+  )
 
   const visibleHashKey = useMemo(() => visibleTorrents.map(torrent => torrent.hash).join(','), [visibleTorrents])
   const prevHashesRef = useRef<Set<string>>(new Set())
@@ -223,11 +252,21 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
         size='sm'
         variant='secondary'
         className='min-h-11'
-        onPress={() => window.open(playlistAllUrl(), '_blank')}
+        onPress={() => window.open(filteredPlaylistAllUrl(sortCategory, libraryQuery), '_blank')}
         aria-label={t('DownloadAllPlaylists')}
       >
         <ListMusic {...iconMenu} aria-hidden />
         <span className='hidden sm:inline'>{t('DownloadAllPlaylists')}</span>
+      </Button>
+      <Button
+        size='sm'
+        variant='secondary'
+        className='min-h-11'
+        onPress={() => setExportOpen(true)}
+        aria-label={t('ExportLibrary')}
+      >
+        <Share2 {...iconMenu} aria-hidden />
+        <span className='hidden sm:inline'>{t('ExportLibrary')}</span>
       </Button>
       {selectionMode && selectedHashes.size > 0 ? (
         <>
@@ -264,8 +303,11 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
         <div className='flex flex-col items-center gap-3'>
           <CloudOff {...iconEmptyLg} className='text-muted' />
           <p className='text-lg font-semibold text-foreground'>
-            {unauthorized ? t('AuthRequired') : t('NoServerConnection')}
+            {unauthorized ? t('AuthRequiredTitle') : t('NoServerConnection')}
           </p>
+          {unauthorized ? (
+            <p className='max-w-md text-sm text-muted'>{t('AuthRequiredHint')}</p>
+          ) : null}
           <Button variant='primary' onPress={() => void refetch()}>
             {t('Retry')}
           </Button>
@@ -292,9 +334,34 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
     <>
       {toolbar}
 
+      {!selectionMode ? (
+        <div className='flex flex-wrap gap-1.5 border-b border-border/60 px-3 py-2 sm:px-4'>
+          {(
+            [
+              ['all', t('All')],
+              ['active', t('SmartCollectionActive')],
+              ['noPoster', t('SmartCollectionNoPoster')],
+              ['unwatched', t('SmartCollectionUnwatched')],
+            ] as const
+          ).map(([id, label]) => (
+            <Button
+              key={id}
+              size='sm'
+              variant={smartCollection === id ? 'primary' : 'ghost'}
+              className='min-h-9'
+              onPress={() => setSmartCollection(id)}
+            >
+              {label}
+            </Button>
+          ))}
+        </div>
+      ) : null}
+
       {continueEntries.length > 0 && !selectionMode && !libraryQuery ? (
         <section className='border-b border-border/60 px-3 py-3 sm:px-4'>
-          <p className='mb-2 text-xs font-semibold uppercase tracking-wide text-muted'>{t('ContinueWatching')}</p>
+          <p className='mb-2 text-xs font-semibold uppercase tracking-wide text-muted'>
+            {serverViewed?.length ? t('ContinueWatchingServer') : t('ContinueWatching')}
+          </p>
           <div className='flex gap-2 overflow-x-auto pb-1'>
             {continueEntries.map(entry => {
               const torrent = torrents.find(item => item.hash === entry.hash)
@@ -395,6 +462,16 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
           open={Boolean(editingTorrent)}
           onClose={() => setEditingTorrent(null)}
         />
+      </Suspense>
+
+      <Suspense fallback={lazyDialogFallback}>
+        <DialogErrorBoundary onClose={() => setExportOpen(false)}>
+          <ExportLibraryDialog
+            open={exportOpen}
+            onClose={() => setExportOpen(false)}
+            torrents={visibleTorrents}
+          />
+        </DialogErrorBoundary>
       </Suspense>
     </>
   )

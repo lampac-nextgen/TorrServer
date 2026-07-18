@@ -8,7 +8,7 @@ import { Cog, Film, HardDrive, Palette, Rss, SlidersHorizontal, Smartphone, Wifi
 
 import type { BTSets } from 'shared/api/types'
 import { getSettings, setSettings, resetSettings, SETTINGS_QUERY_KEY } from 'shared/api/settings'
-import { getGstSettings, setGstSettings } from 'shared/api/gst'
+import { getGstSettings, setGstSettings, resetGstSettings } from 'shared/api/gst'
 import {
   defaultStorageSettings,
   getStorageSettings,
@@ -354,7 +354,15 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
             <Button
               className='mt-4'
               variant='secondary'
-              onPress={() => setGstConfig({ ...emptyGstConfig(), ...gstDefaults })}
+              onPress={() => {
+                void resetGstSettings()
+                  .then(data => {
+                    setGstConfig({ ...emptyGstConfig(), ...(data.config || data.defaults || {}) })
+                    setGstDefaults({ ...emptyGstConfig(), ...(data.defaults || {}) })
+                    toast?.showToast({ message: t('SettingsDialog.ResetToDefault'), severity: 'success' })
+                  })
+                  .catch(() => toast?.showToast({ message: t('Error'), severity: 'error' }))
+              }}
             >
               {t('SettingsDialog.ResetToDefault')}
             </Button>

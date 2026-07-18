@@ -9,6 +9,7 @@ import {
   MoreHorizontal,
   Play,
   Settings,
+  Share2,
   SquareArrowOutUpRight,
   Trash2,
 } from 'lucide-react'
@@ -16,9 +17,9 @@ import ptt from 'parse-torrent-title'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { PlayableFile } from 'shared/api/types'
-import { playlistAllUrl } from 'shared/api/extras'
+import { playlistAllUrl, torrsShareUrl } from 'shared/api/extras'
 import { playlistTorrHost, streamHost } from 'shared/api/hosts'
-import { dropTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
+import { dropTorrent, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { clearViewedFiles } from 'shared/api/viewed'
 import { useExternalPlayers } from 'shared/lib/externalPlayers'
 import { copyToClipboard } from 'shared/lib/clipboard'
@@ -31,6 +32,7 @@ import { usePlayLauncher } from 'features/player/usePlayLauncher'
 
 export interface TorrentActionsProps {
   hash: string
+  torrsHash?: string
   viewedFileList?: number[]
   playableFileList?: PlayableFile[]
   name?: string
@@ -38,6 +40,8 @@ export interface TorrentActionsProps {
   setViewedFileList: (list?: number[]) => void
   onViewedChange?: () => void
   onDropped?: () => void
+  /** After permanent delete — close details. */
+  onDeleted?: () => void
   /** Switch details sheet to the Files tab (multi-file "Play" entry point). */
   onShowFiles?: () => void
   /** Continue Watching: auto-play this file when the list is ready. */
@@ -47,7 +51,7 @@ export interface TorrentActionsProps {
   compact?: boolean
 }
 
-type PendingConfirm = 'drop' | 'clearViews' | null
+type PendingConfirm = 'drop' | 'delete' | 'clearViews' | null
 
 /** Renders Infuse/VLC/… as a single button or a ButtonGroup when several are enabled. */
 function ExternalPlayersGroup({
@@ -86,6 +90,7 @@ function ExternalPlayersGroup({
  */
 function TorrentActions({
   hash,
+  torrsHash,
   viewedFileList,
   playableFileList,
   name,
@@ -93,6 +98,7 @@ function TorrentActions({
   setViewedFileList,
   onViewedChange,
   onDropped,
+  onDeleted,
   onShowFiles,
   autoPlayFileId,
   autoPlayTimecode,
@@ -151,6 +157,14 @@ function TorrentActions({
           onDropped?.()
         })
         .catch(() => toast?.showToast({ message: t('Error'), severity: 'error' }))
+    } else if (pendingConfirm === 'delete') {
+      void removeTorrent(hash)
+        .then(async () => {
+          toast?.showToast({ message: t('Delete'), severity: 'success' })
+          await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
+          onDeleted?.()
+        })
+        .catch(() => toast?.showToast({ message: t('Error'), severity: 'error' }))
     } else if (pendingConfirm === 'clearViews') {
       void clearViewedFiles(hash)
         .then(() => {
@@ -161,6 +175,19 @@ function TorrentActions({
     }
     setPendingConfirm(null)
   }
+
+  const confirmHeading =
+    pendingConfirm === 'drop'
+      ? t('DropTorrent')
+      : pendingConfirm === 'delete'
+        ? t('Delete')
+        : t('RemoveViews')
+  const confirmBody =
+    pendingConfirm === 'drop'
+      ? t('ConfirmDropTorrent')
+      : pendingConfirm === 'delete'
+        ? t('ConfirmDeleteTorrent')
+        : t('ConfirmRemoveViews')
 
   const copyMagnetLink = async () => {
     try {
@@ -174,6 +201,15 @@ function TorrentActions({
   const copyInfoHash = async () => {
     try {
       await copyToClipboard(hash)
+      toast?.showToast({ message: t('Copied'), severity: 'success' })
+    } catch {
+      toast?.showToast({ message: t('Error'), severity: 'error' })
+    }
+  }
+
+  const copyTorrsLink = async () => {
+    try {
+      await copyToClipboard(torrsShareUrl({ hash, torrs_hash: torrsHash }))
       toast?.showToast({ message: t('Copied'), severity: 'success' })
     } catch {
       toast?.showToast({ message: t('Error'), severity: 'error' })
@@ -210,14 +246,17 @@ function TorrentActions({
         <Modal.Container size='sm'>
           <Modal.Dialog>
             <Modal.Header>
-              <Modal.Heading>{pendingConfirm === 'drop' ? t('DropTorrent') : t('RemoveViews')}</Modal.Heading>
+              <Modal.Heading>{confirmHeading}</Modal.Heading>
             </Modal.Header>
-            <Modal.Body>{pendingConfirm === 'drop' ? t('ConfirmDropTorrent') : t('ConfirmRemoveViews')}</Modal.Body>
+            <Modal.Body>{confirmBody}</Modal.Body>
             <Modal.Footer>
               <Button variant='secondary' onPress={() => setPendingConfirm(null)} autoFocus>
                 {t('Cancel')}
               </Button>
-              <Button variant={pendingConfirm === 'drop' ? 'danger' : 'primary'} onPress={runPendingConfirm}>
+              <Button
+                variant={pendingConfirm === 'drop' || pendingConfirm === 'delete' ? 'danger' : 'primary'}
+                onPress={runPendingConfirm}
+              >
                 {t('OK')}
               </Button>
             </Modal.Footer>
@@ -278,6 +317,10 @@ function TorrentActions({
                   <Hash {...iconMenu} />
                   {t('CopyHash')}
                 </Dropdown.Item>
+                <Dropdown.Item onPress={() => void copyTorrsLink()}>
+                  <Share2 {...iconMenu} />
+                  {t('CopyTorrs')}
+                </Dropdown.Item>
                 <Dropdown.Item onPress={() => window.open(playlistAllUrl({ category: undefined }), '_blank')}>
                   <ListMusic {...iconMenu} />
                   {t('DownloadAllPlaylists')}
@@ -289,6 +332,10 @@ function TorrentActions({
                 <Dropdown.Item onPress={() => setPendingConfirm('drop')}>
                   <Trash2 {...iconMenu} />
                   {t('DropTorrent')}
+                </Dropdown.Item>
+                <Dropdown.Item onPress={() => setPendingConfirm('delete')}>
+                  <Trash2 {...iconMenu} />
+                  {t('Delete')}
                 </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown.Popover>
@@ -436,6 +483,10 @@ function TorrentActions({
               <Hash {...iconMenu} aria-hidden />
               {t('CopyHash')}
             </Button>
+            <Button variant='secondary' onPress={() => void copyTorrsLink()}>
+              <Share2 {...iconMenu} aria-hidden />
+              {t('CopyTorrs')}
+            </Button>
           </ButtonGroup>
           <Button variant='tertiary' onPress={() => window.open(playlistAllUrl({ category: undefined }), '_blank')}>
             <ListMusic {...iconMenu} aria-hidden />
@@ -456,6 +507,10 @@ function TorrentActions({
           <Button variant='danger' onPress={() => setPendingConfirm('drop')}>
             <Trash2 {...iconMenu} aria-hidden />
             {t('DropTorrent')}
+          </Button>
+          <Button variant='danger' onPress={() => setPendingConfirm('delete')}>
+            <Trash2 {...iconMenu} aria-hidden />
+            {t('Delete')}
           </Button>
         </div>
       </div>

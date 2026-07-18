@@ -23,6 +23,18 @@ export const setGstSettings = async (config: Record<string, unknown>): Promise<v
   if (!response.ok) throw new Error('Failed to save GStreamer settings')
 }
 
+/** Reset GST pipeline config to platform defaults on the server (`action: def`). */
+export const resetGstSettings = async (): Promise<GstSettingsResponse> => {
+  const response = await fetch(gstSettingsHost(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'def' }),
+  })
+  if (!response.ok) throw new Error('Failed to reset GStreamer settings')
+  // Server may return empty body — reload so UI gets defaults + current config.
+  return getGstSettings()
+}
+
 /** Lightweight GST pipeline health probe (plain text body). */
 export const getGstEcho = async (signal?: AbortSignal): Promise<string> => {
   const response = await fetch(gstEchoHost(), { signal })

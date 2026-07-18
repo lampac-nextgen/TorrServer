@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
 import { Button, Dropdown, Modal, Spinner, Tooltip, useOverlayState } from '@heroui/react'
-import { Info, ListMusic, MoreVertical, Pencil, Play, SquareArrowOutUpRight, Trash2, X } from 'lucide-react'
+import { Info, ListMusic, MoreVertical, Pencil, Play, Share2, SquareArrowOutUpRight, Trash2, X } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
+import { torrsShareUrl } from 'shared/api/extras'
 import { playlistTorrHost, streamHost } from 'shared/api/hosts'
 import { dropTorrent, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
+import { copyToClipboard } from 'shared/lib/clipboard'
 import { useExternalPlayers } from 'shared/lib/externalPlayers'
 import { filesFromMetadata } from 'shared/torrent/fileMetadata'
 import { isFilePlayable } from 'shared/torrent/playable'
@@ -146,6 +148,16 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
                   {t('EditTorrent')}
                 </Dropdown.Item>
               ) : null}
+              <Dropdown.Item
+                onPress={() => {
+                  void copyToClipboard(torrsShareUrl(torrent))
+                    .then(() => toast?.showToast({ message: t('Copied'), severity: 'success' }))
+                    .catch(() => toast?.showToast({ message: t('Error'), severity: 'error' }))
+                }}
+              >
+                <Share2 {...iconMenu} />
+                {t('CopyTorrs')}
+              </Dropdown.Item>
               {externalPlayers.map(player => (
                 <Dropdown.Item
                   key={player.label}

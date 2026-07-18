@@ -32,6 +32,8 @@ import { toPlayableFile } from 'shared/torrent/toPlayableFile'
 import FileBrowser from './FileBrowser'
 import CacheMapDialog from './CacheMapDialog'
 import EditPosterDialog from './EditPosterDialog'
+import CacheHeatSparkline from './CacheHeatSparkline'
+import SwarmStatsPanel from './SwarmStatsPanel'
 import SpeedCharts from './SpeedCharts'
 import TorrentActions from './TorrentActions'
 import TorrentCache from './TorrentCache'
@@ -438,6 +440,10 @@ export default function DetailsDialog({
                     compact
                   />
 
+                  <SwarmStatsPanel torrent={torrent} />
+
+                  <CacheHeatSparkline filled={cache.Filled} capacity={cache.Capacity} />
+
                   {isFullScreen ? (
                     <div className='flex gap-2'>
                       <Button
@@ -466,6 +472,7 @@ export default function DetailsDialog({
 
                   <TorrentActions
                     hash={hash}
+                    torrsHash={torrent.torrs_hash}
                     name={name}
                     title={title}
                     playableFileList={playableFileList}
@@ -473,6 +480,7 @@ export default function DetailsDialog({
                     setViewedFileList={setViewedFileList}
                     onViewedChange={refreshViewed}
                     onDropped={onClose}
+                    onDeleted={onClose}
                     onShowFiles={() => setActiveTab('files')}
                     autoPlayFileId={autoPlayFileId}
                     autoPlayTimecode={autoPlayTimecode}

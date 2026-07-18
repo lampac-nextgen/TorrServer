@@ -25,10 +25,16 @@ export interface TorrentStat {
   active_peers?: number
   total_peers?: number
   connected_seeders?: number
+  pending_peers?: number
+  half_open_peers?: number
+  bytes_read?: number
+  bytes_written?: number
   timestamp?: number
   stat?: number
   stat_string?: string
   data?: string
+  /** Packed `torrs://` token from the server (infohash + title/poster/category). */
+  torrs_hash?: string
   file_stats?: TorrentFileStat[]
 }
 

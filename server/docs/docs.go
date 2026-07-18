@@ -729,6 +729,31 @@ const docTemplate = `{
                 }
             }
         },
+        "/runtime/status": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Read-only flags for DLNA, Bonjour, WebDAV, and FUSE.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "API"
+                ],
+                "summary": "Runtime integration status",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.RuntimeStatus"
+                        }
+                    }
+                }
+            }
+        },
         "/search": {
             "get": {
                 "security": [
@@ -1281,6 +1306,32 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "api.RuntimeStatus": {
+            "type": "object",
+            "properties": {
+                "bonjour_enabled": {
+                    "type": "boolean"
+                },
+                "dlna_enabled": {
+                    "type": "boolean"
+                },
+                "friendly_name": {
+                    "type": "string"
+                },
+                "fuse_enabled": {
+                    "type": "boolean"
+                },
+                "fuse_path": {
+                    "type": "string"
+                },
+                "webdav_enabled": {
+                    "type": "boolean"
+                },
+                "webdav_path": {
+                    "type": "string"
+                }
+            }
+        },
         "api.cacheReqJS": {
             "type": "object",
             "properties": {

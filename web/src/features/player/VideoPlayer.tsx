@@ -40,6 +40,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { setViewedFile } from 'shared/api/viewed'
 import { rememberContinueWatching } from 'shared/lib/continueWatching'
+import { setNowPlaying } from 'shared/lib/nowPlaying'
 import { gstreamerMasterUrl, gstreamerProbeUrl } from 'shared/lib/gstreamer'
 import { queryMax } from 'shared/theme/breakpoints'
 import { useModalOpen, useSyncModalOpen } from 'shared/ui/ModalOpenContext'
@@ -329,6 +330,15 @@ export default function VideoPlayer({
     setImmersive(true)
     return () => setImmersive(false)
   }, [isMobile, open, setImmersive])
+
+  useEffect(() => {
+    if (!open) {
+      setNowPlaying(null)
+      return
+    }
+    setNowPlaying({ title: title || t('Play'), hash })
+    return () => setNowPlaying(null)
+  }, [open, title, hash, t])
 
   useEffect(() => {
     const probe = document.createElement('video')

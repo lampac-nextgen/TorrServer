@@ -2,6 +2,16 @@ import axios from 'axios'
 
 import { downloadTestHost, ffpHost, playlistAllHost } from 'shared/api/hosts'
 
+/**
+ * Maps UI category filter (`all` / `''` uncategorized / named) to the M3U API query value.
+ * Server expects `uncategorized` for empty category torrents.
+ */
+export const playlistCategoryQuery = (sortCategory: string): string | undefined => {
+  if (sortCategory === 'all') return undefined
+  if (sortCategory === '') return 'uncategorized'
+  return sortCategory
+}
+
 /** Library-wide M3U; optional `category` / `search` query filters. */
 export const playlistAllUrl = (opts?: { category?: string; search?: string }): string => {
   const params = new URLSearchParams()
@@ -10,6 +20,21 @@ export const playlistAllUrl = (opts?: { category?: string; search?: string }): s
   const query = params.toString()
   return query ? `${playlistAllHost()}?${query}` : playlistAllHost()
 }
+
+/** Build filtered playlist URL from the current library chrome (category + text filter). */
+export const filteredPlaylistAllUrl = (sortCategory: string, libraryQuery?: string): string =>
+  playlistAllUrl({
+    category: playlistCategoryQuery(sortCategory),
+    search: libraryQuery?.trim() || undefined,
+  })
+
+/** Prefer server-packed token; otherwise a bare infohash link (still importable). */
+export const torrsShareUrl = (torrent: { hash: string; torrs_hash?: string }): string =>
+  torrent.torrs_hash
+    ? torrent.torrs_hash.startsWith('torrs://')
+      ? torrent.torrs_hash
+      : `torrs://${torrent.torrs_hash}`
+    : `torrs://${torrent.hash}`
 
 export interface FfpStream {
   index?: number

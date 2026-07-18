@@ -6,6 +6,7 @@ import type { BTSets } from 'shared/api/types'
 
 import { SettingSwitch } from './SettingSwitch'
 import SettingsSection from './SettingsSection'
+import IntegrationsStatusSection from './IntegrationsStatusSection'
 
 export interface FeaturesSettingsPanelProps {
   settings: BTSets
@@ -25,6 +26,7 @@ export default function FeaturesSettingsPanel({
 
   return (
     <div className='space-y-6'>
+      <IntegrationsStatusSection />
       <SettingsSection icon={<Radar />} title={t('SettingsDialog.SectionDiscovery')}>
         <SettingSwitch
           id='EnableDLNA'
