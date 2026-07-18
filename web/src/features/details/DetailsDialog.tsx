@@ -127,7 +127,7 @@ export default function DetailsDialog({
   const { data: liveTorrent } = useTorrentDetail(hash, initialTorrent)
   const torrent = liveTorrent ?? initialTorrent
 
-  const [activeTab, setActiveTab] = useState<DetailsTab | null>(null)
+  const [activeTab, setActiveTab] = useState<DetailsTab>('overview')
   const [viewedFileList, setViewedFileList] = useState<number[] | undefined>()
   const [seasonList, setSeasonList] = useState<number[] | null>(null)
   const [selectedSeason, setSelectedSeason] = useState<number | undefined>()
@@ -153,8 +153,9 @@ export default function DetailsDialog({
     return files.filter(({ path }) => isFilePlayable(path))
   }, [fileStats, data])
 
-  // Multi-file / series: default to Content so Play / Copy / external players are visible up front.
-  const resolvedTab: DetailsTab = activeTab ?? (playableFileList.length > 1 ? 'files' : 'overview')
+  // Stay on Overview until the user (or Play → onShowFiles) switches tabs.
+  // Do not auto-jump to Files when metadata arrives — that felt like the sheet "teleporting".
+  const resolvedTab = activeTab
 
   const cache = useUpdateCache(hash, {
     // Fast snake on Cache tab or while the large map dialog is open.
