@@ -44,7 +44,12 @@ export default function AboutDialog({ open, onClose }: AboutDialogProps) {
         <div className='flex flex-col items-center gap-3 pb-2 pt-1 text-center'>
           <img src={publicUrl('icon.png')} alt='TorrServer' className='size-[72px] rounded-2xl shadow-lg' />
           <h2 className='text-lg font-semibold text-foreground'>
-            TorrServer {version === null ? <span className='inline-block h-4 w-12 animate-pulse rounded bg-surface-secondary align-middle' /> : version}
+            TorrServer{' '}
+            {version === null ? (
+              <span className='inline-block h-4 w-12 animate-pulse rounded bg-surface-secondary align-middle' />
+            ) : (
+              version
+            )}
           </h2>
           <p className='text-muted'>{t('ThanksToEveryone')}</p>
         </div>

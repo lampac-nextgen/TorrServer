@@ -15,12 +15,12 @@ export interface SettingsSectionProps {
 export default function SettingsSection({ icon, title, description, children, className }: SettingsSectionProps) {
   return (
     <section className={className}>
-      <div className='mb-2.5 flex items-center gap-2'>
-        {icon ? <span className='text-muted [&>svg]:size-4'>{icon}</span> : null}
+      <div className='mb-2 flex items-start gap-2'>
+        {icon ? <span className='mt-0.5 shrink-0 text-muted [&>svg]:size-4'>{icon}</span> : null}
         <h3 className='text-xs font-semibold tracking-wide text-muted uppercase'>{title}</h3>
       </div>
-      {description ? <p className='mb-3 text-sm text-muted'>{description}</p> : null}
-      <div className='space-y-4 rounded-lg border border-border bg-surface-secondary p-4'>{children}</div>
+      {description ? <p className='mb-3 max-w-prose text-sm leading-relaxed text-muted'>{description}</p> : null}
+      <div className='space-y-4 rounded-xl border border-border bg-surface-secondary p-4 sm:p-5'>{children}</div>
     </section>
   )
 }

@@ -21,12 +21,14 @@ export interface SettingSwitchProps {
 /** Reusable labeled toggle row shared across settings panels. */
 export function SettingSwitch({ id, label, helper, checked, onChange }: SettingSwitchProps) {
   return (
-    <div className='flex min-h-12 items-start justify-between gap-4 py-2.5'>
-      <div className='min-w-0 flex-1 pr-4'>
-        <Label htmlFor={id}>{label}</Label>
-        {helper ? <Description>{helper}</Description> : null}
+    <div className='flex min-h-12 items-start justify-between gap-3 py-1 sm:gap-4'>
+      <div className='min-w-0 flex-1 pr-2 sm:pr-4'>
+        <Label htmlFor={id} className='text-sm leading-snug text-wrap'>
+          {label}
+        </Label>
+        {helper ? <Description className='mt-1 text-wrap leading-relaxed'>{helper}</Description> : null}
       </div>
-      <Switch id={id} isSelected={checked} onChange={value => onChange(id, value)}>
+      <Switch id={id} isSelected={checked} onChange={value => onChange(id, value)} className='shrink-0'>
         <Switch.Content>
           <Switch.Control>
             <Switch.Thumb />

@@ -1,4 +1,3 @@
-import { useMediaQuery } from '@heroui/react'
 import { CheckCircle2 } from 'lucide-react'
 import { memo, useMemo, useState, type ReactNode } from 'react'
 import ptt from 'parse-torrent-title'
@@ -13,7 +12,6 @@ import {
 } from 'shared/lib/gstreamer'
 import { useExternalPlayers } from 'shared/lib/externalPlayers'
 import { humanizeSize } from 'shared/lib/format'
-import { queryMax } from 'shared/theme/breakpoints'
 
 import FileRowActions from './FileRowActions'
 
@@ -48,40 +46,53 @@ interface FileRow {
   fullLink: string
 }
 
-function FileCard({
-  name,
-  size,
-  viewed,
-  actions,
-}: {
-  name: string
-  size: number
-  viewed: boolean
-  actions: ReactNode
-}) {
+function episodeBadge(episode?: number): string | null {
+  if (episode == null) return null
+  return `E${String(episode).padStart(2, '0')}`
+}
+
+/** Streaming-style episode/file row — title + meta chips + compact action strip. */
+function EpisodeRow({ row, actions }: { row: FileRow; actions: ReactNode }) {
   const { t } = useTranslation()
+  const badge = episodeBadge(row.episode)
+  const title = row.episode != null ? row.name.replace(/^E\d+\s*[·.-]\s*/i, '').trim() || row.name : row.name
 
   return (
     <div
-      className={`overflow-hidden rounded-xl border border-border bg-surface-secondary ${viewed ? '' : 'border-l-4 border-l-accent'}`}
+      className={`flex flex-col gap-3 rounded-xl border border-border bg-surface px-3.5 py-3 sm:flex-row sm:items-center sm:gap-4 ${
+        row.viewed ? 'opacity-80' : 'border-l-[3px] border-l-accent'
+      }`}
     >
-      <div className='px-3 py-2'>
-        <p className='break-words text-sm font-semibold text-foreground'>{name}</p>
-      </div>
-      <div className='px-3 pb-3'>
-        <div className='mb-2 flex items-center gap-3 text-xs text-muted'>
-          {viewed ? (
-            <span className='inline-flex items-center gap-1 text-accent'>
-              <CheckCircle2 className='size-3.5' aria-hidden />
-              {t('Viewed')}
-            </span>
-          ) : null}
-          <span>
-            {t('Size')}: {humanizeSize(size)}
+      <div className='flex min-w-0 flex-1 items-start gap-3'>
+        {badge ? (
+          <span className='mt-0.5 inline-flex h-9 min-w-11 shrink-0 items-center justify-center rounded-lg bg-accent-soft px-2 text-sm font-bold tabular-nums text-accent'>
+            {badge}
           </span>
+        ) : null}
+        <div className='min-w-0 flex-1'>
+          <div className='flex flex-wrap items-center gap-2'>
+            <p className='truncate text-sm font-semibold text-foreground' title={row.path}>
+              {title}
+            </p>
+            {row.viewed ? (
+              <span className='inline-flex items-center gap-1 text-xs text-accent'>
+                <CheckCircle2 className='size-3.5' aria-hidden />
+                {t('Viewed')}
+              </span>
+            ) : null}
+          </div>
+          <div className='mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted'>
+            {row.season != null ? (
+              <span>
+                {t('Season')} {row.season}
+              </span>
+            ) : null}
+            {row.resolution ? <span>{row.resolution}</span> : null}
+            <span>{humanizeSize(row.size)}</span>
+          </div>
         </div>
-        {actions}
       </div>
+      <div className='shrink-0 sm:ml-auto'>{actions}</div>
     </div>
   )
 }
@@ -89,7 +100,6 @@ function FileCard({
 const FilesDataGrid = memo(
   ({ playableFileList, viewedFileList, selectedSeason, seasonAmount, hash }: FilesDataGridProps) => {
     const { t } = useTranslation()
-    const isCompactLayout = useMediaQuery(queryMax('shortTable'))
     const [unsupportedPlayerKeys, setUnsupportedPlayerKeys] = useState<Record<string, boolean>>({})
     const gstRuntime = useGStreamerRuntime()
     const { buildExternalPlayers, shouldShowOpenLink } = useExternalPlayers()
@@ -116,8 +126,6 @@ const FilesDataGrid = memo(
     }
 
     const fileHasEpisodeText = !!playableFileList?.find(({ path }) => ptt.parse(path).episode)
-    const fileHasSeasonText = !!playableFileList?.find(({ path }) => ptt.parse(path).season)
-    const fileHasResolutionText = !!playableFileList?.find(({ path }) => ptt.parse(path).resolution)
     const shouldDisplayFullFileName = (playableFileList?.length ?? 0) > 1 && !fileHasEpisodeText
 
     const filteredFiles = useMemo(() => {
@@ -160,76 +168,35 @@ const FilesDataGrid = memo(
       [filteredFiles, viewedFileList, shouldDisplayFullFileName, hash, gstRuntime, unsupportedPlayerKeys],
     )
 
-    const renderRowActions = (row: FileRow) => (
-      <FileRowActions
-        preloadLabel={t('Preload')}
-        onPreload={() => preloadBuffer(row.id)}
-        playerSupported={!unsupportedPlayerKeys[row.player.key]}
-        playerTitle={row.name}
-        playerSrc={row.player.src}
-        downloadSrc={row.link}
-        hls={row.player.hls}
-        heartbeatSrc={row.player.heartbeatSrc}
-        onPlayerNotSupported={() => markPlayerUnsupported(row.player.key)}
-        openLinkHref={row.link}
-        showOpenLink={shouldShowOpenLink}
-        copyText={row.fullLink}
-        externalPlayers={buildExternalPlayers(row.fullLink)}
-      />
-    )
-
     if (!playableFileList?.length) {
       return <p className='py-6 text-center text-sm text-muted'>{t('NoPlayableFiles')}</p>
     }
 
-    if (isCompactLayout) {
-      return (
-        <div className='space-y-3'>
-          {rows.map(row => (
-            <FileCard
-              key={row.id}
-              name={row.name}
-              size={row.size}
-              viewed={row.viewed}
-              actions={renderRowActions(row)}
-            />
-          ))}
-        </div>
-      )
-    }
-
     return (
-      <div className='w-full overflow-auto rounded-xl border border-border'>
-        <table className='w-full min-w-[680px] border-collapse text-sm'>
-          <thead className='bg-surface-tertiary text-left text-xs uppercase tracking-wide text-muted'>
-            <tr>
-              <th className='px-3 py-2'>{t('Viewed')}</th>
-              <th className='px-3 py-2'>{t('Name')}</th>
-              {fileHasSeasonText && seasonAmount?.length === 1 ? <th className='px-3 py-2'>{t('Season')}</th> : null}
-              {fileHasEpisodeText ? <th className='px-3 py-2'>{t('Episode')}</th> : null}
-              {fileHasResolutionText ? <th className='px-3 py-2'>{t('Resolution')}</th> : null}
-              <th className='px-3 py-2'>{t('Size')}</th>
-              <th className='px-3 py-2'>{t('Actions')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map(row => (
-              <tr key={row.id} className={`border-t border-border ${row.viewed ? 'bg-surface-secondary' : ''}`}>
-                <td className='px-3 py-2 text-center'>
-                  {row.viewed ? <CheckCircle2 className='mx-auto size-4 text-accent' aria-label={t('Viewed')} /> : null}
-                </td>
-                <td className='px-3 py-2 align-top text-foreground'>{row.name}</td>
-                {fileHasSeasonText && seasonAmount?.length === 1 ? (
-                  <td className='px-3 py-2 text-muted'>{row.season ?? '—'}</td>
-                ) : null}
-                {fileHasEpisodeText ? <td className='px-3 py-2 text-muted'>{row.episode ?? '—'}</td> : null}
-                {fileHasResolutionText ? <td className='px-3 py-2 text-muted'>{row.resolution ?? '—'}</td> : null}
-                <td className='px-3 py-2 whitespace-nowrap text-muted'>{humanizeSize(row.size)}</td>
-                <td className='px-3 py-2 align-top'>{renderRowActions(row)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className='space-y-2.5'>
+        {rows.map(row => (
+          <EpisodeRow
+            key={row.id}
+            row={row}
+            actions={
+              <FileRowActions
+                preloadLabel={t('Preload')}
+                onPreload={() => preloadBuffer(row.id)}
+                playerSupported={!unsupportedPlayerKeys[row.player.key]}
+                playerTitle={row.name}
+                playerSrc={row.player.src}
+                downloadSrc={row.link}
+                hls={row.player.hls}
+                heartbeatSrc={row.player.heartbeatSrc}
+                onPlayerNotSupported={() => markPlayerUnsupported(row.player.key)}
+                openLinkHref={row.link}
+                showOpenLink={shouldShowOpenLink}
+                copyText={row.fullLink}
+                externalPlayers={buildExternalPlayers(row.fullLink)}
+              />
+            }
+          />
+        ))}
       </div>
     )
   },

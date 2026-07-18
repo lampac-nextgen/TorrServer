@@ -26,6 +26,8 @@ export interface VideoPlayerProps {
   heartbeatSrc?: string
   showTrigger?: boolean
   inlineTrigger?: boolean
+  /** When used as an episode-row Play control — primary filled button with icon. */
+  inlineTriggerPrimary?: boolean
   initiallyOpen?: boolean
   onClose?: () => void
 }
@@ -75,6 +77,7 @@ export default function VideoPlayer({
   heartbeatSrc = '',
   showTrigger = true,
   inlineTrigger = false,
+  inlineTriggerPrimary = false,
   initiallyOpen = false,
   onClose,
 }: VideoPlayerProps) {
@@ -285,11 +288,12 @@ export default function VideoPlayer({
       {showTrigger &&
         (inlineTrigger ? (
           <Button
-            variant='secondary'
+            variant={inlineTriggerPrimary ? 'primary' : 'secondary'}
             size='sm'
             onPress={openPlayer}
-            className='min-h-10 min-w-[72px] max-w-full flex-1'
+            className={inlineTriggerPrimary ? 'min-h-10 shrink-0 px-3' : 'min-h-10 min-w-[72px] max-w-full flex-1'}
           >
+            {inlineTriggerPrimary ? <Play className='size-4' fill='currentColor' aria-hidden /> : null}
             {t('Play')}
           </Button>
         ) : (

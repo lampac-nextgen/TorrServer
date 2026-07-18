@@ -26,12 +26,12 @@ function PlayerSwitch({
   onChange: (checked: boolean) => void
 }) {
   return (
-    <div className='flex min-h-12 items-start justify-between gap-4'>
-      <div className='min-w-0 flex-1 pr-4'>
-        <Label>{label}</Label>
-        <Description>{helper}</Description>
+    <div className='flex min-h-12 items-start justify-between gap-3 sm:gap-4'>
+      <div className='min-w-0 flex-1 pr-2 sm:pr-4'>
+        <Label className='text-sm leading-snug text-wrap'>{label}</Label>
+        <Description className='mt-1 text-wrap leading-relaxed'>{helper}</Description>
       </div>
-      <Switch isSelected={checked} onChange={onChange}>
+      <Switch isSelected={checked} onChange={onChange} className='shrink-0'>
         <Switch.Content>
           <Switch.Control>
             <Switch.Thumb />

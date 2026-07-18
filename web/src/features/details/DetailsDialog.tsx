@@ -94,7 +94,7 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
   const { data: liveTorrent } = useTorrentDetail(hash, initialTorrent)
   const torrent = liveTorrent ?? initialTorrent
 
-  const [activeTab, setActiveTab] = useState<DetailsTab>('overview')
+  const [activeTab, setActiveTab] = useState<DetailsTab | null>(null)
   const [viewedFileList, setViewedFileList] = useState<number[] | undefined>()
   const [seasonList, setSeasonList] = useState<number[] | null>(null)
   const [selectedSeason, setSelectedSeason] = useState<number | undefined>()
@@ -119,6 +119,9 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
     const files = fileStats?.length ? fileStats.map(toPlayableFile) : filesFromMetadata(data)
     return files.filter(({ path }) => isFilePlayable(path))
   }, [fileStats, data])
+
+  // Multi-file / series: default to Content so Play / Copy / external players are visible up front.
+  const resolvedTab: DetailsTab = activeTab ?? (playableFileList.length > 1 ? 'files' : 'overview')
 
   useEffect(() => {
     if (playableFileList && seasonList === null) {
@@ -156,7 +159,9 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
 
   const displayTitle = buildDisplayTitle(name, title) || title || name || hash
   const subtitle = name && title !== name ? ptt.parse(name).title || name : null
-  const isLoadingMetadata = stat === GETTING_INFO || stat === IN_DB
+  // IN_DB torrents still carry a persisted file list in `data` — only block the UI while the
+  // live torrent is actively resolving metadata and we have nothing to show yet.
+  const isLoadingMetadata = stat === GETTING_INFO && playableFileList.length === 0
   const hasMultipleSeasons = (seasonList?.length ?? 0) > 1
 
   return (
@@ -200,10 +205,27 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                     <StatWidget label={t('Status', { defaultValue: 'Status' })} value={statusLabel(stat)} />
                     {category ? <StatWidget label={t('Category')} value={category} /> : null}
                   </div>
+
+                  {cache.PiecesCount != null || cache.PiecesLength != null || cache.Capacity != null ? (
+                    <div className='mt-2 flex flex-wrap gap-2'>
+                      {cache.PiecesCount != null ? (
+                        <StatWidget label={t('PiecesCount')} value={String(cache.PiecesCount)} />
+                      ) : null}
+                      {cache.PiecesLength != null ? (
+                        <StatWidget label={t('PiecesLength')} value={humanizeSize(cache.PiecesLength)} />
+                      ) : null}
+                      {cache.Filled != null && cache.Capacity != null ? (
+                        <StatWidget
+                          label={t('CacheFilled', { defaultValue: 'Cache' })}
+                          value={`${humanizeSize(cache.Filled)} / ${humanizeSize(cache.Capacity)}`}
+                        />
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
               </div>
 
-              <Tabs.Root selectedKey={activeTab} onSelectionChange={key => setActiveTab(String(key) as DetailsTab)}>
+              <Tabs.Root selectedKey={resolvedTab} onSelectionChange={key => setActiveTab(String(key) as DetailsTab)}>
                 <Tabs.List aria-label={t('TorrentDetails')}>
                   <Tabs.Tab id='overview'>{t('Overview', { defaultValue: 'Overview' })}</Tabs.Tab>
                   <Tabs.Tab id='files'>{t('TorrentContent')}</Tabs.Tab>
@@ -238,6 +260,7 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                     viewedFileList={viewedFileList}
                     setViewedFileList={setViewedFileList}
                     onDropped={onClose}
+                    onShowFiles={() => setActiveTab('files')}
                   />
                 </Tabs.Panel>
 
@@ -310,23 +333,6 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                     mode={isDetailedCacheView ? 'detailed' : 'mini'}
                     isSnakeDebugMode={isSnakeDebugMode}
                   />
-
-                  {cache.PiecesCount != null || cache.PiecesLength != null ? (
-                    <div className='flex flex-wrap gap-2'>
-                      {cache.PiecesCount != null ? (
-                        <StatWidget label={t('PiecesCount')} value={String(cache.PiecesCount)} />
-                      ) : null}
-                      {cache.PiecesLength != null ? (
-                        <StatWidget label={t('PiecesLength')} value={humanizeSize(cache.PiecesLength)} />
-                      ) : null}
-                      {cache.Filled != null && cache.Capacity != null ? (
-                        <StatWidget
-                          label={t('CacheFilled', { defaultValue: 'Cache' })}
-                          value={`${humanizeSize(cache.Filled)} / ${humanizeSize(cache.Capacity)}`}
-                        />
-                      ) : null}
-                    </div>
-                  ) : null}
                 </Tabs.Panel>
               </Tabs.Root>
             </Modal.Body>

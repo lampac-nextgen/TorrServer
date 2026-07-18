@@ -1,6 +1,6 @@
 import { useMemo, memo, useState } from 'react'
 import { Button, ButtonGroup, Modal, Separator, useOverlayState } from '@heroui/react'
-import { EyeOff, ExternalLink, ListVideo, Loader2, Magnet, Play, Settings, Trash2 } from 'lucide-react'
+import { EyeOff, ExternalLink, ListVideo, Loader2, Magnet, Play, Settings, Trash2, Copy } from 'lucide-react'
 import ptt from 'parse-torrent-title'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
@@ -21,6 +21,7 @@ export interface TorrentActionsProps {
   title?: string
   setViewedFileList: (list?: number[]) => void
   onDropped?: () => void
+  onShowFiles?: () => void
 }
 
 type PendingConfirm = 'drop' | 'clearViews' | null
@@ -33,6 +34,7 @@ function TorrentActions({
   title,
   setViewedFileList,
   onDropped,
+  onShowFiles,
 }: TorrentActionsProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
@@ -63,14 +65,15 @@ function TorrentActions({
 
   /** Only offer app deep links when there's exactly one obvious file to hand off — otherwise Play's file picker covers it. */
   const { buildExternalPlayers, hasAnyExternalPlayer } = useExternalPlayers()
-  const externalPlayers = useMemo(() => {
-    if (playableFileList?.length !== 1) return []
+  const singleFileStream = useMemo(() => {
+    if (playableFileList?.length !== 1) return null
     const file = playableFileList[0]
     const fileName = file.path.split('\\').pop()?.split('/').pop() || file.path
     const link = `${streamHost()}/${encodeURIComponent(fileName)}?link=${hash}&index=${file.id}&play`
     const fullLink = new URL(link, window.location.href).toString()
-    return buildExternalPlayers(fullLink)
+    return { link, fullLink, externalPlayers: buildExternalPlayers(fullLink) }
   }, [playableFileList, hash, buildExternalPlayers])
+  const externalPlayers = singleFileStream?.externalPlayers ?? []
 
   const runPendingConfirm = () => {
     if (pendingConfirm === 'drop') {
@@ -101,6 +104,16 @@ function TorrentActions({
     }
   }
 
+  const copyStreamLink = async () => {
+    if (!singleFileStream) return
+    try {
+      await navigator.clipboard.writeText(singleFileStream.fullLink)
+      toast?.showToast({ message: t('Copied'), severity: 'success' })
+    } catch {
+      toast?.showToast({ message: t('Error'), severity: 'error' })
+    }
+  }
+
   const hasPartialProgress = !isSingleFileTorrent && !!viewedFileList?.length
 
   return (
@@ -111,14 +124,24 @@ function TorrentActions({
           size='lg'
           className='w-full sm:w-auto'
           isDisabled={resolvingAudio}
-          onPress={handlePlay}
+          onPress={() => {
+            // Series / multi-file: jump to the Content tab (per-file Play/Copy/external) instead of
+            // opening a second file-picker modal — matches the legacy details UX.
+            if (!isSingleFileTorrent && onShowFiles) {
+              onShowFiles()
+              return
+            }
+            handlePlay()
+          }}
         >
           {resolvingAudio ? (
             <Loader2 className='size-4 animate-spin' aria-hidden />
           ) : (
             <Play className='size-4' fill='currentColor' aria-hidden />
           )}
-          {t('Play')}
+          {!isSingleFileTorrent && (playableFileList?.length ?? 0) > 1
+            ? `${t('TorrentContent')} (${playableFileList!.length})`
+            : t('Play')}
         </Button>
         {externalPlayers.map(player => (
           <Button
@@ -133,6 +156,12 @@ function TorrentActions({
             {player.label}
           </Button>
         ))}
+        {singleFileStream ? (
+          <Button variant='secondary' size='lg' onPress={() => void copyStreamLink()}>
+            <Copy className='size-4' aria-hidden />
+            {t('CopyLink')}
+          </Button>
+        ) : null}
       </div>
 
       {isSingleFileTorrent && !hasAnyExternalPlayer ? (

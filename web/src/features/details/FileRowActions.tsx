@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { Button, Tooltip } from '@heroui/react'
-import { Copy, Download, ExternalLink, Loader2 } from 'lucide-react'
+import { Copy, Download, ExternalLink, Loader2, Play } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { ExternalPlayerLink } from 'shared/lib/externalPlayers'
 import { useOptionalAppToast } from 'shared/ui/Toast'
@@ -26,11 +26,12 @@ export interface FileRowActionsProps {
   externalPlayers: ExternalPlayerLink[]
 }
 
-// `size='sm'` alone renders as short as 32px on desktop breakpoints — force a 40px floor so these
-// stay comfortably tappable in the compact (phone/tablet) file-row layout too.
-const actionButtonClass = 'min-h-10 min-w-[72px] max-w-full flex-1'
+const iconBtn = 'min-h-10 min-w-10 shrink-0'
+const playerBtn = 'min-h-10 shrink-0 px-2.5 font-medium'
 
-/** Per-file action row: preload, inline player / open link, external player deep links, copy link. */
+/**
+ * Per-file actions: primary Play, direct external-player buttons, then icon Copy/Preload.
+ */
 export default function FileRowActions({
   preloadLabel,
   onPreload,
@@ -59,21 +60,11 @@ export default function FileRowActions({
   }
 
   return (
-    <div className='flex w-full flex-wrap gap-1.5'>
-      <Tooltip.Root>
-        <Tooltip.Trigger>
-          <Button variant='secondary' size='sm' onPress={onPreload} className={actionButtonClass}>
-            <Download className='size-4' aria-hidden />
-            {preloadLabel}
-          </Button>
-        </Tooltip.Trigger>
-        <Tooltip.Content>{preloadLabel}</Tooltip.Content>
-      </Tooltip.Root>
-
+    <div className='flex flex-wrap items-center gap-1.5'>
       {playerSupported ? (
         <Suspense
           fallback={
-            <Button variant='secondary' size='sm' className={actionButtonClass} isDisabled>
+            <Button variant='primary' size='sm' className='min-h-10 shrink-0 px-3' isDisabled>
               <Loader2 className='size-4 animate-spin' aria-hidden />
               {t('Play')}
             </Button>
@@ -87,54 +78,83 @@ export default function FileRowActions({
             heartbeatSrc={heartbeatSrc}
             onNotSupported={onPlayerNotSupported}
             inlineTrigger
+            inlineTriggerPrimary
           />
         </Suspense>
-      ) : (
-        showOpenLink &&
-        openLinkHref && (
-          <Tooltip.Root>
-            <Tooltip.Trigger>
-              <Button
-                variant='secondary'
-                size='sm'
-                className={actionButtonClass}
-                onPress={() => window.open(openLinkHref, '_blank', 'noopener,noreferrer')}
-              >
-                <ExternalLink className='size-4' aria-hidden />
-                {t('OpenLink')}
-              </Button>
-            </Tooltip.Trigger>
-            <Tooltip.Content>{t('OpenLink')}</Tooltip.Content>
-          </Tooltip.Root>
-        )
-      )}
+      ) : showOpenLink && openLinkHref ? (
+        <Button
+          variant='primary'
+          size='sm'
+          className='min-h-10 shrink-0 px-3'
+          onPress={() => window.open(openLinkHref, '_blank', 'noopener,noreferrer')}
+        >
+          <Play className='size-4' fill='currentColor' aria-hidden />
+          {t('Play')}
+        </Button>
+      ) : null}
 
       {externalPlayers.map(player => (
-        <Tooltip.Root key={player.label}>
+        <Button
+          key={player.label}
+          variant='secondary'
+          size='sm'
+          className={playerBtn}
+          onPress={() => {
+            window.location.href = player.href
+          }}
+        >
+          {player.label}
+        </Button>
+      ))}
+
+      {showOpenLink && openLinkHref && playerSupported ? (
+        <Tooltip.Root>
           <Tooltip.Trigger>
             <Button
               variant='secondary'
               size='sm'
-              className={actionButtonClass}
-              onPress={() => {
-                window.location.href = player.href
-              }}
+              isIconOnly
+              className={iconBtn}
+              aria-label={t('OpenLink')}
+              onPress={() => window.open(openLinkHref, '_blank', 'noopener,noreferrer')}
             >
-              {player.label}
+              <ExternalLink className='size-4' aria-hidden />
             </Button>
           </Tooltip.Trigger>
-          <Tooltip.Content>{player.label}</Tooltip.Content>
+          <Tooltip.Content>{t('OpenLink')}</Tooltip.Content>
         </Tooltip.Root>
-      ))}
+      ) : null}
 
       <Tooltip.Root>
         <Tooltip.Trigger>
-          <Button variant='secondary' size='sm' className={actionButtonClass} onPress={() => void copyDirectLink()}>
+          <Button
+            variant='secondary'
+            size='sm'
+            isIconOnly
+            className={iconBtn}
+            aria-label={t('CopyLink')}
+            onPress={() => void copyDirectLink()}
+          >
             <Copy className='size-4' aria-hidden />
-            {t('CopyLink')}
           </Button>
         </Tooltip.Trigger>
         <Tooltip.Content>{t('CopyLink')}</Tooltip.Content>
+      </Tooltip.Root>
+
+      <Tooltip.Root>
+        <Tooltip.Trigger>
+          <Button
+            variant='secondary'
+            size='sm'
+            isIconOnly
+            className={iconBtn}
+            aria-label={preloadLabel}
+            onPress={onPreload}
+          >
+            <Download className='size-4' aria-hidden />
+          </Button>
+        </Tooltip.Trigger>
+        <Tooltip.Content>{preloadLabel}</Tooltip.Content>
       </Tooltip.Root>
     </div>
   )

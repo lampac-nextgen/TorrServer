@@ -107,26 +107,30 @@ export default function FileBrowser({
 }: FileBrowserProps) {
   const { t } = useTranslation()
   const tree = useMemo(() => buildDirectoryTree(playableFileList), [playableFileList])
-  const hasFolders = tree.children.size > 0
+  // A single release folder (common for series packs) isn't worth a sidebar — only show the
+  // tree when there are multiple folders or nested structure to navigate.
+  const folderCount = tree.children.size
+  const hasUsefulFolders =
+    folderCount > 1 || [...tree.children.values()].some(child => child.children.size > 0 || child.files.length === 0)
   const [selectedFolderId, setSelectedFolderId] = useState('root')
 
   const filesInSelectedFolder = useMemo(() => {
-    if (selectedFolderId === 'root') return playableFileList
+    if (!hasUsefulFolders || selectedFolderId === 'root') return playableFileList
     const node = findNodeById(tree, selectedFolderId)
     return node ? collectFilesRecursively(node) : playableFileList
-  }, [selectedFolderId, tree, playableFileList])
+  }, [selectedFolderId, tree, playableFileList, hasUsefulFolders])
 
   return (
-    <div className={`grid min-h-[280px] w-full gap-3 ${hasFolders ? 'md:grid-cols-[220px_1fr]' : 'grid-cols-1'}`}>
-      {hasFolders ? (
-        <div className='max-h-[420px] overflow-auto md:border-r md:border-border md:pr-3'>
-          <p className='mb-1 text-xs font-medium uppercase tracking-wide text-muted'>
+    <div className={`grid min-h-[200px] w-full gap-3 ${hasUsefulFolders ? 'md:grid-cols-[200px_1fr]' : 'grid-cols-1'}`}>
+      {hasUsefulFolders ? (
+        <div className='max-h-[420px] overflow-auto rounded-xl border border-border bg-surface-secondary p-2 md:rounded-none md:border-0 md:border-r md:border-border md:bg-transparent md:p-0 md:pr-3'>
+          <p className='mb-1.5 px-1 text-xs font-medium uppercase tracking-wide text-muted'>
             {t('Folders', { defaultValue: 'Folders' })}
           </p>
           <Button
             variant={selectedFolderId === 'root' ? 'primary' : 'ghost'}
             size='sm'
-            className='mb-2 w-full justify-start'
+            className='mb-1 w-full justify-start'
             onPress={() => setSelectedFolderId('root')}
           >
             {t('AllFiles', { defaultValue: 'All files' })}
