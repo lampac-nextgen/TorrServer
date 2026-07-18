@@ -73,11 +73,11 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
       .catch(() => toast?.showToast({ message: t('Error', { defaultValue: 'Error' }), severity: 'error' }))
   }
 
-  const overlayButtonClass = 'h-9 w-9 min-w-9 rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-accent'
+  const overlayButtonClass = 'h-10 w-10 min-w-10 rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-accent'
 
   return (
     <>
-      <div className='flex items-center justify-center gap-1.5' onClick={event => event.stopPropagation()}>
+      <div className='flex items-center justify-center gap-2' onClick={event => event.stopPropagation()}>
         <Tooltip>
           <Tooltip.Trigger>
             <Button
@@ -88,49 +88,30 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
               isDisabled={resolvingAudio}
               onPress={handlePlay}
             >
-              {resolvingAudio ? <Loader2 size={16} className='animate-spin' /> : <Play size={16} fill='currentColor' />}
+              {resolvingAudio ? <Loader2 size={18} className='animate-spin' /> : <Play size={18} fill='currentColor' />}
             </Button>
           </Tooltip.Trigger>
           <Tooltip.Content>{t('Play')}</Tooltip.Content>
         </Tooltip>
 
-        <Tooltip>
-          <Tooltip.Trigger>
-            <Button
-              variant='primary'
-              isIconOnly
-              className={overlayButtonClass}
-              aria-label={t('Details')}
-              onPress={onDetails}
-            >
-              <Info size={16} />
-            </Button>
-          </Tooltip.Trigger>
-          <Tooltip.Content>{t('Details')}</Tooltip.Content>
-        </Tooltip>
-
-        <Tooltip>
-          <Tooltip.Trigger>
-            <a
-              href={playlistHref}
-              aria-label={t('DownloadPlaylist')}
-              onClick={event => event.stopPropagation()}
-              className={`inline-flex items-center justify-center ${overlayButtonClass}`}
-            >
-              <ListMusic size={16} />
-            </a>
-          </Tooltip.Trigger>
-          <Tooltip.Content>{t('DownloadPlaylist')}</Tooltip.Content>
-        </Tooltip>
-
+        {/* Details/Playlist live in the menu — the poster itself already opens details, and cramming 4 icon-only
+         * buttons into a ~172px tile leaves no room to reach 40px touch targets. */}
         <Dropdown>
           <Dropdown.Trigger>
             <Button variant='primary' isIconOnly className={overlayButtonClass} aria-label={t('Actions')}>
-              <MoreVertical size={16} />
+              <MoreVertical size={18} />
             </Button>
           </Dropdown.Trigger>
           <Dropdown.Popover placement='bottom end'>
             <Dropdown.Menu aria-label={t('Actions')}>
+              <Dropdown.Item onPress={onDetails}>
+                <Info size={16} />
+                {t('Details')}
+              </Dropdown.Item>
+              <Dropdown.Item onPress={() => window.open(playlistHref, '_blank')}>
+                <ListMusic size={16} />
+                {t('DownloadPlaylist')}
+              </Dropdown.Item>
               {onEdit ? (
                 <Dropdown.Item onPress={onEdit}>
                   <Pencil size={16} />
@@ -177,11 +158,14 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
       <Modal state={confirmState}>
         <Modal.Backdrop isDismissable>
           <Modal.Container size='sm'>
-            <Modal.Dialog aria-label={confirmKind === 'delete' ? t('Delete') : t('DropTorrent')}>
+            <Modal.Dialog aria-label={confirmKind === 'delete' ? t('DeleteTorrent?') : t('DropTorrent')}>
               <Modal.Header>
-                <Modal.Heading>{confirmKind === 'delete' ? t('Delete') : t('DropTorrent')}</Modal.Heading>
+                <Modal.Icon className='bg-danger/15 text-danger'>
+                  <Trash2 className='size-5' aria-hidden />
+                </Modal.Icon>
+                <Modal.Heading>{confirmKind === 'delete' ? t('DeleteTorrent?') : t('DropTorrent')}</Modal.Heading>
               </Modal.Header>
-              <Modal.Body>{confirmKind === 'delete' ? t('DeleteTorrents?') : t('ConfirmDropTorrent')}</Modal.Body>
+              <Modal.Body>{confirmKind === 'delete' ? t('ConfirmDeleteTorrent') : t('ConfirmDropTorrent')}</Modal.Body>
               <Modal.Footer className='flex justify-end gap-2'>
                 <Button autoFocus variant='secondary' onPress={() => setConfirmKind(null)}>
                   {t('Cancel')}

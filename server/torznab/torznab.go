@@ -103,7 +103,7 @@ func Search(ctx context.Context, query string, index int) []*models.TorrentDetai
 	if index >= 0 && index < len(settings.BTsets.TorznabUrls) {
 		config := settings.BTsets.TorznabUrls[index]
 		if config.Host != "" && config.Key != "" {
-			return searchOne(ctx, config.Host, config.Key, query)
+			return searchOne(ctx, config.Host, config.Key, query, indexerLabel(config))
 		}
 		return nil
 	}
@@ -112,7 +112,7 @@ func Search(ctx context.Context, query string, index int) []*models.TorrentDetai
 		if config.Host == "" || config.Key == "" {
 			continue
 		}
-		results := searchOne(ctx, config.Host, config.Key, query)
+		results := searchOne(ctx, config.Host, config.Key, query, indexerLabel(config))
 		if results != nil {
 			allResults = append(allResults, results...)
 		}
@@ -120,7 +120,20 @@ func Search(ctx context.Context, query string, index int) []*models.TorrentDetai
 	return allResults
 }
 
-func searchOne(ctx context.Context, host, key, query string) []*models.TorrentDetails {
+// indexerLabel picks a short, human-readable source name for a configured indexer — the
+// custom Name if the user set one, otherwise the host's bare domain (searching several
+// indexers at once via index=-1 merges results, so the UI needs a way to tell them apart).
+func indexerLabel(config settings.TorznabConfig) string {
+	if strings.TrimSpace(config.Name) != "" {
+		return config.Name
+	}
+	if u, err := normalizeHost(config.Host); err == nil && u.Host != "" {
+		return u.Host
+	}
+	return config.Host
+}
+
+func searchOne(ctx context.Context, host, key, query, label string) []*models.TorrentDetails {
 	u, err := normalizeHost(host)
 	if err != nil {
 		log.TLogln("Error parsing Torznab host:", err)
@@ -175,6 +188,7 @@ func searchOne(ctx context.Context, host, key, query string) []*models.TorrentDe
 			Name:       item.Title,
 			Link:       item.Link,
 			CreateDate: parseDate(item.PubDate),
+			Tracker:    label,
 		}
 
 		if len(item.Enclosure) > 0 {

@@ -29,7 +29,9 @@ export function useOptionalAppToast() {
 
 function showToastMessage(options: ToastOptions | string) {
   const next = typeof options === 'string' ? { message: options } : options
-  const duration = next.autoHideDuration ?? 2500
+  // Errors/warnings get more time on screen — they're often longer or more important than a quick "Saved" pulse.
+  const defaultDuration = next.severity === 'error' || next.severity === 'warning' ? 5000 : 3000
+  const duration = next.autoHideDuration ?? defaultDuration
 
   switch (next.severity) {
     case 'success':

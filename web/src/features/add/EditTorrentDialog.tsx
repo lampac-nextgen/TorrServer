@@ -25,6 +25,7 @@ export default function EditTorrentDialog({ torrent, open, onClose }: EditTorren
   const queryClient = useQueryClient()
   const toast = useOptionalAppToast()
   const isMobile = useMediaQuery(queryMax('mobile'))
+  const isFullScreenBreakpoint = useMediaQuery(queryMax('dialog'))
   const posterRequestRef = useRef(0)
 
   const [title, setTitle] = useState('')
@@ -97,7 +98,7 @@ export default function EditTorrentDialog({ torrent, open, onClose }: EditTorren
       open={open && Boolean(torrent)}
       onClose={onClose}
       size='md'
-      fullScreen={isMobile}
+      fullScreen={isFullScreenBreakpoint}
       dialogStyle={isMobile ? undefined : { minWidth: '38rem', maxWidth: '46rem' }}
     >
       <Modal.Header>

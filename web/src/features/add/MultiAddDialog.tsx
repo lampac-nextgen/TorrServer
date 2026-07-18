@@ -53,6 +53,7 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
   const queryClient = useQueryClient()
   const toast = useOptionalAppToast()
   const isMobile = useMediaQuery(queryMax('mobile'))
+  const isFullScreenBreakpoint = useMediaQuery(queryMax('dialog'))
   useSyncModalOpen(open)
 
   const { data: existingTorrents = [] } = useTorrentsQuery()
@@ -200,7 +201,7 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
       open={open}
       onClose={onClose}
       size='md'
-      fullScreen={isMobile}
+      fullScreen={isFullScreenBreakpoint}
       dialogStyle={isMobile ? undefined : { minWidth: '40rem', maxWidth: '52rem' }}
     >
       <Modal.Header>

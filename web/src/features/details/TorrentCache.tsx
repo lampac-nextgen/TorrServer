@@ -64,7 +64,7 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
   const drawFrame = useRef(0)
   const isFollowingPlayhead = useRef(true)
   const resumeFollowTimer = useRef(0)
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; text: string } | null>(null)
+  const [tooltip, setTooltip] = useState<{ index: number; x: number; y: number; text: string } | null>(null)
 
   useEffect(() => {
     const el = rootRef.current
@@ -206,19 +206,16 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
     [t],
   )
 
-  const handleCanvasMove = useCallback(
-    (event: React.MouseEvent<HTMLCanvasElement>) => {
-      if (!piecesPerRow) {
-        setTooltip(null)
-        return
-      }
+  const cellAtPoint = useCallback(
+    (clientX: number, clientY: number) => {
+      if (!piecesPerRow) return null
       const canvas = canvasRef.current
       const root = rootRef.current
-      if (!canvas || !root) return
+      if (!canvas || !root) return null
       const canvasRect = canvas.getBoundingClientRect()
       const rootRect = root.getBoundingClientRect()
-      const localX = event.clientX - canvasRect.left
-      const localY = event.clientY - canvasRect.top
+      const localX = clientX - canvasRect.left
+      const localY = clientY - canvasRect.top
       const index = hitTestSnakeCell(localX, localY, {
         piecesInOneRow: piecesPerRow,
         pieceSize,
@@ -226,19 +223,40 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
         startingX,
         cellCount: drawCells.length,
       })
-      if (index < 0) {
-        setTooltip(null)
-        return
-      }
+      if (index < 0) return null
       const text = formatTooltipText(drawCells[index])
-      if (!text) {
-        setTooltip(null)
-        return
-      }
-      setTooltip({ x: event.clientX - rootRect.left + 12, y: event.clientY - rootRect.top + 12, text })
+      if (!text) return null
+      return { index, x: clientX - rootRect.left + 12, y: clientY - rootRect.top + 12, text }
     },
     [piecesPerRow, pieceSize, gap, startingX, drawCells, formatTooltipText],
   )
+
+  const handleCanvasMove = useCallback(
+    (event: React.MouseEvent<HTMLCanvasElement>) => {
+      setTooltip(cellAtPoint(event.clientX, event.clientY))
+    },
+    [cellAtPoint],
+  )
+
+  /** Touch has no hover — tap a piece to pin its tooltip, tap it again (or elsewhere) to dismiss. */
+  const handleCanvasTap = useCallback(
+    (event: React.MouseEvent<HTMLCanvasElement>) => {
+      const next = cellAtPoint(event.clientX, event.clientY)
+      setTooltip(current => (next && current?.index === next.index ? null : next))
+    },
+    [cellAtPoint],
+  )
+
+  useEffect(() => {
+    if (!tooltip) return
+    const dismissIfOutside = (event: PointerEvent) => {
+      if (!(event.target instanceof Node) || !rootRef.current?.contains(event.target)) {
+        setTooltip(null)
+      }
+    }
+    document.addEventListener('pointerdown', dismissIfOutside)
+    return () => document.removeEventListener('pointerdown', dismissIfOutside)
+  }, [tooltip])
 
   return (
     <div ref={rootRef} className='relative flex w-full min-w-0 flex-col'>
@@ -255,6 +273,7 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
             className='block max-w-full'
             onMouseMove={handleCanvasMove}
             onMouseLeave={() => setTooltip(null)}
+            onClick={handleCanvasTap}
           />
         ) : null}
       </div>

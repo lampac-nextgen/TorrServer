@@ -1,6 +1,6 @@
 import { useMemo, memo, useState } from 'react'
 import { Button, ButtonGroup, Modal, Separator, useOverlayState } from '@heroui/react'
-import { EyeOff, ExternalLink, ListVideo, Loader2, Magnet, Play, Trash2 } from 'lucide-react'
+import { EyeOff, ExternalLink, ListVideo, Loader2, Magnet, Play, Settings, Trash2 } from 'lucide-react'
 import ptt from 'parse-torrent-title'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
@@ -9,6 +9,7 @@ import { playlistTorrHost, streamHost } from 'shared/api/hosts'
 import { dropTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { clearViewedFiles } from 'shared/api/viewed'
 import { useExternalPlayers } from 'shared/lib/externalPlayers'
+import { requestOpenSettings } from 'shared/lib/settingsEvents'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 import { usePlayLauncher } from 'features/player/usePlayLauncher'
 
@@ -61,7 +62,7 @@ function TorrentActions({
   })
 
   /** Only offer app deep links when there's exactly one obvious file to hand off — otherwise Play's file picker covers it. */
-  const { buildExternalPlayers } = useExternalPlayers()
+  const { buildExternalPlayers, hasAnyExternalPlayer } = useExternalPlayers()
   const externalPlayers = useMemo(() => {
     if (playableFileList?.length !== 1) return []
     const file = playableFileList[0]
@@ -133,6 +134,17 @@ function TorrentActions({
           </Button>
         ))}
       </div>
+
+      {isSingleFileTorrent && !hasAnyExternalPlayer ? (
+        <button
+          type='button'
+          onClick={() => requestOpenSettings('app')}
+          className='flex items-center gap-1.5 text-xs text-muted transition-colors hover:text-accent'
+        >
+          <Settings className='size-3.5' aria-hidden />
+          {t('ExternalPlayersHint', { defaultValue: 'Open in VLC, Infuse, etc. — enable in Settings → App' })}
+        </button>
+      ) : null}
 
       {hasPartialProgress ? (
         <div className='rounded-xl border border-border bg-surface-secondary p-4'>

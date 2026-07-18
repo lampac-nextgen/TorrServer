@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
+import { useMediaQuery } from '@heroui/react'
 import { Toaster } from 'sonner'
 
+import { queryMax } from 'shared/theme/breakpoints'
 import { ModalOpenProvider } from 'shared/ui/ModalOpenContext'
 import { AppSnackbarProvider } from 'shared/ui/Toast'
 
@@ -20,6 +22,9 @@ function migrateLegacyThemeKey() {
 }
 
 export default function App() {
+  // Shell only renders its fixed BottomNav below this breakpoint — toasts must clear it, not sit under it.
+  const hasBottomNav = useMediaQuery(queryMax('mobile'))
+
   useEffect(() => {
     migrateLegacyThemeKey()
   }, [])
@@ -28,7 +33,12 @@ export default function App() {
     <ModalOpenProvider>
       <AppSnackbarProvider>
         <Shell />
-        <Toaster richColors closeButton position='bottom-center' />
+        <Toaster
+          richColors
+          closeButton
+          position='bottom-center'
+          offset={hasBottomNav ? 'calc(90px + env(safe-area-inset-bottom, 0px) + 12px)' : 24}
+        />
       </AppSnackbarProvider>
     </ModalOpenProvider>
   )

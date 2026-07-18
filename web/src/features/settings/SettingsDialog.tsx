@@ -36,6 +36,8 @@ import TorznabSettingsPanel from './TorznabSettingsPanel'
 export interface SettingsDialogProps {
   open: boolean
   onClose: () => void
+  /** Deep-link into a specific tab when opened externally (e.g. an "enable external players" hint). */
+  initialTab?: SettingsTab
 }
 
 type SettingsTab = 'primary' | 'network' | 'features' | 'storage' | 'app' | 'gstreamer' | 'torznab'
@@ -52,11 +54,12 @@ function PanelFade({ children }: { children: ReactNode }) {
 }
 
 /** Tabbed server settings dialog — full-screen on mobile, persists via BTSets + GST + storage-backend APIs. */
-export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
+export default function SettingsDialog({ open, onClose, initialTab }: SettingsDialogProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
   const queryClient = useQueryClient()
   const isMobile = useMediaQuery(queryMax('mobile'))
+  const isFullScreenBreakpoint = useMediaQuery(queryMax('dialog'))
   const gstRuntime = useGStreamerRuntime()
 
   const [tab, setTab] = useState<SettingsTab>('primary')
@@ -87,6 +90,10 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   useEffect(() => {
     if (!visibleTabs.some(item => item.id === tab)) setTab('primary')
   }, [tab, visibleTabs])
+
+  useEffect(() => {
+    if (open && initialTab) setTab(initialTab)
+  }, [open, initialTab])
 
   const loadSettings = useCallback(async (signal?: AbortSignal) => {
     const data = await getSettings(signal)
@@ -192,7 +199,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
       open={open}
       onClose={onClose}
       size='lg'
-      fullScreen={isMobile}
+      fullScreen={isFullScreenBreakpoint}
       dialogStyle={isMobile ? undefined : { minWidth: '48rem', maxWidth: '56rem' }}
     >
       <Modal.Header>

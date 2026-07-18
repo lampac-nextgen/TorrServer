@@ -10,6 +10,7 @@ import type { ShellNavProps } from './navTypes'
 export default function BottomNav({
   isOffline,
   isLoading,
+  isCategoryFilterActive,
   onAdd,
   onSearch,
   onCategories,
@@ -25,14 +26,17 @@ export default function BottomNav({
 
   const closeMore = () => moreState.close()
 
-  const tab = (label: string, icon: ReactNode, onPress: () => void, isDisabled = false) => (
+  const tab = (label: string, icon: ReactNode, onPress: () => void, isDisabled = false, active = false) => (
     <Button
       key={label}
       variant='ghost'
       isDisabled={isDisabled}
       onPress={onPress}
       aria-label={label}
-      className='flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-none px-1 py-2 text-xs font-medium'
+      aria-current={active ? 'true' : undefined}
+      className={`flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-none px-1 py-2 text-xs font-medium ${
+        active ? 'text-accent' : ''
+      }`}
     >
       {icon}
       <span className='truncate'>{label}</span>
@@ -64,7 +68,13 @@ export default function BottomNav({
         <div className='mx-auto flex h-[90px] max-w-lg items-stretch'>
           {tab(t('Add', { defaultValue: 'Add' }), <FolderPlus size={22} />, onAdd, disabled)}
           {tab(t('Search'), <Search size={22} />, onSearch, disabled)}
-          {tab(t('Category', { defaultValue: 'Category' }), <Layers size={22} />, onCategories)}
+          {tab(
+            t('Category', { defaultValue: 'Category' }),
+            <Layers size={22} />,
+            onCategories,
+            false,
+            isCategoryFilterActive,
+          )}
           {tab(t('More', { defaultValue: 'More' }), <Ellipsis size={22} />, moreState.open)}
         </div>
       </div>

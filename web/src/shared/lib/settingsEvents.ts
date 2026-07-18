@@ -8,3 +8,20 @@ export const notifySettingsChanged = (): void => {
     // ignore (SSR / non-browser)
   }
 }
+
+/**
+ * Lets far-away components (card/details actions) ask the Shell to open Settings on a specific
+ * tab — e.g. a "set up external players" hint — without prop-drilling dialog state through
+ * TorrentsPage/DetailsDialog.
+ */
+export const OPEN_SETTINGS_EVENT = 'torrserver:open-settings'
+
+export type SettingsDeepLinkTab = 'app'
+
+export const requestOpenSettings = (tab: SettingsDeepLinkTab): void => {
+  try {
+    window.dispatchEvent(new CustomEvent<SettingsDeepLinkTab>(OPEN_SETTINGS_EVENT, { detail: tab }))
+  } catch {
+    // ignore (SSR / non-browser)
+  }
+}

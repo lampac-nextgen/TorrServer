@@ -1,5 +1,5 @@
 import { Drawer, Separator, useOverlayState } from '@heroui/react'
-import { Check, LayoutGrid, X } from 'lucide-react'
+import { Check, CircleDashed, LayoutGrid } from 'lucide-react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -53,7 +53,11 @@ export default function CategoriesDrawer({ open, onClose, selectedCategory, onSe
             </Drawer.Header>
             <Drawer.Body className='w-[280px] space-y-1 pt-1'>
               <button type='button' className={itemClass(selectedCategory === 'all')} onClick={() => select('all')}>
-                <Check className='size-5 shrink-0' aria-hidden />
+                {selectedCategory === 'all' ? (
+                  <Check className='size-5 shrink-0' aria-hidden />
+                ) : (
+                  <LayoutGrid className='size-5 shrink-0' aria-hidden />
+                )}
                 <span>{t('All')}</span>
               </button>
 
@@ -64,7 +68,11 @@ export default function CategoriesDrawer({ open, onClose, selectedCategory, onSe
                   className={itemClass(selectedCategory === category.key)}
                   onClick={() => select(category.key)}
                 >
-                  <span className='shrink-0'>{category.icon}</span>
+                  {selectedCategory === category.key ? (
+                    <Check className='size-5 shrink-0' aria-hidden />
+                  ) : (
+                    <span className='shrink-0'>{category.icon}</span>
+                  )}
                   <span>{t(category.name)}</span>
                 </button>
               ))}
@@ -72,7 +80,11 @@ export default function CategoriesDrawer({ open, onClose, selectedCategory, onSe
               <Separator className='my-2' />
 
               <button type='button' className={itemClass(selectedCategory === '')} onClick={() => select('')}>
-                <X className='size-5 shrink-0' aria-hidden />
+                {selectedCategory === '' ? (
+                  <Check className='size-5 shrink-0' aria-hidden />
+                ) : (
+                  <CircleDashed className='size-5 shrink-0' aria-hidden />
+                )}
                 <span>{t('Uncategorized')}</span>
               </button>
             </Drawer.Body>

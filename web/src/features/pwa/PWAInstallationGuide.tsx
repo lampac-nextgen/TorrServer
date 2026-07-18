@@ -1,10 +1,11 @@
-import { Button } from '@heroui/react'
+import { Button, useMediaQuery } from '@heroui/react'
 import { X } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { readLocalBool, writeLocalJson } from 'shared/lib/localPrefs'
 import { publicUrl } from 'shared/lib/publicUrl'
+import { queryMax } from 'shared/theme/breakpoints'
 
 const CLOSED_PREF_KEY = 'pwaNotificationIsClosed'
 
@@ -25,6 +26,8 @@ export default function PWAInstallationGuide() {
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(() => !readLocalBool(CLOSED_PREF_KEY))
   const [visible, setVisible] = useState(() => !readLocalBool(CLOSED_PREF_KEY))
+  /** Shell only renders BottomNav below this breakpoint — sit above it there instead of covering it. */
+  const hasBottomNav = useMediaQuery(queryMax('mobile'))
 
   if (!isOpen) return null
 
@@ -38,10 +41,13 @@ export default function PWAInstallationGuide() {
 
   return (
     <div
-      className={`fixed inset-x-0 bottom-0 z-[9999] border-t border-border bg-surface px-4 pt-3 text-foreground shadow-2xl transition-transform duration-300 ${
+      className={`fixed inset-x-0 z-40 border-t border-border bg-surface px-4 pt-3 text-foreground shadow-2xl transition-transform duration-300 ${
         visible ? 'translate-y-0' : 'translate-y-[110%]'
       }`}
-      style={{ paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))' }}
+      style={{
+        bottom: hasBottomNav ? 'calc(90px + env(safe-area-inset-bottom, 0px))' : 0,
+        paddingBottom: hasBottomNav ? '12px' : 'calc(12px + env(safe-area-inset-bottom, 0px))',
+      }}
     >
       <div className='mb-2 grid grid-cols-[50px_1fr_auto] items-center gap-3'>
         <img src={publicUrl('icon.png')} width={50} height={50} alt='' className='rounded-lg' />

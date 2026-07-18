@@ -10,8 +10,8 @@
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
   "orientation": "any",
-  "theme_color": "#00a572",
-  "background_color": "#ffffff",
+  "theme_color": "#0d6b4f",
+  "background_color": "#0a0f0d",
   "categories": ["entertainment", "utilities"],
   "icons": [
     {

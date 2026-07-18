@@ -1,7 +1,7 @@
 import { lazy, type ReactNode, Suspense, useEffect, useState } from 'react'
 import axios from 'axios'
 import { Button, Tooltip, useMediaQuery } from '@heroui/react'
-import { ChevronLeft, Menu, Moon, SortAsc, SortDesc, Sun, SunMoon } from 'lucide-react'
+import { ChevronLeft, Menu, Moon, SortAsc, SortDesc, Sun, SunMoon, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { echoHost } from 'shared/api/hosts'
 import useChangeLanguage from 'shared/lib/useChangeLanguage'
@@ -9,8 +9,10 @@ import useLaunchHandler from 'shared/lib/useLaunchHandler'
 import { detectApplePlatform, isStandaloneApp } from 'shared/lib/platform'
 import { useLocalJsonPref } from 'shared/hooks/useLocalPref'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
+import { OPEN_SETTINGS_EVENT, type SettingsDeepLinkTab } from 'shared/lib/settingsEvents'
 import { queryMax } from 'shared/theme/breakpoints'
 import { THEME_MODES, useThemePreference } from 'shared/theme/useThemePreference'
+import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import { TorrentsPage } from 'features/torrents'
 
 import BottomNav from './BottomNav'
@@ -48,6 +50,7 @@ export default function Shell() {
   const [addOpen, setAddOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settingsInitialTab, setSettingsInitialTab] = useState<SettingsDeepLinkTab | undefined>()
   const [aboutOpen, setAboutOpen] = useState(false)
   const [categoriesOpen, setCategoriesOpen] = useState(false)
   const [closeServerOpen, setCloseServerOpen] = useState(false)
@@ -65,6 +68,15 @@ export default function Shell() {
     if (launchSource || launchFiles) setAddOpen(true)
   }, [launchSource, launchFiles])
 
+  useEffect(() => {
+    const openWithTab = (event: Event) => {
+      setSettingsInitialTab((event as CustomEvent<SettingsDeepLinkTab>).detail)
+      setSettingsOpen(true)
+    }
+    window.addEventListener(OPEN_SETTINGS_EVENT, openWithTab)
+    return () => window.removeEventListener(OPEN_SETTINGS_EVENT, openWithTab)
+  }, [])
+
   const cycleLanguage = () => {
     const idx = LANG_CYCLE.indexOf(currentLang as (typeof LANG_CYCLE)[number])
     changeLang(LANG_CYCLE[(idx + 1) % LANG_CYCLE.length])
@@ -81,9 +93,18 @@ export default function Shell() {
     setLaunchSource(null)
   }
 
+  const isCategoryFilterActive = globalCategoryFilter !== 'all'
+  const categoryFilterLabel =
+    globalCategoryFilter === 'all'
+      ? null
+      : globalCategoryFilter === ''
+        ? t('Uncategorized')
+        : t(TORRENT_CATEGORIES.find(category => category.key === globalCategoryFilter)?.name ?? globalCategoryFilter)
+
   const navProps = {
     isOffline,
     isLoading,
+    isCategoryFilterActive,
     onAdd: () => setAddOpen(true),
     onSearch: () => setSearchOpen(true),
     onCategories: () => setCategoriesOpen(true),
@@ -95,6 +116,12 @@ export default function Shell() {
 
   const ThemeIcon =
     currentThemeMode === THEME_MODES.LIGHT ? Sun : currentThemeMode === THEME_MODES.DARK ? Moon : SunMoon
+  const themeModeLabel =
+    currentThemeMode === THEME_MODES.LIGHT
+      ? t('ThemeLight', { defaultValue: 'Light' })
+      : currentThemeMode === THEME_MODES.DARK
+        ? t('ThemeDark', { defaultValue: 'Dark' })
+        : t('ThemeAuto', { defaultValue: 'Auto' })
   const SortIcon = sortABC ? SortAsc : SortDesc
 
   return (
@@ -124,7 +151,22 @@ export default function Shell() {
           </HeaderIconButton>
         ) : null}
 
-        <h1 className='min-w-0 flex-1 truncate text-lg font-semibold'>TorrServer {torrServerVersion}</h1>
+        <h1 className='flex min-w-0 flex-1 items-center gap-2 truncate text-lg font-semibold'>
+          <span className='truncate'>
+            TorrServer <span className='font-normal text-app-header-foreground/70'>{torrServerVersion}</span>
+          </span>
+          {categoryFilterLabel ? (
+            <button
+              type='button'
+              onClick={() => setGlobalCategoryFilter('all')}
+              className='inline-flex shrink-0 items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium hover:bg-white/25'
+              aria-label={t('ClearCategoryFilter', { defaultValue: 'Clear category filter' })}
+            >
+              <span className='max-w-[9rem] truncate'>{categoryFilterLabel}</span>
+              <X size={13} strokeWidth={2.5} aria-hidden />
+            </button>
+          ) : null}
+        </h1>
 
         <HeaderIconButton
           label={
@@ -137,7 +179,7 @@ export default function Shell() {
           <SortIcon size={20} />
         </HeaderIconButton>
 
-        <HeaderIconButton label={t('Theme', { defaultValue: 'Theme' })} onPress={cycleTheme}>
+        <HeaderIconButton label={`${t('Theme', { defaultValue: 'Theme' })}: ${themeModeLabel}`} onPress={cycleTheme}>
           <ThemeIcon size={20} />
         </HeaderIconButton>
 
@@ -172,7 +214,12 @@ export default function Shell() {
           paddingBottom: isMobile ? 'calc(90px + env(safe-area-inset-bottom, 0px))' : 0,
         }}
       >
-        <TorrentsPage sortABC={sortABC} sortCategory={globalCategoryFilter} onAdd={() => setAddOpen(true)} />
+        <TorrentsPage
+          sortABC={sortABC}
+          sortCategory={globalCategoryFilter}
+          onAdd={() => setAddOpen(true)}
+          onClearCategory={() => setGlobalCategoryFilter('all')}
+        />
       </main>
 
       {isMobile ? <BottomNav {...navProps} /> : null}
@@ -190,7 +237,14 @@ export default function Shell() {
           />
         ) : null}
         <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
-        <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+        <SettingsDialog
+          open={settingsOpen}
+          onClose={() => {
+            setSettingsOpen(false)
+            setSettingsInitialTab(undefined)
+          }}
+          initialTab={settingsInitialTab}
+        />
         <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
         <CloseServerDialog open={closeServerOpen} onClose={() => setCloseServerOpen(false)} />
         <RemoveAllDialog open={removeAllOpen} onClose={() => setRemoveAllOpen(false)} />

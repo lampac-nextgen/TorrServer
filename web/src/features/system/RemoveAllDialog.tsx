@@ -32,6 +32,7 @@ export default function RemoveAllDialog({ open, onClose }: RemoveAllDialogProps)
         <Modal.Heading>{t('DeleteTorrents?')}</Modal.Heading>
         <Modal.CloseTrigger />
       </Modal.Header>
+      <Modal.Body>{t('ConfirmRemoveAll')}</Modal.Body>
       <Modal.Footer>
         <Button variant='secondary' onPress={onClose} autoFocus>
           {t('Cancel')}

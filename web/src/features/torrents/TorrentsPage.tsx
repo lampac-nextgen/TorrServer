@@ -16,6 +16,7 @@ export interface TorrentsPageProps {
   sortABC: boolean
   sortCategory: string
   onAdd?: () => void
+  onClearCategory?: () => void
 }
 
 /** ~170-220px poster tiles, auto-filling available width. */
@@ -39,7 +40,7 @@ function prefersReducedMotion(): boolean {
   return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsPageProps) {
+export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCategory }: TorrentsPageProps) {
   const { t } = useTranslation()
   const gridRef = useRef<HTMLDivElement>(null)
   const [detailsTorrent, setDetailsTorrent] = useState<TorrentStat | null>(null)
@@ -91,18 +92,13 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsP
   if (!torrents?.length) {
     return (
       <div className='grid min-h-[60vh] place-items-center p-6'>
-        <button
-          type='button'
-          onClick={onAdd}
-          disabled={!onAdd}
-          className='group flex min-h-[190px] min-w-[280px] flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-border bg-surface p-8 text-center transition-colors hover:border-accent/60 disabled:cursor-not-allowed disabled:opacity-50'
-        >
-          <FolderPlus size={40} className='text-accent transition-transform duration-200 group-hover:scale-110' />
-          <span className='text-lg font-semibold text-foreground'>{t('NoTorrentsAdded')}</span>
-          <Button variant='primary' className='pointer-events-none'>
+        <div className='flex min-h-[190px] w-full max-w-[280px] flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-border bg-surface p-8 text-center'>
+          <FolderPlus size={40} className='text-accent' aria-hidden />
+          <p className='text-lg font-semibold text-foreground'>{t('NoTorrentsAdded')}</p>
+          <Button variant='primary' onPress={onAdd} isDisabled={!onAdd}>
             {t('AddFirstTorrent')}
           </Button>
-        </button>
+        </div>
       </div>
     )
   }
@@ -110,9 +106,14 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsP
   if (!visibleTorrents.length) {
     return (
       <div className='grid min-h-[40vh] place-items-center p-6 text-center'>
-        <div className='flex flex-col items-center gap-2 text-muted'>
+        <div className='flex flex-col items-center gap-3 text-muted'>
           <SearchX size={36} strokeWidth={1.25} />
           <p>{t('NoTorrentsInCategory')}</p>
+          {onClearCategory ? (
+            <Button variant='secondary' onPress={onClearCategory}>
+              {t('ShowAllTorrents', { defaultValue: 'Show all' })}
+            </Button>
+          ) : null}
         </div>
       </div>
     )

@@ -73,6 +73,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
   const queryClient = useQueryClient()
   const toast = useOptionalAppToast()
   const isMobile = useMediaQuery(queryMax('mobile'))
+  const isFullScreenBreakpoint = useMediaQuery(queryMax('dialog'))
 
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResultItem[]>([])
@@ -273,7 +274,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
   const trackerKey = selectedTracker === 'rutor' ? 'rutor' : String(selectedTracker)
 
   return (
-    <AppDialog open={open} onClose={onClose} size='lg' fullScreen={isMobile}>
+    <AppDialog open={open} onClose={onClose} size='lg' fullScreen={isFullScreenBreakpoint}>
       <Modal.Header>
         <Modal.Heading>{t('Torznab.SearchTorrents')}</Modal.Heading>
         <Modal.CloseTrigger />

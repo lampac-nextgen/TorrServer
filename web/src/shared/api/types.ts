@@ -150,6 +150,8 @@ export interface SearchResultItem {
   Link?: string
   Magnet?: string
   Poster?: string
+  /** Set for Torznab results — which configured indexer found this, since searching "all" merges them. */
+  Tracker?: string
   [key: string]: unknown
 }
 

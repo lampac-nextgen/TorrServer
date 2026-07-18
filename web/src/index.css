@@ -120,3 +120,16 @@ body[data-immersive='true'] .ts-bottom-nav {
     min-width: 32rem;
   }
 }
+
+/**
+ * Fullscreen dialogs (Settings/Add/Search/Details/VideoPlayer on narrow screens) fill the
+ * physical viewport edge-to-edge. HeroUI's `.modal__dialog` only gives them a flat 1.5rem (p-6)
+ * inset, which isn't enough to clear a notch/Dynamic Island or the home-indicator bar on iOS
+ * PWAs (`viewport-fit=cover`). Add the safe-area insets on top of that existing padding.
+ */
+.modal__dialog--full {
+  padding-top: calc(1.5rem + env(safe-area-inset-top, 0px));
+  padding-right: calc(1.5rem + env(safe-area-inset-right, 0px));
+  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  padding-left: calc(1.5rem + env(safe-area-inset-left, 0px));
+}

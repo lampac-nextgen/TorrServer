@@ -26,7 +26,9 @@ export interface FileRowActionsProps {
   externalPlayers: ExternalPlayerLink[]
 }
 
-const actionButtonClass = 'min-w-[72px] max-w-full flex-1'
+// `size='sm'` alone renders as short as 32px on desktop breakpoints — force a 40px floor so these
+// stay comfortably tappable in the compact (phone/tablet) file-row layout too.
+const actionButtonClass = 'min-h-10 min-w-[72px] max-w-full flex-1'
 
 /** Per-file action row: preload, inline player / open link, external player deep links, copy link. */
 export default function FileRowActions({

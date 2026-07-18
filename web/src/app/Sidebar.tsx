@@ -15,11 +15,13 @@ type NavItem = {
   icon: ReactNode
   onClick: () => void
   disabled?: boolean
+  active?: boolean
 }
 
 export default function Sidebar({
   isOffline,
   isLoading,
+  isCategoryFilterActive,
   onAdd,
   onSearch,
   onCategories,
@@ -35,7 +37,13 @@ export default function Sidebar({
   const primaryItems: NavItem[] = [
     { key: 'add', label: t('Add'), icon: <FolderPlus size={20} />, onClick: onAdd, disabled },
     { key: 'search', label: t('Search'), icon: <Search size={20} />, onClick: onSearch, disabled },
-    { key: 'category', label: t('Category'), icon: <Layers size={20} />, onClick: onCategories },
+    {
+      key: 'category',
+      label: t('Category'),
+      icon: <Layers size={20} />,
+      onClick: onCategories,
+      active: isCategoryFilterActive,
+    },
     { key: 'removeAll', label: t('RemoveAll'), icon: <Trash2 size={20} />, onClick: onRemoveAll, disabled },
   ]
 
@@ -54,9 +62,10 @@ export default function Sidebar({
         onPress={item.onClick}
         isIconOnly={collapsed}
         aria-label={item.label}
-        className={`w-full justify-start gap-3 rounded-xl px-3 py-2.5 text-app-rail-foreground hover:bg-white/8 ${
+        aria-current={item.active ? 'true' : undefined}
+        className={`w-full justify-start gap-3 rounded-xl px-3 py-2.5 text-app-rail-foreground hover:bg-white/10 ${
           collapsed ? 'justify-center px-2' : ''
-        }`}
+        } ${item.active ? 'bg-white/15' : ''}`}
       >
         {item.icon}
         {!collapsed ? <span className='truncate text-sm font-medium'>{item.label}</span> : null}

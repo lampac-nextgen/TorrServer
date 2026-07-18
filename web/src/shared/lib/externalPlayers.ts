@@ -34,8 +34,8 @@ export function useExternalPlayers() {
     if (isApple && isInfuseUsed) links.push({ label: t('Infuse'), href: `infuse://x-callback-url/play?url=${encoded}` })
     if (isApple && isSenPlayerUsed)
       links.push({ label: t('SenPlayer'), href: `senplayer://x-callback-url/play?url=${encoded}` })
-    if (isVlcUsed) links.push({ label: 'VLC', href: `vlc://${fullLink}` })
-    if (isMac && isIinaUsed) links.push({ label: 'IINA', href: `iina://weblink?url=${encoded}` })
+    if (isVlcUsed) links.push({ label: t('VLC'), href: `vlc://${fullLink}` })
+    if (isMac && isIinaUsed) links.push({ label: t('IINA'), href: `iina://weblink?url=${encoded}` })
     return links
   }
 

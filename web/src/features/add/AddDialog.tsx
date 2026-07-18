@@ -46,6 +46,8 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
   const queryClient = useQueryClient()
   const toast = useOptionalAppToast()
   const isMobile = useMediaQuery(queryMax('mobile'))
+  // Matches Details/VideoPlayer's fullscreen breakpoint so tablets don't get some dialogs fullscreen and others centered.
+  const isFullScreenBreakpoint = useMediaQuery(queryMax('dialog'))
 
   const [source, setSource] = useState(initialSource || '')
   const [title, setTitle] = useState('')
@@ -213,7 +215,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
       open={open}
       onClose={onClose}
       size='md'
-      fullScreen={isMobile}
+      fullScreen={isFullScreenBreakpoint}
       dialogStyle={isMobile ? undefined : { minWidth: '38rem', maxWidth: '46rem' }}
     >
       <Modal.Header>

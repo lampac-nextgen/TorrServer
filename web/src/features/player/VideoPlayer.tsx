@@ -284,7 +284,12 @@ export default function VideoPlayer({
     <>
       {showTrigger &&
         (inlineTrigger ? (
-          <Button variant='secondary' size='sm' onPress={openPlayer} className='min-w-[72px] max-w-full flex-1'>
+          <Button
+            variant='secondary'
+            size='sm'
+            onPress={openPlayer}
+            className='min-h-10 min-w-[72px] max-w-full flex-1'
+          >
             {t('Play')}
           </Button>
         ) : (
@@ -359,7 +364,6 @@ export default function VideoPlayer({
                       <Tooltip.Trigger>
                         <Button
                           isIconOnly
-                          size='sm'
                           variant='ghost'
                           className='text-white hover:bg-white/10'
                           onPress={togglePlayPause}
@@ -378,7 +382,6 @@ export default function VideoPlayer({
                       <Tooltip.Trigger>
                         <Button
                           isIconOnly
-                          size='sm'
                           variant='ghost'
                           className='text-white hover:bg-white/10'
                           onPress={toggleMute}
@@ -389,11 +392,13 @@ export default function VideoPlayer({
                       <Tooltip.Content>{muted ? t('Unmute') : t('Mute')}</Tooltip.Content>
                     </Tooltip>
 
+                    {/* A drag-precise slider is fiddly on touch and duplicates the hardware volume
+                     * buttons — keep it for mouse/trackpad users, mute button covers touch. */}
                     <Slider
                       value={volume * 100}
                       maxValue={100}
                       onChange={handleVolumeChange}
-                      className='w-24'
+                      className='hidden w-24 sm:flex'
                       aria-label={t('Mute')}
                     >
                       <Slider.Track>
@@ -407,7 +412,6 @@ export default function VideoPlayer({
                         <Popover.Trigger>
                           <Button
                             isIconOnly
-                            size='sm'
                             variant={activeSubtitleTrack >= 0 ? 'primary' : 'ghost'}
                             className={activeSubtitleTrack >= 0 ? '' : 'text-white hover:bg-white/10'}
                             aria-label={t('GStreamer.Subtitles', { defaultValue: 'Subtitles' })}
@@ -440,7 +444,6 @@ export default function VideoPlayer({
                       <Tooltip.Trigger>
                         <Button
                           isIconOnly
-                          size='sm'
                           variant='ghost'
                           className='text-white hover:bg-white/10'
                           onPress={fullscreen ? exitFullscreen : enterFullscreen}

@@ -1,11 +1,12 @@
 import { useRef } from 'react'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
-import { Chip } from '@heroui/react'
+import { Chip, useMediaQuery } from '@heroui/react'
 import { ImageOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
-import { CLOSED, GETTING_INFO, IN_DB, PRELOAD, WORKING } from 'shared/torrent/states'
+import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
+import { GETTING_INFO, PRELOAD, WORKING } from 'shared/torrent/states'
 
 import TorrentCardActions from './TorrentCardActions'
 
@@ -33,26 +34,30 @@ export default function TorrentCard({ torrent, onSelect, onEdit }: TorrentCardPr
   const { t } = useTranslation()
   const cardRef = useRef<HTMLElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
+  /** Touch devices have no hover, so the action overlay must be shown permanently instead of revealed on mouseenter. */
+  const isCoarsePointer = useMediaQuery('(pointer: coarse)')
 
   const title = torrent.title || torrent.name || torrent.hash
 
   const statusLabel = (() => {
-    if (torrent.stat == null) return null
-    const labels: Record<number, string> = {
+    // IN_DB/CLOSED are the "resting" state for most cards — a chip there is just noise, not information.
+    const labels: Partial<Record<number, string>> = {
       [GETTING_INFO]: t('TorrentGettingInfo'),
       [PRELOAD]: t('TorrentPreload'),
       [WORKING]: t('TorrentWorking'),
-      [CLOSED]: t('TorrentClosed'),
-      [IN_DB]: t('TorrentInDb'),
     }
-    return labels[torrent.stat] ?? null
+    return torrent.stat != null ? (labels[torrent.stat] ?? null) : null
   })()
+
+  const categoryLabel = torrent.category
+    ? t(TORRENT_CATEGORIES.find(category => category.key === torrent.category)?.name ?? torrent.category)
+    : null
 
   useGSAP(
     () => {
       const overlay = overlayRef.current
       const card = cardRef.current
-      if (!overlay || !card) return
+      if (!overlay || !card || isCoarsePointer) return
 
       const reveal = () => {
         overlay.style.pointerEvents = 'auto'
@@ -75,7 +80,7 @@ export default function TorrentCard({ torrent, onSelect, onEdit }: TorrentCardPr
         card.removeEventListener('focusout', conceal)
       }
     },
-    { scope: cardRef },
+    { scope: cardRef, dependencies: [isCoarsePointer] },
   )
 
   return (
@@ -91,7 +96,7 @@ export default function TorrentCard({ torrent, onSelect, onEdit }: TorrentCardPr
             onSelect(torrent)
           }
         }}
-        className='relative aspect-[2/3] w-full cursor-pointer overflow-hidden rounded-2xl bg-surface-secondary ring-1 ring-border transition-shadow duration-200 hover:shadow-lg hover:ring-accent/50'
+        className='relative aspect-[2/3] w-full cursor-pointer overflow-hidden rounded-2xl bg-surface-secondary ring-1 ring-border transition-shadow duration-200 hover:shadow-lg hover:ring-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background'
       >
         {torrent.poster ? (
           <img src={torrent.poster} alt='' loading='lazy' className='h-full w-full object-cover' />
@@ -113,17 +118,21 @@ export default function TorrentCard({ torrent, onSelect, onEdit }: TorrentCardPr
           ) : (
             <span />
           )}
-          {torrent.category ? (
+          {categoryLabel ? (
             <Chip size='sm' variant='soft'>
-              <Chip.Label className='max-w-[6.5rem] truncate'>{t(torrent.category)}</Chip.Label>
+              <Chip.Label className='max-w-[6.5rem] truncate'>{categoryLabel}</Chip.Label>
             </Chip>
           ) : null}
         </div>
 
         <div
           ref={overlayRef}
-          style={{ opacity: 0, pointerEvents: 'none' }}
-          className='absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/80 via-black/40 to-transparent'
+          style={isCoarsePointer ? undefined : { opacity: 0, pointerEvents: 'none' }}
+          className={
+            isCoarsePointer
+              ? 'absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-gradient-to-t from-black/85 via-black/55 to-transparent px-2 pb-2 pt-10'
+              : 'absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/80 via-black/40 to-transparent'
+          }
         >
           <TorrentCardActions
             torrent={torrent}

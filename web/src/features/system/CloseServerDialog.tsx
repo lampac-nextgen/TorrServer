@@ -24,6 +24,7 @@ export default function CloseServerDialog({ open, onClose }: CloseServerDialogPr
         <Modal.Heading>{t('CloseServer?')}</Modal.Heading>
         <Modal.CloseTrigger />
       </Modal.Header>
+      <Modal.Body>{t('ConfirmCloseServer')}</Modal.Body>
       <Modal.Footer>
         <Button variant='secondary' onPress={onClose} autoFocus>
           {t('Cancel')}
