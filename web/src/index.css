@@ -2304,6 +2304,130 @@ body[data-immersive='true'] .ts-bottom-nav {
   padding-left: calc(1.5rem + env(safe-area-inset-left, 0px));
 }
 
+/* Video player owns its own safe-area chrome — kill HeroUI full-dialog padding. */
+.ts-player-modal-full .modal__dialog--full,
+.modal__dialog--full:has(.ts-player) {
+  padding: 0;
+}
+
+/* —— TorrServer cinema player (Media Chrome) —— */
+.ts-player {
+  --media-primary-color: var(--accent, #22c55e);
+  --media-secondary-color: rgba(20, 24, 22, 0.92);
+  --media-text-color: #fff;
+  --media-icon-color: #fff;
+  --media-background-color: #000;
+  --media-control-background: transparent;
+  /* No gray “pill” on hover/focus — cinema bar should stay flat. */
+  --media-control-hover-background: transparent;
+  --media-focus-box-shadow: none;
+  --media-range-bar-color: var(--accent, #22c55e);
+  --media-range-track-color: rgba(255, 255, 255, 0.18);
+  --media-range-thumb-background: #fff;
+  --media-font-family: inherit;
+  --media-control-height: 2.75rem;
+  --media-button-icon-width: 1.35rem;
+  --media-button-icon-height: 1.35rem;
+  --media-tooltip-display: none;
+  --media-tooltip-background-color: rgba(12, 14, 13, 0.92);
+  --media-tooltip-z-index: 20;
+  display: block;
+  width: 100%;
+  background: #000;
+  overflow: hidden;
+}
+
+/* Soft icon brighten on hover instead of background chips. */
+.ts-player media-play-button:hover,
+.ts-player media-seek-backward-button:hover,
+.ts-player media-seek-forward-button:hover,
+.ts-player media-mute-button:hover,
+.ts-player media-pip-button:hover,
+.ts-player media-fullscreen-button:hover,
+.ts-player media-captions-button:hover,
+.ts-player media-playback-rate-button:hover,
+.ts-player media-time-display:hover {
+  --media-icon-color: #fff;
+  opacity: 1;
+  filter: brightness(1.15);
+}
+
+.ts-player media-play-button,
+.ts-player media-seek-backward-button,
+.ts-player media-seek-forward-button,
+.ts-player media-mute-button,
+.ts-player media-pip-button,
+.ts-player media-fullscreen-button,
+.ts-player media-captions-button,
+.ts-player media-playback-rate-button,
+.ts-player media-time-display,
+.ts-player media-volume-range,
+.ts-player media-time-range {
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.ts-player--desktop {
+  border-radius: 0;
+}
+
+.ts-player--mobile {
+  height: 100%;
+  max-height: 100dvh;
+}
+
+.ts-player-video {
+  width: 100%;
+  height: 100%;
+  max-height: inherit;
+  object-fit: contain;
+  background: #000;
+}
+
+.ts-player-top {
+  width: 100%;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.75), transparent);
+  pointer-events: none;
+}
+
+.ts-player-top > * {
+  pointer-events: auto;
+}
+
+.ts-player-bar {
+  width: 100%;
+  padding: 0.35rem 0.5rem max(0.5rem, env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.45));
+  backdrop-filter: blur(12px);
+}
+
+.ts-player-play-lg {
+  --media-control-height: 3rem;
+  --media-button-icon-width: 1.6rem;
+  --media-button-icon-height: 1.6rem;
+}
+
+.ts-player-extra-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--media-control-height, 2.75rem);
+  height: var(--media-control-height, 2.75rem);
+  padding: 0;
+  border: 0;
+  border-radius: 0.5rem;
+  color: #fff;
+  background: transparent;
+  cursor: pointer;
+}
+
+.ts-player-extra-btn:hover {
+  background: transparent;
+  filter: brightness(1.15);
+}
+
+
 /* Poster library density: ~2 cols on phone, denser on tablet+, roomier on desktop. */
 .torrent-poster-grid {
   /* ~168px min → typically 2 columns on iPhone portrait (~390px). */

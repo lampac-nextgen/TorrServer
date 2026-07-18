@@ -18,7 +18,7 @@ export const DIALOG_SHEET_M: CSSProperties = {
   width: 'min(92vw, 48rem)',
 }
 
-/** Default player window — wide 16:9-friendly rectangle (not a tiny square). */
+/** Default player window — wide cinema frame (height comes from PlayerChrome aspect-ratio). */
 export const PLAYER_DIALOG_NORMAL: CSSProperties = {
   minWidth: 'min(94vw, 64rem)',
   maxWidth: 'min(94vw, 64rem)',
