@@ -44,3 +44,5 @@ toolchains/
 
 # Generated for Windows gst embed (//go:embed); created by goreleaser before hooks
 /server/gstreamer/embedded_gstlib_windows_amd64.zip
+
+/web-legacy-old

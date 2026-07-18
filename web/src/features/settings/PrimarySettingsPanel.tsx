@@ -1,5 +1,6 @@
-import { Description, Input, Label, Slider, TextField } from '@heroui/react'
+import { Input, Label, Slider, TextField } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
+
 import type { BTSets } from 'shared/api/types'
 
 import { SettingSwitch } from './SettingSwitch'
@@ -12,6 +13,7 @@ export interface PrimarySettingsPanelProps {
   onBoolSwitch: (id: string, checked: boolean) => void
 }
 
+/** Cache size / readahead / preload / disk-storage controls — the server's primary tuning knobs. */
 export default function PrimarySettingsPanel({
   settings,
   cacheSizeMb,
@@ -22,61 +24,69 @@ export default function PrimarySettingsPanel({
   const { t } = useTranslation()
 
   return (
-    <div className='space-y-4'>
-      <p>
-        {t('SettingsDialog.CacheSize')}: {cacheSizeMb} {t('MB')}
-      </p>
-      <Slider
-        value={cacheSizeMb}
-        minValue={16}
-        maxValue={2048}
-        step={16}
-        onChange={value => onCacheSizeMb(Number(value))}
-      >
-        <Slider.Output />
-        <Slider.Track>
-          <Slider.Fill />
-          <Slider.Thumb />
-        </Slider.Track>
-      </Slider>
-      <TextField value={String(cacheSizeMb)} onChange={value => onCacheSizeMb(Math.max(16, Number(value) || 16))}>
-        <Label>{t('MB')}</Label>
-        <Input type='number' min={16} step={16} className='max-w-[120px]' />
-      </TextField>
+    <div className='space-y-5'>
+      <div>
+        <p className='mb-2 text-sm text-muted'>
+          {t('SettingsDialog.CacheSize')}: <span className='font-medium text-foreground'>{cacheSizeMb}</span> {t('MB')}
+        </p>
+        <Slider
+          value={cacheSizeMb}
+          minValue={16}
+          maxValue={2048}
+          step={16}
+          onChange={value => onCacheSizeMb(Number(value))}
+        >
+          <Slider.Track>
+            <Slider.Fill className='bg-accent' />
+            <Slider.Thumb />
+          </Slider.Track>
+        </Slider>
+        <TextField
+          value={String(cacheSizeMb)}
+          onChange={value => onCacheSizeMb(Math.max(16, Number(value) || 16))}
+          className='mt-2 max-w-[140px]'
+        >
+          <Input type='number' min={16} step={16} />
+        </TextField>
+      </div>
 
-      <p>
-        {t('SettingsDialog.ReaderReadAHead')}: {settings.ReaderReadAHead ?? 95}%
-      </p>
-      <Slider
-        value={settings.ReaderReadAHead ?? 95}
-        minValue={1}
-        maxValue={100}
-        onChange={value => onUpdate('ReaderReadAHead', Number(value))}
-      >
-        <Slider.Output />
-        <Slider.Track>
-          <Slider.Fill />
-          <Slider.Thumb />
-        </Slider.Track>
-      </Slider>
+      <div>
+        <p className='mb-2 text-sm text-muted'>
+          {t('SettingsDialog.ReaderReadAHead')}:{' '}
+          <span className='font-medium text-foreground'>{settings.ReaderReadAHead ?? 95}%</span>
+        </p>
+        <Slider
+          value={settings.ReaderReadAHead ?? 95}
+          minValue={1}
+          maxValue={100}
+          onChange={value => onUpdate('ReaderReadAHead', Number(value))}
+        >
+          <Slider.Track>
+            <Slider.Fill className='bg-accent' />
+            <Slider.Thumb />
+          </Slider.Track>
+        </Slider>
+      </div>
 
-      <p>
-        {t('SettingsDialog.PreloadCache')}: {settings.PreloadCache ?? 50}%
-      </p>
-      <Slider
-        value={settings.PreloadCache ?? 50}
-        minValue={0}
-        maxValue={100}
-        onChange={value => onUpdate('PreloadCache', Number(value))}
-      >
-        <Slider.Output />
-        <Slider.Track>
-          <Slider.Fill />
-          <Slider.Thumb />
-        </Slider.Track>
-      </Slider>
+      <div>
+        <p className='mb-2 text-sm text-muted'>
+          {t('SettingsDialog.PreloadCache')}:{' '}
+          <span className='font-medium text-foreground'>{settings.PreloadCache ?? 50}%</span>
+        </p>
+        <Slider
+          value={settings.PreloadCache ?? 50}
+          minValue={0}
+          maxValue={100}
+          onChange={value => onUpdate('PreloadCache', Number(value))}
+        >
+          <Slider.Track>
+            <Slider.Fill className='bg-accent' />
+            <Slider.Thumb />
+          </Slider.Track>
+        </Slider>
+      </div>
 
-      <div className='divide-y divide-default-200'>
+      <div className='divide-y divide-separator border-y border-separator'>
         <SettingSwitch
           id='UseDisk'
           label={t('SettingsDialog.UseDisk')}
@@ -90,7 +100,7 @@ export default function PrimarySettingsPanel({
           className='py-3'
         >
           <Label>{t('SettingsDialog.TorrentsSavePath')}</Label>
-          <Input />
+          <Input placeholder='/data/torrents' />
         </TextField>
         <SettingSwitch
           id='RemoveCacheOnDrop'

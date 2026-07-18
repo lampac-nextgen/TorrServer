@@ -2,8 +2,9 @@ import { Button, Description, Modal, Spinner, Tabs, useMediaQuery } from '@herou
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+
 import type { BTSets } from 'shared/api/types'
-import { getSettings, setSettings } from 'shared/api/settings'
+import { getSettings, setSettings, SETTINGS_QUERY_KEY } from 'shared/api/settings'
 import { getGstSettings, setGstSettings } from 'shared/api/gst'
 import {
   defaultStorageSettings,
@@ -36,6 +37,7 @@ export interface SettingsDialogProps {
 
 type SettingsTab = 'primary' | 'network' | 'features' | 'storage' | 'app' | 'gstreamer' | 'torznab'
 
+/** Tabbed server settings dialog — full-screen on mobile, persists via BTSets + GST + storage-backend APIs. */
 export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
@@ -87,25 +89,20 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
       setGstConfig({ ...emptyGstConfig(), ...(data.config || {}) })
       setGstDefaults({ ...emptyGstConfig(), ...(data.defaults || {}) })
     } catch {
-      // optional when GST not built in
+      // GST is optional — not built in on this platform/build.
     }
   }, [])
 
   const loadStorageBackends = useCallback(async (signal?: AbortSignal) => {
     try {
-      const prefs = await getStorageSettings(signal)
-      setStorageBackends(prefs)
+      setStorageBackends(await getStorageSettings(signal))
     } catch {
       setStorageBackends(defaultStorageSettings())
     }
   }, [])
 
-  const updateSettingsPartial: import('shared/api/types').SettingsUpdater = partial => {
-    setLocalSettings(prev => ({ ...prev, ...partial }))
-  }
-
   useEffect(() => {
-    if (!open) return
+    if (!open) return undefined
     const ac = new AbortController()
     setLoading(true)
     Promise.all([loadSettings(ac.signal), loadGstConfig(ac.signal), loadStorageBackends(ac.signal)])
@@ -120,6 +117,10 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
 
   const updateSetting = useCallback(<K extends keyof BTSets>(key: K, value: BTSets[K]) => {
     setLocalSettings(prev => ({ ...prev, [key]: value }))
+  }, [])
+
+  const updateSettingsPartial = useCallback((partial: Partial<BTSets>) => {
+    setLocalSettings(prev => ({ ...prev, ...partial }))
   }, [])
 
   const handleBoolSwitch = useCallback(
@@ -148,7 +149,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
         await setGstSettings(gstConfig)
         await queryClient.invalidateQueries({ queryKey: [GST_RUNTIME_QUERY_KEY] })
       } else {
-        const sets = {
+        const sets: BTSets = {
           ...settings,
           CacheSize: cacheSizeMb * 1024 * 1024,
           ReaderReadAHead: settings.ReaderReadAHead ?? defaultSettings.ReaderReadAHead,
@@ -158,15 +159,12 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
         await setStorageSettings(storageBackends)
         clearTMDBCache()
         notifySettingsChanged()
-        await queryClient.invalidateQueries({ queryKey: ['settings'] })
+        await queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEY })
       }
-      toast?.showToast({ message: t('Saved'), severity: 'success' })
+      toast?.showToast({ message: t('Saved', { defaultValue: 'Saved' }), severity: 'success' })
       onClose()
-    } catch (e) {
-      toast?.showToast({
-        message: (e as Error).message || t('Error'),
-        severity: 'error',
-      })
+    } catch (err) {
+      toast?.showToast({ message: (err as Error).message || t('Error'), severity: 'error' })
     } finally {
       setSaving(false)
     }
@@ -175,21 +173,25 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const footerButtonClassName = isMobile ? 'min-h-11 px-4' : undefined
 
   return (
-    <AppDialog open={open} onClose={onClose} size='md'>
+    <AppDialog open={open} onClose={onClose} size='md' fullScreen={isMobile}>
       <Modal.Header>
-        <Modal.Heading>{t('Settings')}</Modal.Heading>
+        <Modal.Heading>{t('SettingsDialog.Settings')}</Modal.Heading>
         <Modal.CloseTrigger />
       </Modal.Header>
       <Modal.Body>
         {loading ? (
-          <div className='grid place-items-center py-12'>
+          <div className='grid place-items-center py-16'>
             <Spinner size='lg' />
           </div>
         ) : (
           <Tabs.Root selectedKey={tab} onSelectionChange={key => setTab(String(key) as SettingsTab)}>
-            <Tabs.List aria-label={t('Settings')} className='overflow-x-auto'>
+            <Tabs.List aria-label={t('SettingsDialog.Settings')} className='overflow-x-auto'>
               {visibleTabs.map(item => (
-                <Tabs.Tab key={item.id} id={item.id} className={isMobile ? 'min-h-11' : undefined}>
+                <Tabs.Tab
+                  key={item.id}
+                  id={item.id}
+                  className={isMobile ? 'min-h-11 whitespace-nowrap' : 'whitespace-nowrap'}
+                >
                   {item.label}
                 </Tabs.Tab>
               ))}
@@ -246,7 +248,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
                   variant='secondary'
                   onPress={() => setGstConfig({ ...emptyGstConfig(), ...gstDefaults })}
                 >
-                  {t('Reset', { defaultValue: 'Reset to defaults' })}
+                  {t('SettingsDialog.ResetToDefault')}
                 </Button>
               </Tabs.Panel>
             ) : null}
@@ -265,7 +267,12 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
         <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName} autoFocus>
           {t('Cancel')}
         </Button>
-        <Button variant='primary' onPress={() => void handleSave()} isDisabled={loading || saving} className={footerButtonClassName}>
+        <Button
+          variant='primary'
+          onPress={() => void handleSave()}
+          isDisabled={loading || saving}
+          className={footerButtonClassName}
+        >
           {saving ? <Spinner size='sm' color='current' /> : t('Save')}
         </Button>
       </Modal.Footer>

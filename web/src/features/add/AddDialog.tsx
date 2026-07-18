@@ -9,14 +9,16 @@ import {
   Spinner,
   TextArea,
   TextField,
+  useMediaQuery,
 } from '@heroui/react'
-import { CloudUpload } from 'lucide-react'
+import { Check, UploadCloud } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useMediaQuery } from '@heroui/react'
+import { useDropzone } from 'react-dropzone'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { useDropzone } from 'react-dropzone'
+
 import { addTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
+import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
 import {
   checkTorrentSource,
   getMoviePosters,
@@ -24,18 +26,18 @@ import {
   parseTorrentTitle,
   shortenTitleForPosterSearch,
 } from 'shared/lib/torrentHelpers'
-import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
 import { queryMax } from 'shared/theme/breakpoints'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import AppDialog from 'shared/ui/AppDialog'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { useOptionalAppToast } from 'shared/ui/Toast'
+
 import MultiAddDialog from './MultiAddDialog'
 
 export interface AddDialogProps {
   open: boolean
   onClose: () => void
-  /** Pre-fill magnet/hash (PWA protocol / share_target). */
+  /** Pre-fill magnet/hash/link (PWA protocol handler / share target). */
   initialSource?: string | null
 }
 
@@ -54,6 +56,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
   const [saving, setSaving] = useState(false)
   const [multiFiles, setMultiFiles] = useState<File[] | null>(null)
   const [hashExists, setHashExists] = useState(false)
+
   const posterRequestRef = useRef(0)
   const titleTouchedRef = useRef(false)
 
@@ -75,6 +78,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
     titleTouchedRef.current = false
   }
 
+  // Debounced duplicate-hash check against the currently known torrent list.
   useEffect(() => {
     const trimmed = source.trim()
     if (!open || !trimmed || !checkTorrentSource(trimmed)) {
@@ -89,7 +93,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
           if (!cancelled) setHashExists(false)
           return
         }
-        const exists = (torrents || []).some(t => t.hash?.toLowerCase() === infoHash.toLowerCase())
+        const exists = (torrents || []).some(item => item.hash?.toLowerCase() === infoHash.toLowerCase())
         setHashExists(exists)
       })
     }, 300)
@@ -100,6 +104,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
     }
   }, [open, source, torrents])
 
+  // Debounced title auto-fill from the parsed torrent/magnet name, unless the user edited it.
   useEffect(() => {
     const trimmed = source.trim()
     if (!open || !trimmed || !checkTorrentSource(trimmed) || titleTouchedRef.current) return undefined
@@ -131,6 +136,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
     disabled: saving,
   })
 
+  // Debounced TMDB poster search driven by the (possibly auto-filled) title.
   useEffect(() => {
     const query = shortenTitleForPosterSearch(title.trim()) || title.trim()
     if (!query || query.length < 2) {
@@ -160,10 +166,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
     const trimmed = source.trim()
     if (!trimmed) return
     if (!checkTorrentSource(trimmed)) {
-      toast?.showToast({
-        message: t('AddDialog.WrongTorrentSource'),
-        severity: 'error',
-      })
+      toast?.showToast({ message: t('AddDialog.WrongTorrentSource'), severity: 'error' })
       return
     }
     if (hashExists) {
@@ -206,7 +209,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
   }
 
   return (
-    <AppDialog open={open} onClose={onClose} size='sm'>
+    <AppDialog open={open} onClose={onClose} size='sm' fullScreen={isMobile}>
       <Modal.Header>
         <Modal.Heading>{t('AddNewTorrent')}</Modal.Heading>
         <Modal.CloseTrigger />
@@ -217,6 +220,17 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
           <TextArea rows={2} autoFocus />
           <Description>{hashExists ? t('AddDialog.HashExists') : t('AddDialog.TorrentSourceOptions')}</Description>
         </TextField>
+
+        <div
+          {...getRootProps()}
+          className={`grid min-h-16 cursor-pointer place-items-center gap-1.5 rounded-xl border-2 border-dashed p-4 text-center transition-colors ${
+            isDragActive ? 'border-accent bg-accent-soft' : 'border-border hover:border-accent/50'
+          }`}
+        >
+          <input {...getInputProps()} />
+          <UploadCloud className='size-5 text-muted' aria-hidden />
+          <Description>{t('AddDialog.AppendFile.ClickOrDrag')}</Description>
+        </div>
 
         <TextField
           value={title}
@@ -231,7 +245,11 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
           <Description>{t('AddDialog.CustomTorrentTitleHelperText')}</Description>
         </TextField>
 
-        <Select selectedKey={category || 'none'} onSelectionChange={key => setCategory(key === 'none' ? '' : String(key))} isDisabled={saving}>
+        <Select
+          selectedKey={category || 'none'}
+          onSelectionChange={key => setCategory(key === 'none' ? '' : String(key))}
+          isDisabled={saving}
+        >
           <Label>{t('AddDialog.CategoryHelperText')}</Label>
           <Select.Trigger>
             <Select.Value />
@@ -249,43 +267,43 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
           </Select.Popover>
         </Select>
 
-        {(postersLoading || posterOptions.length > 0 || poster) && (
+        {postersLoading || posterOptions.length > 0 || poster ? (
           <div>
             <Description className='mb-2 block'>
               {t('AddDialog.AddPosterLinkInput')}
               {postersLoading ? '…' : ''}
             </Description>
-            <div className='mb-2 flex gap-2 overflow-x-auto pb-1'>
-              {posterOptions.map(url => (
-                <button
-                  key={url}
-                  type='button'
-                  onClick={() => setPoster(url)}
-                  className={`h-24 w-16 shrink-0 overflow-hidden rounded-lg border-2 ${
-                    poster === url ? 'border-primary' : 'border-default-200'
-                  }`}
-                >
-                  <img src={url} alt='' className='h-full w-full object-cover' />
-                </button>
-              ))}
-            </div>
+            {posterOptions.length > 0 ? (
+              <div className='mb-3 flex gap-2 overflow-x-auto pb-1'>
+                {posterOptions.map(url => {
+                  const selected = poster === url
+                  return (
+                    <button
+                      key={url}
+                      type='button'
+                      onClick={() => setPoster(url)}
+                      aria-pressed={selected}
+                      className={`relative h-24 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
+                        selected ? 'border-accent' : 'border-border hover:border-accent/50'
+                      }`}
+                    >
+                      <img src={url} alt='' className='h-full w-full object-cover' />
+                      {selected ? (
+                        <span className='absolute right-1 top-1 grid size-4 place-items-center rounded-full bg-accent text-accent-foreground'>
+                          <Check className='size-3' aria-hidden />
+                        </span>
+                      ) : null}
+                    </button>
+                  )
+                })}
+              </div>
+            ) : null}
             <TextField value={poster} onChange={setPoster} isDisabled={saving}>
               <Label>{t('AddDialog.AddPosterLinkInput')}</Label>
               <Input />
             </TextField>
           </div>
-        )}
-
-        <div
-          {...getRootProps()}
-          className={`grid min-h-11 cursor-pointer place-items-center gap-2 rounded-xl border-2 border-dashed p-6 text-center ${
-            isDragActive ? 'border-primary bg-primary/5' : 'border-default-300'
-          }`}
-        >
-          <input {...getInputProps()} />
-          <CloudUpload className='size-6 text-default-500' aria-hidden />
-          <Description>{t('AddDialog.AppendFile.ClickOrDrag')}</Description>
-        </div>
+        ) : null}
       </Modal.Body>
       <Modal.Footer>
         <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName}>

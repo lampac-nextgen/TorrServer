@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+import Hls from 'hls.js'
 import {
   Alert,
   Button,
@@ -10,18 +12,7 @@ import {
   useMediaQuery,
   useOverlayState,
 } from '@heroui/react'
-import {
-  Captions,
-  Maximize,
-  Minimize,
-  Pause,
-  Play,
-  Volume2,
-  VolumeX,
-  X,
-} from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import Hls from 'hls.js'
+import { Captions, Maximize, Minimize, Pause, Play, Volume2, VolumeX, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { queryMax } from 'shared/theme/breakpoints'
 import { useModalOpen, useSyncModalOpen } from 'shared/ui/ModalOpenContext'
@@ -39,9 +30,16 @@ export interface VideoPlayerProps {
   onClose?: () => void
 }
 
-function getMimeType(url: string): string {
-  const ext = url.split('?')[0].split('.').pop()?.toLowerCase()
-  switch (ext) {
+interface SubtitleTrackInfo {
+  id: number
+  name?: string
+  lang?: string
+}
+
+const HEARTBEAT_INTERVAL_MS = 30_000
+
+function nativeMimeType(url: string): string {
+  switch (url.split('?')[0].split('.').pop()?.toLowerCase()) {
     case 'mp4':
       return 'video/mp4'
     case 'ogg':
@@ -54,23 +52,19 @@ function getMimeType(url: string): string {
   }
 }
 
-const canPlayNativeHls = (video: HTMLVideoElement) =>
+const supportsNativeHls = (video: HTMLVideoElement): boolean =>
   Boolean(video.canPlayType('application/vnd.apple.mpegurl') || video.canPlayType('application/x-mpegURL'))
 
-function formatTime(seconds: number): string {
+function formatDuration(seconds: number): string {
   if (!Number.isFinite(seconds)) return '00:00:00'
   const h = Math.floor(seconds / 3600)
   const m = Math.floor((seconds % 3600) / 60)
   const s = Math.floor(seconds % 60)
-  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+  return [h, m, s].map(unit => unit.toString().padStart(2, '0')).join(':')
 }
 
-type SubtitleTrackInfo = { id: number; name?: string; lang?: string }
-
-const subtitleLabel = (track: SubtitleTrackInfo) => {
-  const parts = [track.name, track.lang].filter(Boolean)
-  return parts.length ? parts.join(' · ') : `Subtitle ${track.id}`
-}
+const subtitleLabel = (track: SubtitleTrackInfo): string =>
+  [track.name, track.lang].filter(Boolean).join(' · ') || `Subtitle ${track.id}`
 
 export default function VideoPlayer({
   videoSrc,
@@ -87,9 +81,11 @@ export default function VideoPlayer({
   const { t } = useTranslation()
   const isMobile = useMediaQuery(queryMax('dialog'))
   const { setImmersive } = useModalOpen()
+
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const hlsRef = useRef<Hls | null>(null)
+  const hlsInstanceRef = useRef<Hls | null>(null)
   const onNotSupportedRef = useRef(onNotSupported)
+
   const [open, setOpen] = useState(initiallyOpen)
   const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null)
   const [loading, setLoading] = useState(true)
@@ -101,20 +97,27 @@ export default function VideoPlayer({
   const [volume, setVolume] = useState(1)
   const [fullscreen, setFullscreen] = useState(false)
   const [subtitleTracks, setSubtitleTracks] = useState<SubtitleTrackInfo[]>([])
-  const [subtitleTrack, setSubtitleTrack] = useState(-1)
-  const [subtitlesOpen, setSubtitlesOpen] = useState(false)
+  const [activeSubtitleTrack, setActiveSubtitleTrack] = useState(-1)
+  const [subtitleMenuOpen, setSubtitleMenuOpen] = useState(false)
 
-  const state = useOverlayState({
+  const closePlayer = useCallback(() => {
+    setOpen(false)
+    setMediaError(false)
+    setSubtitleMenuOpen(false)
+    onClose?.()
+  }, [onClose])
+
+  const overlayState = useOverlayState({
     isOpen: open,
     onOpenChange: next => {
-      if (!next) closePlayer()
-      else setOpen(true)
+      if (next) setOpen(true)
+      else closePlayer()
     },
   })
 
   useSyncModalOpen(open)
 
-  const setVideoNode = useCallback((node: HTMLVideoElement | null) => {
+  const attachVideoNode = useCallback((node: HTMLVideoElement | null) => {
     videoRef.current = node
     setVideoElement(node)
   }, [])
@@ -123,68 +126,65 @@ export default function VideoPlayer({
     onNotSupportedRef.current = onNotSupported
   }, [onNotSupported])
 
+  // Hide the bottom-nav chrome behind the video on small screens.
   useEffect(() => {
-    if (!isMobile || !open) return
+    if (!isMobile || !open) return undefined
     setImmersive(true)
     return () => setImmersive(false)
   }, [isMobile, open, setImmersive])
 
   useEffect(() => {
-    const vid = document.createElement('video')
-    const supported = hls ? Hls.isSupported() || canPlayNativeHls(vid) : Boolean(vid.canPlayType(getMimeType(videoSrc)))
+    const probe = document.createElement('video')
+    const supported = hls
+      ? Hls.isSupported() || supportsNativeHls(probe)
+      : Boolean(probe.canPlayType(nativeMimeType(videoSrc)))
     if (!supported) onNotSupportedRef.current?.()
   }, [hls, videoSrc])
 
   useEffect(() => {
     if (!open || !hls || !videoElement) return undefined
+    const video = videoRef.current
+    if (!video) return undefined
 
-    const video = videoElement
     let hlsPlayer: Hls | null = null
-    let nativeHls = false
+    let usingNativeHls = false
     setLoading(true)
     setSubtitleTracks([])
-    setSubtitleTrack(-1)
+    setActiveSubtitleTrack(-1)
+
+    const syncSubtitleTracks = () => {
+      const tracks = (hlsPlayer?.subtitleTracks || []).map((track, id) => ({ id, name: track.name, lang: track.lang }))
+      setSubtitleTracks(tracks)
+    }
 
     if (Hls.isSupported()) {
       hlsPlayer = new Hls()
-      hlsRef.current = hlsPlayer
+      hlsInstanceRef.current = hlsPlayer
+
       hlsPlayer.on(Hls.Events.MANIFEST_PARSED, () => {
-        const tracks = (hlsPlayer?.subtitleTracks || []).map((track, id) => ({
-          id,
-          name: track.name,
-          lang: track.lang,
-        }))
-        setSubtitleTracks(tracks)
-        setSubtitleTrack(hlsPlayer?.subtitleTrack ?? -1)
+        syncSubtitleTracks()
+        setActiveSubtitleTrack(hlsPlayer?.subtitleTrack ?? -1)
         video.play().catch(() => {})
       })
-      hlsPlayer.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, () => {
-        const tracks = (hlsPlayer?.subtitleTracks || []).map((track, id) => ({
-          id,
-          name: track.name,
-          lang: track.lang,
-        }))
-        setSubtitleTracks(tracks)
-      })
-      hlsPlayer.on(Hls.Events.SUBTITLE_TRACK_SWITCH, (_, data) => {
-        setSubtitleTrack(data.id)
-      })
-      hlsPlayer.on(Hls.Events.ERROR, (_, data) => {
-        if (!data.fatal) return
+      hlsPlayer.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, syncSubtitleTracks)
+      hlsPlayer.on(Hls.Events.SUBTITLE_TRACK_SWITCH, (_event, data) => setActiveSubtitleTrack(data.id))
+      hlsPlayer.on(Hls.Events.ERROR, (_event, data) => {
+        if (!data.fatal || !hlsPlayer) return
         if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-          hlsPlayer!.startLoad()
+          hlsPlayer.startLoad()
         } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-          hlsPlayer!.recoverMediaError()
+          hlsPlayer.recoverMediaError()
         } else {
-          hlsPlayer!.stopLoad()
+          hlsPlayer.stopLoad()
           setLoading(false)
           setMediaError(true)
         }
       })
+
       hlsPlayer.loadSource(videoSrc)
       hlsPlayer.attachMedia(video)
-    } else if (canPlayNativeHls(video)) {
-      nativeHls = true
+    } else if (supportsNativeHls(video)) {
+      usingNativeHls = true
       video.src = videoSrc
       video.load()
       video.play().catch(() => {})
@@ -193,33 +193,34 @@ export default function VideoPlayer({
     }
 
     return () => {
-      if (hlsRef.current === hlsPlayer) hlsRef.current = null
-      if (hlsPlayer) hlsPlayer.destroy()
-      if (nativeHls) {
+      if (hlsInstanceRef.current === hlsPlayer) hlsInstanceRef.current = null
+      hlsPlayer?.destroy()
+      if (usingNativeHls) {
         video.pause()
         video.removeAttribute('src')
         video.load()
       }
       setSubtitleTracks([])
-      setSubtitleTrack(-1)
+      setActiveSubtitleTrack(-1)
     }
   }, [hls, open, videoElement, videoSrc])
 
+  // Keeps a GStreamer transcode session alive while the player stays open.
   useEffect(() => {
     if (!open || !heartbeatSrc) return undefined
     const timer = window.setInterval(() => {
       fetch(heartbeatSrc, { cache: 'no-store' }).catch(() => {})
-    }, 30 * 1000)
+    }, HEARTBEAT_INTERVAL_MS)
     return () => window.clearInterval(timer)
   }, [heartbeatSrc, open])
 
   useEffect(() => {
-    const onFull = () => setFullscreen(!!document.fullscreenElement)
-    document.addEventListener('fullscreenchange', onFull)
-    return () => document.removeEventListener('fullscreenchange', onFull)
+    const onFullscreenChange = () => setFullscreen(Boolean(document.fullscreenElement))
+    document.addEventListener('fullscreenchange', onFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange)
   }, [])
 
-  const handlePlayPause = () => {
+  const togglePlayPause = () => {
     const video = videoRef.current
     if (!video) return
     if (video.paused) video.play()
@@ -230,58 +231,53 @@ export default function VideoPlayer({
     if (videoRef.current) setCurrentTime(videoRef.current.currentTime)
   }
 
-  const handleLoaded = () => {
+  const handleLoadedMetadata = () => {
     if (!videoRef.current) return
     setDuration(videoRef.current.duration)
     setLoading(false)
   }
 
   const handleSeek = (value: number | number[]) => {
-    if (!videoRef.current) return
+    const video = videoRef.current
+    if (!video) return
     const next = Array.isArray(value) ? value[0] : value
-    videoRef.current.currentTime = next
+    video.currentTime = next
     setCurrentTime(next)
   }
 
-  const handleVolume = (value: number | number[]) => {
-    if (!videoRef.current) return
-    const next = Array.isArray(value) ? value[0] : value
-    const v = next / 100
-    videoRef.current.volume = v
-    setVolume(v)
-    setMuted(v === 0)
+  const handleVolumeChange = (value: number | number[]) => {
+    const video = videoRef.current
+    if (!video) return
+    const next = (Array.isArray(value) ? value[0] : value) / 100
+    video.volume = next
+    setVolume(next)
+    setMuted(next === 0)
   }
 
   const toggleMute = () => {
-    if (!videoRef.current) return
-    videoRef.current.muted = !muted
-    setMuted(m => !m)
+    const video = videoRef.current
+    if (!video) return
+    video.muted = !muted
+    setMuted(prev => !prev)
   }
 
-  const enterFull = () => videoRef.current?.requestFullscreen()
-  const exitFull = () => document.exitFullscreen()
+  const enterFullscreen = () => videoRef.current?.requestFullscreen()
+  const exitFullscreen = () => document.exitFullscreen()
 
-  const changeSubtitleTrack = (index: number) => {
-    const hlsPlayer = hlsRef.current
+  const switchSubtitleTrack = (index: number) => {
+    const hlsPlayer = hlsInstanceRef.current
     if (hlsPlayer) {
       hlsPlayer.subtitleDisplay = index >= 0
       hlsPlayer.subtitleTrack = index
     }
-    setSubtitleTrack(index)
-    setSubtitlesOpen(false)
+    setActiveSubtitleTrack(index)
+    setSubtitleMenuOpen(false)
   }
 
   const openPlayer = () => {
     setLoading(true)
     setMediaError(false)
     setOpen(true)
-  }
-
-  const closePlayer = () => {
-    setOpen(false)
-    setMediaError(false)
-    setSubtitlesOpen(false)
-    onClose?.()
   }
 
   return (
@@ -298,13 +294,17 @@ export default function VideoPlayer({
           </Button>
         ))}
 
-      <Modal.Root state={state}>
+      <Modal state={overlayState}>
         <Modal.Backdrop>
-          <Modal.Container size={isMobile ? 'full' : 'lg'} scroll='inside' className={isMobile ? 'ts-immersive' : undefined}>
-            <Modal.Dialog>
-              <Modal.Header className='flex items-center gap-2 py-2'>
+          <Modal.Container
+            size={isMobile ? 'full' : 'lg'}
+            scroll='inside'
+            className={isMobile ? 'ts-immersive' : undefined}
+          >
+            <Modal.Dialog className='bg-black'>
+              <Modal.Header className='flex items-center gap-2 border-b border-white/10 bg-black py-2 text-white'>
                 <Modal.Heading className='min-w-0 flex-1 truncate text-base'>{title || t('Play')}</Modal.Heading>
-                <Modal.CloseTrigger aria-label={t('Close', { defaultValue: 'Close' })}>
+                <Modal.CloseTrigger aria-label={t('Close')} className='text-white hover:bg-white/10'>
                   <X className='size-4' />
                 </Modal.CloseTrigger>
               </Modal.Header>
@@ -330,76 +330,100 @@ export default function VideoPlayer({
                 <div className='relative w-full bg-black' style={{ minHeight: isMobile ? 240 : 360 }}>
                   <video
                     autoPlay
-                    ref={setVideoNode}
+                    ref={attachVideoNode}
                     src={hls ? undefined : videoSrc}
                     onTimeUpdate={handleTimeUpdate}
-                    onLoadedMetadata={handleLoaded}
+                    onLoadedMetadata={handleLoadedMetadata}
                     onPlay={() => setPlaying(true)}
                     onPause={() => setPlaying(false)}
                     className='block w-full'
                     style={{ maxHeight: isMobile ? 'calc(100dvh - 180px)' : '70vh' }}
                   />
                   {loading ? (
-                    <div className='absolute inset-0 grid place-items-center'>
+                    <div className='absolute inset-0 grid place-items-center bg-black/40'>
                       <Spinner size='lg' className='text-white' />
                     </div>
                   ) : null}
                 </div>
 
-                <div className='bg-content1 p-3'>
-                  <Slider value={currentTime} maxValue={duration || 0} onChange={handleSeek} className='mb-3'>
+                <div className='flex flex-col gap-3 bg-neutral-950 p-3 text-white'>
+                  <Slider value={currentTime} maxValue={duration || 0} onChange={handleSeek} aria-label={t('Seconds')}>
                     <Slider.Track>
                       <Slider.Fill />
                       <Slider.Thumb />
                     </Slider.Track>
                   </Slider>
+
                   <div className='flex flex-wrap items-center gap-2'>
-                    <Tooltip.Root>
+                    <Tooltip>
                       <Tooltip.Trigger>
-                        <Button isIconOnly size='sm' variant='ghost' onPress={handlePlayPause}>
+                        <Button
+                          isIconOnly
+                          size='sm'
+                          variant='ghost'
+                          className='text-white hover:bg-white/10'
+                          onPress={togglePlayPause}
+                        >
                           {playing ? <Pause className='size-4' /> : <Play className='size-4' />}
                         </Button>
                       </Tooltip.Trigger>
                       <Tooltip.Content>{playing ? t('Pause') : t('Play')}</Tooltip.Content>
-                    </Tooltip.Root>
-                    <span className='min-w-[100px] text-xs tabular-nums'>
-                      {formatTime(currentTime)} / {formatTime(duration)}
+                    </Tooltip>
+
+                    <span className='min-w-[100px] text-xs tabular-nums text-white/80'>
+                      {formatDuration(currentTime)} / {formatDuration(duration)}
                     </span>
-                    <Tooltip.Root>
+
+                    <Tooltip>
                       <Tooltip.Trigger>
-                        <Button isIconOnly size='sm' variant='ghost' onPress={toggleMute}>
+                        <Button
+                          isIconOnly
+                          size='sm'
+                          variant='ghost'
+                          className='text-white hover:bg-white/10'
+                          onPress={toggleMute}
+                        >
                           {muted ? <VolumeX className='size-4' /> : <Volume2 className='size-4' />}
                         </Button>
                       </Tooltip.Trigger>
                       <Tooltip.Content>{muted ? t('Unmute') : t('Mute')}</Tooltip.Content>
-                    </Tooltip.Root>
-                    <Slider value={volume * 100} maxValue={100} onChange={handleVolume} className='w-24'>
+                    </Tooltip>
+
+                    <Slider
+                      value={volume * 100}
+                      maxValue={100}
+                      onChange={handleVolumeChange}
+                      className='w-24'
+                      aria-label={t('Mute')}
+                    >
                       <Slider.Track>
                         <Slider.Fill />
                         <Slider.Thumb />
                       </Slider.Track>
                     </Slider>
+
                     {subtitleTracks.length > 0 ? (
-                      <Popover isOpen={subtitlesOpen} onOpenChange={setSubtitlesOpen}>
+                      <Popover isOpen={subtitleMenuOpen} onOpenChange={setSubtitleMenuOpen}>
                         <Popover.Trigger>
                           <Button
                             isIconOnly
                             size='sm'
-                            variant={subtitleTrack >= 0 ? 'primary' : 'ghost'}
-                            aria-label={t('Subtitles', { defaultValue: 'Subtitles' })}
+                            variant={activeSubtitleTrack >= 0 ? 'primary' : 'ghost'}
+                            className={activeSubtitleTrack >= 0 ? '' : 'text-white hover:bg-white/10'}
+                            aria-label={t('GStreamer.Subtitles', { defaultValue: 'Subtitles' })}
                           >
                             <Captions className='size-4' />
                           </Button>
                         </Popover.Trigger>
                         <Popover.Content>
                           <ListBox
-                            selectedKeys={[String(subtitleTrack)]}
+                            selectedKeys={[String(activeSubtitleTrack)]}
                             onSelectionChange={keys => {
                               const value = [...keys][0]
-                              changeSubtitleTrack(value == null ? -1 : Number(value))
+                              switchSubtitleTrack(value == null ? -1 : Number(value))
                             }}
                           >
-                            <ListBox.Item id='-1'>{t('Off', { defaultValue: 'Off' })}</ListBox.Item>
+                            <ListBox.Item id='-1'>{t('None')}</ListBox.Item>
                             {subtitleTracks.map(track => (
                               <ListBox.Item key={track.id} id={String(track.id)}>
                                 {subtitleLabel(track)}
@@ -409,22 +433,30 @@ export default function VideoPlayer({
                         </Popover.Content>
                       </Popover>
                     ) : null}
+
                     <div className='flex-1' />
-                    <Tooltip.Root>
+
+                    <Tooltip>
                       <Tooltip.Trigger>
-                        <Button isIconOnly size='sm' variant='ghost' onPress={fullscreen ? exitFull : enterFull}>
+                        <Button
+                          isIconOnly
+                          size='sm'
+                          variant='ghost'
+                          className='text-white hover:bg-white/10'
+                          onPress={fullscreen ? exitFullscreen : enterFullscreen}
+                        >
                           {fullscreen ? <Minimize className='size-4' /> : <Maximize className='size-4' />}
                         </Button>
                       </Tooltip.Trigger>
                       <Tooltip.Content>{fullscreen ? t('ExitFullscreen') : t('Fullscreen')}</Tooltip.Content>
-                    </Tooltip.Root>
+                    </Tooltip>
                   </div>
                 </div>
               </Modal.Body>
             </Modal.Dialog>
           </Modal.Container>
         </Modal.Backdrop>
-      </Modal.Root>
+      </Modal>
     </>
   )
 }

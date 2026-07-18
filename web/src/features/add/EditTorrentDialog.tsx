@@ -1,10 +1,13 @@
-import { Button, Input, Label, ListBox, Modal, Select, Spinner, TextField } from '@heroui/react'
+import { Button, Input, Label, ListBox, Modal, Select, Spinner, TextField, useMediaQuery } from '@heroui/react'
+import { Check, Film } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+
 import type { TorrentStat } from 'shared/api/types'
 import { TORRENTS_QUERY_KEY, updateTorrent } from 'shared/api/torrents'
 import { getMoviePosters, shortenTitleForPosterSearch } from 'shared/lib/torrentHelpers'
+import { queryMax } from 'shared/theme/breakpoints'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import AppDialog from 'shared/ui/AppDialog'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
@@ -16,10 +19,12 @@ export interface EditTorrentDialogProps {
   onClose: () => void
 }
 
+/** Edit an existing torrent's title/category/poster — same poster-search UX as AddDialog, prefilled. */
 export default function EditTorrentDialog({ torrent, open, onClose }: EditTorrentDialogProps) {
   const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()
   const toast = useOptionalAppToast()
+  const isMobile = useMediaQuery(queryMax('mobile'))
   const posterRequestRef = useRef(0)
 
   const [title, setTitle] = useState('')
@@ -76,7 +81,7 @@ export default function EditTorrentDialog({ torrent, open, onClose }: EditTorren
         poster: poster || '',
       })
       await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
-      toast?.showToast({ message: t('Saved'), severity: 'success' })
+      toast?.showToast({ message: t('Saved', { defaultValue: 'Saved' }), severity: 'success' })
       onClose()
     } catch {
       toast?.showToast({ message: t('Error'), severity: 'error' })
@@ -85,21 +90,26 @@ export default function EditTorrentDialog({ torrent, open, onClose }: EditTorren
     }
   }
 
+  const footerButtonClassName = isMobile ? 'min-h-11 px-4' : undefined
+
   return (
-    <AppDialog open={open && Boolean(torrent)} onClose={onClose} size='sm'>
+    <AppDialog open={open && Boolean(torrent)} onClose={onClose} size='sm' fullScreen={isMobile}>
       <Modal.Header>
         <Modal.Heading>{t('EditTorrent')}</Modal.Heading>
         <Modal.CloseTrigger />
       </Modal.Header>
       <Modal.Body className='space-y-4'>
-        <p className='font-mono text-xs text-default-500'>{torrent?.hash}</p>
-        <TextField value={title} onChange={setTitle} autoFocus>
+        <p className='truncate font-mono text-xs text-muted'>{torrent?.hash}</p>
+
+        <TextField value={title} onChange={setTitle} isDisabled={saving} autoFocus>
           <Label>{t('AddDialog.TitleBlank')}</Label>
           <Input />
         </TextField>
+
         <Select
           selectedKey={category || 'none'}
           onSelectionChange={key => setCategory(key === 'none' ? '' : String(key))}
+          isDisabled={saving}
         >
           <Label>{t('Category')}</Label>
           <Select.Trigger>
@@ -117,37 +127,56 @@ export default function EditTorrentDialog({ torrent, open, onClose }: EditTorren
             </ListBox>
           </Select.Popover>
         </Select>
-        <TextField value={poster} onChange={setPoster}>
-          <Label>{t('PosterURL', { defaultValue: 'Poster URL' })}</Label>
+
+        <TextField value={poster} onChange={setPoster} isDisabled={saving}>
+          <Label>{t('AddDialog.AddPosterLinkInput')}</Label>
           <Input />
         </TextField>
-        {(postersLoading || posterOptions.length > 0) && (
+
+        {postersLoading || posterOptions.length > 0 ? (
           <div>
-            <p className='mb-2 text-xs text-default-500'>
-              {t('Poster', { defaultValue: 'Poster' })} {postersLoading ? '…' : ''}
+            <p className='mb-2 flex items-center gap-1.5 text-xs text-muted'>
+              <Film className='size-3.5' aria-hidden />
+              {t('AddDialog.AddPosterLinkInput')}
+              {postersLoading ? '…' : ''}
             </p>
             <div className='flex flex-wrap gap-2'>
-              {posterOptions.map(url => (
-                <button
-                  key={url}
-                  type='button'
-                  onClick={() => setPoster(url)}
-                  className={`h-[108px] w-[72px] overflow-hidden rounded-lg border-2 ${
-                    poster === url ? 'border-primary' : 'border-default-200'
-                  }`}
-                >
-                  <img src={url} alt='' className='h-full w-full object-cover' />
-                </button>
-              ))}
+              {posterOptions.map(url => {
+                const selected = poster === url
+                return (
+                  <button
+                    key={url}
+                    type='button'
+                    onClick={() => setPoster(url)}
+                    aria-pressed={selected}
+                    disabled={saving}
+                    className={`relative h-[108px] w-[72px] overflow-hidden rounded-lg border-2 transition-colors ${
+                      selected ? 'border-accent' : 'border-border hover:border-accent/50'
+                    }`}
+                  >
+                    <img src={url} alt='' className='h-full w-full object-cover' />
+                    {selected ? (
+                      <span className='absolute right-1 top-1 grid size-4 place-items-center rounded-full bg-accent text-accent-foreground'>
+                        <Check className='size-3' aria-hidden />
+                      </span>
+                    ) : null}
+                  </button>
+                )
+              })}
             </div>
           </div>
-        )}
+        ) : null}
       </Modal.Body>
       <Modal.Footer>
-        <Button onPress={onClose} isDisabled={saving} variant='secondary' autoFocus>
+        <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName}>
           {t('Cancel')}
         </Button>
-        <Button variant='primary' onPress={() => void handleSave()} isDisabled={saving || !torrent}>
+        <Button
+          variant='primary'
+          onPress={() => void handleSave()}
+          isDisabled={saving || !torrent}
+          className={footerButtonClassName}
+        >
           {saving ? <Spinner size='sm' color='current' /> : t('Save')}
         </Button>
       </Modal.Footer>

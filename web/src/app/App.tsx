@@ -6,20 +6,18 @@ import { AppSnackbarProvider } from 'shared/ui/Toast'
 
 import Shell from './Shell'
 
-/** Migrate legacy localStorage themeMode=auto → system once. */
+/** One-time migration of the pre-rewrite `themeMode` localStorage key. */
 function migrateLegacyThemeKey() {
   try {
     const legacy = localStorage.getItem('themeMode')
     if (legacy === 'auto') localStorage.setItem('ts-color-scheme', 'system')
-    else if (legacy === 'light' || legacy === 'dark') {
-      if (!localStorage.getItem('ts-color-scheme')) localStorage.setItem('ts-color-scheme', legacy)
+    else if ((legacy === 'light' || legacy === 'dark') && !localStorage.getItem('ts-color-scheme')) {
+      localStorage.setItem('ts-color-scheme', legacy)
     }
   } catch {
-    /* ignore */
+    /* localStorage unavailable (privacy mode, etc.) */
   }
 }
-
-migrateLegacyThemeKey()
 
 export default function App() {
   useEffect(() => {

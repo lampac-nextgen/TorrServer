@@ -1,15 +1,7 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, type ReactNode, Suspense, useEffect, useState } from 'react'
 import axios from 'axios'
 import { Button, Tooltip, useMediaQuery } from '@heroui/react'
-import {
-  ChevronLeft,
-  Menu,
-  Moon,
-  SortAsc,
-  SortDesc,
-  Sun,
-  SunMoon,
-} from 'lucide-react'
+import { ChevronLeft, Menu, Moon, SortAsc, SortDesc, Sun, SunMoon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { echoHost } from 'shared/api/hosts'
 import useChangeLanguage from 'shared/lib/useChangeLanguage'
@@ -21,8 +13,8 @@ import { queryMax } from 'shared/theme/breakpoints'
 import { THEME_MODES, useThemePreference } from 'shared/theme/useThemePreference'
 import { TorrentsPage } from 'features/torrents'
 
-import Sidebar from './Sidebar'
 import BottomNav from './BottomNav'
+import Sidebar from './Sidebar'
 
 const AddDialog = lazy(() => import('features/add/AddDialog'))
 const MultiAddDialog = lazy(() => import('features/add/MultiAddDialog'))
@@ -36,8 +28,9 @@ const PWAInstallationGuide = lazy(() => import('features/pwa/PWAInstallationGuid
 
 const LANG_CYCLE = ['en', 'ru', 'ua', 'zh', 'bg', 'fr', 'ro'] as const
 
-const SIDEBAR_OPEN = 260
-const SIDEBAR_COLLAPSED = 60
+const SIDEBAR_OPEN_PX = 260
+const SIDEBAR_COLLAPSED_PX = 60
+const HEADER_HEIGHT = 'calc(60px + env(safe-area-inset-top, 0px))'
 
 export default function Shell() {
   const { t } = useTranslation()
@@ -62,7 +55,7 @@ export default function Shell() {
 
   const { isLoading, isError } = useTorrentsQuery()
   const isOffline = isError
-  const sidebarWidth = sidebarOpen ? SIDEBAR_OPEN : SIDEBAR_COLLAPSED
+  const sidebarWidth = sidebarOpen ? SIDEBAR_OPEN_PX : SIDEBAR_COLLAPSED_PX
 
   useEffect(() => {
     axios.get(echoHost()).then(({ data }) => setTorrServerVersion(String(data)))
@@ -74,8 +67,7 @@ export default function Shell() {
 
   const cycleLanguage = () => {
     const idx = LANG_CYCLE.indexOf(currentLang as (typeof LANG_CYCLE)[number])
-    const next = LANG_CYCLE[(idx + 1) % LANG_CYCLE.length]
-    changeLang(next)
+    changeLang(LANG_CYCLE[(idx + 1) % LANG_CYCLE.length])
   }
 
   const cycleTheme = () => {
@@ -101,20 +93,15 @@ export default function Shell() {
     onRemoveAll: () => setRemoveAllOpen(true),
   }
 
-  const themeIcon =
-    currentThemeMode === THEME_MODES.LIGHT ? (
-      <Sun size={20} />
-    ) : currentThemeMode === THEME_MODES.DARK ? (
-      <Moon size={20} />
-    ) : (
-      <SunMoon size={20} />
-    )
+  const ThemeIcon =
+    currentThemeMode === THEME_MODES.LIGHT ? Sun : currentThemeMode === THEME_MODES.DARK ? Moon : SunMoon
+  const SortIcon = sortABC ? SortAsc : SortDesc
 
   return (
     <div
       className='grid h-full overflow-hidden bg-background'
       style={{
-        gridTemplateRows: 'calc(60px + env(safe-area-inset-top, 0px)) 1fr',
+        gridTemplateRows: `${HEADER_HEIGHT} 1fr`,
         gridTemplateColumns: isMobile ? '1fr' : `${sidebarWidth}px 1fr`,
         gridTemplateAreas: isMobile ? '"header" "content"' : '"header header" "sidebar content"',
         transition: 'grid-template-columns 200ms ease',
@@ -122,77 +109,37 @@ export default function Shell() {
     >
       <header
         className='flex items-center gap-2 bg-app-header px-2 pt-[env(safe-area-inset-top,0px)] text-app-header-foreground'
-        style={{
-          gridArea: 'header',
-          minHeight: 'calc(60px + env(safe-area-inset-top, 0px))',
-        }}
+        style={{ gridArea: 'header', minHeight: HEADER_HEIGHT }}
       >
         {!isMobile ? (
-          <Tooltip>
-            <Tooltip.Trigger>
-              <Button
-                variant='ghost'
-                isIconOnly
-                className='text-app-header-foreground hover:bg-white/10'
-                aria-label={
-                  sidebarOpen
-                    ? t('CollapseSidebar', { defaultValue: 'Collapse sidebar' })
-                    : t('ExpandSidebar', { defaultValue: 'Expand sidebar' })
-                }
-                onPress={() => setSidebarOpen(!sidebarOpen)}
-              >
-                {sidebarOpen ? <ChevronLeft size={22} /> : <Menu size={22} />}
-              </Button>
-            </Tooltip.Trigger>
-            <Tooltip.Content>
-              {sidebarOpen
+          <HeaderIconButton
+            label={
+              sidebarOpen
                 ? t('CollapseSidebar', { defaultValue: 'Collapse sidebar' })
-                : t('ExpandSidebar', { defaultValue: 'Expand sidebar' })}
-            </Tooltip.Content>
-          </Tooltip>
+                : t('ExpandSidebar', { defaultValue: 'Expand sidebar' })
+            }
+            onPress={() => setSidebarOpen(!sidebarOpen)}
+          >
+            {sidebarOpen ? <ChevronLeft size={22} /> : <Menu size={22} />}
+          </HeaderIconButton>
         ) : null}
 
-        <h1 className='min-w-0 flex-1 truncate text-lg font-semibold'>
-          TorrServer {torrServerVersion}
-        </h1>
+        <h1 className='min-w-0 flex-1 truncate text-lg font-semibold'>TorrServer {torrServerVersion}</h1>
 
-        <Tooltip>
-          <Tooltip.Trigger>
-            <Button
-              variant='ghost'
-              isIconOnly
-              className='text-app-header-foreground hover:bg-white/10'
-              aria-label={
-                sortABC
-                  ? t('SortByDate', { defaultValue: 'Sort by date' })
-                  : t('SortByName', { defaultValue: 'Sort by name' })
-              }
-              onPress={() => setSortABC(v => !v)}
-            >
-              {sortABC ? <SortAsc size={20} /> : <SortDesc size={20} />}
-            </Button>
-          </Tooltip.Trigger>
-          <Tooltip.Content>
-            {sortABC
+        <HeaderIconButton
+          label={
+            sortABC
               ? t('SortByDate', { defaultValue: 'Sort by date' })
-              : t('SortByName', { defaultValue: 'Sort by name' })}
-          </Tooltip.Content>
-        </Tooltip>
+              : t('SortByName', { defaultValue: 'Sort by name' })
+          }
+          onPress={() => setSortABC(v => !v)}
+        >
+          <SortIcon size={20} />
+        </HeaderIconButton>
 
-        <Tooltip>
-          <Tooltip.Trigger>
-            <Button
-              variant='ghost'
-              isIconOnly
-              className='text-app-header-foreground hover:bg-white/10'
-              aria-label={t('Theme', { defaultValue: 'Theme' })}
-              onPress={cycleTheme}
-            >
-              {themeIcon}
-            </Button>
-          </Tooltip.Trigger>
-          <Tooltip.Content>{t('Theme', { defaultValue: 'Theme' })}</Tooltip.Content>
-        </Tooltip>
+        <HeaderIconButton label={t('Theme', { defaultValue: 'Theme' })} onPress={cycleTheme}>
+          <ThemeIcon size={20} />
+        </HeaderIconButton>
 
         <Tooltip>
           <Tooltip.Trigger>
@@ -212,11 +159,7 @@ export default function Shell() {
       {!isMobile ? (
         <aside
           className='min-h-0 overflow-hidden'
-          style={{
-            gridArea: 'sidebar',
-            width: sidebarWidth,
-            transition: 'width 200ms ease',
-          }}
+          style={{ gridArea: 'sidebar', width: sidebarWidth, transition: 'width 200ms ease' }}
         >
           <Sidebar {...navProps} collapsed={!sidebarOpen} />
         </aside>
@@ -260,5 +203,24 @@ export default function Shell() {
         {detectApplePlatform().isIOS && !isStandaloneApp ? <PWAInstallationGuide /> : null}
       </Suspense>
     </div>
+  )
+}
+
+function HeaderIconButton({ label, onPress, children }: { label: string; onPress: () => void; children: ReactNode }) {
+  return (
+    <Tooltip>
+      <Tooltip.Trigger>
+        <Button
+          variant='ghost'
+          isIconOnly
+          className='text-app-header-foreground hover:bg-white/10'
+          aria-label={label}
+          onPress={onPress}
+        >
+          {children}
+        </Button>
+      </Tooltip.Trigger>
+      <Tooltip.Content>{label}</Tooltip.Content>
+    </Tooltip>
   )
 }

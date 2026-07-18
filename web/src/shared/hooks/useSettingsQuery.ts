@@ -1,4 +1,10 @@
-import { useMutation, useQuery, useQueryClient, type UseMutationResult, type UseQueryResult } from '@tanstack/react-query'
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseMutationResult,
+  type UseQueryResult,
+} from '@tanstack/react-query'
 
 import { getSettings, setSettings, SETTINGS_QUERY_KEY } from 'shared/api/settings'
 import type { BTSets } from 'shared/api/types'

@@ -2,7 +2,7 @@ import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { Button } from '@heroui/react'
-import { CloudOff, FolderPlus } from 'lucide-react'
+import { CloudOff, FolderPlus, SearchX } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
@@ -18,60 +18,57 @@ export interface TorrentsPageProps {
   onAdd?: () => void
 }
 
-function sortTorrents(torrents: TorrentStat[], sortABC: boolean, sortCategory: string) {
-  const filtered = torrents.filter(t => sortCategory === 'all' || t.category === sortCategory)
+/** ~150-200px poster tiles, auto-filling available width. */
+const POSTER_GRID_STYLE = { gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }
+const SKELETON_TILE_COUNT = 12
+
+function sortTorrents(torrents: TorrentStat[], sortABC: boolean, sortCategory: string): TorrentStat[] {
+  const inCategory = torrents.filter(torrent => sortCategory === 'all' || torrent.category === sortCategory)
 
   if (sortABC) {
-    return [...filtered].sort((a, b) => (a.title || '').localeCompare(b.title || '') || a.hash.localeCompare(b.hash))
+    return [...inCategory].sort((a, b) => (a.title || '').localeCompare(b.title || '') || a.hash.localeCompare(b.hash))
   }
 
-  return [...filtered].sort((a, b) => {
-    const tsA = a.timestamp || 0
-    const tsB = b.timestamp || 0
-    if (tsA !== tsB) return tsB - tsA
-    return a.hash.localeCompare(b.hash)
+  return [...inCategory].sort((a, b) => {
+    const recencyDiff = (b.timestamp || 0) - (a.timestamp || 0)
+    return recencyDiff !== 0 ? recencyDiff : a.hash.localeCompare(b.hash)
   })
+}
+
+function prefersReducedMotion(): boolean {
+  return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
 export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsPageProps) {
   const { t } = useTranslation()
-  const [selected, setSelected] = useState<TorrentStat | null>(null)
-  const [editing, setEditing] = useState<TorrentStat | null>(null)
   const gridRef = useRef<HTMLDivElement>(null)
+  const [detailsTorrent, setDetailsTorrent] = useState<TorrentStat | null>(null)
+  const [editingTorrent, setEditingTorrent] = useState<TorrentStat | null>(null)
 
   const { data: torrents, isLoading, isError } = useTorrentsQuery()
 
-  const sorted = useMemo(
+  const visibleTorrents = useMemo(
     () => (torrents ? sortTorrents(torrents, sortABC, sortCategory) : []),
     [torrents, sortABC, sortCategory],
   )
 
   useGSAP(
     () => {
-      if (!gridRef.current) return
-      const cards = gridRef.current.querySelectorAll('.torrent-card')
-      if (!cards.length) return
-      gsap.from(cards, {
-        opacity: 0,
-        y: 24,
-        duration: 0.5,
-        stagger: 0.04,
-        ease: 'power2.out',
-      })
+      if (prefersReducedMotion()) return
+      const tiles = gridRef.current?.querySelectorAll('.torrent-card')
+      if (!tiles?.length) return
+      gsap.from(tiles, { opacity: 0, y: 18, duration: 0.45, stagger: 0.035, ease: 'power2.out' })
     },
-    { scope: gridRef, dependencies: [sorted.length, sortABC, sortCategory] },
+    { scope: gridRef, dependencies: [visibleTorrents.length, sortABC, sortCategory] },
   )
 
   if (isLoading) {
     return (
-      <div
-        className='grid min-h-full gap-3 p-4'
-        style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))' }}
-      >
-        {Array.from({ length: 12 }).map((_, i) => (
-          <div key={i} className='flex flex-col gap-2'>
-            <div className='aspect-[2/3] animate-pulse rounded-xl bg-surface-secondary' />
-            <div className='h-4 animate-pulse rounded bg-surface-secondary' />
+      <div className='grid min-h-full gap-3 p-3 sm:gap-4 sm:p-4 md:p-6' style={POSTER_GRID_STYLE}>
+        {Array.from({ length: SKELETON_TILE_COUNT }, (_, index) => (
+          <div key={index} className='flex flex-col gap-2'>
+            <div className='aspect-[2/3] w-full animate-pulse rounded-2xl bg-surface-secondary' />
+            <div className='h-3.5 w-4/5 animate-pulse rounded-full bg-surface-secondary' />
           </div>
         ))}
       </div>
@@ -80,23 +77,27 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsP
 
   if (isError) {
     return (
-      <div className='grid min-h-[200px] place-items-center p-6 text-center text-muted'>
-        <CloudOff size={48} strokeWidth={1.25} className='mb-2 opacity-60' />
-        <p className='text-lg font-semibold text-foreground'>{t('NoServerConnection')}</p>
+      <div className='grid min-h-[60vh] place-items-center p-6 text-center'>
+        <div className='flex flex-col items-center gap-3'>
+          <CloudOff size={44} strokeWidth={1.25} className='text-muted' />
+          <p className='text-lg font-semibold text-foreground'>
+            {t('NoServerConnection', { defaultValue: 'No connection to server' })}
+          </p>
+        </div>
       </div>
     )
   }
 
   if (!torrents?.length) {
     return (
-      <div className='grid min-h-[200px] place-items-center p-6 text-center'>
+      <div className='grid min-h-[60vh] place-items-center p-6'>
         <button
           type='button'
           onClick={onAdd}
           disabled={!onAdd}
-          className='grid min-h-[180px] min-w-[260px] place-items-center gap-3 rounded-2xl border border-dashed border-border bg-surface p-6 transition-colors hover:border-accent/50 disabled:opacity-50'
+          className='group flex min-h-[190px] min-w-[280px] flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-border bg-surface p-8 text-center transition-colors hover:border-accent/60 disabled:cursor-not-allowed disabled:opacity-50'
         >
-          <FolderPlus size={48} className='text-accent opacity-80' />
+          <FolderPlus size={40} className='text-accent transition-transform duration-200 group-hover:scale-110' />
           <span className='text-lg font-semibold text-foreground'>{t('NoTorrentsAdded')}</span>
           <Button variant='primary' className='pointer-events-none'>
             {t('AddFirstTorrent')}
@@ -106,41 +107,44 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd }: TorrentsP
     )
   }
 
-  if (!sorted.length) {
+  if (!visibleTorrents.length) {
     return (
-      <div className='grid min-h-[200px] place-items-center p-6'>
-        <p className='text-muted'>{t('NoTorrentsInCategory')}</p>
+      <div className='grid min-h-[40vh] place-items-center p-6 text-center'>
+        <div className='flex flex-col items-center gap-2 text-muted'>
+          <SearchX size={36} strokeWidth={1.25} />
+          <p>{t('NoTorrentsInCategory')}</p>
+        </div>
       </div>
     )
   }
 
   return (
     <>
-      <div
-        ref={gridRef}
-        className='grid min-h-full gap-3 p-3 pb-6 sm:gap-4 sm:p-4 md:p-5'
-        style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))' }}
-      >
-        {sorted.map(torrent => (
-          <TorrentCard key={torrent.hash} torrent={torrent} onSelect={setSelected} onEdit={setEditing} />
+      <div ref={gridRef} className='grid min-h-full gap-3 p-3 pb-8 sm:gap-4 sm:p-4 md:p-6' style={POSTER_GRID_STYLE}>
+        {visibleTorrents.map(torrent => (
+          <TorrentCard key={torrent.hash} torrent={torrent} onSelect={setDetailsTorrent} onEdit={setEditingTorrent} />
         ))}
       </div>
 
-      {selected ? (
+      {detailsTorrent ? (
         <Suspense fallback={null}>
           <DetailsDialog
-            torrent={selected}
-            onClose={() => setSelected(null)}
-            onEdit={torrent => {
-              setSelected(null)
-              setEditing(torrent)
+            torrent={detailsTorrent}
+            onClose={() => setDetailsTorrent(null)}
+            onEdit={(torrent: TorrentStat) => {
+              setDetailsTorrent(null)
+              setEditingTorrent(torrent)
             }}
           />
         </Suspense>
       ) : null}
 
       <Suspense fallback={null}>
-        <EditTorrentDialog torrent={editing} open={Boolean(editing)} onClose={() => setEditing(null)} />
+        <EditTorrentDialog
+          torrent={editingTorrent}
+          open={Boolean(editingTorrent)}
+          onClose={() => setEditingTorrent(null)}
+        />
       </Suspense>
     </>
   )

@@ -1,20 +1,12 @@
-import { type ReactNode, useState } from 'react'
+import { type ReactNode } from 'react'
 import { Button, Modal, useOverlayState } from '@heroui/react'
-import {
-  Ellipsis,
-  FolderPlus,
-  Info,
-  Layers,
-  Power,
-  Search,
-  Settings,
-  Trash2,
-} from 'lucide-react'
+import { Ellipsis, FolderPlus, Info, Layers, Power, Search, Settings, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 
-import type { ShellNavProps } from './Sidebar'
+import type { ShellNavProps } from './navTypes'
 
+/** Fixed bottom tab bar for narrow viewports; overflow actions live in a sheet. */
 export default function BottomNav({
   isOffline,
   isLoading,
@@ -33,22 +25,33 @@ export default function BottomNav({
 
   const closeMore = () => moreState.close()
 
-  const navAction = (
-    label: string,
-    icon: ReactNode,
-    onPress: () => void,
-    isDisabled = false,
-  ) => (
+  const tab = (label: string, icon: ReactNode, onPress: () => void, isDisabled = false) => (
     <Button
       key={label}
       variant='ghost'
       isDisabled={isDisabled}
       onPress={onPress}
-      className='flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-none px-1 py-2 text-xs font-medium'
       aria-label={label}
+      className='flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-none px-1 py-2 text-xs font-medium'
     >
       {icon}
       <span className='truncate'>{label}</span>
+    </Button>
+  )
+
+  const sheetAction = (label: string, icon: ReactNode, onPress: () => void, isDisabled = false, danger = false) => (
+    <Button
+      key={label}
+      variant='ghost'
+      isDisabled={isDisabled}
+      onPress={() => {
+        closeMore()
+        onPress()
+      }}
+      className={`justify-start gap-3 px-4 py-3 ${danger ? 'text-danger' : ''}`}
+    >
+      {icon}
+      {label}
     </Button>
   )
 
@@ -59,10 +62,10 @@ export default function BottomNav({
         style={{ height: 'calc(90px + env(safe-area-inset-bottom, 0px))' }}
       >
         <div className='mx-auto flex h-[90px] max-w-lg items-stretch'>
-          {navAction(t('Add', { defaultValue: 'Add' }), <FolderPlus size={22} />, onAdd, disabled)}
-          {navAction(t('Search'), <Search size={22} />, onSearch, disabled)}
-          {navAction(t('Category', { defaultValue: 'Category' }), <Layers size={22} />, onCategories)}
-          {navAction(t('More', { defaultValue: 'More' }), <Ellipsis size={22} />, moreState.open)}
+          {tab(t('Add', { defaultValue: 'Add' }), <FolderPlus size={22} />, onAdd, disabled)}
+          {tab(t('Search'), <Search size={22} />, onSearch, disabled)}
+          {tab(t('Category', { defaultValue: 'Category' }), <Layers size={22} />, onCategories)}
+          {tab(t('More', { defaultValue: 'More' }), <Ellipsis size={22} />, moreState.open)}
         </div>
       </div>
 
@@ -71,53 +74,10 @@ export default function BottomNav({
           <Modal.Container placement='bottom' size='md'>
             <Modal.Dialog aria-label={t('More', { defaultValue: 'More' })}>
               <Modal.Body className='flex flex-col gap-1 pb-[env(safe-area-inset-bottom,0px)] pt-2'>
-                <Button
-                  variant='ghost'
-                  isDisabled={disabled}
-                  className='justify-start gap-3 px-4 py-3'
-                  onPress={() => {
-                    closeMore()
-                    onRemoveAll()
-                  }}
-                >
-                  <Trash2 size={20} />
-                  {t('RemoveAll')}
-                </Button>
-                <Button
-                  variant='ghost'
-                  isDisabled={disabled}
-                  className='justify-start gap-3 px-4 py-3'
-                  onPress={() => {
-                    closeMore()
-                    onSettings()
-                  }}
-                >
-                  <Settings size={20} />
-                  {t('Settings')}
-                </Button>
-                <Button
-                  variant='ghost'
-                  className='justify-start gap-3 px-4 py-3'
-                  onPress={() => {
-                    closeMore()
-                    onAbout()
-                  }}
-                >
-                  <Info size={20} />
-                  {t('About')}
-                </Button>
-                <Button
-                  variant='ghost'
-                  isDisabled={disabled}
-                  className='justify-start gap-3 px-4 py-3 text-red-400'
-                  onPress={() => {
-                    closeMore()
-                    onCloseServer()
-                  }}
-                >
-                  <Power size={20} />
-                  {t('CloseServer')}
-                </Button>
+                {sheetAction(t('RemoveAll'), <Trash2 size={20} />, onRemoveAll, disabled)}
+                {sheetAction(t('Settings'), <Settings size={20} />, onSettings, disabled)}
+                {sheetAction(t('About'), <Info size={20} />, onAbout)}
+                {sheetAction(t('CloseServer'), <Power size={20} />, onCloseServer, disabled, true)}
               </Modal.Body>
             </Modal.Dialog>
           </Modal.Container>

@@ -1,16 +1,18 @@
 import { Button, Modal } from '@heroui/react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { wipeTorrents, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
+
+import { TORRENTS_QUERY_KEY, wipeTorrents } from 'shared/api/torrents'
 import AppDialog from 'shared/ui/AppDialog'
 import UnsafeButton from 'shared/ui/UnsafeButton'
-import { useQueryClient } from '@tanstack/react-query'
 
 export interface RemoveAllDialogProps {
   open: boolean
   onClose: () => void
 }
 
+/** Destructive confirm dialog that wipes every torrent from the database. */
 export default function RemoveAllDialog({ open, onClose }: RemoveAllDialogProps) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
@@ -24,14 +26,18 @@ export default function RemoveAllDialog({ open, onClose }: RemoveAllDialogProps)
   return (
     <AppDialog open={open} onClose={onClose} size='sm'>
       <Modal.Header>
+        <Modal.Icon className='bg-danger/15 text-danger'>
+          <Trash2 className='size-5' aria-hidden />
+        </Modal.Icon>
         <Modal.Heading>{t('DeleteTorrents?')}</Modal.Heading>
+        <Modal.CloseTrigger />
       </Modal.Header>
       <Modal.Footer>
         <Button variant='secondary' onPress={onClose} autoFocus>
           {t('Cancel')}
         </Button>
         <UnsafeButton variant='danger' onPress={() => void handleRemove()}>
-          <Trash2 className='size-4' />
+          <Trash2 className='size-4' aria-hidden />
           {t('OK')}
         </UnsafeButton>
       </Modal.Footer>

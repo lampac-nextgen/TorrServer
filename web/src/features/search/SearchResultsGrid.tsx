@@ -1,10 +1,11 @@
 import { Button, Spinner } from '@heroui/react'
+import { Film, Plus, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+
 import type { SearchResultItem } from 'shared/api/types'
 
 interface SearchResultsGridProps {
   results: SearchResultItem[]
-  loading: boolean
   adding: boolean
   addingKey: string | null
   resultDedupeKey: (item: SearchResultItem) => string
@@ -12,10 +13,9 @@ interface SearchResultsGridProps {
   onAdd: (item: SearchResultItem) => void
 }
 
-/** Torznab/Rutor search results table. */
+/** Poster-card grid of Torznab/Rutor search results, streaming-app style. */
 export default function SearchResultsGrid({
   results,
-  loading,
   adding,
   addingKey,
   resultDedupeKey,
@@ -24,56 +24,56 @@ export default function SearchResultsGrid({
 }: SearchResultsGridProps) {
   const { t } = useTranslation()
 
-  if (loading) {
-    return (
-      <div className='grid place-items-center py-8'>
-        <Spinner size='lg' />
-      </div>
-    )
-  }
-
   return (
-    <div
-      className={`min-h-[280px] overflow-auto rounded-xl border border-default-200 ${adding ? 'opacity-85' : ''}`}
-    >
-      <table className='w-full min-w-[640px] border-collapse text-sm'>
-        <thead className='bg-default-100 text-left text-xs uppercase text-default-500'>
-          <tr>
-            <th className='w-14 px-3 py-2' />
-            <th className='px-3 py-2'>{t('Name')}</th>
-            <th className='w-24 px-3 py-2'>{t('Size')}</th>
-            <th className='w-24 px-3 py-2'>{t('Seeders')}</th>
-            <th className='w-24 px-3 py-2'>{t('Peers')}</th>
-            <th className='w-28 px-3 py-2' />
-          </tr>
-        </thead>
-        <tbody>
-          {results.map((item, index) => {
-            const key = resultDedupeKey(item) || `${item.Title || 'item'}-${index}`
-            const busy = adding && addingKey === key
-            return (
-              <tr key={key} className={addingKey === key ? 'bg-default-100' : undefined}>
-                <td className='px-3 py-2'>
-                  {item.Poster ? (
-                    <img src={item.Poster} alt='' className='h-[54px] w-9 rounded object-cover' />
-                  ) : (
-                    <div className='h-[54px] w-9 rounded bg-default-200' />
-                  )}
-                </td>
-                <td className='px-3 py-2 align-top'>{item.Title || '—'}</td>
-                <td className='px-3 py-2 whitespace-nowrap'>{formatSize(item)}</td>
-                <td className='px-3 py-2'>{item.Seed ?? '—'}</td>
-                <td className='px-3 py-2'>{item.Peer ?? '—'}</td>
-                <td className='px-3 py-2'>
-                  <Button size='sm' variant='primary' isDisabled={adding} onPress={() => onAdd(item)}>
-                    {busy ? <Spinner size='sm' color='current' /> : t('Add')}
-                  </Button>
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
+    <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4'>
+      {results.map((item, index) => {
+        const key = resultDedupeKey(item) || `${item.Title || 'item'}-${index}`
+        const busy = adding && addingKey === key
+
+        return (
+          <div
+            key={key}
+            className='group flex flex-col overflow-hidden rounded-xl border border-border bg-surface transition-colors hover:border-accent/50'
+          >
+            <div className='relative aspect-[2/3] w-full overflow-hidden bg-surface-tertiary'>
+              {item.Poster ? (
+                <img src={item.Poster} alt='' className='h-full w-full object-cover' loading='lazy' />
+              ) : (
+                <div className='grid h-full w-full place-items-center'>
+                  <Film className='size-8 text-muted' aria-hidden />
+                </div>
+              )}
+
+              <Button
+                size='sm'
+                variant='primary'
+                isIconOnly
+                isDisabled={adding}
+                onPress={() => onAdd(item)}
+                aria-label={t('Add')}
+                className='absolute right-1.5 bottom-1.5 min-h-9 min-w-9 shadow-lg'
+              >
+                {busy ? <Spinner size='sm' color='current' /> : <Plus className='size-4' aria-hidden />}
+              </Button>
+            </div>
+
+            <div className='flex flex-1 flex-col gap-1.5 p-2.5'>
+              <p className='line-clamp-2 min-h-[2.5em] text-sm font-medium text-foreground' title={item.Title}>
+                {item.Title || '—'}
+              </p>
+              <div className='mt-auto flex items-center justify-between gap-2 text-xs text-muted'>
+                <span className='truncate'>{formatSize(item)}</span>
+                {item.Seed != null || item.Peer != null ? (
+                  <span className='flex items-center gap-1 whitespace-nowrap'>
+                    <Users className='size-3.5' aria-hidden />
+                    {item.Seed ?? 0}·{item.Peer ?? 0}
+                  </span>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import { Button, Tooltip } from '@heroui/react'
+import { Copy, Download, ExternalLink } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
@@ -25,8 +26,9 @@ export interface FileRowActionsProps {
   externalPlayers: ExternalPlayerLink[]
 }
 
-const actionClass = 'min-w-[72px] max-w-full flex-1'
+const actionButtonClass = 'min-w-[72px] max-w-full flex-1'
 
+/** Per-file action row: preload, inline player / open link, external player deep links, copy link. */
 export default function FileRowActions({
   preloadLabel,
   onPreload,
@@ -45,7 +47,7 @@ export default function FileRowActions({
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
 
-  const copyLink = async () => {
+  const copyDirectLink = async () => {
     try {
       await navigator.clipboard.writeText(copyText)
       toast?.showToast({ message: t('Copied'), severity: 'success' })
@@ -55,10 +57,11 @@ export default function FileRowActions({
   }
 
   return (
-    <div className='flex w-full flex-wrap gap-1'>
+    <div className='flex w-full flex-wrap gap-1.5'>
       <Tooltip.Root>
         <Tooltip.Trigger>
-          <Button variant='secondary' size='sm' onPress={onPreload} className={actionClass}>
+          <Button variant='secondary' size='sm' onPress={onPreload} className={actionButtonClass}>
+            <Download className='size-4' aria-hidden />
             {preloadLabel}
           </Button>
         </Tooltip.Trigger>
@@ -83,9 +86,10 @@ export default function FileRowActions({
               <Button
                 variant='secondary'
                 size='sm'
-                className={actionClass}
+                className={actionButtonClass}
                 onPress={() => window.open(openLinkHref, '_blank', 'noopener,noreferrer')}
               >
+                <ExternalLink className='size-4' aria-hidden />
                 {t('OpenLink')}
               </Button>
             </Tooltip.Trigger>
@@ -100,7 +104,7 @@ export default function FileRowActions({
             <Button
               variant='secondary'
               size='sm'
-              className={actionClass}
+              className={actionButtonClass}
               onPress={() => {
                 window.location.href = player.href
               }}
@@ -112,9 +116,15 @@ export default function FileRowActions({
         </Tooltip.Root>
       ))}
 
-      <Button variant='secondary' size='sm' className={actionClass} onPress={() => void copyLink()}>
-        {t('CopyLink')}
-      </Button>
+      <Tooltip.Root>
+        <Tooltip.Trigger>
+          <Button variant='secondary' size='sm' className={actionButtonClass} onPress={() => void copyDirectLink()}>
+            <Copy className='size-4' aria-hidden />
+            {t('CopyLink')}
+          </Button>
+        </Tooltip.Trigger>
+        <Tooltip.Content>{t('CopyLink')}</Tooltip.Content>
+      </Tooltip.Root>
     </div>
   )
 }

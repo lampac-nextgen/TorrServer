@@ -44,7 +44,7 @@ const toPlayableFile = (file: TorrentFileStat): PlayableFile => ({
 
 function StatWidget({ label, value }: { label: string; value: string }) {
   return (
-    <div className='min-w-[108px] flex-1 rounded-lg border border-border bg-surface-secondary px-3 py-2 text-center'>
+    <div className='min-w-[104px] flex-1 rounded-lg border border-border bg-surface-secondary px-3 py-2 text-center'>
       <span className='block text-xs leading-tight text-muted'>{label}</span>
       <span className='mt-1 block break-words text-base font-bold tabular-nums text-foreground' title={value}>
         {value || '—'}
@@ -53,12 +53,36 @@ function StatWidget({ label, value }: { label: string; value: string }) {
   )
 }
 
+/** Derives a deduplicated display title from the raw torrent name via parse-torrent-title. */
+function buildDisplayTitle(name: string | undefined, title: string | undefined): string {
+  const parts: Array<string | number> = []
+  const parsedName = name ? ptt.parse(name) : null
+
+  if (title !== name) {
+    parts.push(removeRedundantCharacters(title || ''))
+  } else if (parsedName?.title) {
+    parts.push(removeRedundantCharacters(parsedName.title))
+  }
+
+  if (parsedName?.year && !String(parts[0] || '').includes(String(parsedName.year))) {
+    parts.push(parsedName.year)
+  }
+  if (parsedName?.resolution && !String(parts[0] || '').includes(String(parsedName.resolution))) {
+    parts.push(parsedName.resolution)
+  }
+
+  const combined = parts.join('. ')
+  const needsTrailingDot = combined.endsWith('.') && combined[combined.length - 2] === '.'
+  return needsTrailingDot ? `${combined}.` : combined
+}
+
+/** Full-detail sheet for a torrent: hero header, live speed chart, files browser and cache "snake" map. */
 export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit }: DetailsDialogProps) {
   const { t } = useTranslation()
-  const fullScreen = useMediaQuery(queryMax('dialog'))
+  const isFullScreen = useMediaQuery(queryMax('dialog'))
   useSyncModalOpen(true)
 
-  const state = useOverlayState({
+  const overlayState = useOverlayState({
     isOpen: true,
     onOpenChange: open => {
       if (!open) onClose()
@@ -69,9 +93,9 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
   const { data: liveTorrent } = useTorrentDetail(hash, initialTorrent)
   const torrent = liveTorrent ?? initialTorrent
 
-  const [tab, setTab] = useState<DetailsTab>('overview')
+  const [activeTab, setActiveTab] = useState<DetailsTab>('overview')
   const [viewedFileList, setViewedFileList] = useState<number[] | undefined>()
-  const [seasonAmount, setSeasonAmount] = useState<number[] | null>(null)
+  const [seasonList, setSeasonList] = useState<number[] | null>(null)
   const [selectedSeason, setSelectedSeason] = useState<number | undefined>()
   const [isDetailedCacheView, setIsDetailedCacheView] = useState(false)
   const [isSnakeDebugMode, setIsSnakeDebugMode] = useLocalBoolPref('isSnakeDebugMode')
@@ -86,25 +110,26 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
     download_speed: downloadSpeed,
     upload_speed: uploadSpeed,
     torrent_size: torrentSize,
-    file_stats: torrentFileList,
+    file_stats: fileStats,
   } = torrent
 
   const playableFileList = useMemo(
-    () => torrentFileList?.map(toPlayableFile).filter(({ path }) => isFilePlayable(path)),
-    [torrentFileList],
+    () => fileStats?.map(toPlayableFile).filter(({ path }) => isFilePlayable(path)),
+    [fileStats],
   )
 
   useEffect(() => {
-    if (playableFileList && seasonAmount === null) {
+    if (playableFileList && seasonList === null) {
       const seasons: number[] = []
       playableFileList.forEach(({ path }) => {
-        const currentSeason = ptt.parse(path).season
-        if (currentSeason && !seasons.includes(currentSeason)) seasons.push(currentSeason)
+        const season = ptt.parse(path).season
+        if (season && !seasons.includes(season)) seasons.push(season)
       })
-      if (seasons.length) setSelectedSeason(seasons.sort((a, b) => a - b)[0])
-      setSeasonAmount(seasons.sort((a, b) => a - b))
+      seasons.sort((a, b) => a - b)
+      if (seasons.length) setSelectedSeason(seasons[0])
+      setSeasonList(seasons)
     }
-  }, [playableFileList, seasonAmount])
+  }, [playableFileList, seasonList])
 
   useEffect(() => {
     let cancelled = false
@@ -117,60 +142,34 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
   }, [hash])
 
   const statusLabel = (value?: number) => {
-    const map: Record<number, string> = {
+    const labels: Record<number, string> = {
       [GETTING_INFO]: t('TorrentGettingInfo'),
       [PRELOAD]: t('TorrentPreload'),
       [WORKING]: t('TorrentWorking'),
       [CLOSED]: t('TorrentClosed'),
       [IN_DB]: t('TorrentInDB'),
     }
-    return value != null ? map[value] || String(value) : '—'
+    return value != null ? labels[value] || String(value) : '—'
   }
 
-  const getParsedTitle = () => {
-    const parts: Array<string | number> = []
-    const torrentParsedName = name ? ptt.parse(name) : null
-
-    if (title !== name) {
-      parts.push(removeRedundantCharacters(title || ''))
-    } else if (torrentParsedName?.title) {
-      parts.push(removeRedundantCharacters(torrentParsedName.title))
-    }
-
-    if (torrentParsedName?.year && !String(parts[0] || '').includes(String(torrentParsedName.year))) {
-      parts.push(torrentParsedName.year)
-    }
-    if (torrentParsedName?.resolution && !String(parts[0] || '').includes(String(torrentParsedName.resolution))) {
-      parts.push(torrentParsedName.resolution)
-    }
-
-    const newNameString = parts.join('. ')
-    const lastDotShouldBeAdded =
-      newNameString[newNameString.length - 1] === '.' && newNameString[newNameString.length - 2] === '.'
-
-    return lastDotShouldBeAdded ? `${newNameString}.` : newNameString
-  }
-
-  const loading = stat === GETTING_INFO || stat === IN_DB
+  const displayTitle = buildDisplayTitle(name, title) || title || name || hash
+  const subtitle = name && title !== name ? ptt.parse(name).title || name : null
+  const isLoadingMetadata = stat === GETTING_INFO || stat === IN_DB
+  const hasMultipleSeasons = (seasonList?.length ?? 0) > 1
 
   return (
-    <Modal.Root state={state}>
+    <Modal.Root state={overlayState}>
       <Modal.Backdrop>
-        <Modal.Container size={fullScreen ? 'full' : 'lg'} scroll='inside'>
+        <Modal.Container size={isFullScreen ? 'full' : 'lg'} scroll='inside'>
           <Modal.Dialog>
             <Modal.Header className='flex items-center gap-2'>
               <Modal.Heading className='min-w-0 flex-1 truncate'>{t('TorrentDetails')}</Modal.Heading>
               {onEdit ? (
-                <Button
-                  isIconOnly
-                  variant='ghost'
-                  aria-label={t('EditTorrent')}
-                  onPress={() => onEdit(torrent)}
-                >
+                <Button isIconOnly variant='ghost' aria-label={t('EditTorrent')} onPress={() => onEdit(torrent)}>
                   <Pencil className='size-4' />
                 </Button>
               ) : null}
-              <Modal.CloseTrigger aria-label={t('Close', { defaultValue: 'Close' })}>
+              <Modal.CloseTrigger aria-label={t('Close')}>
                 <X className='size-4' />
               </Modal.CloseTrigger>
             </Modal.Header>
@@ -186,52 +185,47 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                 </div>
 
                 <div className='min-w-0 flex-1'>
-                  <h2 className='mb-1 break-words text-lg font-bold text-foreground'>
-                    {getParsedTitle() || title || name || hash}
-                  </h2>
-                  {name && title !== name ? (
-                    <p className='mb-3 text-sm text-muted'>{ptt.parse(name).title || name}</p>
-                  ) : null}
-                  <div className='mb-3 flex flex-wrap gap-2'>
+                  <h2 className='mb-1 break-words text-lg font-bold text-foreground'>{displayTitle}</h2>
+                  {subtitle ? <p className='mb-3 text-sm text-muted'>{subtitle}</p> : null}
+
+                  <div className='flex flex-wrap gap-2'>
                     <StatWidget label={t('DownloadSpeed')} value={humanizeSpeed(downloadSpeed)} />
                     <StatWidget label={t('UploadSpeed')} value={humanizeSpeed(uploadSpeed)} />
                     <StatWidget label={t('Peers')} value={getPeerString(torrent) || '—'} />
                     <StatWidget label={t('Size')} value={humanizeSize(torrentSize)} />
-                    <StatWidget label={t('Status')} value={statusLabel(stat)} />
+                    <StatWidget label={t('Status', { defaultValue: 'Status' })} value={statusLabel(stat)} />
                     {category ? <StatWidget label={t('Category')} value={category} /> : null}
                   </div>
                 </div>
               </div>
 
-              <Tabs.Root selectedKey={tab} onSelectionChange={key => setTab(String(key) as DetailsTab)}>
+              <Tabs.Root selectedKey={activeTab} onSelectionChange={key => setActiveTab(String(key) as DetailsTab)}>
                 <Tabs.List aria-label={t('TorrentDetails')}>
                   <Tabs.Tab id='overview'>{t('Overview', { defaultValue: 'Overview' })}</Tabs.Tab>
                   <Tabs.Tab id='files'>{t('TorrentContent')}</Tabs.Tab>
                   <Tabs.Tab id='cache'>{t('Cache')}</Tabs.Tab>
                 </Tabs.List>
 
-                <Tabs.Panel id='overview' className='pt-4'>
+                <Tabs.Panel id='overview' className='space-y-4 pt-4'>
                   <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} />
-                  <div className='mt-4'>
-                    <TorrentActions
-                      hash={hash}
-                      name={name}
-                      title={title}
-                      playableFileList={playableFileList}
-                      viewedFileList={viewedFileList}
-                      setViewedFileList={setViewedFileList}
-                      onDropped={onClose}
-                    />
-                  </div>
+                  <TorrentActions
+                    hash={hash}
+                    name={name}
+                    title={title}
+                    playableFileList={playableFileList}
+                    viewedFileList={viewedFileList}
+                    setViewedFileList={setViewedFileList}
+                    onDropped={onClose}
+                  />
                 </Tabs.Panel>
 
                 <Tabs.Panel id='files' className='pt-4'>
                   <div className='rounded-xl bg-surface-secondary p-4'>
-                    {loading ? (
-                      <p className='text-default-500'>{t('TorrentGettingInfo')}</p>
+                    {isLoadingMetadata ? (
+                      <p className='text-sm text-muted'>{t('TorrentGettingInfo')}</p>
                     ) : (
                       <>
-                        {(seasonAmount?.length ?? 0) > 1 ? (
+                        {hasMultipleSeasons ? (
                           <div className='mb-4'>
                             <ToggleButtonGroup
                               selectionMode='single'
@@ -242,7 +236,7 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                               }}
                               className='flex flex-wrap gap-2'
                             >
-                              {seasonAmount!.map(season => (
+                              {seasonList!.map(season => (
                                 <ToggleButton key={season} id={String(season)}>
                                   {t('Season')} {season}
                                 </ToggleButton>
@@ -256,7 +250,7 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                           playableFileList={playableFileList || []}
                           viewedFileList={viewedFileList}
                           selectedSeason={selectedSeason}
-                          seasonAmount={seasonAmount}
+                          seasonAmount={seasonList}
                         />
                       </>
                     )}
@@ -265,12 +259,12 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
 
                 <Tabs.Panel id='cache' className='space-y-4 pt-4'>
                   <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
-                    <p className='text-sm font-semibold'>{t('Cache')}</p>
-                    <div className='flex flex-wrap items-center gap-2'>
+                    <p className='text-sm font-semibold text-muted'>{t('Cache')}</p>
+                    <div className='flex flex-wrap items-center gap-3'>
                       <Button
                         size='sm'
                         variant={isDetailedCacheView ? 'primary' : 'secondary'}
-                        onPress={() => setIsDetailedCacheView(v => !v)}
+                        onPress={() => setIsDetailedCacheView(current => !current)}
                       >
                         {isDetailedCacheView
                           ? t('CacheViewCompact', { defaultValue: 'Compact' })
@@ -290,7 +284,7 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                     isSnakeDebugMode={isSnakeDebugMode}
                   />
 
-                  {(cache.PiecesCount != null || cache.PiecesLength != null) && (
+                  {cache.PiecesCount != null || cache.PiecesLength != null ? (
                     <div className='flex flex-wrap gap-2'>
                       {cache.PiecesCount != null ? (
                         <StatWidget label={t('PiecesCount')} value={String(cache.PiecesCount)} />
@@ -305,7 +299,7 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                         />
                       ) : null}
                     </div>
-                  )}
+                  ) : null}
                 </Tabs.Panel>
               </Tabs.Root>
             </Modal.Body>

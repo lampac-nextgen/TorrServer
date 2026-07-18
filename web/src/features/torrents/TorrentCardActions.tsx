@@ -1,23 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import axios from 'axios'
-import {
-  Button,
-  Dropdown,
-  Modal,
-  Tooltip,
-  useOverlayState,
-} from '@heroui/react'
-import {
-  Info,
-  ListMusic,
-  Loader2,
-  MoreVertical,
-  Music2,
-  Pencil,
-  Play,
-  Trash2,
-  X,
-} from 'lucide-react'
+import { Button, Dropdown, Modal, Tooltip, useOverlayState } from '@heroui/react'
+import { Info, ListMusic, Loader2, MoreVertical, Music2, Pencil, Play, Trash2, X } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { PlayableFile, TorrentFileStat, TorrentStat } from 'shared/api/types'
@@ -38,195 +22,188 @@ export interface TorrentCardActionsProps {
   torrent: TorrentStat
   onDetails: () => void
   onEdit?: () => void
-  className?: string
 }
 
 type ConfirmKind = 'drop' | 'delete' | null
+/** GStreamer probe result track — field casing varies by backend build, so lookups are case-insensitive. */
 type ProbeTrack = Record<string, unknown>
 
-const toPlayable = (file: TorrentFileStat): PlayableFile => ({
+interface ActivePlayer {
+  src: string
+  downloadSrc: string
+  title: string
+  hls: boolean
+  heartbeatSrc?: string
+}
+
+const toPlayableFile = (file: TorrentFileStat): PlayableFile => ({
   id: file.id ?? file.Id ?? 0,
   path: file.path ?? file.Path ?? '',
   length: file.length ?? file.Length ?? 0,
 })
 
-const probeTrackValue = (track: ProbeTrack, key: string): unknown => {
-  const lower = key.toLowerCase()
-  const found = Object.keys(track).find(k => k.toLowerCase() === lower)
-  return found ? track[found] : undefined
+const probeField = (track: ProbeTrack, key: string): unknown => {
+  const lowerKey = key.toLowerCase()
+  const match = Object.keys(track).find(candidate => candidate.toLowerCase() === lowerKey)
+  return match ? track[match] : undefined
 }
 
-const probeAudioTracks = (probe: { Tracks?: ProbeTrack[]; tracks?: ProbeTrack[] } | null | undefined) =>
+const extractAudioTracks = (probe: { Tracks?: ProbeTrack[]; tracks?: ProbeTrack[] } | null | undefined): ProbeTrack[] =>
   (probe?.Tracks || probe?.tracks || []).filter(
-    track => String(probeTrackValue(track, 'Type') || '').toLowerCase() === 'audio',
+    track => String(probeField(track, 'Type') || '').toLowerCase() === 'audio',
   )
 
-const audioTrackLabel = (track: ProbeTrack, index: number) => {
-  const lang = String(probeTrackValue(track, 'Language') || probeTrackValue(track, 'Lang') || '')
-  const codec = String(probeTrackValue(track, 'Codec') || probeTrackValue(track, 'CapsName') || '')
-  const title = String(probeTrackValue(track, 'Title') || '')
-  const parts = [`#${index}`, lang, codec, title].filter(Boolean)
+const audioTrackLabel = (track: ProbeTrack, index: number): string => {
+  const lang = String(probeField(track, 'Language') || probeField(track, 'Lang') || '')
+  const codec = String(probeField(track, 'Codec') || probeField(track, 'CapsName') || '')
+  const trackTitle = String(probeField(track, 'Title') || '')
+  const parts = [`#${index}`, lang, codec, trackTitle].filter(Boolean)
   return parts.join(' · ') || `Audio ${index}`
 }
 
-export default function TorrentCardActions({ torrent, onDetails, onEdit, className }: TorrentCardActionsProps) {
+const fileBaseName = (path: string): string => path.split('\\').pop()?.split('/').pop() || path
+
+export default function TorrentCardActions({ torrent, onDetails, onEdit }: TorrentCardActionsProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
   const queryClient = useQueryClient()
   const gstRuntime = useGStreamerRuntime()
-  const audioCache = useRef<Record<number, ProbeTrack[]>>({})
+  /** Per-file audio-track probe results, cached for the lifetime of this card. */
+  const audioProbeCache = useRef<Record<number, ProbeTrack[]>>({})
 
-  const [confirm, setConfirm] = useState<ConfirmKind>(null)
+  const [confirmKind, setConfirmKind] = useState<ConfirmKind>(null)
   const [playableFiles, setPlayableFiles] = useState<PlayableFile[]>([])
   const [audioTracks, setAudioTracks] = useState<ProbeTrack[]>([])
   const [pendingAudioFile, setPendingAudioFile] = useState<PlayableFile | null>(null)
   const [resolvingAudio, setResolvingAudio] = useState(false)
-  const [player, setPlayer] = useState<{
-    src: string
-    downloadSrc: string
-    title: string
-    hls: boolean
-    heartbeatSrc?: string
-  } | null>(null)
+  const [activePlayer, setActivePlayer] = useState<ActivePlayer | null>(null)
 
-  const playMenuState = useOverlayState()
-  const audioMenuState = useOverlayState()
+  const filePickerState = useOverlayState()
+  const audioPickerState = useOverlayState()
   const confirmState = useOverlayState({
-    isOpen: confirm != null,
+    isOpen: confirmKind != null,
     onOpenChange: open => {
-      if (!open) setConfirm(null)
+      if (!open) setConfirmKind(null)
     },
   })
 
   const hash = torrent.hash
   const displayName = torrent.title || torrent.name || hash
-  const playlistLink = `${playlistTorrHost()}/${encodeURIComponent(displayName)}.m3u?link=${hash}&m3u`
+  const playlistHref = `${playlistTorrHost()}/${encodeURIComponent(displayName)}.m3u?link=${hash}&m3u`
 
-  const listPlayable = useMemo(() => {
+  const knownPlayableFiles = useMemo(() => {
     const stats = torrent.file_stats
     if (!stats?.length) return []
-    return stats.map(toPlayable).filter(f => isFilePlayable(f.path))
+    return stats.map(toPlayableFile).filter(file => isFilePlayable(file.path))
   }, [torrent.file_stats])
 
-  const openPlayerForFile = (file: PlayableFile, audio = 0) => {
+  const openPlayer = (file: PlayableFile, audioIndex = 0) => {
     const useHls = shouldUseGStreamerPlayer(file.path, gstRuntime)
-    const stream = `${streamHost()}/${encodeURIComponent(
-      file.path.split('\\').pop()!.split('/').pop()!,
-    )}?link=${hash}&index=${file.id}&play`
-    setPlayer({
-      src: useHls ? gstreamerMasterUrl(hash, file.id, audio) : stream,
-      downloadSrc: stream,
-      title: file.path.split('/').pop() || displayName,
+    const directStream = `${streamHost()}/${encodeURIComponent(fileBaseName(file.path))}?link=${hash}&index=${file.id}&play`
+
+    setActivePlayer({
+      src: useHls ? gstreamerMasterUrl(hash, file.id, audioIndex) : directStream,
+      downloadSrc: directStream,
+      title: fileBaseName(file.path) || displayName,
       hls: useHls,
       heartbeatSrc: useHls ? gstreamerHeartbeatUrl(hash) : undefined,
     })
-    playMenuState.close()
-    audioMenuState.close()
+    filePickerState.close()
+    audioPickerState.close()
     setPendingAudioFile(null)
   }
 
   const resolveAndPlay = async (file: PlayableFile) => {
     const useHls = shouldUseGStreamerPlayer(file.path, gstRuntime)
     if (!useHls) {
-      openPlayerForFile(file)
+      openPlayer(file)
       return
     }
 
-    const cached = audioCache.current[file.id]
-    if (cached !== undefined) {
-      if (!cached.length) {
-        openPlayerForFile(file, 0)
+    const cachedTracks = audioProbeCache.current[file.id]
+    if (cachedTracks !== undefined) {
+      if (!cachedTracks.length) {
+        openPlayer(file, 0)
         return
       }
       setPendingAudioFile(file)
-      setAudioTracks(cached)
-      audioMenuState.open()
+      setAudioTracks(cachedTracks)
+      audioPickerState.open()
       return
     }
 
     setResolvingAudio(true)
     try {
       const { data } = await axios.get(gstreamerProbeUrl(hash, file.id))
-      const tracks = probeAudioTracks(data)
-      audioCache.current[file.id] = tracks
+      const tracks = extractAudioTracks(data)
+      audioProbeCache.current[file.id] = tracks
       if (!tracks.length) {
-        openPlayerForFile(file, 0)
+        openPlayer(file, 0)
         return
       }
       setPendingAudioFile(file)
       setAudioTracks(tracks)
-      audioMenuState.open()
+      audioPickerState.open()
     } catch {
-      openPlayerForFile(file, 0)
+      openPlayer(file, 0)
     } finally {
       setResolvingAudio(false)
     }
   }
 
-  const handlePlayClick = async () => {
+  const handlePlay = async () => {
     try {
-      let files = listPlayable
-      if (!files.length) {
+      let candidates = knownPlayableFiles
+      if (!candidates.length) {
         const detail = await getTorrent(hash)
-        files = (detail.file_stats || []).map(toPlayable).filter(f => isFilePlayable(f.path))
+        candidates = (detail.file_stats || []).map(toPlayableFile).filter(file => isFilePlayable(file.path))
       }
-      if (!files.length) {
-        toast?.showToast({
-          message: t('NoPlayableFiles', { defaultValue: 'No playable files' }),
-          severity: 'info',
-        })
+      if (!candidates.length) {
+        toast?.showToast({ message: t('NoPlayableFiles'), severity: 'info' })
         return
       }
-      if (files.length === 1) {
-        await resolveAndPlay(files[0])
+      if (candidates.length === 1) {
+        await resolveAndPlay(candidates[0])
         return
       }
-      setPlayableFiles(files)
-      playMenuState.open()
+      setPlayableFiles(candidates)
+      filePickerState.open()
     } catch {
-      toast?.showToast({ message: t('Error'), severity: 'error' })
+      toast?.showToast({ message: t('Error', { defaultValue: 'Error' }), severity: 'error' })
     }
   }
 
-  const runConfirmed = () => {
-    const action = confirm
-    setConfirm(null)
+  const runConfirmedAction = () => {
+    const action = confirmKind
+    setConfirmKind(null)
     confirmState.close()
-    if (action === 'drop') {
-      void dropTorrent(hash)
-        .then(async () => {
-          toast?.showToast({ message: t('DropTorrent'), severity: 'success' })
-          await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
-        })
-        .catch(() => toast?.showToast({ message: t('Error'), severity: 'error' }))
-    }
-    if (action === 'delete') {
-      void removeTorrent(hash)
-        .then(async () => {
-          toast?.showToast({ message: t('Delete'), severity: 'success' })
-          await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
-        })
-        .catch(() => toast?.showToast({ message: t('Error'), severity: 'error' }))
-    }
+
+    const mutate = action === 'drop' ? dropTorrent : action === 'delete' ? removeTorrent : null
+    const successMessage = action === 'drop' ? t('DropTorrent') : t('Delete')
+    if (!mutate) return
+
+    void mutate(hash)
+      .then(async () => {
+        toast?.showToast({ message: successMessage, severity: 'success' })
+        await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
+      })
+      .catch(() => toast?.showToast({ message: t('Error', { defaultValue: 'Error' }), severity: 'error' }))
   }
 
-  const actionBtnClass = 'h-9 w-9 min-w-9 rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-accent'
+  const overlayButtonClass = 'h-9 w-9 min-w-9 rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-accent'
 
   return (
     <>
-      <div
-        className={`pointer-events-none flex items-center justify-center gap-1.5 opacity-0 transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 ${className ?? ''}`}
-        onClick={e => e.stopPropagation()}
-      >
+      <div className='flex items-center justify-center gap-1.5' onClick={event => event.stopPropagation()}>
         <Tooltip>
           <Tooltip.Trigger>
             <Button
               variant='primary'
               isIconOnly
-              className={actionBtnClass}
+              className={overlayButtonClass}
               aria-label={t('Play')}
               isDisabled={resolvingAudio}
-              onPress={() => void handlePlayClick()}
+              onPress={() => void handlePlay()}
             >
               {resolvingAudio ? <Loader2 size={16} className='animate-spin' /> : <Play size={16} fill='currentColor' />}
             </Button>
@@ -236,7 +213,13 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit, classNa
 
         <Tooltip>
           <Tooltip.Trigger>
-            <Button variant='primary' isIconOnly className={actionBtnClass} aria-label={t('Details')} onPress={onDetails}>
+            <Button
+              variant='primary'
+              isIconOnly
+              className={overlayButtonClass}
+              aria-label={t('Details')}
+              onPress={onDetails}
+            >
               <Info size={16} />
             </Button>
           </Tooltip.Trigger>
@@ -246,10 +229,10 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit, classNa
         <Tooltip>
           <Tooltip.Trigger>
             <a
-              href={playlistLink}
-              className={`inline-flex items-center justify-center ${actionBtnClass}`}
+              href={playlistHref}
               aria-label={t('DownloadPlaylist')}
-              onClick={e => e.stopPropagation()}
+              onClick={event => event.stopPropagation()}
+              className={`inline-flex items-center justify-center ${overlayButtonClass}`}
             >
               <ListMusic size={16} />
             </a>
@@ -259,25 +242,21 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit, classNa
 
         <Dropdown>
           <Dropdown.Trigger>
-            <Button variant='primary' isIconOnly className={actionBtnClass} aria-label={t('Actions')}>
+            <Button variant='primary' isIconOnly className={overlayButtonClass} aria-label={t('Actions')}>
               <MoreVertical size={16} />
             </Button>
           </Dropdown.Trigger>
           <Dropdown.Popover placement='bottom end'>
             <Dropdown.Menu aria-label={t('Actions')}>
               {onEdit ? (
-                <Dropdown.Item
-                  onPress={() => {
-                    onEdit()
-                  }}
-                >
+                <Dropdown.Item onPress={onEdit}>
                   <Pencil size={16} />
                   {t('EditTorrent')}
                 </Dropdown.Item>
               ) : null}
               <Dropdown.Item
                 onPress={() => {
-                  setConfirm('drop')
+                  setConfirmKind('drop')
                   confirmState.open()
                 }}
               >
@@ -287,7 +266,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit, classNa
               <Dropdown.Item
                 variant='danger'
                 onPress={() => {
-                  setConfirm('delete')
+                  setConfirmKind('delete')
                   confirmState.open()
                 }}
               >
@@ -299,7 +278,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit, classNa
         </Dropdown>
       </div>
 
-      <Modal state={playMenuState}>
+      <Modal state={filePickerState}>
         <Modal.Backdrop isDismissable>
           <Modal.Container size='sm'>
             <Modal.Dialog aria-label={t('Play')}>
@@ -314,7 +293,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit, classNa
                     className='justify-start'
                     onPress={() => void resolveAndPlay(file)}
                   >
-                    {file.path.split('/').pop() || file.path}
+                    {fileBaseName(file.path)}
                   </Button>
                 ))}
               </Modal.Body>
@@ -323,7 +302,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit, classNa
         </Modal.Backdrop>
       </Modal>
 
-      <Modal state={audioMenuState}>
+      <Modal state={audioPickerState}>
         <Modal.Backdrop isDismissable>
           <Modal.Container size='sm'>
             <Modal.Dialog aria-label={t('Play')}>
@@ -336,7 +315,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit, classNa
                     key={index}
                     variant='ghost'
                     className='justify-start gap-2'
-                    onPress={() => pendingAudioFile && openPlayerForFile(pendingAudioFile, index)}
+                    onPress={() => pendingAudioFile && openPlayer(pendingAudioFile, index)}
                   >
                     <Music2 size={16} />
                     {audioTrackLabel(track, index)}
@@ -348,34 +327,32 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit, classNa
         </Modal.Backdrop>
       </Modal>
 
-      {player ? (
+      {activePlayer ? (
         <VideoPlayer
           initiallyOpen
           showTrigger={false}
-          title={player.title}
-          videoSrc={player.src}
-          downloadSrc={player.downloadSrc}
-          hls={player.hls}
-          heartbeatSrc={player.heartbeatSrc}
-          onClose={() => setPlayer(null)}
+          title={activePlayer.title}
+          videoSrc={activePlayer.src}
+          downloadSrc={activePlayer.downloadSrc}
+          hls={activePlayer.hls}
+          heartbeatSrc={activePlayer.heartbeatSrc}
+          onClose={() => setActivePlayer(null)}
         />
       ) : null}
 
       <Modal state={confirmState}>
         <Modal.Backdrop isDismissable>
           <Modal.Container size='sm'>
-            <Modal.Dialog aria-label={confirm === 'delete' ? t('Delete') : t('DropTorrent')}>
+            <Modal.Dialog aria-label={confirmKind === 'delete' ? t('Delete') : t('DropTorrent')}>
               <Modal.Header>
-                <Modal.Heading>{confirm === 'delete' ? t('Delete') : t('DropTorrent')}</Modal.Heading>
+                <Modal.Heading>{confirmKind === 'delete' ? t('Delete') : t('DropTorrent')}</Modal.Heading>
               </Modal.Header>
-              <Modal.Body>
-                {confirm === 'delete' ? t('DeleteTorrents?') : t('ConfirmDropTorrent')}
-              </Modal.Body>
+              <Modal.Body>{confirmKind === 'delete' ? t('DeleteTorrents?') : t('ConfirmDropTorrent')}</Modal.Body>
               <Modal.Footer className='flex justify-end gap-2'>
-                <Button autoFocus variant='secondary' onPress={() => setConfirm(null)}>
+                <Button autoFocus variant='secondary' onPress={() => setConfirmKind(null)}>
                   {t('Cancel')}
                 </Button>
-                <Button variant='danger' onPress={runConfirmed}>
+                <Button variant='danger' onPress={runConfirmedAction}>
                   {t('OK')}
                 </Button>
               </Modal.Footer>

@@ -1,5 +1,6 @@
 import { Alert, Description, Label, ListBox, Select, Separator } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
+
 import type { BTSets } from 'shared/api/types'
 import type { StorageBackend, StorageSettings } from 'shared/api/storage'
 import defaultSettings from 'shared/settings/defaults'
@@ -13,6 +14,7 @@ export interface StorageSettingsPanelProps {
   onBackendsChange: (next: StorageSettings) => void
 }
 
+/** Where BT settings + viewed history are persisted (JSON file vs. BBolt DB). */
 export default function StorageSettingsPanel({
   settings,
   onBoolSwitch,
@@ -26,7 +28,7 @@ export default function StorageSettingsPanel({
   }
 
   return (
-    <div className='space-y-4'>
+    <div className='space-y-5'>
       <SettingSwitch
         id='StoreSettingsInJson'
         label={t('SettingsDialog.StoreSettingsInJson')}
@@ -37,10 +39,17 @@ export default function StorageSettingsPanel({
 
       <Separator />
 
-      <p className='text-xs uppercase tracking-wide text-default-500'>{t('SettingsDialog.StorageSettings')}</p>
-      <Description>{t('SettingsDialog.SettingsStorageHint')}</Description>
+      <div>
+        <p className='mb-1 text-xs font-semibold uppercase tracking-wide text-muted'>
+          {t('SettingsDialog.StorageSettings')}
+        </p>
+        <Description>{t('SettingsDialog.SettingsStorageHint')}</Description>
+      </div>
 
-      <Select selectedKey={backends.settings} onSelectionChange={key => updateBackend('settings', String(key) as StorageBackend)}>
+      <Select
+        selectedKey={backends.settings}
+        onSelectionChange={key => updateBackend('settings', String(key) as StorageBackend)}
+      >
         <Label>{t('SettingsDialog.SettingsStorage')}</Label>
         <Select.Trigger>
           <Select.Value />
@@ -54,7 +63,10 @@ export default function StorageSettingsPanel({
         </Select.Popover>
       </Select>
 
-      <Select selectedKey={backends.viewed} onSelectionChange={key => updateBackend('viewed', String(key) as StorageBackend)}>
+      <Select
+        selectedKey={backends.viewed}
+        onSelectionChange={key => updateBackend('viewed', String(key) as StorageBackend)}
+      >
         <Label>{t('SettingsDialog.ViewedHistoryStorage')}</Label>
         <Select.Trigger>
           <Select.Value />

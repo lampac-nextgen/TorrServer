@@ -1,4 +1,5 @@
-import { Button, ButtonGroup, Description, Modal, Separator, useOverlayState } from '@heroui/react'
+import { Button, ButtonGroup, Modal, Separator, useOverlayState } from '@heroui/react'
+import { EyeOff, ListVideo, Magnet, Trash2 } from 'lucide-react'
 import { memo, useState } from 'react'
 import ptt from 'parse-torrent-title'
 import { useQueryClient } from '@tanstack/react-query'
@@ -19,7 +20,7 @@ export interface TorrentActionsProps {
   onDropped?: () => void
 }
 
-type ConfirmKind = 'drop' | 'views' | null
+type PendingConfirm = 'drop' | 'clearViews' | null
 
 function TorrentActions({
   hash,
@@ -33,24 +34,26 @@ function TorrentActions({
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
   const queryClient = useQueryClient()
-  const [confirm, setConfirm] = useState<ConfirmKind>(null)
+  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm>(null)
   const confirmState = useOverlayState({
-    isOpen: confirm != null,
+    isOpen: pendingConfirm != null,
     onOpenChange: open => {
-      if (!open) setConfirm(null)
+      if (!open) setPendingConfirm(null)
     },
   })
 
+  const isSingleFileTorrent = playableFileList?.length === 1
   const latestViewedFileId = viewedFileList?.[viewedFileList.length - 1]
-  const latestViewedFile = playableFileList?.find(({ id }) => id === latestViewedFileId)?.path
-  const isOnlyOnePlayableFile = playableFileList?.length === 1
-  const latestViewedFileData = latestViewedFile ? ptt.parse(latestViewedFile) : null
-  const fullPlaylistLink = `${playlistTorrHost()}/${encodeURIComponent(name || title || 'file')}.m3u?link=${hash}&m3u`
-  const partialPlaylistLink = `${fullPlaylistLink}&fromlast`
-  const magnet = `magnet:?xt=urn:btih:${hash}&dn=${encodeURIComponent(name || title || '')}`
+  const latestViewedFilePath = playableFileList?.find(({ id }) => id === latestViewedFileId)?.path
+  const latestViewedFileInfo = latestViewedFilePath ? ptt.parse(latestViewedFilePath) : null
 
-  const runConfirmed = () => {
-    if (confirm === 'drop') {
+  const displayName = name || title || 'file'
+  const fullPlaylistLink = `${playlistTorrHost()}/${encodeURIComponent(displayName)}.m3u?link=${hash}&m3u`
+  const fromLatestPlaylistLink = `${fullPlaylistLink}&fromlast`
+  const magnetLink = `magnet:?xt=urn:btih:${hash}&dn=${encodeURIComponent(name || title || '')}`
+
+  const runPendingConfirm = () => {
+    if (pendingConfirm === 'drop') {
       void dropTorrent(hash)
         .then(async () => {
           toast?.showToast({ message: t('DropTorrent'), severity: 'success' })
@@ -58,8 +61,7 @@ function TorrentActions({
           onDropped?.()
         })
         .catch(() => toast?.showToast({ message: t('PlaybackError'), severity: 'error' }))
-    }
-    if (confirm === 'views') {
+    } else if (pendingConfirm === 'clearViews') {
       void clearViewedFiles(hash)
         .then(() => {
           setViewedFileList(undefined)
@@ -67,68 +69,81 @@ function TorrentActions({
         })
         .catch(() => toast?.showToast({ message: t('PlaybackError'), severity: 'error' }))
     }
-    setConfirm(null)
+    setPendingConfirm(null)
   }
 
-  const copyMagnet = async () => {
+  const copyMagnetLink = async () => {
     try {
-      await navigator.clipboard.writeText(magnet)
+      await navigator.clipboard.writeText(magnetLink)
       toast?.showToast({ message: t('Copied'), severity: 'success' })
     } catch {
       toast?.showToast({ message: t('Error'), severity: 'error' })
     }
   }
 
+  const hasPartialProgress = !isSingleFileTorrent && !!viewedFileList?.length
+
   return (
-    <>
-      {!isOnlyOnePlayableFile && !!viewedFileList?.length ? (
-        <div className='mb-4 space-y-2'>
-          <p className='text-sm font-semibold'>{t('DownloadPlaylist')}</p>
-          <Description className='text-sm'>
+    <div className='space-y-4'>
+      {hasPartialProgress ? (
+        <div className='rounded-xl border border-border bg-surface-secondary p-4'>
+          <p className='mb-1 flex items-center gap-2 text-sm font-semibold'>
+            <ListVideo className='size-4 text-accent' aria-hidden />
+            {t('DownloadPlaylist')}
+          </p>
+          <p className='mb-3 text-sm text-muted'>
             {t('LatestFilePlayed')}{' '}
-            <strong>
-              {latestViewedFileData?.title}.
-              {latestViewedFileData?.season ? (
+            <strong className='text-foreground'>
+              {latestViewedFileInfo?.title}
+              {latestViewedFileInfo?.season ? (
                 <>
                   {' '}
-                  {t('Season')}: {latestViewedFileData.season}. {t('Episode')}: {latestViewedFileData.episode}.
+                  · {t('Season')} {latestViewedFileInfo.season} · {t('Episode')} {latestViewedFileInfo.episode}
                 </>
               ) : null}
             </strong>
-          </Description>
+          </p>
           <ButtonGroup>
             <Button variant='primary' onPress={() => window.open(fullPlaylistLink, '_blank')}>
               {t('Full')}
             </Button>
-            <Button variant='primary' onPress={() => window.open(partialPlaylistLink, '_blank')}>
+            <Button variant='primary' onPress={() => window.open(fromLatestPlaylistLink, '_blank')}>
               {t('FromLatestFile')}
             </Button>
           </ButtonGroup>
         </div>
       ) : null}
 
-      <p className='mb-2 text-sm font-semibold'>{t('Info')}</p>
-      <div className='mb-4 flex flex-wrap gap-2'>
-        {isOnlyOnePlayableFile || !viewedFileList?.length ? (
-          <Button variant='primary' onPress={() => window.open(fullPlaylistLink, '_blank')}>
-            {t('DownloadPlaylist')}
+      <div>
+        <p className='mb-2 text-sm font-semibold text-muted'>{t('Info')}</p>
+        <div className='flex flex-wrap gap-2'>
+          {isSingleFileTorrent || !viewedFileList?.length ? (
+            <Button variant='primary' onPress={() => window.open(fullPlaylistLink, '_blank')}>
+              <ListVideo className='size-4' aria-hidden />
+              {t('DownloadPlaylist')}
+            </Button>
+          ) : null}
+          <Button variant='secondary' onPress={() => void copyMagnetLink()}>
+            <Magnet className='size-4' aria-hidden />
+            {t('CopyHash')}
           </Button>
-        ) : null}
-        <Button variant='primary' onPress={() => void copyMagnet()}>
-          {t('CopyHash')}
-        </Button>
+        </div>
       </div>
 
-      <Separator className='my-4' />
+      <Separator />
 
-      <p className='mb-2 text-sm font-semibold'>{t('TorrentState')}</p>
-      <div className='flex flex-wrap gap-2'>
-        <Button variant='secondary' onPress={() => setConfirm('views')}>
-          {t('RemoveViews')}
-        </Button>
-        <Button variant='danger' onPress={() => setConfirm('drop')}>
-          {t('DropTorrent')}
-        </Button>
+      <div>
+        <p className='mb-2 text-sm font-semibold text-muted'>{t('TorrentState')}</p>
+        <div className='flex flex-wrap gap-2'>
+          <Button variant='secondary' onPress={() => setPendingConfirm('clearViews')}>
+            <EyeOff className='size-4' aria-hidden />
+            {t('RemoveViews')}
+          </Button>
+          <Button variant='danger' onPress={() => setPendingConfirm('drop')}>
+            <Trash2 className='size-4' aria-hidden />
+            {t('DropTorrent')}
+          </Button>
+        </div>
       </div>
 
       <Modal.Root state={confirmState}>
@@ -136,14 +151,14 @@ function TorrentActions({
           <Modal.Container size='sm'>
             <Modal.Dialog>
               <Modal.Header>
-                <Modal.Heading>{confirm === 'drop' ? t('DropTorrent') : t('RemoveViews')}</Modal.Heading>
+                <Modal.Heading>{pendingConfirm === 'drop' ? t('DropTorrent') : t('RemoveViews')}</Modal.Heading>
               </Modal.Header>
-              <Modal.Body>{confirm === 'drop' ? t('ConfirmDropTorrent') : t('ConfirmRemoveViews')}</Modal.Body>
+              <Modal.Body>{pendingConfirm === 'drop' ? t('ConfirmDropTorrent') : t('ConfirmRemoveViews')}</Modal.Body>
               <Modal.Footer>
-                <Button variant='secondary' onPress={() => setConfirm(null)} autoFocus>
+                <Button variant='secondary' onPress={() => setPendingConfirm(null)} autoFocus>
                   {t('Cancel')}
                 </Button>
-                <Button variant={confirm === 'drop' ? 'danger' : 'primary'} onPress={runConfirmed}>
+                <Button variant={pendingConfirm === 'drop' ? 'danger' : 'primary'} onPress={runPendingConfirm}>
                   {t('OK')}
                 </Button>
               </Modal.Footer>
@@ -151,7 +166,7 @@ function TorrentActions({
           </Modal.Container>
         </Modal.Backdrop>
       </Modal.Root>
-    </>
+    </div>
   )
 }
 

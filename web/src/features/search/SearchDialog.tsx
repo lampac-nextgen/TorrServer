@@ -11,11 +11,12 @@ import {
   ToggleButtonGroup,
   useMediaQuery,
 } from '@heroui/react'
-import { ArrowDown, ArrowUp } from 'lucide-react'
+import { ArrowDown, ArrowUp, SearchX } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import axios, { isAxiosError } from 'axios'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
+
 import type { SearchResultItem, TorznabUrl } from 'shared/api/types'
 import { searchRutor, searchTorznab } from 'shared/api/search'
 import { getSettings } from 'shared/api/settings'
@@ -25,7 +26,8 @@ import { formatSizeToClassicUnits, parseSizeToBytes } from 'shared/lib/format'
 import { getMoviePosters, shortenTitleForPosterSearch } from 'shared/lib/torrentHelpers'
 import AppDialog from 'shared/ui/AppDialog'
 import { useOptionalAppToast } from 'shared/ui/Toast'
-import SearchResultsGrid from 'features/search/SearchResultsGrid'
+
+import SearchResultsGrid from './SearchResultsGrid'
 import { beginSearchRequest, isCurrentSearch } from './searchRequest'
 
 export interface SearchDialogProps {
@@ -203,11 +205,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
         const urls = await getMoviePosters(posterQuery, i18n.language?.startsWith('ru') ? 'ru' : 'en')
         poster = urls?.[0] || ''
       }
-      await addTorrent({
-        link,
-        title: item.Title,
-        poster,
-      })
+      await addTorrent({ link, title: item.Title, poster })
       await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
       toast?.showToast({ message: t('TorrentAdded'), severity: 'success' })
     } catch {
@@ -275,9 +273,9 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
   const trackerKey = selectedTracker === 'rutor' ? 'rutor' : String(selectedTracker)
 
   return (
-    <AppDialog open={open} onClose={onClose} size='lg'>
+    <AppDialog open={open} onClose={onClose} size='lg' fullScreen={isMobile}>
       <Modal.Header>
-        <Modal.Heading>{t('Search')}</Modal.Heading>
+        <Modal.Heading>{t('Torznab.SearchTorrents')}</Modal.Heading>
         <Modal.CloseTrigger />
       </Modal.Header>
       <Modal.Body>
@@ -321,7 +319,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
             }}
           >
             <Label>{t('SearchQuery')}</Label>
-            <Input />
+            <Input placeholder={t('Torznab.SearchMoviesShows')} />
           </TextField>
 
           <Button
@@ -335,10 +333,8 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
         </div>
 
         {searched && sortedResults.length > 0 ? (
-          <div className='mb-2 flex flex-wrap items-center gap-2'>
-            <p className='text-sm text-default-500'>
-              {t('Torznab.ResultsCount', { count: sortedResults.length })}
-            </p>
+          <div className='mb-3 flex flex-wrap items-center gap-2'>
+            <p className='text-sm text-muted'>{t('Torznab.ResultsCount', { count: sortedResults.length })}</p>
             <ToggleButtonGroup selectionMode='single' selectedKeys={[sortField]} className='flex flex-wrap gap-1'>
               {sortFields.map(({ field, label }) => {
                 const active = sortField === field
@@ -347,9 +343,9 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
                     {label}
                     {active ? (
                       sortDirection === 'asc' ? (
-                        <ArrowUp className='ml-1 size-3.5' />
+                        <ArrowUp className='ml-1 size-3.5' aria-hidden />
                       ) : (
-                        <ArrowDown className='ml-1 size-3.5' />
+                        <ArrowDown className='ml-1 size-3.5' aria-hidden />
                       )
                     ) : null}
                   </ToggleButton>
@@ -361,19 +357,21 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
 
         <div className='min-h-[280px]'>
           {loading ? (
-            <div className='grid place-items-center py-12'>
+            <div className='grid place-items-center py-16'>
               <Spinner size='lg' />
             </div>
           ) : null}
 
           {!loading && emptyMessage ? (
-            <p className='py-8 text-center text-default-500'>{emptyMessage}</p>
+            <div className='flex flex-col items-center gap-2 py-16 text-center text-muted'>
+              <SearchX className='size-8' aria-hidden />
+              <p>{emptyMessage}</p>
+            </div>
           ) : null}
 
           {!loading && sortedResults.length > 0 ? (
             <SearchResultsGrid
               results={sortedResults}
-              loading={false}
               adding={adding}
               addingKey={addingKey}
               resultDedupeKey={resultDedupeKey}

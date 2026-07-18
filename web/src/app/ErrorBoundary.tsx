@@ -10,7 +10,7 @@ interface ErrorBoundaryState {
   message?: string
 }
 
-/** Plain fallback — sits outside app providers. */
+/** Top-level crash guard — renders even if a provider below it throws. */
 export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state: ErrorBoundaryState = { hasError: false }
 

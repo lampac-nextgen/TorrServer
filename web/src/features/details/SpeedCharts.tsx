@@ -1,54 +1,82 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { humanizeSpeed } from 'shared/lib/format'
 
-const HISTORY = 30
+const HISTORY_LENGTH = 30
+const CHART_WIDTH = 320
+const CHART_HEIGHT = 96
 
 interface SpeedChartsProps {
   downloadSpeed?: number | null
   uploadSpeed?: number | null
 }
 
-function buildPoints(values: number[], max: number, height: number, width: number): string {
-  if (values.length === 0) return ''
-  return values
-    .map((value, index) => {
-      const x = values.length <= 1 ? 0 : (index / (values.length - 1)) * width
-      const y = height - (Math.max(0, value) / max) * height
-      return `${x},${y}`
-    })
-    .join(' ')
+function buildAreaPath(values: number[], max: number): { line: string; area: string } {
+  if (values.length === 0) return { line: '', area: '' }
+  const step = values.length > 1 ? CHART_WIDTH / (values.length - 1) : 0
+  const points = values.map((value, index) => {
+    const x = index * step
+    const y = CHART_HEIGHT - (Math.max(0, value) / max) * CHART_HEIGHT
+    return [x, y] as const
+  })
+  const line = points.map(([x, y]) => `${x},${y}`).join(' ')
+  const area = `0,${CHART_HEIGHT} ${line} ${CHART_WIDTH},${CHART_HEIGHT}`
+  return { line, area }
 }
 
-/** Live DL/UL sparkline for torrent details. */
+/** Live download/upload sparkline for the torrent overview tab. */
 export default function SpeedCharts({ downloadSpeed, uploadSpeed }: SpeedChartsProps) {
-  const [dl, setDl] = useState<number[]>(() => Array(HISTORY).fill(0))
-  const [ul, setUl] = useState<number[]>(() => Array(HISTORY).fill(0))
-  const tick = useRef(0)
+  const { t } = useTranslation()
+  const [downloadHistory, setDownloadHistory] = useState<number[]>(() => Array(HISTORY_LENGTH).fill(0))
+  const [uploadHistory, setUploadHistory] = useState<number[]>(() => Array(HISTORY_LENGTH).fill(0))
+  const gradientId = useId()
 
   useEffect(() => {
-    const d = Math.max(0, downloadSpeed ?? 0)
-    const u = Math.max(0, uploadSpeed ?? 0)
-    setDl(prev => [...prev.slice(1), d])
-    setUl(prev => [...prev.slice(1), u])
-    tick.current += 1
+    const dl = Math.max(0, downloadSpeed ?? 0)
+    const ul = Math.max(0, uploadSpeed ?? 0)
+    setDownloadHistory(prev => [...prev.slice(1), dl])
+    setUploadHistory(prev => [...prev.slice(1), ul])
   }, [downloadSpeed, uploadSpeed])
 
-  const max = useMemo(() => Math.max(...dl, ...ul, 1), [dl, ul])
-  const width = 320
-  const height = 80
-  const dlPoints = buildPoints(dl, max, height, width)
-  const ulPoints = buildPoints(ul, max, height, width)
+  const peak = useMemo(() => Math.max(...downloadHistory, ...uploadHistory, 1), [downloadHistory, uploadHistory])
+  const downloadPath = useMemo(() => buildAreaPath(downloadHistory, peak), [downloadHistory, peak])
+  const uploadPath = useMemo(() => buildAreaPath(uploadHistory, peak), [uploadHistory, peak])
 
   return (
-    <div className='w-full min-w-0'>
-      <p className='mb-1 text-xs text-default-500'>Download / Upload</p>
-      <svg viewBox={`0 0 ${width} ${height}`} className='h-[120px] w-full' preserveAspectRatio='none' aria-hidden>
+    <div className='w-full min-w-0 rounded-xl border border-border bg-surface-secondary p-4'>
+      <div className='mb-3 flex flex-wrap items-center gap-4'>
+        <div className='flex items-center gap-2'>
+          <span className='size-2.5 rounded-full bg-accent' aria-hidden />
+          <span className='text-xs text-muted'>{t('DownloadSpeed')}</span>
+          <span className='text-sm font-bold tabular-nums text-foreground'>{humanizeSpeed(downloadSpeed)}</span>
+        </div>
+        <div className='flex items-center gap-2'>
+          <span className='size-2.5 rounded-full bg-warning' aria-hidden />
+          <span className='text-xs text-muted'>{t('UploadSpeed')}</span>
+          <span className='text-sm font-bold tabular-nums text-foreground'>{humanizeSpeed(uploadSpeed)}</span>
+        </div>
+      </div>
+
+      <svg
+        viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
+        className='h-[110px] w-full'
+        preserveAspectRatio='none'
+        aria-hidden
+      >
+        <defs>
+          <linearGradient id={gradientId} x1='0' y1='0' x2='0' y2='1'>
+            <stop offset='0%' stopColor='currentColor' stopOpacity='0.35' className='text-accent' />
+            <stop offset='100%' stopColor='currentColor' stopOpacity='0' className='text-accent' />
+          </linearGradient>
+        </defs>
+        <polygon points={downloadPath.area} fill={`url(#${gradientId})`} />
+        <polyline points={downloadPath.line} className='fill-none stroke-accent' strokeWidth='2' />
         <polyline
-          className='fill-accent/10 stroke-accent'
-          strokeWidth='2'
-          points={`0,${height} ${dlPoints} ${width},${height}`}
+          points={uploadPath.line}
+          className='fill-none stroke-warning'
+          strokeWidth='1.5'
+          strokeDasharray='4 3'
         />
-        <polyline className='fill-none stroke-accent' strokeWidth='2' points={dlPoints} />
-        <polyline className='fill-none stroke-focus' strokeWidth='2' points={ulPoints} />
       </svg>
     </div>
   )

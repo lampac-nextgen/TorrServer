@@ -1,6 +1,6 @@
 import { Description, Label, Switch } from '@heroui/react'
 
-/** Keys stored inverted in UI (switch ON = feature enabled). */
+/** Keys whose on-disk value is the inverse of what the switch shows (switch ON = feature enabled). */
 export const DISABLE_SWITCH_IDS = new Set([
   'DisableTCP',
   'DisableUTP',
@@ -10,21 +10,18 @@ export const DISABLE_SWITCH_IDS = new Set([
   'DisableUpload',
 ])
 
-export function SettingSwitch({
-  id,
-  label,
-  helper,
-  checked,
-  onChange,
-}: {
+export interface SettingSwitchProps {
   id: string
   label: string
   helper?: string
   checked: boolean
   onChange: (id: string, checked: boolean) => void
-}) {
+}
+
+/** Reusable labeled toggle row shared across settings panels. */
+export function SettingSwitch({ id, label, helper, checked, onChange }: SettingSwitchProps) {
   return (
-    <div className='flex min-h-12 items-start justify-between gap-4 py-2'>
+    <div className='flex min-h-12 items-start justify-between gap-4 py-2.5'>
       <div className='min-w-0 flex-1 pr-4'>
         <Label htmlFor={id}>{label}</Label>
         {helper ? <Description>{helper}</Description> : null}

@@ -1,5 +1,6 @@
 import { Description, Label, Link, Switch } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
+
 import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
 import { isAppleDevice, isDesktop, isMacOS } from 'shared/lib/platform'
 
@@ -22,7 +23,7 @@ function PlayerSwitch({
   onChange: (checked: boolean) => void
 }) {
   return (
-    <div className='flex min-h-12 items-start justify-between gap-4 py-2'>
+    <div className='flex min-h-12 items-start justify-between gap-4 py-2.5'>
       <div className='min-w-0 flex-1 pr-4'>
         <Label>{label}</Label>
         <Description>{helper}</Description>
@@ -36,6 +37,7 @@ function PlayerSwitch({
   )
 }
 
+/** External-player quick-open toggles — persisted as local prefs, gated by detected platform. */
 export default function MobilePlayersSection() {
   const { t } = useTranslation()
   const isMac = isMacOS()
@@ -49,9 +51,12 @@ export default function MobilePlayersSection() {
 
   return (
     <div className='mt-6'>
-      <p className='mb-1 text-xs uppercase tracking-wide text-default-500'>{t('SettingsDialog.MobileAppSettings')}</p>
+      <p className='mb-1 text-xs font-semibold uppercase tracking-wide text-muted'>
+        {t('SettingsDialog.MobileAppSettings')}
+      </p>
       <Description className='mb-3'>{t('SettingsDialog.MobileAppInstantHint')}</Description>
-      <div className='divide-y divide-default-200'>
+
+      <div className='divide-y divide-separator border-y border-separator'>
         <PlayerSwitch
           label={t('SettingsDialog.UseVLC')}
           helper={t('SettingsDialog.UseVLCHint')}

@@ -11,12 +11,13 @@ export type SnakeViewMode = 'detailed' | 'mini'
 
 export interface TorrentCacheProps {
   cache: TorrentCacheData
-  /** @deprecated prefer mode="mini" */
-  isMini?: boolean
-  /** detailed/mini — both use 1:1 reader window (no LOD merge). */
+  /** detailed/mini — both use a 1:1 reader window (no LOD merge). */
   mode?: SnakeViewMode
   isSnakeDebugMode?: boolean
 }
+
+/** Resume auto-follow this long after the user last scrolled/touched the map. */
+const FOLLOW_RESUME_DELAY_MS = 4000
 
 const emptyCell = (): CacheMapItem => ({
   percentage: 0,
@@ -49,171 +50,163 @@ const readersFingerprint = (readers: TorrentCacheData['Readers']) => {
   return readers.map(r => `${r.Reader ?? ''}:${r.Start ?? ''}-${r.End ?? ''}`).join('|')
 }
 
-function TorrentCache({ cache, isMini, mode: modeProp, isSnakeDebugMode }: TorrentCacheProps) {
+/** Canvas-based piece map ("snake") showing cache fill, playhead and priorities. */
+function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCacheProps) {
   const { t } = useTranslation()
   const [isDark] = useThemePreference()
   const theme: SnakeThemeMode = isDark ? 'dark' : 'light'
-
-  const mode: SnakeViewMode = modeProp || (isMini ? 'mini' : 'detailed')
   const isMiniView = mode === 'mini'
 
-  const [width, setWidth] = useState(0)
+  const [containerWidth, setContainerWidth] = useState(0)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const wrapperRef = useRef<HTMLDivElement | null>(null)
+  const scrollWrapperRef = useRef<HTMLDivElement | null>(null)
   const rootRef = useRef<HTMLDivElement | null>(null)
-  const drawRaf = useRef(0)
-  const followPlayheadRef = useRef(true)
-  const followResumeTimer = useRef(0)
+  const drawFrame = useRef(0)
+  const isFollowingPlayhead = useRef(true)
+  const resumeFollowTimer = useRef(0)
   const [tooltip, setTooltip] = useState<{ x: number; y: number; text: string } | null>(null)
 
   useEffect(() => {
     const el = rootRef.current
     if (!el || typeof ResizeObserver === 'undefined') return
-    const ro = new ResizeObserver(entries => {
-      const w = entries[0]?.contentRect.width ?? 0
-      setWidth(w)
+    const observer = new ResizeObserver(entries => {
+      setContainerWidth(entries[0]?.contentRect.width ?? 0)
     })
-    ro.observe(el)
-    setWidth(el.getBoundingClientRect().width)
-    return () => ro.disconnect()
+    observer.observe(el)
+    setContainerWidth(el.getBoundingClientRect().width)
+    return () => observer.disconnect()
   }, [])
 
-  const focusVisible = useMemo(() => resolveFocusVisibleCells(width, isMiniView), [width, isMiniView])
-  const model = useCreateFocusMap(cache, focusVisible)
-  const cacheMap = model.cells
+  const visibleCellBudget = useMemo(
+    () => resolveFocusVisibleCells(containerWidth, isMiniView),
+    [containerWidth, isMiniView],
+  )
+  const focusModel = useCreateFocusMap(cache, visibleCellBudget)
+  const cells = focusModel.cells
 
-  const settingsTarget = isMiniView ? 'mini' : 'default'
-  const baseSettings = snakeSettings[theme][settingsTarget]
+  const variant = isMiniView ? 'mini' : 'default'
+  const baseSettings = snakeSettings[theme][variant]
   const { cacheMaxHeight } = baseSettings
 
   const { pieceSize, gap } = useMemo(
-    () => resolvePieceMetrics(baseSettings, width, isMiniView, cacheMap.length),
-    [baseSettings, width, isMiniView, cacheMap.length],
+    () => resolvePieceMetrics(baseSettings, containerWidth, isMiniView, cells.length),
+    [baseSettings, containerWidth, isMiniView, cells.length],
   )
 
-  const canvasWidth = width > 0 ? (isMiniView ? Math.max(width - 8, width * 0.96) : width) : 0
-  const pieceSizeWithGap = pieceSize + gap
-  const piecesInOneRow = canvasWidth > 0 ? Math.max(1, Math.floor(canvasWidth / pieceSizeWithGap)) : 0
+  const canvasWidth =
+    containerWidth > 0 ? (isMiniView ? Math.max(containerWidth - 8, containerWidth * 0.96) : containerWidth) : 0
+  const cellStride = pieceSize + gap
+  const piecesPerRow = canvasWidth > 0 ? Math.max(1, Math.floor(canvasWidth / cellStride)) : 0
 
-  const source = useMemo(() => {
-    if (!piecesInOneRow) return []
-    return cacheMap
-  }, [cacheMap, piecesInOneRow])
-
-  const startingXPoint = piecesInOneRow > 0 ? Math.ceil((canvasWidth - pieceSizeWithGap * piecesInOneRow) / 2) : 0
-  const emptyPlaceholderRows = isMiniView ? 4 : 6
-  const height =
-    piecesInOneRow > 0
-      ? Math.max(
-          source.length > 0 ? Math.ceil(source.length / piecesInOneRow) : emptyPlaceholderRows,
-          emptyPlaceholderRows,
-        ) * pieceSizeWithGap
+  const emptyRowCount = isMiniView ? 4 : 6
+  const canvasHeight =
+    piecesPerRow > 0
+      ? Math.max(cells.length > 0 ? Math.ceil(cells.length / piecesPerRow) : emptyRowCount, emptyRowCount) * cellStride
       : 0
 
-  const drawSource = useMemo(
-    () =>
-      source.length > 0
-        ? source
-        : Array.from({ length: Math.max(piecesInOneRow, 1) * emptyPlaceholderRows }, emptyCell),
-    [source, piecesInOneRow, emptyPlaceholderRows],
+  const startingX = piecesPerRow > 0 ? Math.ceil((canvasWidth - cellStride * piecesPerRow) / 2) : 0
+
+  const drawCells = useMemo(
+    () => (cells.length > 0 ? cells : Array.from({ length: Math.max(piecesPerRow, 1) * emptyRowCount }, emptyCell)),
+    [cells, piecesPerRow, emptyRowCount],
   )
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas || !canvasWidth || !height || !piecesInOneRow) return
+    if (!canvas || !canvasWidth || !canvasHeight || !piecesPerRow) return
 
-    cancelAnimationFrame(drawRaf.current)
-    drawRaf.current = requestAnimationFrame(() => {
-      const ctx = setupHiDpiCanvas(canvas, canvasWidth, height)
+    cancelAnimationFrame(drawFrame.current)
+    drawFrame.current = requestAnimationFrame(() => {
+      const ctx = setupHiDpiCanvas(canvas, canvasWidth, canvasHeight)
       if (!ctx) return
       drawSnake({
         ctx,
-        cells: drawSource,
+        cells: drawCells,
         canvasWidth,
-        canvasHeight: height,
-        piecesInOneRow,
+        canvasHeight,
+        piecesInOneRow: piecesPerRow,
         pieceSize,
         gap,
-        startingX: startingXPoint,
+        startingX,
         theme,
-        variant: settingsTarget,
+        variant,
         isSnakeDebugMode,
         isMini: isMiniView,
       })
     })
 
-    return () => cancelAnimationFrame(drawRaf.current)
+    return () => cancelAnimationFrame(drawFrame.current)
   }, [
-    height,
+    canvasHeight,
     canvasWidth,
-    piecesInOneRow,
-    startingXPoint,
+    piecesPerRow,
+    startingX,
     pieceSize,
     gap,
-    drawSource,
-    settingsTarget,
+    drawCells,
+    variant,
     isMiniView,
     theme,
     isSnakeDebugMode,
   ])
 
   useEffect(() => {
-    if (!wrapperRef.current || !piecesInOneRow || pieceSizeWithGap <= 0) return
-    if (!followPlayheadRef.current) return
-    const win = resolveFocusWindow(cache, focusVisible)
-    if (!win || model.windowStart == null) return
-    const localIndex = win.readerPiece - model.windowStart
+    if (!scrollWrapperRef.current || !piecesPerRow || cellStride <= 0) return
+    if (!isFollowingPlayhead.current) return
+    const focusWindow = resolveFocusWindow(cache, visibleCellBudget)
+    if (!focusWindow || focusModel.windowStart == null) return
+    const localIndex = focusWindow.readerPiece - focusModel.windowStart
     if (localIndex < 0) return
-    const row = Math.floor(localIndex / piecesInOneRow)
-    const top = row * pieceSizeWithGap
-    const el = wrapperRef.current
+    const row = Math.floor(localIndex / piecesPerRow)
+    const rowTop = row * cellStride
+    const el = scrollWrapperRef.current
     const viewTop = el.scrollTop
     const viewBottom = viewTop + el.clientHeight
-    if (top < viewTop || top + pieceSizeWithGap > viewBottom) {
-      el.scrollTop = Math.max(0, top - el.clientHeight / 3)
+    if (rowTop < viewTop || rowTop + cellStride > viewBottom) {
+      el.scrollTop = Math.max(0, rowTop - el.clientHeight / 3)
     }
-  }, [cache, focusVisible, model.windowStart, piecesInOneRow, pieceSizeWithGap, drawSource])
+  }, [cache, visibleCellBudget, focusModel.windowStart, piecesPerRow, cellStride, drawCells])
 
   useEffect(() => {
-    const el = wrapperRef.current
+    const el = scrollWrapperRef.current
     if (!el) return
-    const pauseFollow = () => {
-      followPlayheadRef.current = false
-      window.clearTimeout(followResumeTimer.current)
-      followResumeTimer.current = window.setTimeout(() => {
-        followPlayheadRef.current = true
-      }, 4000)
+    const pauseFollowing = () => {
+      isFollowingPlayhead.current = false
+      window.clearTimeout(resumeFollowTimer.current)
+      resumeFollowTimer.current = window.setTimeout(() => {
+        isFollowingPlayhead.current = true
+      }, FOLLOW_RESUME_DELAY_MS)
     }
-    el.addEventListener('wheel', pauseFollow, { passive: true })
-    el.addEventListener('touchstart', pauseFollow, { passive: true })
-    el.addEventListener('pointerdown', pauseFollow)
+    el.addEventListener('wheel', pauseFollowing, { passive: true })
+    el.addEventListener('touchstart', pauseFollowing, { passive: true })
+    el.addEventListener('pointerdown', pauseFollowing)
     return () => {
-      window.clearTimeout(followResumeTimer.current)
-      el.removeEventListener('wheel', pauseFollow)
-      el.removeEventListener('touchstart', pauseFollow)
-      el.removeEventListener('pointerdown', pauseFollow)
+      window.clearTimeout(resumeFollowTimer.current)
+      el.removeEventListener('wheel', pauseFollowing)
+      el.removeEventListener('touchstart', pauseFollowing)
+      el.removeEventListener('pointerdown', pauseFollowing)
     }
-  }, [width])
+  }, [containerWidth])
 
-  const formatTooltip = useCallback(
+  const formatTooltipText = useCallback(
     (cell: CacheMapItem) => {
       const start = cell.pieceStart
       const end = cell.pieceEnd
       if (start == null) return ''
-      const fill = cell.completed || (cell.percentage || 0) >= 99.5 ? 100 : Math.round(cell.percentage || 0)
-      const prio = priorityDebugLabel(cell.priority || 0)
-      const prioPart = prio ? ` · ${prio}` : ''
+      const fillPercent = cell.completed || (cell.percentage || 0) >= 99.5 ? 100 : Math.round(cell.percentage || 0)
+      const priorityLabel = priorityDebugLabel(cell.priority || 0)
+      const priorityPart = priorityLabel ? ` · ${priorityLabel}` : ''
       if (end != null && end !== start) {
-        return t('SnakeTooltipBucket', { start, end, fill }) + prioPart
+        return t('SnakeTooltipBucket', { start, end, fill: fillPercent }) + priorityPart
       }
-      return t('SnakeTooltipPiece', { id: start, fill }) + prioPart
+      return t('SnakeTooltipPiece', { id: start, fill: fillPercent }) + priorityPart
     },
     [t],
   )
 
-  const onCanvasMove = useCallback(
-    (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (!piecesInOneRow) {
+  const handleCanvasMove = useCallback(
+    (event: React.MouseEvent<HTMLCanvasElement>) => {
+      if (!piecesPerRow) {
         setTooltip(null)
         return
       }
@@ -222,47 +215,43 @@ function TorrentCache({ cache, isMini, mode: modeProp, isSnakeDebugMode }: Torre
       if (!canvas || !root) return
       const canvasRect = canvas.getBoundingClientRect()
       const rootRect = root.getBoundingClientRect()
-      const localX = e.clientX - canvasRect.left
-      const localY = e.clientY - canvasRect.top
+      const localX = event.clientX - canvasRect.left
+      const localY = event.clientY - canvasRect.top
       const index = hitTestSnakeCell(localX, localY, {
-        piecesInOneRow,
+        piecesInOneRow: piecesPerRow,
         pieceSize,
         gap,
-        startingX: startingXPoint,
-        cellCount: drawSource.length,
+        startingX,
+        cellCount: drawCells.length,
       })
       if (index < 0) {
         setTooltip(null)
         return
       }
-      const text = formatTooltip(drawSource[index])
+      const text = formatTooltipText(drawCells[index])
       if (!text) {
         setTooltip(null)
         return
       }
-      setTooltip({
-        x: e.clientX - rootRect.left + 12,
-        y: e.clientY - rootRect.top + 12,
-        text,
-      })
+      setTooltip({ x: event.clientX - rootRect.left + 12, y: event.clientY - rootRect.top + 12, text })
     },
-    [piecesInOneRow, pieceSize, gap, startingXPoint, drawSource, formatTooltip],
+    [piecesPerRow, pieceSize, gap, startingX, drawCells, formatTooltipText],
   )
 
   return (
     <div ref={rootRef} className='relative flex w-full min-w-0 flex-col'>
       <div
-        ref={wrapperRef}
-        className={`relative w-full min-w-0 overflow-auto overscroll-contain ${
+        ref={scrollWrapperRef}
+        className={`relative w-full min-w-0 overflow-auto overscroll-contain rounded-lg border border-border bg-surface-secondary p-2 ${
           isMiniView ? 'grid max-h-[420px] justify-center' : 'max-h-[min(70dvh,640px)]'
         }`}
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        {piecesInOneRow > 0 && height > 0 ? (
+        {piecesPerRow > 0 && canvasHeight > 0 ? (
           <canvas
             ref={canvasRef}
             className='block max-w-full'
-            onMouseMove={onCanvasMove}
+            onMouseMove={handleCanvasMove}
             onMouseLeave={() => setTooltip(null)}
           />
         ) : null}
@@ -270,28 +259,29 @@ function TorrentCache({ cache, isMini, mode: modeProp, isSnakeDebugMode }: Torre
 
       {tooltip ? (
         <div
-          className='pointer-events-none absolute z-20 whitespace-nowrap rounded bg-[rgba(20,28,24,0.92)] px-2 py-1 text-xs leading-snug text-white'
+          className='pointer-events-none absolute z-20 whitespace-nowrap rounded-md border border-border bg-surface-tertiary px-2 py-1 text-xs leading-snug text-foreground shadow-lg'
           style={{ left: tooltip.x, top: tooltip.y }}
         >
           {tooltip.text}
         </div>
       ) : null}
 
-      {model.windowStart != null && model.windowEnd != null && model.windowEnd >= model.windowStart ? (
-        <p className='mt-2 self-center text-xs uppercase tracking-wide text-default-500'>
-          {t('SnakeFocusRange', { start: model.windowStart, end: model.windowEnd })}
+      {focusModel.windowStart != null &&
+      focusModel.windowEnd != null &&
+      focusModel.windowEnd >= focusModel.windowStart ? (
+        <p className='mt-2 self-center text-xs uppercase tracking-wide text-muted'>
+          {t('SnakeFocusRange', { start: focusModel.windowStart, end: focusModel.windowEnd })}
         </p>
       ) : null}
 
-      {isMiniView && cacheMaxHeight != null && height >= cacheMaxHeight ? (
-        <p className='mt-2 self-center text-xs uppercase tracking-wide text-default-500'>{t('ScrollDown')}</p>
+      {isMiniView && cacheMaxHeight != null && canvasHeight >= cacheMaxHeight ? (
+        <p className='mt-2 self-center text-xs uppercase tracking-wide text-muted'>{t('ScrollDown')}</p>
       ) : null}
     </div>
   )
 }
 
 export default memo(TorrentCache, (prev, next) => {
-  if (prev.isMini !== next.isMini) return false
   if (prev.mode !== next.mode) return false
   if (prev.isSnakeDebugMode !== next.isSnakeDebugMode) return false
   const a = prev.cache
