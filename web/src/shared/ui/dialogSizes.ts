@@ -33,16 +33,17 @@ export const PLAYER_DIALOG_EXPANDED: CSSProperties = {
 }
 
 /**
- * Phone / narrow tablet fullscreen surface. Use `100dvh` (not `height: 100%`) —
- * HeroUI's full container does not give the dialog a definite height, so `%`
- * stays content-sized on Safari and flex+overflow-hidden clips the body.
+ * Phone / narrow tablet fullscreen surface.
+ * Height follows HeroUI's full container (`--visual-viewport-height`) via `%`
+ * so iOS PWA does not fight `100dvh` vs the visual viewport (bottom clipping).
  */
 export const DIALOG_FULLSCREEN: CSSProperties = {
   width: '100%',
   maxWidth: '100%',
   minWidth: '100%',
-  height: '100dvh',
-  maxHeight: '100dvh',
+  height: '100%',
+  maxHeight: '100%',
+  minHeight: '100%',
   borderRadius: 0,
 }
 

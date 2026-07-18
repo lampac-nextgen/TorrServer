@@ -2256,6 +2256,7 @@ body {
 
 body[data-modal-open='true'] .ts-bottom-nav {
   pointer-events: none;
+  visibility: hidden;
 }
 
 body[data-immersive='true'] .ts-bottom-nav {

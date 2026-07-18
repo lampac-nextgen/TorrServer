@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 
 import { publicUrl } from 'shared/lib/publicUrl'
 import { queryMax } from 'shared/theme/breakpoints'
+import { BOTTOM_NAV_OFFSET } from 'app/bottomNavLayout'
 
 import { useAndroidInstallPrompt } from './useAndroidInstallPrompt'
 
@@ -32,7 +33,7 @@ export default function AndroidInstallBanner() {
         visible ? 'translate-y-0' : 'translate-y-[110%]'
       }`}
       style={{
-        bottom: hasBottomNav ? 'calc(90px + env(safe-area-inset-bottom, 0px))' : 0,
+        bottom: hasBottomNav ? BOTTOM_NAV_OFFSET : 0,
         paddingBottom: hasBottomNav ? '12px' : 'calc(12px + env(safe-area-inset-bottom, 0px))',
       }}
     >

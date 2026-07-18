@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { iconNav, iconNavMobile } from 'shared/ui/iconProps'
 
+import { BOTTOM_NAV_CONTENT_PX, BOTTOM_NAV_OFFSET } from './bottomNavLayout'
 import type { ShellNavProps } from './navTypes'
 
 /** Fixed bottom tab bar for narrow viewports; overflow actions live in a sheet. */
@@ -79,9 +80,9 @@ export default function BottomNav({
     <>
       <div
         className='ts-bottom-nav fixed inset-x-0 bottom-0 z-50 border-t border-border bg-surface pb-[env(safe-area-inset-bottom,0px)]'
-        style={{ height: 'calc(90px + env(safe-area-inset-bottom, 0px))' }}
+        style={{ height: BOTTOM_NAV_OFFSET }}
       >
-        <div className='mx-auto flex h-[90px] max-w-lg items-stretch'>
+        <div className='mx-auto flex max-w-lg items-stretch' style={{ height: BOTTOM_NAV_CONTENT_PX }}>
           {tab(t('Add'), <FolderPlus {...iconNavMobile} />, onAdd, disabled)}
           {tab(t('nav.Search'), <Search {...iconNavMobile} />, onSearch, disabled)}
           {tab(t('Category'), <Layers {...iconNavMobile} />, onCategories, false, isCategoryFilterActive)}

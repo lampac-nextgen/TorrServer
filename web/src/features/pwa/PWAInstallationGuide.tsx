@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { readLocalBool, writeLocalJson } from 'shared/lib/localPrefs'
 import { publicUrl } from 'shared/lib/publicUrl'
 import { queryMax } from 'shared/theme/breakpoints'
+import { BOTTOM_NAV_OFFSET } from 'app/bottomNavLayout'
 
 const CLOSED_PREF_KEY = 'pwaNotificationIsClosed'
 
@@ -46,7 +47,7 @@ export default function PWAInstallationGuide() {
         visible ? 'translate-y-0' : 'translate-y-[110%]'
       }`}
       style={{
-        bottom: hasBottomNav ? 'calc(90px + env(safe-area-inset-bottom, 0px))' : 0,
+        bottom: hasBottomNav ? BOTTOM_NAV_OFFSET : 0,
         paddingBottom: hasBottomNav ? '12px' : 'calc(12px + env(safe-area-inset-bottom, 0px))',
       }}
     >

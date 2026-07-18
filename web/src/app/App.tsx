@@ -11,6 +11,7 @@ import AuthGate from 'features/auth/AuthGate'
 import PwaUpdateToast from 'features/pwa/PwaUpdateToast'
 
 import Shell from './Shell'
+import { BOTTOM_NAV_TOAST_OFFSET } from './bottomNavLayout'
 
 /** Keep SETTINGS_QUERY_KEY warm so play/resume can read TrackTimecode without opening Settings. */
 function SettingsQueryBootstrap() {
@@ -50,12 +51,7 @@ export default function App() {
           </AuthedApp>
         </AuthGate>
         <PwaUpdateToast />
-        <Toaster
-          richColors
-          closeButton
-          position='bottom-center'
-          offset={hasBottomNav ? 'calc(90px + env(safe-area-inset-bottom, 0px) + 12px)' : 24}
-        />
+        <Toaster richColors closeButton position='bottom-center' offset={hasBottomNav ? BOTTOM_NAV_TOAST_OFFSET : 24} />
       </AppSnackbarProvider>
     </ModalOpenProvider>
   )
