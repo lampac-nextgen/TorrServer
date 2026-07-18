@@ -12,6 +12,7 @@ import {
   useMediaQuery,
 } from '@heroui/react'
 import { UploadCloud } from 'lucide-react'
+import { iconAction } from 'shared/ui/iconProps'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useQueryClient } from '@tanstack/react-query'
@@ -247,7 +248,7 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
           }`}
         >
           <input {...getInputProps()} />
-          <UploadCloud className='size-5 text-muted' aria-hidden />
+          <UploadCloud {...iconAction} className='text-muted' aria-hidden />
           <Description>{t('AddDialog.AppendFile.ClickOrDrag')}</Description>
         </div>
 

@@ -1,6 +1,7 @@
 import { Button, Modal, useMediaQuery } from '@heroui/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Trash2 } from 'lucide-react'
+import { iconAction, iconMenu } from 'shared/ui/iconProps'
 import { useTranslation } from 'react-i18next'
 
 import { TORRENTS_QUERY_KEY, wipeTorrents } from 'shared/api/torrents'
@@ -29,7 +30,7 @@ export default function RemoveAllDialog({ open, onClose }: RemoveAllDialogProps)
     <AppDialog open={open} onClose={onClose} size='sm' fullScreen={isFullScreenBreakpoint}>
       <Modal.Header>
         <Modal.Icon className='bg-danger/15 text-danger'>
-          <Trash2 className='size-5' aria-hidden />
+          <Trash2 {...iconAction} aria-hidden />
         </Modal.Icon>
         <Modal.Heading>{t('DeleteTorrents?')}</Modal.Heading>
         <Modal.CloseTrigger aria-label={t('Close')} />
@@ -40,7 +41,7 @@ export default function RemoveAllDialog({ open, onClose }: RemoveAllDialogProps)
           {t('Cancel')}
         </Button>
         <UnsafeButton variant='danger' onPress={() => void handleRemove()}>
-          <Trash2 className='size-4' aria-hidden />
+          <Trash2 {...iconMenu} aria-hidden />
           {t('OK')}
         </UnsafeButton>
       </Modal.Footer>

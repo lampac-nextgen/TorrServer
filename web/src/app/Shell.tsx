@@ -16,6 +16,7 @@ import { THEME_MODES, useThemePreference } from 'shared/theme/useThemePreference
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import { TorrentsPage } from 'features/torrents'
 import { iconBtn } from 'shared/ui/controlClasses'
+import { iconMenu, iconNav, iconNavMobile } from 'shared/ui/iconProps'
 import DialogErrorBoundary from 'shared/ui/DialogErrorBoundary'
 
 import BottomNav from './BottomNav'
@@ -174,7 +175,7 @@ export default function Shell() {
             label={sidebarOpen ? t('CollapseSidebar') : t('ExpandSidebar')}
             onPress={() => setSidebarOpen(!sidebarOpen)}
           >
-            {sidebarOpen ? <ChevronLeft size={22} /> : <Menu size={22} />}
+            {sidebarOpen ? <ChevronLeft {...iconNavMobile} /> : <Menu {...iconNavMobile} />}
           </HeaderIconButton>
         ) : null}
 
@@ -199,17 +200,17 @@ export default function Shell() {
               aria-label={t('ClearCategoryFilter')}
             >
               <span className='max-w-[9rem] truncate'>{categoryFilterLabel}</span>
-              <X size={13} strokeWidth={2.5} aria-hidden />
+              <X size={13} strokeWidth={1.75} aria-hidden />
             </button>
           ) : null}
         </h1>
 
         <HeaderIconButton label={sortABC ? t('SortByDate') : t('SortByName')} onPress={() => setSortABC(v => !v)}>
-          <SortIcon size={20} />
+          <SortIcon {...iconNav} />
         </HeaderIconButton>
 
         <HeaderIconButton label={`${t('Theme')}: ${themeModeLabel}`} onPress={cycleTheme}>
-          <ThemeIcon size={20} />
+          <ThemeIcon {...iconNav} />
         </HeaderIconButton>
 
         <LanguageMenu
@@ -344,7 +345,7 @@ function LanguageMenu({
                 <span className='w-7 shrink-0 text-xs font-semibold tabular-nums'>{option.code}</span>
                 <span className='min-w-0 flex-1 truncate text-sm'>{option.name}</span>
                 {selected ? (
-                  <Check className='size-4 shrink-0 text-accent' aria-hidden />
+                  <Check {...iconMenu} className='shrink-0 text-accent' aria-hidden />
                 ) : (
                   <span className='size-4 shrink-0' aria-hidden />
                 )}

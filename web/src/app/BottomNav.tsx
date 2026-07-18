@@ -3,6 +3,7 @@ import { Button, Modal, useOverlayState } from '@heroui/react'
 import { Ellipsis, FolderPlus, Info, Layers, Power, Search, Settings, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
+import { iconNav, iconNavMobile } from 'shared/ui/iconProps'
 
 import type { ShellNavProps } from './navTypes'
 
@@ -66,10 +67,10 @@ export default function BottomNav({
         style={{ height: 'calc(90px + env(safe-area-inset-bottom, 0px))' }}
       >
         <div className='mx-auto flex h-[90px] max-w-lg items-stretch'>
-          {tab(t('Add'), <FolderPlus size={22} />, onAdd, disabled)}
-          {tab(t('nav.Search'), <Search size={22} />, onSearch, disabled)}
-          {tab(t('Category'), <Layers size={22} />, onCategories, false, isCategoryFilterActive)}
-          {tab(t('nav.More'), <Ellipsis size={22} />, moreState.open)}
+          {tab(t('Add'), <FolderPlus {...iconNavMobile} />, onAdd, disabled)}
+          {tab(t('nav.Search'), <Search {...iconNavMobile} />, onSearch, disabled)}
+          {tab(t('Category'), <Layers {...iconNavMobile} />, onCategories, false, isCategoryFilterActive)}
+          {tab(t('nav.More'), <Ellipsis {...iconNavMobile} />, moreState.open)}
         </div>
       </div>
 
@@ -78,10 +79,10 @@ export default function BottomNav({
           <Modal.Container placement='bottom' size='md'>
             <Modal.Dialog aria-label={t('nav.More')}>
               <Modal.Body className='flex flex-col gap-1 pb-[env(safe-area-inset-bottom,0px)] pt-2'>
-                {sheetAction(t('RemoveAll'), <Trash2 size={20} />, onRemoveAll, disabled)}
-                {sheetAction(t('nav.Settings'), <Settings size={20} />, onSettings, disabled)}
-                {sheetAction(t('About'), <Info size={20} />, onAbout)}
-                {sheetAction(t('CloseServer'), <Power size={20} />, onCloseServer, disabled, true)}
+                {sheetAction(t('RemoveAll'), <Trash2 {...iconNav} />, onRemoveAll, disabled)}
+                {sheetAction(t('nav.Settings'), <Settings {...iconNav} />, onSettings, disabled)}
+                {sheetAction(t('About'), <Info {...iconNav} />, onAbout)}
+                {sheetAction(t('CloseServer'), <Power {...iconNav} />, onCloseServer, disabled, true)}
               </Modal.Body>
             </Modal.Dialog>
           </Modal.Container>

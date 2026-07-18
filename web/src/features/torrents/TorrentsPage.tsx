@@ -12,6 +12,7 @@ import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
 import { listContinueWatching, removeContinueWatching } from 'shared/lib/continueWatching'
 import { queryMax } from 'shared/theme/breakpoints'
 import { iconBtn } from 'shared/ui/controlClasses'
+import { iconEmpty, iconEmptyLg, iconMenu, iconNav } from 'shared/ui/iconProps'
 import DialogErrorBoundary from 'shared/ui/DialogErrorBoundary'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
@@ -192,7 +193,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
           aria-label={t('FilterLibrary')}
           onPress={() => setLibraryFilterOpen(true)}
         >
-          <Search className='size-5' aria-hidden />
+          <Search {...iconNav} aria-hidden />
         </Button>
       )}
       {isMobile && showLibraryFilter && libraryQuery ? (
@@ -206,7 +207,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
             setLibraryFilterOpen(false)
           }}
         >
-          <X className='size-5' aria-hidden />
+          <X {...iconNav} aria-hidden />
         </Button>
       ) : null}
       <Button
@@ -215,7 +216,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
         className='min-h-11'
         onPress={() => (selectionMode ? exitSelection() : setSelectionMode(true))}
       >
-        <CheckSquare className='size-4' aria-hidden />
+        <CheckSquare {...iconMenu} aria-hidden />
         {selectionMode ? t('Cancel') : t('Select')}
       </Button>
       <Button
@@ -225,7 +226,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
         onPress={() => window.open(playlistAllUrl(), '_blank')}
         aria-label={t('DownloadAllPlaylists')}
       >
-        <ListMusic className='size-4' aria-hidden />
+        <ListMusic {...iconMenu} aria-hidden />
         <span className='hidden sm:inline'>{t('DownloadAllPlaylists')}</span>
       </Button>
       {selectionMode && selectedHashes.size > 0 ? (
@@ -234,7 +235,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
             {t('DropTorrent')} ({selectedHashes.size})
           </Button>
           <Button size='sm' variant='danger' className='min-h-11' onPress={() => void runBulk('delete')}>
-            <Trash2 className='size-4' aria-hidden />
+            <Trash2 {...iconMenu} aria-hidden />
             {t('Delete')} ({selectedHashes.size})
           </Button>
         </>
@@ -261,7 +262,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
     return (
       <div className='grid min-h-[60vh] place-items-center p-6 text-center'>
         <div className='flex flex-col items-center gap-3'>
-          <CloudOff size={44} strokeWidth={1.25} className='text-muted' />
+          <CloudOff {...iconEmptyLg} className='text-muted' />
           <p className='text-lg font-semibold text-foreground'>
             {unauthorized ? t('AuthRequired') : t('NoServerConnection')}
           </p>
@@ -277,7 +278,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
     return (
       <div className='grid min-h-[60vh] place-items-center p-6'>
         <div className='flex min-h-[190px] w-full max-w-[280px] flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-border bg-surface p-8 text-center'>
-          <FolderPlus size={40} className='text-accent' aria-hidden />
+          <FolderPlus size={40} strokeWidth={1.25} className='text-accent' aria-hidden />
           <p className='text-lg font-semibold text-foreground'>{t('NoTorrentsAdded')}</p>
           <Button variant='primary' onPress={onAdd} isDisabled={!onAdd}>
             {t('AddFirstTorrent')}
@@ -322,7 +323,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
                       setContinueTick(v => v + 1)
                     }}
                   >
-                    <X className='size-4' aria-hidden />
+                    <X {...iconMenu} aria-hidden />
                   </button>
                 </button>
               )
@@ -334,11 +335,11 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
       {!visibleTorrents.length ? (
         <div className='grid min-h-[40vh] place-items-center p-6 text-center'>
           <div className='flex flex-col items-center gap-3 text-muted'>
-            <SearchX size={36} strokeWidth={1.25} />
+            <SearchX {...iconEmpty} />
             <p>{libraryQuery.trim() ? t('NoSearchResults') : t('NoTorrentsInCategory')}</p>
             {libraryQuery.trim() ? (
               <Button variant='secondary' onPress={() => setLibraryQuery('')}>
-                <Search className='size-4' aria-hidden />
+                <Search {...iconMenu} aria-hidden />
                 {t('Clear')}
               </Button>
             ) : onClearCategory ? (

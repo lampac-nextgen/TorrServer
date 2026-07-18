@@ -91,31 +91,31 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
         id: 'primary',
         label: t('SettingsDialog.Tabs.Main'),
         shortLabel: t('SettingsDialog.Tabs.Main'),
-        icon: <SlidersHorizontal size={17} />,
+        icon: <SlidersHorizontal size={17} strokeWidth={1.75} />,
       },
       {
         id: 'network',
         label: t('SettingsDialog.Tabs.Network'),
         shortLabel: t('SettingsDialog.Tabs.Network'),
-        icon: <Wifi size={17} />,
+        icon: <Wifi size={17} strokeWidth={1.75} />,
       },
       {
         id: 'features',
         label: t('SettingsDialog.AdditionalSettings'),
         shortLabel: t('SettingsDialog.Tabs.AdvancedShort'),
-        icon: <Cog size={17} />,
+        icon: <Cog size={17} strokeWidth={1.75} />,
       },
       {
         id: 'storage',
         label: t('SettingsDialog.StorageSettings'),
         shortLabel: t('SettingsDialog.Tabs.StorageShort'),
-        icon: <HardDrive size={17} />,
+        icon: <HardDrive size={17} strokeWidth={1.75} />,
       },
       {
         id: 'app',
         label: t('SettingsDialog.Tabs.App'),
         shortLabel: t('SettingsDialog.Tabs.App'),
-        icon: <Smartphone size={17} />,
+        icon: <Smartphone size={17} strokeWidth={1.75} />,
       },
     ]
     if (gstAvailable) {
@@ -123,14 +123,14 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
         id: 'gstreamer',
         label: t('GStreamer.Tab'),
         shortLabel: t('GStreamer.Tab'),
-        icon: <Film size={17} />,
+        icon: <Film size={17} strokeWidth={1.75} />,
       })
     }
     tabs.push({
       id: 'torznab',
       label: t('Torznab.Tab'),
       shortLabel: t('Torznab.Tab'),
-      icon: <Rss size={17} />,
+      icon: <Rss size={17} strokeWidth={1.75} />,
     })
     return tabs
   }, [gstAvailable, t])
@@ -444,9 +444,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
         )}
       </Modal.Body>
       <Modal.Footer
-        className={
-          isMobile ? 'flex shrink-0 flex-col-reverse gap-2 sm:flex-row sm:justify-end' : 'shrink-0'
-        }
+        className={isMobile ? 'flex shrink-0 flex-col-reverse gap-2 sm:flex-row sm:justify-end' : 'shrink-0'}
       >
         <div className={isMobile ? 'grid grid-cols-2 gap-2' : 'contents'}>
           <Button

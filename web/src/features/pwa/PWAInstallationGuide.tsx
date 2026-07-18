@@ -1,5 +1,6 @@
 import { Button, useMediaQuery } from '@heroui/react'
 import { X } from 'lucide-react'
+import { iconMenu } from 'shared/ui/iconProps'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -60,7 +61,7 @@ export default function PWAInstallationGuide() {
           onPress={dismiss}
           className='min-h-10 min-w-10'
         >
-          <X className='size-4' />
+          <X {...iconMenu} />
         </Button>
       </div>
 

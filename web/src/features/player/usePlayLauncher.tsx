@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
 import { Button, Modal, Spinner, useOverlayState } from '@heroui/react'
 import { Music2 } from 'lucide-react'
+import { iconMenu } from 'shared/ui/iconProps'
 import ptt from 'parse-torrent-title'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
@@ -384,7 +385,7 @@ export function usePlayLauncher({
                         onPress={() => pendingAudioFile && void openPlayer(pendingAudioFile, index, audioTracks)}
                       >
                         <span className='flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-accent'>
-                          <Music2 className='size-4' aria-hidden />
+                          <Music2 {...iconMenu} aria-hidden />
                         </span>
                         <span className='min-w-0 flex-1 text-left'>
                           <span className='block truncate text-sm font-semibold text-foreground'>{title}</span>

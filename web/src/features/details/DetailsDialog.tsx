@@ -25,6 +25,7 @@ import { queryMax } from 'shared/theme/breakpoints'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { iconBtn } from 'shared/ui/controlClasses'
 import { DIALOG_DETAILS } from 'shared/ui/dialogSizes'
+import { iconChrome, iconEmpty } from 'shared/ui/iconProps'
 import { toPlayableFile } from 'shared/torrent/toPlayableFile'
 
 import FileBrowser from './FileBrowser'
@@ -234,11 +235,11 @@ export default function DetailsDialog({
                   aria-label={t('EditTorrent')}
                   onPress={() => onEdit(torrent)}
                 >
-                  <Pencil aria-hidden />
+                  <Pencil {...iconChrome} aria-hidden />
                 </Button>
               ) : null}
               <Modal.CloseTrigger aria-label={t('Close')}>
-                <X aria-hidden />
+                <X {...iconChrome} aria-hidden />
               </Modal.CloseTrigger>
             </Modal.Header>
 
@@ -262,7 +263,7 @@ export default function DetailsDialog({
                       }}
                     />
                   ) : (
-                    <ImagePlus className='size-8 text-muted' aria-hidden />
+                    <ImagePlus {...iconEmpty} className='text-muted' aria-hidden />
                   )}
                   <span className='pointer-events-none absolute inset-0 grid place-items-center bg-black/0 px-2 text-center text-xs font-medium text-white opacity-0 transition-opacity group-hover:bg-black/45 group-hover:opacity-100 group-focus-visible:bg-black/45 group-focus-visible:opacity-100'>
                     {t('AddDialog.AddPosterLinkInput')}
@@ -272,7 +273,10 @@ export default function DetailsDialog({
                 <div className='min-w-0 flex-1'>
                   <h2 className='mb-1 break-words text-lg font-bold text-foreground'>{displayTitle}</h2>
                   {/* Reserve subtitle line so title-only torrents don't collapse hero height. */}
-                  <p className={`mb-3 truncate text-sm ${subtitle ? 'text-muted' : 'invisible'}`} aria-hidden={!subtitle}>
+                  <p
+                    className={`mb-3 truncate text-sm ${subtitle ? 'text-muted' : 'invisible'}`}
+                    aria-hidden={!subtitle}
+                  >
                     {subtitle || '\u00a0'}
                   </p>
 
@@ -461,11 +465,7 @@ export default function DetailsDialog({
         isSnakeDebugMode={isSnakeDebugMode}
         onSnakeDebugModeChange={setIsSnakeDebugMode}
       />
-      <EditPosterDialog
-        torrent={torrent}
-        open={posterEditOpen}
-        onClose={() => setPosterEditOpen(false)}
-      />
+      <EditPosterDialog torrent={torrent} open={posterEditOpen} onClose={() => setPosterEditOpen(false)} />
     </Modal.Root>
   )
 }

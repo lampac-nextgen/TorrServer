@@ -1,5 +1,6 @@
 import { Button, Modal, useMediaQuery } from '@heroui/react'
 import { Power } from 'lucide-react'
+import { iconAction, iconMenu } from 'shared/ui/iconProps'
 import { useTranslation } from 'react-i18next'
 
 import { shutdownHost } from 'shared/api/hosts'
@@ -21,7 +22,7 @@ export default function CloseServerDialog({ open, onClose }: CloseServerDialogPr
     <AppDialog open={open} onClose={onClose} size='sm' fullScreen={isFullScreenBreakpoint}>
       <Modal.Header>
         <Modal.Icon className='bg-danger/15 text-danger'>
-          <Power className='size-5' aria-hidden />
+          <Power {...iconAction} aria-hidden />
         </Modal.Icon>
         <Modal.Heading>{t('CloseServer?')}</Modal.Heading>
         <Modal.CloseTrigger aria-label={t('Close')} />
@@ -38,7 +39,7 @@ export default function CloseServerDialog({ open, onClose }: CloseServerDialogPr
             onClose()
           }}
         >
-          <Power className='size-4' aria-hidden />
+          <Power {...iconMenu} aria-hidden />
           {t('TurnOff')}
         </UnsafeButton>
       </Modal.Footer>

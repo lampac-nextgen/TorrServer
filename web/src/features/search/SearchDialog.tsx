@@ -25,6 +25,7 @@ import { queryMax } from 'shared/theme/breakpoints'
 import { formatSizeToClassicUnits, parseSizeToBytes } from 'shared/lib/format'
 import { getMoviePosters, shortenTitleForPosterSearch } from 'shared/lib/torrentHelpers'
 import AppDialog from 'shared/ui/AppDialog'
+import { iconEmpty } from 'shared/ui/iconProps'
 import { DIALOG_SHEET_L } from 'shared/ui/dialogSizes'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
@@ -493,9 +494,9 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
                     {label}
                     {active ? (
                       sortDirection === 'asc' ? (
-                        <ArrowUp className='ml-1 size-3.5' aria-hidden />
+                        <ArrowUp className='ml-1' size={14} strokeWidth={1.75} aria-hidden />
                       ) : (
-                        <ArrowDown className='ml-1 size-3.5' aria-hidden />
+                        <ArrowDown className='ml-1' size={14} strokeWidth={1.75} aria-hidden />
                       )
                     ) : null}
                   </ToggleButton>
@@ -514,7 +515,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
 
           {!loading && searchError ? (
             <div className='flex flex-col items-center gap-3 py-16 text-center'>
-              <AlertCircle className='size-8 text-danger' aria-hidden />
+              <AlertCircle {...iconEmpty} className='text-danger' aria-hidden />
               <p className='text-muted'>{searchError}</p>
               <Button variant='primary' onPress={() => void runSearch()} className={footerButtonClassName}>
                 {t('Retry')}
@@ -524,7 +525,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
 
           {!loading && emptyMessage ? (
             <div className='flex flex-col items-center gap-2 py-16 text-center text-muted'>
-              <SearchX className='size-8' aria-hidden />
+              <SearchX {...iconEmpty} aria-hidden />
               <p>{emptyMessage}</p>
             </div>
           ) : null}

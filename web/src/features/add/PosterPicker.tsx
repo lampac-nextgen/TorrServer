@@ -39,7 +39,7 @@ export default function PosterPicker({
             <img src={url} alt='' className='h-full w-full object-cover' />
             {selected ? (
               <span className='absolute right-1 top-1 grid size-4 place-items-center rounded-full bg-accent text-accent-foreground'>
-                <Check className='size-3' aria-hidden />
+                <Check size={12} strokeWidth={1.75} aria-hidden />
               </span>
             ) : null}
           </button>

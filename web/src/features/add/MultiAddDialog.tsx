@@ -282,7 +282,7 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
                     isDisabled={item.status === 'saving'}
                     className='min-h-11 min-w-11'
                   >
-                    <Trash2 className='size-4' aria-hidden />
+                    <Trash2 size={16} strokeWidth={1.75} aria-hidden />
                   </Button>
                 </div>
               )
@@ -312,10 +312,10 @@ function StatusIcon({ status }: { status: PerFileStatus }) {
     case 'saving':
       return <Spinner size='sm' color='current' />
     case 'success':
-      return <Check className='size-3.5 text-accent' aria-hidden />
+      return <Check size={14} strokeWidth={1.75} className='text-accent' aria-hidden />
     case 'error':
-      return <AlertCircle className='size-3.5 text-danger' aria-hidden />
+      return <AlertCircle size={14} strokeWidth={1.75} className='text-danger' aria-hidden />
     default:
-      return <Film className='size-3.5' aria-hidden />
+      return <Film size={14} strokeWidth={1.75} aria-hidden />
   }
 }

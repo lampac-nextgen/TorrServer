@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Button, Dropdown, Modal, Spinner, Tooltip, useOverlayState } from '@heroui/react'
-import { ExternalLink, Info, ListMusic, MoreVertical, Pencil, Play, Trash2, X } from 'lucide-react'
+import { Info, ListMusic, MoreVertical, Pencil, Play, SquareArrowOutUpRight, Trash2, X } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
@@ -9,6 +9,7 @@ import { dropTorrent, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torre
 import { useExternalPlayers } from 'shared/lib/externalPlayers'
 import { filesFromMetadata } from 'shared/torrent/fileMetadata'
 import { isFilePlayable } from 'shared/torrent/playable'
+import { iconAction, iconMenu } from 'shared/ui/iconProps'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 import { toPlayableFile } from 'shared/torrent/toPlayableFile'
@@ -110,7 +111,11 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
               onPress={handlePlay}
             >
               {({ isPending }) =>
-                isPending ? <Spinner size='sm' color='current' /> : <Play fill='currentColor' aria-hidden />
+                isPending ? (
+                  <Spinner size='sm' color='current' />
+                ) : (
+                  <Play {...iconAction} fill='currentColor' aria-hidden />
+                )
               }
             </Button>
           </Tooltip.Trigger>
@@ -122,22 +127,22 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
         <Dropdown isOpen={dropdownState.isOpen} onOpenChange={dropdownState.setOpen}>
           <Dropdown.Trigger>
             <Button variant='primary' isIconOnly className={overlayButtonClass} aria-label={t('Actions')}>
-              <MoreVertical aria-hidden />
+              <MoreVertical {...iconAction} aria-hidden />
             </Button>
           </Dropdown.Trigger>
           <Dropdown.Popover placement='bottom end'>
             <Dropdown.Menu aria-label={t('Actions')}>
               <Dropdown.Item onPress={onDetails}>
-                <Info size={16} />
+                <Info {...iconMenu} />
                 {t('Details')}
               </Dropdown.Item>
               <Dropdown.Item onPress={() => window.open(playlistHref, '_blank')}>
-                <ListMusic size={16} />
+                <ListMusic {...iconMenu} />
                 {t('DownloadPlaylist')}
               </Dropdown.Item>
               {onEdit ? (
                 <Dropdown.Item onPress={onEdit}>
-                  <Pencil size={16} />
+                  <Pencil {...iconMenu} />
                   {t('EditTorrent')}
                 </Dropdown.Item>
               ) : null}
@@ -148,7 +153,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
                     window.location.href = player.href
                   }}
                 >
-                  <ExternalLink size={16} />
+                  <SquareArrowOutUpRight {...iconMenu} />
                   {player.label}
                 </Dropdown.Item>
               ))}
@@ -158,7 +163,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
                   confirmState.open()
                 }}
               >
-                <X size={16} />
+                <X {...iconMenu} />
                 {t('DropTorrent')}
               </Dropdown.Item>
               <Dropdown.Item
@@ -168,7 +173,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
                   confirmState.open()
                 }}
               >
-                <Trash2 size={16} />
+                <Trash2 {...iconMenu} />
                 {t('Delete')}
               </Dropdown.Item>
             </Dropdown.Menu>
@@ -184,7 +189,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
             <Modal.Dialog aria-label={confirmKind === 'delete' ? t('DeleteTorrent?') : t('DropTorrent')}>
               <Modal.Header>
                 <Modal.Icon className='bg-danger/15 text-danger'>
-                  <Trash2 className='size-5' aria-hidden />
+                  <Trash2 {...iconAction} aria-hidden />
                 </Modal.Icon>
                 <Modal.Heading>{confirmKind === 'delete' ? t('DeleteTorrent?') : t('DropTorrent')}</Modal.Heading>
               </Modal.Header>

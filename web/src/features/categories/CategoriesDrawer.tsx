@@ -1,5 +1,6 @@
 import { Drawer, Separator, useOverlayState } from '@heroui/react'
 import { Check, CircleDashed, LayoutGrid } from 'lucide-react'
+import { iconAction, iconMenu } from 'shared/ui/iconProps'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -46,7 +47,7 @@ export default function CategoriesDrawer({ open, onClose, selectedCategory, onSe
           <Drawer.Dialog aria-label={t('Category')}>
             <Drawer.Header>
               <Drawer.Heading className='flex items-center gap-2'>
-                <LayoutGrid className='size-4' aria-hidden />
+                <LayoutGrid {...iconMenu} aria-hidden />
                 {t('Category')}
               </Drawer.Heading>
               <Drawer.CloseTrigger />
@@ -54,9 +55,9 @@ export default function CategoriesDrawer({ open, onClose, selectedCategory, onSe
             <Drawer.Body className='w-[280px] space-y-1 pt-1'>
               <button type='button' className={itemClass(selectedCategory === 'all')} onClick={() => select('all')}>
                 {selectedCategory === 'all' ? (
-                  <Check className='size-5 shrink-0' aria-hidden />
+                  <Check {...iconAction} className='shrink-0' aria-hidden />
                 ) : (
-                  <LayoutGrid className='size-5 shrink-0' aria-hidden />
+                  <LayoutGrid {...iconAction} className='shrink-0' aria-hidden />
                 )}
                 <span>{t('All')}</span>
               </button>
@@ -69,7 +70,7 @@ export default function CategoriesDrawer({ open, onClose, selectedCategory, onSe
                   onClick={() => select(category.key)}
                 >
                   {selectedCategory === category.key ? (
-                    <Check className='size-5 shrink-0' aria-hidden />
+                    <Check {...iconAction} className='shrink-0' aria-hidden />
                   ) : (
                     <span className='shrink-0'>{category.icon}</span>
                   )}
@@ -81,9 +82,9 @@ export default function CategoriesDrawer({ open, onClose, selectedCategory, onSe
 
               <button type='button' className={itemClass(selectedCategory === '')} onClick={() => select('')}>
                 {selectedCategory === '' ? (
-                  <Check className='size-5 shrink-0' aria-hidden />
+                  <Check {...iconAction} className='shrink-0' aria-hidden />
                 ) : (
-                  <CircleDashed className='size-5 shrink-0' aria-hidden />
+                  <CircleDashed {...iconAction} className='shrink-0' aria-hidden />
                 )}
                 <span>{t('Uncategorized')}</span>
               </button>

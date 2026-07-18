@@ -44,6 +44,7 @@ import { gstreamerMasterUrl, gstreamerProbeUrl } from 'shared/lib/gstreamer'
 import { queryMax } from 'shared/theme/breakpoints'
 import { useModalOpen, useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { iconBtn } from 'shared/ui/controlClasses'
+import { iconAction, iconMenu, iconPlayerCompact } from 'shared/ui/iconProps'
 import { PLAYER_DIALOG_EXPANDED, PLAYER_DIALOG_MOBILE, PLAYER_DIALOG_NORMAL } from 'shared/ui/dialogSizes'
 
 import { extractAudioTracks, formatAudioTrackDisplay, type ProbeTrack } from './audioTrackLabel'
@@ -706,6 +707,7 @@ export default function VideoPlayer({
   const chromeIconBtn = isMobile
     ? `${iconBtn} size-11 min-h-11 min-w-11 rounded-full text-white/90 hover-fine:bg-white/12 hover-fine:text-white`
     : `${iconBtn} size-9 min-h-9 min-w-9 rounded-full text-white/90 hover-fine:bg-white/12 hover-fine:text-white`
+  const chromeIcon = isMobile ? iconAction : iconPlayerCompact
   const showChrome = chromeVisible || !playing || mediaError
   const bufferedPct = duration > 0 ? Math.min(100, (buffered / duration) * 100) : 0
   const playedPct = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0
@@ -720,12 +722,12 @@ export default function VideoPlayer({
             onPress={openPlayer}
             className={inlineTriggerPrimary ? 'min-h-10 shrink-0 px-3' : 'min-h-10 min-w-[72px] max-w-full flex-1'}
           >
-            {inlineTriggerPrimary ? <Play fill='currentColor' aria-hidden /> : null}
+            {inlineTriggerPrimary ? <Play {...iconMenu} fill='currentColor' aria-hidden /> : null}
             {t('Play')}
           </Button>
         ) : (
           <Button variant='secondary' onPress={openPlayer}>
-            <Play aria-hidden />
+            <Play {...iconMenu} aria-hidden />
             {t('Play')}
           </Button>
         ))}
@@ -811,7 +813,7 @@ export default function VideoPlayer({
                       aria-label={t('Play')}
                     >
                       <span className='flex size-[4.25rem] items-center justify-center rounded-full border border-white/25 bg-white/15 text-white shadow-lg shadow-black/40 backdrop-blur-md transition hover-fine:scale-105 hover-fine:bg-accent/90 hover-fine:text-accent-foreground'>
-                        <Play className='size-8 translate-x-0.5' fill='currentColor' aria-hidden />
+                        <Play className='size-8 translate-x-0.5' strokeWidth={1.75} fill='currentColor' aria-hidden />
                       </span>
                     </button>
                   ) : null}
@@ -854,7 +856,7 @@ export default function VideoPlayer({
                         aria-label={t('Close')}
                         onPress={closePlayer}
                       >
-                        <X aria-hidden />
+                        <X {...chromeIcon} aria-hidden />
                       </Button>
                     </div>
                   </div>
@@ -931,7 +933,7 @@ export default function VideoPlayer({
                                     aria-label={t('Rewind-10-Sec')}
                                     onPress={() => seekRelative(-SEEK_STEP_SEC)}
                                   >
-                                    <RotateCcw aria-hidden />
+                                    <RotateCcw {...chromeIcon} aria-hidden />
                                   </Button>
                                 </Tooltip.Trigger>
                                 <Tooltip.Content>{t('Rewind-10-Sec')}</Tooltip.Content>
@@ -946,7 +948,11 @@ export default function VideoPlayer({
                                     aria-label={playing ? t('Pause') : t('Play')}
                                     onPress={togglePlayPause}
                                   >
-                                    {playing ? <Pause aria-hidden /> : <Play fill='currentColor' aria-hidden />}
+                                    {playing ? (
+                                      <Pause {...chromeIcon} aria-hidden />
+                                    ) : (
+                                      <Play {...chromeIcon} fill='currentColor' aria-hidden />
+                                    )}
                                   </Button>
                                 </Tooltip.Trigger>
                                 <Tooltip.Content>{playing ? t('Pause') : t('Play')}</Tooltip.Content>
@@ -961,7 +967,7 @@ export default function VideoPlayer({
                                     aria-label={t('Forward-10-Sec')}
                                     onPress={() => seekRelative(SEEK_STEP_SEC)}
                                   >
-                                    <RotateCw aria-hidden />
+                                    <RotateCw {...chromeIcon} aria-hidden />
                                   </Button>
                                 </Tooltip.Trigger>
                                 <Tooltip.Content>{t('Forward-10-Sec')}</Tooltip.Content>
@@ -978,7 +984,11 @@ export default function VideoPlayer({
                                     aria-label={playing ? t('Pause') : t('Play')}
                                     onPress={togglePlayPause}
                                   >
-                                    {playing ? <Pause aria-hidden /> : <Play fill='currentColor' aria-hidden />}
+                                    {playing ? (
+                                      <Pause {...chromeIcon} aria-hidden />
+                                    ) : (
+                                      <Play {...chromeIcon} fill='currentColor' aria-hidden />
+                                    )}
                                   </Button>
                                 </Tooltip.Trigger>
                                 <Tooltip.Content>{playing ? t('Pause') : t('Play')}</Tooltip.Content>
@@ -993,7 +1003,7 @@ export default function VideoPlayer({
                                     aria-label={t('Rewind-10-Sec')}
                                     onPress={() => seekRelative(-SEEK_STEP_SEC)}
                                   >
-                                    <RotateCcw aria-hidden />
+                                    <RotateCcw {...chromeIcon} aria-hidden />
                                   </Button>
                                 </Tooltip.Trigger>
                                 <Tooltip.Content>{t('Rewind-10-Sec')}</Tooltip.Content>
@@ -1008,7 +1018,7 @@ export default function VideoPlayer({
                                     aria-label={t('Forward-10-Sec')}
                                     onPress={() => seekRelative(SEEK_STEP_SEC)}
                                   >
-                                    <RotateCw aria-hidden />
+                                    <RotateCw {...chromeIcon} aria-hidden />
                                   </Button>
                                 </Tooltip.Trigger>
                                 <Tooltip.Content>{t('Forward-10-Sec')}</Tooltip.Content>
@@ -1046,7 +1056,11 @@ export default function VideoPlayer({
                                 aria-label={muted ? t('Unmute') : t('Mute')}
                                 onPress={toggleMute}
                               >
-                                {muted ? <VolumeX aria-hidden /> : <Volume2 aria-hidden />}
+                                {muted ? (
+                                  <VolumeX {...chromeIcon} aria-hidden />
+                                ) : (
+                                  <Volume2 {...chromeIcon} aria-hidden />
+                                )}
                               </Button>
                             </Tooltip.Trigger>
                             <Tooltip.Content>{muted ? t('Unmute') : t('Mute')}</Tooltip.Content>
@@ -1076,7 +1090,7 @@ export default function VideoPlayer({
                                   className={chromeIconBtn}
                                   aria-label={t('SelectAudioTrack')}
                                 >
-                                  <Music2 aria-hidden />
+                                  <Music2 {...chromeIcon} aria-hidden />
                                 </Button>
                               </Popover.Trigger>
                               <Popover.Content className='max-h-72 w-72 overflow-y-auto border border-white/10 bg-neutral-950/95 p-1 backdrop-blur-xl'>
@@ -1112,7 +1126,7 @@ export default function VideoPlayer({
                                   className={activeSubtitleTrack >= 0 ? iconBtn : chromeIconBtn}
                                   aria-label={t('GStreamer.Subtitles')}
                                 >
-                                  <Captions aria-hidden />
+                                  <Captions {...chromeIcon} aria-hidden />
                                 </Button>
                               </Popover.Trigger>
                               <Popover.Content className='border border-white/10 bg-neutral-950/95 backdrop-blur-xl'>
@@ -1142,7 +1156,7 @@ export default function VideoPlayer({
                                 className={chromeIconBtn}
                                 aria-label={t('PlaybackSpeed')}
                               >
-                                <Gauge aria-hidden />
+                                <Gauge {...chromeIcon} aria-hidden />
                               </Button>
                             </Popover.Trigger>
                             <Popover.Content className='min-w-[8rem] border border-white/10 bg-neutral-950/95 p-1 backdrop-blur-xl'>
@@ -1173,7 +1187,7 @@ export default function VideoPlayer({
                                   aria-label={t('PictureInPicture')}
                                   onPress={() => void togglePiP()}
                                 >
-                                  <PictureInPicture2 aria-hidden />
+                                  <PictureInPicture2 {...chromeIcon} aria-hidden />
                                 </Button>
                               </Tooltip.Trigger>
                               <Tooltip.Content>{t('PictureInPicture')}</Tooltip.Content>
@@ -1193,7 +1207,11 @@ export default function VideoPlayer({
                                     revealChrome()
                                   }}
                                 >
-                                  {expanded ? <Minimize2 aria-hidden /> : <Maximize2 aria-hidden />}
+                                  {expanded ? (
+                                    <Minimize2 {...chromeIcon} aria-hidden />
+                                  ) : (
+                                    <Maximize2 {...chromeIcon} aria-hidden />
+                                  )}
                                 </Button>
                               </Tooltip.Trigger>
                               <Tooltip.Content>{expanded ? t('CollapsePlayer') : t('ExpandPlayer')}</Tooltip.Content>
@@ -1209,7 +1227,11 @@ export default function VideoPlayer({
                                 aria-label={fullscreen ? t('ExitFullscreen') : t('Fullscreen')}
                                 onPress={fullscreen ? exitFullscreen : enterFullscreen}
                               >
-                                {fullscreen ? <Minimize aria-hidden /> : <Maximize aria-hidden />}
+                                {fullscreen ? (
+                                  <Minimize {...chromeIcon} aria-hidden />
+                                ) : (
+                                  <Maximize {...chromeIcon} aria-hidden />
+                                )}
                               </Button>
                             </Tooltip.Trigger>
                             <Tooltip.Content>{fullscreen ? t('ExitFullscreen') : t('Fullscreen')}</Tooltip.Content>

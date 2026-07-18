@@ -173,7 +173,7 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
             <Modal.Body className='gap-4'>
               <div className='rounded-xl border border-border bg-gradient-to-br from-accent-soft/50 to-surface-secondary p-3'>
                 <p className='mb-2 flex items-center gap-2 text-sm font-semibold text-foreground'>
-                  <FileVideo className='size-4 text-accent' aria-hidden />
+                  <FileVideo className='text-accent' size={16} strokeWidth={1.75} aria-hidden />
                   <span className='min-w-0 truncate' title={fileName}>
                     {fileName}
                   </span>
@@ -199,7 +199,7 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
                   {groups.video.length > 0 ? (
                     <section className='space-y-2'>
                       <h3 className='flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted'>
-                        <Clapperboard className='size-3.5' aria-hidden />
+                        <Clapperboard size={14} strokeWidth={1.75} aria-hidden />
                         {t('FfpVideo')} ({groups.video.length})
                       </h3>
                       {groups.video.map((stream, i) => (
@@ -208,7 +208,7 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
                           index={i}
                           stream={stream}
                           kindLabel={t('FfpVideo')}
-                          icon={<Clapperboard className='size-4' aria-hidden />}
+                          icon={<Clapperboard size={16} strokeWidth={1.75} aria-hidden />}
                         />
                       ))}
                     </section>
@@ -217,7 +217,7 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
                   {groups.audio.length > 0 ? (
                     <section className='space-y-2'>
                       <h3 className='flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted'>
-                        <AudioLines className='size-3.5' aria-hidden />
+                        <AudioLines size={14} strokeWidth={1.75} aria-hidden />
                         {t('FfpAudio')} ({groups.audio.length})
                       </h3>
                       {groups.audio.map((stream, i) => (
@@ -226,7 +226,7 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
                           index={i}
                           stream={stream}
                           kindLabel={t('FfpAudio')}
-                          icon={<AudioLines className='size-4' aria-hidden />}
+                          icon={<AudioLines size={16} strokeWidth={1.75} aria-hidden />}
                         />
                       ))}
                     </section>
@@ -235,7 +235,7 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
                   {groups.subtitle.length > 0 ? (
                     <section className='space-y-2'>
                       <h3 className='flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted'>
-                        <Captions className='size-3.5' aria-hidden />
+                        <Captions size={14} strokeWidth={1.75} aria-hidden />
                         {t('FfpSubtitle')} ({groups.subtitle.length})
                       </h3>
                       {groups.subtitle.map((stream, i) => (
@@ -244,7 +244,7 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
                           index={i}
                           stream={stream}
                           kindLabel={t('FfpSubtitle')}
-                          icon={<Captions className='size-4' aria-hidden />}
+                          icon={<Captions size={16} strokeWidth={1.75} aria-hidden />}
                         />
                       ))}
                     </section>
@@ -253,7 +253,7 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
                   {groups.other.length > 0 ? (
                     <section className='space-y-2'>
                       <h3 className='flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted'>
-                        <Layers className='size-3.5' aria-hidden />
+                        <Layers size={14} strokeWidth={1.75} aria-hidden />
                         {t('FfpOther')} ({groups.other.length})
                       </h3>
                       {groups.other.map((stream, i) => (
@@ -262,7 +262,7 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
                           index={i}
                           stream={stream}
                           kindLabel={stream.codec_type || t('FfpOther')}
-                          icon={<Layers className='size-4' aria-hidden />}
+                          icon={<Layers size={16} strokeWidth={1.75} aria-hidden />}
                         />
                       ))}
                     </section>

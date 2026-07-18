@@ -1,5 +1,6 @@
 import { Button, useMediaQuery } from '@heroui/react'
 import { Download, X } from 'lucide-react'
+import { iconMenu } from 'shared/ui/iconProps'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -46,14 +47,14 @@ export default function AndroidInstallBanner() {
           onPress={handleDismiss}
           className='min-h-10 min-w-10'
         >
-          <X className='size-4' />
+          <X {...iconMenu} />
         </Button>
       </div>
 
       <p className='mb-3 text-sm text-muted'>{t('PWAGuide.AndroidDescription')}</p>
 
       <Button variant='primary' className='mb-1 min-h-11 w-full gap-2' onPress={() => void promptInstall()}>
-        <Download className='size-4' aria-hidden />
+        <Download {...iconMenu} aria-hidden />
         {t('PWAGuide.Install')}
       </Button>
     </div>

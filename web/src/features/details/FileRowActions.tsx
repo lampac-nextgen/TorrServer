@@ -1,10 +1,11 @@
 import { Button, ButtonGroup, Dropdown, Spinner, Tooltip, useMediaQuery, useOverlayState } from '@heroui/react'
-import { Copy, Download, ExternalLink, Info, MoreHorizontal, Play } from 'lucide-react'
+import { ArrowDownToLine, AudioLines, Link2, MoreHorizontal, Play, SquareArrowOutUpRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { ExternalPlayerLink } from 'shared/lib/externalPlayers'
 import { copyToClipboard } from 'shared/lib/clipboard'
 import { queryMax } from 'shared/theme/breakpoints'
 import { iconBtn } from 'shared/ui/controlClasses'
+import { iconAction, iconMenu } from 'shared/ui/iconProps'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
 export type { ExternalPlayerLink }
@@ -30,6 +31,10 @@ export interface FileRowActionsProps {
 const playerBtn = 'min-h-11 shrink-0 px-3 font-medium'
 /** Mobile equal-width chips under Play — `flex-1` + truncate so long labels never overflow. */
 const playerBtnMobile = 'min-h-11 min-w-0 flex-1 px-2 text-xs font-medium'
+
+const actionIcon = { ...iconAction, 'aria-hidden': true as const }
+const menuIcon = { ...iconMenu }
+const secondaryIconBtn = `${iconBtn} text-muted hover-fine:text-foreground`
 
 /**
  * Per-file action strip for the details Files tab.
@@ -78,14 +83,14 @@ export default function FileRowActions({
       <Button variant='primary' size='sm' className={className} isPending={isPlayPending} onPress={onPlay}>
         {({ isPending }) => (
           <>
-            {isPending ? <Spinner size='sm' color='current' /> : <Play fill='currentColor' aria-hidden />}
+            {isPending ? <Spinner size='sm' color='current' /> : <Play {...iconMenu} fill='currentColor' aria-hidden />}
             {t('Play')}
           </>
         )}
       </Button>
     ) : showOpenLink && openLinkHref ? (
       <Button variant='primary' size='sm' className={className} onPress={openExternal}>
-        <Play fill='currentColor' aria-hidden />
+        <Play {...iconMenu} fill='currentColor' aria-hidden />
         {t('Play')}
       </Button>
     ) : null
@@ -99,11 +104,11 @@ export default function FileRowActions({
               variant='secondary'
               size='sm'
               isIconOnly
-              className={iconBtn}
+              className={secondaryIconBtn}
               aria-label={t('OpenLink')}
               onPress={openExternal}
             >
-              <ExternalLink aria-hidden />
+              <SquareArrowOutUpRight {...actionIcon} />
             </Button>
           </Tooltip.Trigger>
           <Tooltip.Content>{t('OpenLink')}</Tooltip.Content>
@@ -116,11 +121,11 @@ export default function FileRowActions({
             variant='secondary'
             size='sm'
             isIconOnly
-            className={iconBtn}
+            className={secondaryIconBtn}
             aria-label={t('CopyLink')}
             onPress={() => void copyDirectLink()}
           >
-            <Copy aria-hidden />
+            <Link2 {...actionIcon} />
           </Button>
         </Tooltip.Trigger>
         <Tooltip.Content>{t('CopyLink')}</Tooltip.Content>
@@ -132,11 +137,11 @@ export default function FileRowActions({
             variant='secondary'
             size='sm'
             isIconOnly
-            className={iconBtn}
+            className={secondaryIconBtn}
             aria-label={preloadLabel}
             onPress={onPreload}
           >
-            <Download aria-hidden />
+            <ArrowDownToLine {...actionIcon} />
           </Button>
         </Tooltip.Trigger>
         <Tooltip.Content>{preloadLabel}</Tooltip.Content>
@@ -149,11 +154,11 @@ export default function FileRowActions({
               variant='secondary'
               size='sm'
               isIconOnly
-              className={iconBtn}
+              className={secondaryIconBtn}
               aria-label={t('MediaInfo')}
               onPress={onProbeMedia}
             >
-              <Info aria-hidden />
+              <AudioLines {...actionIcon} />
             </Button>
           </Tooltip.Trigger>
           <Tooltip.Content>{t('MediaInfo')}</Tooltip.Content>
@@ -165,8 +170,8 @@ export default function FileRowActions({
   const secondaryMobile = (
     <Dropdown isOpen={moreMenu.isOpen} onOpenChange={moreMenu.setOpen}>
       <Dropdown.Trigger>
-        <Button variant='secondary' size='sm' isIconOnly className={iconBtn} aria-label={t('Actions')}>
-          <MoreHorizontal aria-hidden />
+        <Button variant='secondary' size='sm' isIconOnly className={secondaryIconBtn} aria-label={t('Actions')}>
+          <MoreHorizontal {...actionIcon} />
         </Button>
       </Dropdown.Trigger>
       <Dropdown.Popover placement='bottom end'>
@@ -178,7 +183,7 @@ export default function FileRowActions({
                 openExternal()
               }}
             >
-              <ExternalLink size={16} />
+              <SquareArrowOutUpRight {...menuIcon} />
               {t('OpenLink')}
             </Dropdown.Item>
           ) : null}
@@ -188,7 +193,7 @@ export default function FileRowActions({
               void copyDirectLink()
             }}
           >
-            <Copy size={16} />
+            <Link2 {...menuIcon} />
             {t('CopyLink')}
           </Dropdown.Item>
           <Dropdown.Item
@@ -197,7 +202,7 @@ export default function FileRowActions({
               onPreload()
             }}
           >
-            <Download size={16} />
+            <ArrowDownToLine {...menuIcon} />
             {preloadLabel}
           </Dropdown.Item>
           {onProbeMedia ? (
@@ -207,7 +212,7 @@ export default function FileRowActions({
                 onProbeMedia()
               }}
             >
-              <Info size={16} />
+              <AudioLines {...menuIcon} />
               {t('MediaInfo')}
             </Dropdown.Item>
           ) : null}

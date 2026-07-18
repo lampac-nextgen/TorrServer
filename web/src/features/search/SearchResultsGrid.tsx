@@ -56,7 +56,7 @@ export default function SearchResultsGrid({
                   <span>{formatSize(item)}</span>
                   {item.Seed != null || item.Peer != null ? (
                     <span className='inline-flex items-center gap-1'>
-                      <Users className='size-3.5' aria-hidden />
+                      <Users className='size-3.5' strokeWidth={1.75} aria-hidden />
                       {item.Seed ?? 0}·{item.Peer ?? 0}
                     </span>
                   ) : null}

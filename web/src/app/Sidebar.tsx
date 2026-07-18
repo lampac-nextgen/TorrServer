@@ -3,6 +3,8 @@ import { Button, Tooltip } from '@heroui/react'
 import { FolderPlus, Info, Layers, Power, Search, Settings, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
+import { iconNav } from 'shared/ui/iconProps'
+
 import type { ShellNavProps } from './navTypes'
 
 export interface SidebarProps extends ShellNavProps {
@@ -36,22 +38,22 @@ export default function Sidebar({
   const disabled = isOffline || isLoading
 
   const primaryItems: NavItem[] = [
-    { key: 'add', label: t('Add'), icon: <FolderPlus size={20} />, onClick: onAdd, disabled },
-    { key: 'search', label: t('nav.Search'), icon: <Search size={20} />, onClick: onSearch, disabled },
+    { key: 'add', label: t('Add'), icon: <FolderPlus {...iconNav} />, onClick: onAdd, disabled },
+    { key: 'search', label: t('nav.Search'), icon: <Search {...iconNav} />, onClick: onSearch, disabled },
     {
       key: 'category',
       label: t('Category'),
-      icon: <Layers size={20} />,
+      icon: <Layers {...iconNav} />,
       onClick: onCategories,
       active: isCategoryFilterActive,
     },
-    { key: 'removeAll', label: t('RemoveAll'), icon: <Trash2 size={20} />, onClick: onRemoveAll, disabled },
+    { key: 'removeAll', label: t('RemoveAll'), icon: <Trash2 {...iconNav} />, onClick: onRemoveAll, disabled },
   ]
 
   const footerItems: NavItem[] = [
-    { key: 'settings', label: t('nav.Settings'), icon: <Settings size={20} />, onClick: onSettings, disabled },
-    { key: 'about', label: t('About'), icon: <Info size={20} />, onClick: onAbout },
-    { key: 'close', label: t('CloseServer'), icon: <Power size={20} />, onClick: onCloseServer, disabled },
+    { key: 'settings', label: t('nav.Settings'), icon: <Settings {...iconNav} />, onClick: onSettings, disabled },
+    { key: 'about', label: t('About'), icon: <Info {...iconNav} />, onClick: onAbout },
+    { key: 'close', label: t('CloseServer'), icon: <Power {...iconNav} />, onClick: onCloseServer, disabled },
   ]
 
   const renderItem = (item: NavItem) => {

@@ -1,5 +1,6 @@
 import { Button } from '@heroui/react'
 import { Folder, FolderOpen } from 'lucide-react'
+import { iconMenu } from 'shared/ui/iconProps'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PlayableFile, TorrentFileStat } from 'shared/api/types'
@@ -85,9 +86,9 @@ function DirectoryTreeList({
               onPress={() => onSelect(child.id)}
             >
               {isSelected ? (
-                <FolderOpen className='size-4 shrink-0' aria-hidden />
+                <FolderOpen {...iconMenu} className='shrink-0' aria-hidden />
               ) : (
-                <Folder className='size-4 shrink-0' aria-hidden />
+                <Folder {...iconMenu} className='shrink-0' aria-hidden />
               )}
               <span className='truncate'>{child.label}</span>
             </Button>

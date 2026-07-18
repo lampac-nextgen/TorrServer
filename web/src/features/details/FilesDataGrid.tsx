@@ -97,7 +97,7 @@ function EpisodeRow({
                 className='inline-flex shrink-0 items-center gap-1 rounded-md text-xs text-accent hover-fine:underline'
                 onClick={onUnmarkViewed}
               >
-                <CheckCircle2 className='size-3.5' aria-hidden />
+                <CheckCircle2 size={14} strokeWidth={1.75} aria-hidden />
                 {t('Viewed')}
                 <span className='text-muted'>· {t('Clear')}</span>
               </button>

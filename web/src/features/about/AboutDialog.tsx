@@ -1,6 +1,6 @@
 import { Button, Link, ListBox, Modal, Select, Spinner, useMediaQuery } from '@heroui/react'
 import axios from 'axios'
-import { Gauge, Heart, ExternalLink } from 'lucide-react'
+import { Gauge, Heart, SquareArrowOutUpRight } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -10,6 +10,7 @@ import { publicUrl } from 'shared/lib/publicUrl'
 import { queryMax } from 'shared/theme/breakpoints'
 import AppDialog from 'shared/ui/AppDialog'
 import { DIALOG_SHEET_M } from 'shared/ui/dialogSizes'
+import { iconMenu } from 'shared/ui/iconProps'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
 import { CONTRIBUTORS } from './contributors'
@@ -35,7 +36,7 @@ function AboutLink({ name, href }: { name: string; href: string }) {
       className='flex items-center justify-between gap-2 rounded-md px-1 py-1.5 text-sm'
     >
       <span>{name}</span>
-      <ExternalLink className='size-3.5 shrink-0 text-muted' aria-hidden />
+      <SquareArrowOutUpRight size={14} strokeWidth={1.75} className='shrink-0 text-muted' aria-hidden />
     </Link>
   )
 }
@@ -157,7 +158,7 @@ export default function AboutDialog({ open, onClose }: AboutDialogProps) {
             <Button size='sm' variant='secondary' isPending={speedTesting} onPress={() => void handleSpeedTest()}>
               {({ isPending }) => (
                 <>
-                  {isPending ? <Spinner size='sm' color='current' /> : <Gauge aria-hidden />}
+                  {isPending ? <Spinner size='sm' color='current' /> : <Gauge {...iconMenu} aria-hidden />}
                   {t('SpeedTestRun')}
                 </>
               )}
@@ -170,7 +171,7 @@ export default function AboutDialog({ open, onClose }: AboutDialogProps) {
 
         <div className='mt-3 rounded-lg border border-border bg-surface-secondary p-3'>
           <p className='mb-3 flex items-center gap-1.5 px-1 text-xs font-semibold uppercase tracking-wide text-muted'>
-            <Heart className='size-3.5 fill-accent/25 text-accent' aria-hidden />
+            <Heart size={14} strokeWidth={1.75} className='fill-accent/25 text-accent' aria-hidden />
             {t('SpecialThanks')}
           </p>
           <ul className='flex flex-wrap gap-2'>
