@@ -211,7 +211,8 @@
       "Main": "主要",
       "Network": "网络",
       "AdvancedShort": "高级",
-      "StorageShort": "存储"
+      "StorageShort": "存储",
+      "Appearance": "外观"
     },
     "TorrentDisconnectTimeout": "种子断开超时",
     "TorrentsSavePath": "种子缓存保存路径",
@@ -231,7 +232,7 @@
     "ViewedHistoryStorage": "查看历史存储：",
     "ViewedStorageHint": "存储查看历史记录的位置",
     "SettingsSaveFailed": "保存设置失败",
-    "AppTabHint": "外观和播放器按钮会立即保存在本浏览器中。TMDB 设置在保存后生效（可能重启服务器）。",
+    "AppTabHint": "播放器按钮会立即保存在本浏览器中。TMDB 设置在保存后生效（可能重启服务器）。",
     "MobileAppInstantHint": "这些开关会立即保存在本浏览器中，无需点击保存。",
     "UseDisk": "使用磁盘缓存",
     "StorageSettings": "存储",

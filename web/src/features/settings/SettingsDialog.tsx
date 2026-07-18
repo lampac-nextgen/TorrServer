@@ -4,7 +4,7 @@ import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Cog, Film, HardDrive, Rss, SlidersHorizontal, Smartphone, Wifi } from 'lucide-react'
+import { Cog, Film, HardDrive, Palette, Rss, SlidersHorizontal, Smartphone, Wifi } from 'lucide-react'
 
 import type { BTSets } from 'shared/api/types'
 import { getSettings, setSettings, resetSettings, SETTINGS_QUERY_KEY } from 'shared/api/settings'
@@ -42,7 +42,7 @@ export interface SettingsDialogProps {
   initialTab?: SettingsTab
 }
 
-type SettingsTab = 'primary' | 'network' | 'features' | 'storage' | 'app' | 'gstreamer' | 'torznab'
+type SettingsTab = 'primary' | 'network' | 'features' | 'storage' | 'appearance' | 'app' | 'gstreamer' | 'torznab'
 
 /** Fades + slides in freshly-mounted tab content — `Tabs.Panel` only mounts the selected tab, so this
  *  re-runs on every switch without any extra wiring. */
@@ -111,6 +111,12 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
         label: t('SettingsDialog.StorageSettings'),
         shortLabel: t('SettingsDialog.Tabs.StorageShort'),
         icon: <HardDrive size={17} strokeWidth={1.75} />,
+      },
+      {
+        id: 'appearance',
+        label: t('SettingsDialog.Tabs.Appearance'),
+        shortLabel: t('SettingsDialog.Tabs.Appearance'),
+        icon: <Palette size={17} strokeWidth={1.75} />,
       },
       {
         id: 'app',
@@ -328,12 +334,13 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
             <StorageSettingsPanel backends={storageBackends} onBackendsChange={setStorageBackends} />
           </>
         )
+      case 'appearance':
+        return <AppearanceSettingsPanel />
       case 'app':
         return (
           <>
             <Description className='mb-4'>{t('SettingsDialog.AppTabHint')}</Description>
             <div className='space-y-6'>
-              <AppearanceSettingsPanel />
               <TMDBSettingsSection settings={settings} updateSettings={updateSettingsPartial} />
               <MobilePlayersSection />
             </div>

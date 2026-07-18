@@ -211,7 +211,8 @@
       "Main": "Meniu Principal",
       "Network": "Rețea",
       "AdvancedShort": "Avansat",
-      "StorageShort": "Stocare"
+      "StorageShort": "Stocare",
+      "Appearance": "Aspect"
     },
     "TorrentDisconnectTimeout": "Timp de expirare pentru deconectarea torrentului",
     "TorrentsSavePath": "Calea de salvare a torrentelor",
@@ -231,7 +232,7 @@
     "ViewedHistoryStorage": "Istoricul vizualizărilor stocate:",
     "ViewedStorageHint": "Alegeți unde să stocați istoricul vizualizat",
     "SettingsSaveFailed": "Salvarea setărilor a eșuat",
-    "AppTabHint": "Aspectul și butoanele player se salvează imediat în acest browser. Setările TMDB se aplică după Salvare (poate reporni serverul).",
+    "AppTabHint": "Butoanele player se salvează imediat în acest browser. Setările TMDB se aplică după Salvare (poate reporni serverul).",
     "MobileAppInstantHint": "Aceste comutatoare se salvează imediat în browser — Salvare nu este necesară.",
     "UseDisk": "Utilizează cache pe disc",
     "StorageSettings": "Stocare",

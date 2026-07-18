@@ -211,7 +211,8 @@
       "Main": "Principal",
       "Network": "Réseau",
       "AdvancedShort": "Avancé",
-      "StorageShort": "Stockage"
+      "StorageShort": "Stockage",
+      "Appearance": "Apparence"
     },
     "TorrentDisconnectTimeout": "Délai de déconnexion du torrent",
     "TorrentsSavePath": "Chemin de sauvegarde des torrents",
@@ -231,7 +232,7 @@
     "ViewedHistoryStorage": "Stockage de l'historique des vues :",
     "ViewedStorageHint": "Choisissez où stocker l'historique des vues",
     "SettingsSaveFailed": "Échec de l'enregistrement des paramètres",
-    "AppTabHint": "Apparence et boutons lecteurs s’enregistrent immédiatement dans ce navigateur. Les paramètres TMDB s’appliquent après Enregistrer (redémarrage possible).",
+    "AppTabHint": "Les boutons lecteurs s’enregistrent immédiatement dans ce navigateur. Les paramètres TMDB s’appliquent après Enregistrer (redémarrage possible).",
     "MobileAppInstantHint": "Ces options s'enregistrent immédiatement dans ce navigateur — Enregistrer n'est pas nécessaire.",
     "UseDisk": "Utiliser le cache disque",
     "StorageSettings": "Stockage",

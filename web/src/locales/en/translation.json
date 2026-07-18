@@ -211,7 +211,8 @@
       "Main": "Main",
       "Network": "Network",
       "AdvancedShort": "Advanced",
-      "StorageShort": "Storage"
+      "StorageShort": "Storage",
+      "Appearance": "Appearance"
     },
     "TorrentDisconnectTimeout": "Torrent Disconnect Timeout",
     "TorrentsSavePath": "Torrents Save Path",
@@ -231,7 +232,7 @@
     "ViewedHistoryStorage": "Viewed History Storage:",
     "ViewedStorageHint": "Choose where to store viewed history",
     "SettingsSaveFailed": "Failed to save settings",
-    "AppTabHint": "Appearance and player buttons save instantly in this browser. TMDB settings apply after Save (may restart the server).",
+    "AppTabHint": "Player buttons save instantly in this browser. TMDB settings apply after Save (may restart the server).",
     "MobileAppInstantHint": "These toggles save immediately in this browser — Save is not required.",
     "UseDisk": "Use disk cache",
     "StorageSettings": "Storage",

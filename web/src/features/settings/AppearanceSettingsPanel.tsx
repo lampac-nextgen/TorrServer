@@ -94,11 +94,7 @@ export default function AppearanceSettingsPanel() {
         {filtered.length === 0 ? (
           <p className='py-6 text-center text-sm text-muted'>{t('SettingsDialog.ThemePaletteEmpty')}</p>
         ) : (
-          <div
-            className='grid max-h-[min(50dvh,22rem)] grid-cols-2 gap-2 overflow-y-auto pr-0.5 sm:grid-cols-3'
-            role='listbox'
-            aria-label={t('ThemePalette')}
-          >
+          <div className='grid grid-cols-2 gap-2 sm:grid-cols-3' role='listbox' aria-label={t('ThemePalette')}>
             {filtered.map(id => {
               const selected = id === palette
               const swatch = THEME_PALETTE_SWATCHES[id]
