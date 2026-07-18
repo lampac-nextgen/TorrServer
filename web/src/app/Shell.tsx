@@ -1,7 +1,7 @@
 import { lazy, type ReactNode, Suspense, useEffect, useState } from 'react'
 import axios from 'axios'
-import { Button, ListBox, Select, Spinner, Tooltip, useMediaQuery } from '@heroui/react'
-import { ChevronLeft, Menu, Moon, SortAsc, SortDesc, Sun, SunMoon, X } from 'lucide-react'
+import { Button, Dropdown, Spinner, Tooltip, useMediaQuery } from '@heroui/react'
+import { Check, ChevronLeft, Menu, Moon, SortAsc, SortDesc, Sun, SunMoon, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { echoHost } from 'shared/api/hosts'
 import { SUPPORTED_LANGS } from 'shared/i18n'
@@ -40,14 +40,15 @@ const lazyDialogFallback = (
 
 const LANG_CYCLE = SUPPORTED_LANGS
 
-const LANG_OPTIONS: { id: (typeof LANG_CYCLE)[number]; label: string }[] = [
-  { id: 'en', label: 'EN' },
-  { id: 'ru', label: 'RU' },
-  { id: 'ua', label: 'UA' },
-  { id: 'zh', label: 'ZH' },
-  { id: 'bg', label: 'BG' },
-  { id: 'fr', label: 'FR' },
-  { id: 'ro', label: 'RO' },
+/** Endonyms stay in their own language — no i18n lookup needed. */
+const LANG_OPTIONS: { id: (typeof LANG_CYCLE)[number]; code: string; name: string }[] = [
+  { id: 'en', code: 'EN', name: 'English' },
+  { id: 'ru', code: 'RU', name: 'Русский' },
+  { id: 'ua', code: 'UA', name: 'Українська' },
+  { id: 'zh', code: 'ZH', name: '中文' },
+  { id: 'bg', code: 'BG', name: 'Български' },
+  { id: 'fr', code: 'FR', name: 'Français' },
+  { id: 'ro', code: 'RO', name: 'Română' },
 ]
 
 const SIDEBAR_OPEN_PX = 260
@@ -211,28 +212,11 @@ export default function Shell() {
           <ThemeIcon size={20} />
         </HeaderIconButton>
 
-        <Select
-          aria-label={t('Language')}
-          selectedKey={LANG_CYCLE.includes(currentLang as (typeof LANG_CYCLE)[number]) ? currentLang : 'en'}
-          onSelectionChange={key => changeLang(String(key))}
-          className='w-[4.25rem] shrink-0'
-        >
-          <Select.Trigger
-            className={`${iconBtn} min-h-10 border-0 bg-transparent px-2 text-xs font-semibold text-app-header-foreground shadow-none hover-fine:bg-white/10`}
-          >
-            <Select.Value />
-            <Select.Indicator />
-          </Select.Trigger>
-          <Select.Popover>
-            <ListBox>
-              {LANG_OPTIONS.map(option => (
-                <ListBox.Item key={option.id} id={option.id}>
-                  {option.label}
-                </ListBox.Item>
-              ))}
-            </ListBox>
-          </Select.Popover>
-        </Select>
+        <LanguageMenu
+          currentLang={LANG_CYCLE.includes(currentLang as (typeof LANG_CYCLE)[number]) ? currentLang : 'en'}
+          label={t('Language')}
+          onChange={changeLang}
+        />
       </header>
 
       {!isMobile ? (
@@ -321,6 +305,55 @@ export default function Shell() {
         {!detectApplePlatform().isIOS && !isStandaloneApp ? <AndroidInstallBanner /> : null}
       </Suspense>
     </div>
+  )
+}
+
+function LanguageMenu({
+  currentLang,
+  label,
+  onChange,
+}: {
+  currentLang: string
+  label: string
+  onChange: (lang: string) => void
+}) {
+  const current = LANG_OPTIONS.find(option => option.id === currentLang) ?? LANG_OPTIONS[0]
+
+  return (
+    <Dropdown>
+      <Dropdown.Trigger>
+        <Button
+          variant='ghost'
+          className={`${iconBtn} text-xs font-semibold tracking-wide text-app-header-foreground hover-fine:bg-white/10`}
+          aria-label={label}
+        >
+          {current.code}
+        </Button>
+      </Dropdown.Trigger>
+      <Dropdown.Popover placement='bottom end' className='min-w-[12rem]'>
+        <Dropdown.Menu aria-label={label}>
+          {LANG_OPTIONS.map(option => {
+            const selected = option.id === current.id
+            return (
+              <Dropdown.Item
+                key={option.id}
+                textValue={`${option.code} ${option.name}`}
+                onPress={() => onChange(option.id)}
+                className='min-h-11 gap-2'
+              >
+                <span className='w-7 shrink-0 text-xs font-semibold tabular-nums'>{option.code}</span>
+                <span className='min-w-0 flex-1 truncate text-sm'>{option.name}</span>
+                {selected ? (
+                  <Check className='size-4 shrink-0 text-accent' aria-hidden />
+                ) : (
+                  <span className='size-4 shrink-0' aria-hidden />
+                )}
+              </Dropdown.Item>
+            )
+          })}
+        </Dropdown.Menu>
+      </Dropdown.Popover>
+    </Dropdown>
   )
 }
 
