@@ -51,3 +51,22 @@ func TestCacheControlFor(t *testing.T) {
 		}
 	}
 }
+
+func TestIndexHTMLSetsCDNBypass(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	RouteWebPages(r)
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("status %d", w.Code)
+	}
+	if got := w.Header().Get("CDN-Cache-Control"); got != "no-store" {
+		t.Fatalf("CDN-Cache-Control=%q, want no-store", got)
+	}
+	if got := w.Header().Get("Cloudflare-CDN-Cache-Control"); got != "no-store" {
+		t.Fatalf("Cloudflare-CDN-Cache-Control=%q, want no-store", got)
+	}
+}

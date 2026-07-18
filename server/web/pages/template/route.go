@@ -58,7 +58,13 @@ func serveEmbedded(c *gin.Context, path, contentType string) {
 func writeWithCache(c *gin.Context, path string, data []byte, contentType string) {
 	sum := md5.Sum(data)
 	etag := fmt.Sprintf(`"%x"`, sum)
-	c.Header("Cache-Control", cacheControlFor(path))
+	cc := cacheControlFor(path)
+	c.Header("Cache-Control", cc)
+	// Cloudflare caches by Cache-Control unless told otherwise — SW/index must bypass the edge.
+	if strings.HasPrefix(cc, "no-cache") || strings.HasPrefix(cc, "no-store") {
+		c.Header("CDN-Cache-Control", "no-store")
+		c.Header("Cloudflare-CDN-Cache-Control", "no-store")
+	}
 	c.Header("ETag", etag)
 	c.Data(200, contentType, data)
 }
