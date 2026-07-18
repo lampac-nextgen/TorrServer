@@ -19,6 +19,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import { addTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
+import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
 import {
   checkTorrentSource,
@@ -49,8 +50,8 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
   const queryClient = useQueryClient()
   const toast = useOptionalAppToast()
   const isMobile = useMediaQuery(queryMax('mobile'))
-  // Matches Details/VideoPlayer's fullscreen breakpoint so tablets don't get some dialogs fullscreen and others centered.
-  const isFullScreenBreakpoint = useMediaQuery(queryMax('dialog'))
+  // Matches Details fullscreen policy (breakpoint + Appearance pref) so tablets stay consistent.
+  const isFullScreenBreakpoint = useDialogFullScreen()
 
   const [source, setSource] = useState(initialSource || '')
   const [title, setTitle] = useState('')

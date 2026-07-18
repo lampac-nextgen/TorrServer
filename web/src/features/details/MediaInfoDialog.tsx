@@ -1,10 +1,10 @@
-import { Button, Modal, Spinner, useMediaQuery } from '@heroui/react'
+import { Button, Modal, Spinner } from '@heroui/react'
 import { AudioLines, Captions, Clapperboard, FileVideo, Layers } from 'lucide-react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { fetchFfp, type FfpProbeResult, type FfpStream } from 'shared/api/extras'
-import { queryMax } from 'shared/theme/breakpoints'
+import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import AppDialog from 'shared/ui/AppDialog'
 import { DIALOG_SHEET_M } from 'shared/ui/dialogSizes'
 
@@ -117,7 +117,7 @@ function StreamCard({
 /** Nested sheet with full ffprobe streams — replaces the one-line toast. */
 export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName }: MediaInfoDialogProps) {
   const { t } = useTranslation()
-  const isFullScreenBreakpoint = useMediaQuery(queryMax('dialog'))
+  const isFullScreenBreakpoint = useDialogFullScreen()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [data, setData] = useState<FfpProbeResult | null>(null)

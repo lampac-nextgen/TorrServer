@@ -16,6 +16,7 @@ import type { TorrentStat } from 'shared/api/types'
 import { listViewedFiles } from 'shared/api/viewed'
 import { useUpdateCache } from 'shared/cache/useUpdateCache'
 import { useTorrentDetail } from 'shared/hooks/useTorrentDetail'
+import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
 import { getPeerString, humanizeSize, humanizeSpeed, removeRedundantCharacters } from 'shared/lib/format'
 import { filesFromMetadata } from 'shared/torrent/fileMetadata'
@@ -110,7 +111,7 @@ export default function DetailsDialog({
   autoPlayTimecode,
 }: DetailsDialogProps) {
   const { t } = useTranslation()
-  const isFullScreen = useMediaQuery(queryMax('dialog'))
+  const isFullScreen = useDialogFullScreen()
   /** Equal-width Overview/Files/Cache segments — only needed below the phone breakpoint. */
   const isMobile = useMediaQuery(queryMax('mobile'))
   useSyncModalOpen(true)
@@ -241,28 +242,28 @@ export default function DetailsDialog({
 
   const primaryStats = (
     <>
-      <StatWidget label={t('DownloadSpeed')} value={humanizeSpeed(downloadSpeed)} />
-      <StatWidget label={t('UploadSpeed')} value={humanizeSpeed(uploadSpeed)} />
-      <StatWidget label={t('Peers')} value={getPeerString(torrent) || '—'} />
-      <StatWidget label={t('Size')} value={humanizeSize(torrentSize)} />
+      <StatWidget dense={!isFullScreen} label={t('DownloadSpeed')} value={humanizeSpeed(downloadSpeed)} />
+      <StatWidget dense={!isFullScreen} label={t('UploadSpeed')} value={humanizeSpeed(uploadSpeed)} />
+      <StatWidget dense={!isFullScreen} label={t('Peers')} value={getPeerString(torrent) || '—'} />
+      <StatWidget dense={!isFullScreen} label={t('Size')} value={humanizeSize(torrentSize)} />
     </>
   )
 
   const secondaryStats = (
     <>
-      <StatWidget dense={isFullScreen} label={t('Status')} value={statusLabel(stat)} />
-      <StatWidget dense={isFullScreen} label={t('Category')} value={category || '—'} />
+      <StatWidget dense label={t('Status')} value={statusLabel(stat)} />
+      <StatWidget dense label={t('Category')} value={category || '—'} />
       <StatWidget
-        dense={isFullScreen}
+        dense
         label={t('PiecesCount')}
         value={cache.PiecesCount != null ? String(cache.PiecesCount) : '—'}
       />
       <StatWidget
-        dense={isFullScreen}
+        dense
         label={t('PiecesLength')}
         value={cache.PiecesLength != null ? humanizeSize(cache.PiecesLength) : '—'}
       />
-      <StatWidget dense={isFullScreen} label={t('CacheFilled')} value={cacheFilledValue} />
+      <StatWidget dense label={t('CacheFilled')} value={cacheFilledValue} />
     </>
   )
 
@@ -294,11 +295,11 @@ export default function DetailsDialog({
               </Modal.CloseTrigger>
             </Modal.Header>
 
-            <Modal.Body className='flex min-h-0 flex-1 flex-col gap-3 overflow-hidden sm:gap-4'>
-              {/* Compact on fullscreen (no nested scroll); full hero on desktop. */}
+            <Modal.Body className='flex min-h-0 flex-1 flex-col gap-3 overflow-hidden'>
+              {/* Compact on fullscreen (no nested scroll); denser hero on desktop sheet. */}
               <div
                 className={`shrink-0 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 ${
-                  isFullScreen ? 'space-y-3 p-3' : 'flex flex-col gap-4 p-4 sm:flex-row sm:items-start'
+                  isFullScreen ? 'space-y-3 p-3' : 'flex flex-col gap-3 p-3 sm:flex-row sm:items-start'
                 }`}
               >
                 {isFullScreen ? (
@@ -346,7 +347,7 @@ export default function DetailsDialog({
                       onClick={() => setPosterEditOpen(true)}
                       aria-label={t('AddDialog.AddPosterLinkInput')}
                       title={t('AddDialog.AddPosterLinkInput')}
-                      className='group relative mx-auto grid aspect-[2/3] w-full max-w-[120px] shrink-0 place-items-center overflow-hidden rounded-lg bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2 sm:mx-0'
+                      className='group relative mx-auto grid aspect-[2/3] w-full max-w-[96px] shrink-0 place-items-center overflow-hidden rounded-lg bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2 sm:mx-0'
                     >
                       {poster ? (
                         <img
@@ -366,17 +367,17 @@ export default function DetailsDialog({
                     </button>
 
                     <div className='min-w-0 flex-1'>
-                      <h2 className='mb-1 break-words text-lg font-bold text-foreground'>{displayTitle}</h2>
+                      <h2 className='mb-0.5 break-words text-lg font-bold text-foreground'>{displayTitle}</h2>
                       {/* Reserve subtitle line so title-only torrents don't collapse hero height. */}
                       <p
-                        className={`mb-3 truncate text-sm ${subtitle ? 'text-muted' : 'invisible'}`}
+                        className={`mb-1.5 truncate text-sm ${subtitle ? 'text-muted' : 'invisible'}`}
                         aria-hidden={!subtitle}
                       >
                         {subtitle || '\u00a0'}
                       </p>
 
                       {/* 9 slots → 2 rows on xl (5+4). min-h locks row stack so value updates never grow hero. */}
-                      <div className='grid grid-cols-2 gap-2 sm:grid-cols-3 sm:min-h-[11.5rem] lg:grid-cols-4 lg:min-h-[7.75rem] xl:grid-cols-5 xl:min-h-[7.75rem]'>
+                      <div className='grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:min-h-[9.5rem] lg:grid-cols-4 lg:min-h-[6.5rem] xl:grid-cols-5 xl:min-h-[6.5rem]'>
                         {primaryStats}
                         {secondaryStats}
                       </div>
@@ -400,14 +401,14 @@ export default function DetailsDialog({
                   <Tabs.List aria-label={t('TorrentDetails')} className={isMobile ? 'w-full min-w-full' : undefined}>
                     <Tabs.Tab
                       id='overview'
-                      className={isMobile ? 'min-h-11 w-auto flex-1 basis-0' : 'min-h-11 w-auto shrink-0'}
+                      className={isMobile ? 'min-h-11 w-auto flex-1 basis-0' : 'min-h-9 w-auto shrink-0'}
                     >
                       {t('Overview')}
                       <Tabs.Indicator />
                     </Tabs.Tab>
                     <Tabs.Tab
                       id='files'
-                      className={isMobile ? 'min-h-11 w-auto flex-1 basis-0' : 'min-h-11 w-auto shrink-0'}
+                      className={isMobile ? 'min-h-11 w-auto flex-1 basis-0' : 'min-h-9 w-auto shrink-0'}
                       aria-label={t('TorrentContent')}
                     >
                       {t('TorrentFiles')}
@@ -415,7 +416,7 @@ export default function DetailsDialog({
                     </Tabs.Tab>
                     <Tabs.Tab
                       id='cache'
-                      className={isMobile ? 'min-h-11 w-auto flex-1 basis-0' : 'min-h-11 w-auto shrink-0'}
+                      className={isMobile ? 'min-h-11 w-auto flex-1 basis-0' : 'min-h-9 w-auto shrink-0'}
                     >
                       {t('Cache')}
                       <Tabs.Indicator />
@@ -425,7 +426,7 @@ export default function DetailsDialog({
 
                 <Tabs.Panel
                   id='overview'
-                  className={`min-h-0 flex-1 overflow-y-auto overscroll-contain ${isFullScreen ? 'space-y-3 pt-3' : 'space-y-4 pt-4'}`}
+                  className='min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pt-3'
                 >
                   {isFullScreen ? (
                     <div className='grid grid-cols-2 gap-1.5 sm:grid-cols-3'>{secondaryStats}</div>
@@ -434,7 +435,7 @@ export default function DetailsDialog({
                   <SpeedCharts
                     downloadSpeed={downloadSpeed}
                     uploadSpeed={uploadSpeed}
-                    compact={isFullScreen}
+                    compact
                   />
 
                   {isFullScreen ? (
@@ -453,9 +454,8 @@ export default function DetailsDialog({
                       </Button>
                     </div>
                   ) : (
-                    <div className='rounded-xl border border-border bg-surface-secondary p-4'>
-                      <div className='mb-3 flex items-center justify-between gap-2'>
-                        <p className='text-sm font-semibold text-muted'>{t('Cache')}</p>
+                    <div className='rounded-xl border border-border bg-surface-secondary p-2.5'>
+                      <div className='mb-2 flex items-center justify-end gap-2'>
                         <Button size='sm' variant='ghost' onPress={() => setCacheMapOpen(true)}>
                           {t('DetailedCacheView.button')}
                         </Button>
@@ -476,7 +476,7 @@ export default function DetailsDialog({
                     onShowFiles={() => setActiveTab('files')}
                     autoPlayFileId={autoPlayFileId}
                     autoPlayTimecode={autoPlayTimecode}
-                    compact={isFullScreen}
+                    compact
                   />
                 </Tabs.Panel>
 

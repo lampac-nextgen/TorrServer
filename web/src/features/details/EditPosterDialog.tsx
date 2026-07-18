@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 
 import type { TorrentStat } from 'shared/api/types'
 import { TORRENTS_QUERY_KEY, updateTorrent } from 'shared/api/torrents'
+import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import { queryMax } from 'shared/theme/breakpoints'
 import AppDialog from 'shared/ui/AppDialog'
 import { DIALOG_SHEET_M } from 'shared/ui/dialogSizes'
@@ -22,7 +23,7 @@ export default function EditPosterDialog({ torrent, open, onClose }: EditPosterD
   const queryClient = useQueryClient()
   const toast = useOptionalAppToast()
   const isMobile = useMediaQuery(queryMax('mobile'))
-  const isFullScreenBreakpoint = useMediaQuery(queryMax('dialog'))
+  const isFullScreenBreakpoint = useDialogFullScreen()
 
   const [url, setUrl] = useState('')
   const [saving, setSaving] = useState(false)

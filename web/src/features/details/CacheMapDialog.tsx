@@ -1,7 +1,7 @@
-import { Checkbox, Modal, useMediaQuery } from '@heroui/react'
+import { Checkbox, Modal } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
 import type { TorrentCache as TorrentCacheData } from 'shared/api/types'
-import { queryMax } from 'shared/theme/breakpoints'
+import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import AppDialog from 'shared/ui/AppDialog'
 import { DIALOG_CACHE } from 'shared/ui/dialogSizes'
 
@@ -24,7 +24,7 @@ export default function CacheMapDialog({
   onSnakeDebugModeChange,
 }: CacheMapDialogProps) {
   const { t } = useTranslation()
-  const isFullScreen = useMediaQuery(queryMax('dialog'))
+  const isFullScreen = useDialogFullScreen()
 
   return (
     <AppDialog

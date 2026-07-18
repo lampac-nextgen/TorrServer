@@ -76,13 +76,13 @@ function EpisodeRow({
 
   return (
     <div
-      className={`flex items-center gap-2 rounded-lg border border-border bg-surface px-2.5 py-2 sm:gap-4 sm:rounded-xl sm:px-3.5 sm:py-3 ${
+      className={`flex items-center gap-2 rounded-lg border border-border bg-surface px-2.5 py-2 sm:gap-3 sm:rounded-xl sm:px-3 sm:py-2 ${
         row.viewed ? 'opacity-80' : 'border-l-[3px] border-l-accent'
       }`}
     >
       <div className='flex min-w-0 flex-1 items-center gap-2 sm:gap-3'>
         {badge ? (
-          <span className='inline-flex h-8 min-w-9 shrink-0 items-center justify-center rounded-md bg-accent-soft px-1.5 text-xs font-bold tabular-nums text-accent sm:h-9 sm:min-w-11 sm:rounded-lg sm:px-2 sm:text-sm'>
+          <span className='inline-flex h-8 min-w-9 shrink-0 items-center justify-center rounded-md bg-accent-soft px-1.5 text-xs font-bold tabular-nums text-accent sm:h-8 sm:min-w-9 sm:rounded-lg sm:px-2 sm:text-sm'>
             {badge}
           </span>
         ) : null}
@@ -230,7 +230,7 @@ const FilesDataGrid = memo(
     }
 
     return (
-      <div className='space-y-1.5 sm:space-y-2.5'>
+      <div className='space-y-1.5'>
         {rows.map(row => (
           <EpisodeRow
             key={row.id}

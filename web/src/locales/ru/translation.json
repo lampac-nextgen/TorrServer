@@ -254,7 +254,11 @@
     "SectionAppearance": "Оформление",
     "AppearanceInstantHint": "Тема и палитра применяются сразу в этом браузере — «Сохранить» не нужно.",
     "ThemePaletteSearch": "Поиск палитр…",
-    "ThemePaletteEmpty": "Ничего не найдено."
+    "ThemePaletteEmpty": "Ничего не найдено.",
+    "SectionDialogs": "Диалоги",
+    "DialogsInstantHint": "Эти параметры применяются сразу в этом браузере — «Сохранить» не нужно.",
+    "DialogsFullScreen": "Открывать диалоги на весь экран",
+    "DialogsFullScreenHint": "Детали, настройки, поиск и другие окна открываются на весь экран даже на широком мониторе."
   },
   "Size": "Размер",
   "SpecialThanks": "Отдельное спасибо",

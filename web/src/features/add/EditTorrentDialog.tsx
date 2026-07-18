@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
 import { TORRENTS_QUERY_KEY, updateTorrent } from 'shared/api/torrents'
 import { getMoviePosters, shortenTitleForPosterSearch } from 'shared/lib/torrentHelpers'
+import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import { queryMax } from 'shared/theme/breakpoints'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import AppDialog from 'shared/ui/AppDialog'
@@ -27,7 +28,7 @@ export default function EditTorrentDialog({ torrent, open, onClose }: EditTorren
   const queryClient = useQueryClient()
   const toast = useOptionalAppToast()
   const isMobile = useMediaQuery(queryMax('mobile'))
-  const isFullScreenBreakpoint = useMediaQuery(queryMax('dialog'))
+  const isFullScreenBreakpoint = useDialogFullScreen()
   const posterRequestRef = useRef(0)
 
   const [title, setTitle] = useState('')

@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 
 import type { MultiAddFileState } from 'shared/api/types'
 import { TORRENTS_QUERY_KEY, uploadTorrent } from 'shared/api/torrents'
+import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
 import {
   checkImageURL,
@@ -53,7 +54,7 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
   const queryClient = useQueryClient()
   const toast = useOptionalAppToast()
   const isMobile = useMediaQuery(queryMax('mobile'))
-  const isFullScreenBreakpoint = useMediaQuery(queryMax('dialog'))
+  const isFullScreenBreakpoint = useDialogFullScreen()
 
   const { data: existingTorrents = [] } = useTorrentsQuery()
 

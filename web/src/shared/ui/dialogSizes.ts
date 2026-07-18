@@ -52,17 +52,24 @@ export const PLAYER_DIALOG_MOBILE: CSSProperties = DIALOG_FULLSCREEN
 /** Settings — fixed height so tab switches (Storage ↔ Network ↔ Torznab) don't resize the window. */
 export const DIALOG_SETTINGS: CSSProperties = {
   ...DIALOG_SHEET_L,
-  height: 'min(78dvh, 44rem)',
-  maxHeight: 'min(78dvh, 44rem)',
-  minHeight: 'min(78dvh, 44rem)',
+  height: 'min(72dvh, 40rem)',
+  maxHeight: 'min(72dvh, 40rem)',
+  minHeight: 'min(72dvh, 40rem)',
+}
+
+/** Search results sheet — slightly narrower than Settings/Details so sparse tables don't float. */
+export const DIALOG_SEARCH: CSSProperties = {
+  minWidth: 'min(92vw, 56rem)',
+  maxWidth: 'min(92vw, 56rem)',
+  width: 'min(92vw, 56rem)',
 }
 
 /** Details sheet — fixed height so Overview / Files / Cache tabs don't resize the window. */
 export const DIALOG_DETAILS: CSSProperties = {
   ...DIALOG_SHEET_L,
-  height: 'min(88dvh, 52rem)',
-  maxHeight: 'min(88dvh, 52rem)',
-  minHeight: 'min(88dvh, 52rem)',
+  height: 'min(80dvh, 46rem)',
+  maxHeight: 'min(80dvh, 46rem)',
+  minHeight: 'min(80dvh, 46rem)',
 }
 
 /** Edit torrent — fixed height so poster search results don't resize the sheet. */

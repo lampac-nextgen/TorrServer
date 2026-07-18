@@ -21,12 +21,13 @@ import type { SearchResultItem, TorznabCapsCategory, TorznabUrl } from 'shared/a
 import { fetchTorznabCaps, searchRutor, searchTorznab } from 'shared/api/search'
 import { getSettings } from 'shared/api/settings'
 import { addTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
+import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import { queryMax } from 'shared/theme/breakpoints'
 import { formatSizeToClassicUnits, parseSizeToBytes } from 'shared/lib/format'
 import { getMoviePosters, shortenTitleForPosterSearch } from 'shared/lib/torrentHelpers'
 import AppDialog from 'shared/ui/AppDialog'
 import { iconEmpty } from 'shared/ui/iconProps'
-import { DIALOG_SHEET_L } from 'shared/ui/dialogSizes'
+import { DIALOG_SEARCH } from 'shared/ui/dialogSizes'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
 import SearchResultsGrid from './SearchResultsGrid'
@@ -80,7 +81,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
   const queryClient = useQueryClient()
   const toast = useOptionalAppToast()
   const isMobile = useMediaQuery(queryMax('mobile'))
-  const isFullScreenBreakpoint = useMediaQuery(queryMax('dialog'))
+  const isFullScreenBreakpoint = useDialogFullScreen()
 
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResultItem[]>([])
@@ -396,7 +397,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
       size='lg'
       fullScreen={isFullScreenBreakpoint}
       dialogClassName='flex flex-col overflow-hidden'
-      dialogStyle={isFullScreenBreakpoint ? undefined : DIALOG_SHEET_L}
+      dialogStyle={isFullScreenBreakpoint ? undefined : DIALOG_SEARCH}
     >
       <Modal.Header className='shrink-0'>
         <Modal.Heading>{t('Torznab.SearchTorrents')}</Modal.Heading>
@@ -559,13 +560,6 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
           </div>
         </div>
       </Modal.Body>
-      {isMobile ? null : (
-        <Modal.Footer className='shrink-0'>
-          <Button onPress={onClose} variant='secondary'>
-            {t('Close')}
-          </Button>
-        </Modal.Footer>
-      )}
     </AppDialog>
   )
 }

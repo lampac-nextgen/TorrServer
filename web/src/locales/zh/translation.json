@@ -254,7 +254,11 @@
     "SectionAppearance": "外观",
     "AppearanceInstantHint": "主题和色板会立即在本浏览器中生效，无需点保存。",
     "ThemePaletteSearch": "搜索色板…",
-    "ThemePaletteEmpty": "没有匹配的色板。"
+    "ThemePaletteEmpty": "没有匹配的色板。",
+    "SectionDialogs": "对话框",
+    "DialogsInstantHint": "这些选项会立即在本浏览器中生效，无需点保存。",
+    "DialogsFullScreen": "全屏打开对话框",
+    "DialogsFullScreenHint": "详情、设置、搜索等面板即使在宽屏上也会全屏打开。"
   },
   "Size": "大小",
   "SpecialThanks": "特别感谢",

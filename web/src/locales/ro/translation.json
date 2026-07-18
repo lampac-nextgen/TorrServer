@@ -254,7 +254,11 @@
     "SectionAppearance": "Aspect",
     "AppearanceInstantHint": "Tema și paleta se aplică imediat în acest browser — Salvare nu este necesară.",
     "ThemePaletteSearch": "Caută palete…",
-    "ThemePaletteEmpty": "Nicio paletă nu corespunde."
+    "ThemePaletteEmpty": "Nicio paletă nu corespunde.",
+    "SectionDialogs": "Dialoguri",
+    "DialogsInstantHint": "Aceste opțiuni se aplică imediat în acest browser — Salvare nu este necesară.",
+    "DialogsFullScreen": "Deschide dialogurile pe ecran complet",
+    "DialogsFullScreenHint": "Detalii, setări, căutare și alte ferestre se deschid pe ecran complet chiar și pe ecran lat."
   },
   "Size": "Mărime",
   "SpecialThanks": "Mulțumiri speciale",

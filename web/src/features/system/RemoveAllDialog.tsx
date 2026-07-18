@@ -1,11 +1,11 @@
-import { Button, Modal, useMediaQuery } from '@heroui/react'
+import { Button, Modal } from '@heroui/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Trash2 } from 'lucide-react'
 import { iconAction, iconMenu } from 'shared/ui/iconProps'
 import { useTranslation } from 'react-i18next'
 
 import { TORRENTS_QUERY_KEY, wipeTorrents } from 'shared/api/torrents'
-import { queryMax } from 'shared/theme/breakpoints'
+import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import AppDialog from 'shared/ui/AppDialog'
 import UnsafeButton from 'shared/ui/UnsafeButton'
 
@@ -18,7 +18,7 @@ export interface RemoveAllDialogProps {
 export default function RemoveAllDialog({ open, onClose }: RemoveAllDialogProps) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const isFullScreenBreakpoint = useMediaQuery(queryMax('dialog'))
+  const isFullScreenBreakpoint = useDialogFullScreen()
 
   const handleRemove = async () => {
     await wipeTorrents()

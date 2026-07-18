@@ -254,7 +254,11 @@
     "SectionAppearance": "Apparence",
     "AppearanceInstantHint": "Le thème et la palette s’appliquent immédiatement dans ce navigateur — Enregistrer n’est pas nécessaire.",
     "ThemePaletteSearch": "Rechercher des palettes…",
-    "ThemePaletteEmpty": "Aucune palette ne correspond."
+    "ThemePaletteEmpty": "Aucune palette ne correspond.",
+    "SectionDialogs": "Dialogues",
+    "DialogsInstantHint": "Ces options s’appliquent immédiatement dans ce navigateur — Enregistrer n’est pas nécessaire.",
+    "DialogsFullScreen": "Ouvrir les dialogues en plein écran",
+    "DialogsFullScreenHint": "Détails, paramètres, recherche et autres fenêtres s’ouvrent en plein écran même sur grand écran."
   },
   "Size": "Taille",
   "SpecialThanks": "Remerciements spéciaux",

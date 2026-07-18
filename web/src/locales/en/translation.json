@@ -254,7 +254,11 @@
     "SectionAppearance": "Appearance",
     "AppearanceInstantHint": "Theme and palette apply immediately in this browser — Save is not required.",
     "ThemePaletteSearch": "Search palettes…",
-    "ThemePaletteEmpty": "No palettes match your search."
+    "ThemePaletteEmpty": "No palettes match your search.",
+    "SectionDialogs": "Dialogs",
+    "DialogsInstantHint": "These options apply immediately in this browser — Save is not required.",
+    "DialogsFullScreen": "Open dialogs fullscreen",
+    "DialogsFullScreenHint": "Details, Settings, Search, and other sheets open edge-to-edge even on wide screens."
   },
   "Size": "Size",
   "SpecialThanks": "Special Thanks",

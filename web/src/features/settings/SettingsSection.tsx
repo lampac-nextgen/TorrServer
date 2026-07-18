@@ -20,7 +20,7 @@ export default function SettingsSection({ icon, title, description, children, cl
         <h3 className='text-xs font-semibold tracking-wide text-muted uppercase'>{title}</h3>
       </div>
       {description ? <p className='mb-3 max-w-prose text-sm leading-relaxed text-muted'>{description}</p> : null}
-      <div className='space-y-4 rounded-xl border border-border bg-surface-secondary p-4 sm:p-5'>{children}</div>
+      <div className='space-y-4 rounded-xl border border-border bg-surface-secondary p-3 sm:p-4'>{children}</div>
     </section>
   )
 }

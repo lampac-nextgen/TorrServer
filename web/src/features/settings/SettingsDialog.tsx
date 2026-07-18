@@ -19,6 +19,7 @@ import defaultSettings from 'shared/settings/defaults'
 import { GST_RUNTIME_QUERY_KEY, useGStreamerRuntime } from 'shared/lib/gstreamer'
 import { notifySettingsChanged } from 'shared/lib/settingsEvents'
 import { clearTMDBCache } from 'shared/lib/torrentHelpers'
+import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import { queryMax } from 'shared/theme/breakpoints'
 import AppDialog from 'shared/ui/AppDialog'
 import { DIALOG_SETTINGS } from 'shared/ui/dialogSizes'
@@ -70,7 +71,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
   const toast = useOptionalAppToast()
   const queryClient = useQueryClient()
   const isMobile = useMediaQuery(queryMax('mobile'))
-  const isFullScreenBreakpoint = useMediaQuery(queryMax('dialog'))
+  const isFullScreenBreakpoint = useDialogFullScreen()
   const gstRuntime = useGStreamerRuntime()
 
   const [tab, setTab] = useState<SettingsTab>('primary')
@@ -291,8 +292,8 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
   const panelClassName = isMobile
     ? 'min-h-0 flex-1 overflow-y-auto pt-3'
     : 'ml-0 min-h-0 min-w-0 flex-1 overflow-y-auto'
-  const tabsRootClassName = 'flex min-h-0 flex-1 gap-6 overflow-hidden'
-  const tabsListClassName = 'sticky top-0 z-10 w-60 shrink-0 self-start bg-surface'
+  const tabsRootClassName = 'flex min-h-0 flex-1 gap-4 overflow-hidden'
+  const tabsListClassName = 'sticky top-0 z-10 w-52 shrink-0 self-start bg-surface'
 
   /** Shared panel body for both the mobile Select path and desktop Tabs.Panel mounts. */
   const renderPanel = (id: SettingsTab) => {
@@ -436,7 +437,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
                 <Tabs.Tab
                   key={item.id}
                   id={item.id}
-                  className='min-h-10 items-start justify-start gap-2.5 px-3 py-2 text-left'
+                  className='min-h-9 items-start justify-start gap-2.5 px-3 py-1.5 text-left'
                 >
                   <span className='mt-0.5'>{item.icon}</span>
                   <span className='text-wrap leading-snug'>{item.label}</span>

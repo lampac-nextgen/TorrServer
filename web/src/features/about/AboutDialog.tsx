@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { runSpeedTest } from 'shared/api/extras'
 import { echoHost } from 'shared/api/hosts'
 import { publicUrl } from 'shared/lib/publicUrl'
+import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import { queryMax } from 'shared/theme/breakpoints'
 import AppDialog from 'shared/ui/AppDialog'
 import { DIALOG_SHEET_M } from 'shared/ui/dialogSizes'
@@ -51,7 +52,7 @@ function contributorInitials(name: string): string {
 export default function AboutDialog({ open, onClose }: AboutDialogProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
-  const isFullScreenBreakpoint = useMediaQuery(queryMax('dialog'))
+  const isFullScreenBreakpoint = useDialogFullScreen()
   const isMobile = useMediaQuery(queryMax('mobile'))
   const [version, setVersion] = useState<string | null>(null)
   const [speedTesting, setSpeedTesting] = useState(false)
