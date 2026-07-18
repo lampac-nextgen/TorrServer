@@ -14,7 +14,7 @@ export interface AppDialogProps {
   dialogClassName?: string
   /**
    * Inline min/max-width (and optional fixed height) for the dialog surface.
-   * Ignored when `fullScreen` — then `DIALOG_FULLSCREEN` (`height: 100%` of the visual-viewport container) is applied instead.
+   * Ignored when `fullScreen` — then `DIALOG_FULLSCREEN` (`100dvh`) is applied instead.
    * HeroUI's `size` ceilings and our collapse-prevention floor (`index.css`) live in CSS
    * layers, so a plain Tailwind width utility can lose to them regardless of specificity —
    * inline style always wins and is the only reliable way to widen a dialog past `lg`.

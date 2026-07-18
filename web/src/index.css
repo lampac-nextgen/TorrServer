@@ -2237,11 +2237,19 @@ html,
 body,
 #root {
   height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
   margin: 0;
+  /* iOS PWA: fill the real screen including the home-indicator region */
+  min-height: 100%;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
 }
 
 body {
   font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  /* Hex fallback — iOS standalone can fail to paint oklch/var backgrounds into the home-indicator strip */
+  background-color: #f4f6f5;
   background: var(--background);
   color: var(--foreground);
   overflow: hidden;
@@ -2250,12 +2258,18 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+html.dark body,
+html[data-theme='dark'] body {
+  background-color: #0a0f0d;
+}
+
 #root {
   overflow: hidden;
 }
 
 body[data-modal-open='true'] .ts-bottom-nav {
   pointer-events: none;
+  /* Keep in-flow height so the shell does not jump; modal covers the reserved band */
   visibility: hidden;
 }
 
@@ -2295,17 +2309,31 @@ body[data-immersive='true'] .ts-bottom-nav {
 /**
  * Fullscreen dialogs on iOS PWA (`viewport-fit=cover` + `black-translucent`):
  *
- * HeroUI's `.modal__close-trigger` is `position: absolute; top: 1rem` relative to the dialog.
- * Putting safe-area on dialog `padding-top` does NOT move that absolute close button — it still
- * sits under the status bar / Dynamic Island and becomes untappable. Dialog `padding-bottom`
- * with `1.5rem + safe-area` also creates a permanent empty strip under short content.
+ * 1) HeroUI/RAC sets `--visual-viewport-height` from `window.visualViewport.height`.
+ *    On installed iOS PWAs that value is often shorter than the real screen, so the
+ *    modal ends above the home-indicator and leaves a dead white strip (looks like
+ *    BottomNav padding). Force fullscreen surfaces to `100dvh` instead.
  *
- * Fix: zero dialog chrome padding; push safe-area into header / close / body / footer instead.
+ * 2) HeroUI's `.modal__close-trigger` is `position: absolute; top: 1rem` — dialog
+ *    padding does NOT move it. Safe-area must be applied to the close button itself.
+ *
+ * 3) Keep bottom safe-area as scroll padding inside the body, not as chrome that
+ *    permanently shrinks the dialog.
  */
+.modal__backdrop:has(.modal__dialog--full),
+.modal__container--full {
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 100dvh;
+}
+
 .modal__dialog--full {
   padding: 0;
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
+  height: 100%;
+  max-height: 100%;
+  min-height: 100%;
 }
 
 .modal__dialog--full > .modal__header {
@@ -2317,8 +2345,14 @@ body[data-immersive='true'] .ts-bottom-nav {
 
 .modal__dialog--full > .modal__body {
   padding-right: 1rem;
-  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  padding-bottom: 0;
   padding-left: 1rem;
+}
+
+/* Home-indicator clearance scrolls with content instead of eating fixed chrome. */
+.modal__dialog--full > .modal__body.modal__body--scroll-inside,
+.modal__dialog--full > .modal__body [role='tabpanel'] {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
 }
 
 .modal__dialog--full > .modal__footer {
@@ -2352,6 +2386,15 @@ body[data-immersive='true'] .ts-bottom-nav {
 .ts-player-modal-full .modal__dialog--full > .modal__footer,
 .modal__dialog--full:has(.ts-player) > .modal__footer {
   padding: 0;
+}
+
+.ts-player-modal-full .modal__backdrop:has(.modal__dialog--full),
+.modal__backdrop:has(.modal__dialog--full:has(.ts-player)),
+.ts-player-modal-full .modal__container--full,
+.modal__container--full:has(.ts-player) {
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 100dvh;
 }
 
 /* —— TorrServer cinema player (Media Chrome) —— */

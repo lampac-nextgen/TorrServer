@@ -22,7 +22,6 @@ import { iconMenu, iconNav, iconNavMobile } from 'shared/ui/iconProps'
 import DialogErrorBoundary from 'shared/ui/DialogErrorBoundary'
 
 import BottomNav from './BottomNav'
-import { BOTTOM_NAV_OFFSET } from './bottomNavLayout'
 import Sidebar from './Sidebar'
 import NowPlayingBar from './NowPlayingBar'
 
@@ -189,11 +188,11 @@ export default function Shell() {
 
   return (
     <div
-      className='grid h-full overflow-hidden bg-background'
+      className='grid h-dvh max-h-dvh overflow-hidden bg-background'
       style={{
-        gridTemplateRows: `${headerHeight} 1fr`,
+        gridTemplateRows: isMobile ? `${headerHeight} minmax(0, 1fr) auto` : `${headerHeight} minmax(0, 1fr)`,
         gridTemplateColumns: isMobile ? '1fr' : `${sidebarWidth}px 1fr`,
-        gridTemplateAreas: isMobile ? '"header" "content"' : '"header header" "sidebar content"',
+        gridTemplateAreas: isMobile ? '"header" "content" "nav"' : '"header header" "sidebar content"',
         transition: 'grid-template-columns 200ms ease',
       }}
     >
@@ -268,10 +267,7 @@ export default function Shell() {
 
       <main
         className='min-h-0 min-w-0 overflow-auto bg-background [-webkit-overflow-scrolling:touch]'
-        style={{
-          gridArea: 'content',
-          paddingBottom: isMobile ? BOTTOM_NAV_OFFSET : 0,
-        }}
+        style={{ gridArea: 'content' }}
       >
         <TorrentsPage
           sortABC={sortABC}
@@ -281,7 +277,11 @@ export default function Shell() {
         />
       </main>
 
-      {isMobile ? <BottomNav {...navProps} /> : null}
+      {isMobile ? (
+        <div style={{ gridArea: 'nav' }}>
+          <BottomNav {...navProps} />
+        </div>
+      ) : null}
 
       <Suspense fallback={lazyDialogFallback}>
         <DialogErrorBoundary onClose={closeAdd}>
