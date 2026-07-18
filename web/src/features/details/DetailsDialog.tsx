@@ -25,6 +25,7 @@ import { queryMax } from 'shared/theme/breakpoints'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { iconBtn } from 'shared/ui/controlClasses'
 import { DIALOG_SHEET_L } from 'shared/ui/dialogSizes'
+import { toPlayableFile } from 'shared/torrent/toPlayableFile'
 
 import FileBrowser from './FileBrowser'
 import SpeedCharts from './SpeedCharts'
@@ -35,15 +36,12 @@ export interface DetailsDialogProps {
   torrent: TorrentStat
   onClose: () => void
   onEdit?: (torrent: TorrentStat) => void
+  /** Continue Watching: start this file after details open. */
+  autoPlayFileId?: number
+  autoPlayTimecode?: number
 }
 
 type DetailsTab = 'overview' | 'files' | 'cache'
-
-const toPlayableFile = (file: TorrentFileStat): PlayableFile => ({
-  id: file.id ?? file.Id ?? 0,
-  path: file.path ?? file.Path ?? '',
-  length: file.length ?? file.Length ?? 0,
-})
 
 function StatWidget({ label, value }: { label: string; value: string }) {
   return (
@@ -80,7 +78,13 @@ function buildDisplayTitle(name: string | undefined, title: string | undefined):
 }
 
 /** Full-detail sheet for a torrent: hero header, live speed chart, files browser and cache "snake" map. */
-export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit }: DetailsDialogProps) {
+export default function DetailsDialog({
+  torrent: initialTorrent,
+  onClose,
+  onEdit,
+  autoPlayFileId,
+  autoPlayTimecode,
+}: DetailsDialogProps) {
   const { t } = useTranslation()
   const isFullScreen = useMediaQuery(queryMax('dialog'))
   useSyncModalOpen(true)
@@ -178,7 +182,7 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
       [PRELOAD]: t('TorrentPreload'),
       [WORKING]: t('TorrentWorking'),
       [CLOSED]: t('TorrentClosed'),
-      [IN_DB]: t('TorrentInDB'),
+      [IN_DB]: t('TorrentInDb'),
     }
     return value != null ? labels[value] || String(value) : '—'
   }
@@ -239,7 +243,7 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                     <StatWidget label={t('UploadSpeed')} value={humanizeSpeed(uploadSpeed)} />
                     <StatWidget label={t('Peers')} value={getPeerString(torrent) || '—'} />
                     <StatWidget label={t('Size')} value={humanizeSize(torrentSize)} />
-                    <StatWidget label={t('Status', { defaultValue: 'Status' })} value={statusLabel(stat)} />
+                    <StatWidget label={t('Status')} value={statusLabel(stat)} />
                     {category ? <StatWidget label={t('Category')} value={category} /> : null}
                     {cache.PiecesCount != null ? (
                       <StatWidget label={t('PiecesCount')} value={String(cache.PiecesCount)} />
@@ -249,7 +253,7 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                     ) : null}
                     {cache.Filled != null && cache.Capacity != null ? (
                       <StatWidget
-                        label={t('CacheFilled', { defaultValue: 'Cache' })}
+                        label={t('CacheFilled')}
                         value={`${humanizeSize(cache.Filled)} / ${humanizeSize(cache.Capacity)}`}
                       />
                     ) : null}
@@ -259,7 +263,7 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
 
               <Tabs.Root selectedKey={resolvedTab} onSelectionChange={key => setActiveTab(String(key) as DetailsTab)}>
                 <Tabs.List aria-label={t('TorrentDetails')}>
-                  <Tabs.Tab id='overview'>{t('Overview', { defaultValue: 'Overview' })}</Tabs.Tab>
+                  <Tabs.Tab id='overview'>{t('Overview')}</Tabs.Tab>
                   <Tabs.Tab id='files'>{t('TorrentContent')}</Tabs.Tab>
                   <Tabs.Tab id='cache'>{t('Cache')}</Tabs.Tab>
                 </Tabs.List>
@@ -287,6 +291,8 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                     onViewedChange={refreshViewed}
                     onDropped={onClose}
                     onShowFiles={() => setActiveTab('files')}
+                    autoPlayFileId={autoPlayFileId}
+                    autoPlayTimecode={autoPlayTimecode}
                   />
                 </Tabs.Panel>
 
@@ -338,7 +344,7 @@ export default function DetailsDialog({ torrent: initialTorrent, onClose, onEdit
                         <Checkbox.Control>
                           <Checkbox.Indicator />
                         </Checkbox.Control>
-                        {t('SnakeDebug', { defaultValue: 'Debug pieces' })}
+                        {t('SnakeDebug')}
                       </Checkbox.Content>
                     </Checkbox>
                   </div>

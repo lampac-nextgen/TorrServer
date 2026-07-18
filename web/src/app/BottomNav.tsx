@@ -66,26 +66,20 @@ export default function BottomNav({
         style={{ height: 'calc(90px + env(safe-area-inset-bottom, 0px))' }}
       >
         <div className='mx-auto flex h-[90px] max-w-lg items-stretch'>
-          {tab(t('Add', { defaultValue: 'Add' }), <FolderPlus size={22} />, onAdd, disabled)}
-          {tab(t('Search'), <Search size={22} />, onSearch, disabled)}
-          {tab(
-            t('Category', { defaultValue: 'Category' }),
-            <Layers size={22} />,
-            onCategories,
-            false,
-            isCategoryFilterActive,
-          )}
-          {tab(t('More', { defaultValue: 'More' }), <Ellipsis size={22} />, moreState.open)}
+          {tab(t('Add'), <FolderPlus size={22} />, onAdd, disabled)}
+          {tab(t('nav.Search'), <Search size={22} />, onSearch, disabled)}
+          {tab(t('Category'), <Layers size={22} />, onCategories, false, isCategoryFilterActive)}
+          {tab(t('nav.More'), <Ellipsis size={22} />, moreState.open)}
         </div>
       </div>
 
       <Modal state={moreState}>
         <Modal.Backdrop isDismissable onClick={closeMore}>
           <Modal.Container placement='bottom' size='md'>
-            <Modal.Dialog aria-label={t('More', { defaultValue: 'More' })}>
+            <Modal.Dialog aria-label={t('nav.More')}>
               <Modal.Body className='flex flex-col gap-1 pb-[env(safe-area-inset-bottom,0px)] pt-2'>
                 {sheetAction(t('RemoveAll'), <Trash2 size={20} />, onRemoveAll, disabled)}
-                {sheetAction(t('Settings'), <Settings size={20} />, onSettings, disabled)}
+                {sheetAction(t('nav.Settings'), <Settings size={20} />, onSettings, disabled)}
                 {sheetAction(t('About'), <Info size={20} />, onAbout)}
                 {sheetAction(t('CloseServer'), <Power size={20} />, onCloseServer, disabled, true)}
               </Modal.Body>

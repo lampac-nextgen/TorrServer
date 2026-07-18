@@ -46,3 +46,9 @@ toolchains/
 /server/gstreamer/embedded_gstlib_windows_amd64.zip
 
 /web-legacy-old
+
+# Local runtime settings accidentally created next to the binary
+/config.db
+/settings.json
+/server/config.db
+/server/settings.json

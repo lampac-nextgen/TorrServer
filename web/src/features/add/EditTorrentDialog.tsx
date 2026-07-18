@@ -82,7 +82,7 @@ export default function EditTorrentDialog({ torrent, open, onClose }: EditTorren
         poster: poster || '',
       })
       await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
-      toast?.showToast({ message: t('Saved', { defaultValue: 'Saved' }), severity: 'success' })
+      toast?.showToast({ message: t('Saved'), severity: 'success' })
       onClose()
     } catch {
       toast?.showToast({ message: t('Error'), severity: 'error' })

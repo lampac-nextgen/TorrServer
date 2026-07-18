@@ -132,7 +132,6 @@
   "Save": "Save",
   "Saved": "Saved",
   "ScrollDown": "scroll down",
-  "Search": "Search",
   "Season": "Season",
   "Seconds": "Seconds",
   "SelectSeason": "Select Season",
@@ -295,7 +294,9 @@
     "Test": "Test",
     "TorrentAddedSuccessfully": "Torrent added successfully",
     "TorznabHostURL": "Torznab Host URL",
-    "Tab": "Torznab"
+    "Tab": "Torznab",
+    "AddServer": "Add server",
+    "Settings": "Torznab settings"
   },
   "GStreamer": {
     "Tab": "GStreamer",
@@ -410,14 +411,6 @@
   "Back": "Back",
   "DLNA": "DLNA Media Server",
   "AddFirstTorrent": "Add your first torrent",
-  "Search.QueryLabel": "Search query",
-  "Search.NoResults": "No results",
-  "Search.TorrentAdded": "Torrent added",
-  "Search.Tracker": "Tracker",
-  "Search.AllTrackers": "All Trackers",
-  "Search.Seeders": "Seeders",
-  "Search.Peers": "Peers",
-  "Search.Rutor": "RuTor",
   "CopyMagnet": "Copy Magnet",
   "LibrarySearch": "Search library",
   "DownloadAllPlaylists": "All playlists",
@@ -445,5 +438,24 @@
   "FfpColor": "Color",
   "FfpSampleRate": "Sample rate",
   "FfpChannels": "Channels",
-  "SnakeIdleFrozen": "idle · frozen"
+  "SnakeIdleFrozen": "idle · frozen",
+  "Search": {
+    "QueryLabel": "Search query",
+    "NoResults": "No results",
+    "TorrentAdded": "Torrent added",
+    "Tracker": "Tracker",
+    "AllTrackers": "All Trackers",
+    "Seeders": "Seeders",
+    "Peers": "Peers",
+    "Rutor": "RuTor"
+  },
+  "nav": {
+    "Search": "Search",
+    "Settings": "Settings",
+    "More": "More"
+  },
+  "CollapseSidebar": "Collapse sidebar",
+  "ExpandSidebar": "Expand sidebar",
+  "Volume": "Volume",
+  "PwaUpdateAvailable": "Update available"
 }

@@ -123,10 +123,9 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
       return t('SnakeCacheSummary', {
         filled: humanizeSize(Filled),
         capacity: humanizeSize(Capacity),
-        defaultValue: `Cache ${humanizeSize(Filled)} of ${humanizeSize(Capacity)}`,
       })
     }
-    return t('Cache', { defaultValue: 'Cache' })
+    return t('Cache')
   }, [cache, t])
 
   useEffect(() => {
@@ -332,7 +331,7 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
         <p className='mt-2 self-center text-xs uppercase tracking-wide text-muted'>
           {t('SnakeFocusRange', { start: focusModel.windowStart, end: focusModel.windowEnd })}
           {!hasActiveReaders
-            ? ` · ${t('SnakeIdleFrozen', { defaultValue: 'idle · frozen' })}`
+            ? ` · ${t('SnakeIdleFrozen')}`
             : null}
         </p>
       ) : null}

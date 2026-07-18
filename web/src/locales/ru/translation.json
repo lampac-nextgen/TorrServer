@@ -132,7 +132,6 @@
   "Save": "Сохранить",
   "Saved": "Сохранено",
   "ScrollDown": "прокрутите вниз",
-  "Search": "Поиск",
   "Season": "Сезон",
   "Seconds": "Секунды",
   "SelectSeason": "Выбор сезона",
@@ -295,7 +294,9 @@
     "Test": "Тест",
     "TorrentAddedSuccessfully": "Торрент успешно добавлен",
     "TorznabHostURL": "URL хоста Torznab",
-    "Tab": "Torznab"
+    "Tab": "Torznab",
+    "AddServer": "Add server",
+    "Settings": "Torznab settings"
   },
   "GStreamer": {
     "Tab": "GStreamer",
@@ -410,14 +411,6 @@
   "Back": "Назад",
   "DLNA": "DLNA-медиасервер",
   "AddFirstTorrent": "Добавьте первый торрент",
-  "Search.QueryLabel": "Поисковый запрос",
-  "Search.NoResults": "Нет результатов",
-  "Search.TorrentAdded": "Торрент добавлен",
-  "Search.Tracker": "Трекер",
-  "Search.AllTrackers": "Все трекеры",
-  "Search.Seeders": "Сиды",
-  "Search.Peers": "Пиры",
-  "Search.Rutor": "RuTor",
   "CopyMagnet": "Скопировать Magnet",
   "LibrarySearch": "Поиск в библиотеке",
   "DownloadAllPlaylists": "Все плейлисты",
@@ -445,5 +438,24 @@
   "FfpColor": "Цвет",
   "FfpSampleRate": "Частота",
   "FfpChannels": "Каналы",
-  "SnakeIdleFrozen": "idle · заморожено"
+  "SnakeIdleFrozen": "idle · заморожено",
+  "Search": {
+    "QueryLabel": "Поисковый запрос",
+    "NoResults": "Нет результатов",
+    "TorrentAdded": "Торрент добавлен",
+    "Tracker": "Трекер",
+    "AllTrackers": "Все трекеры",
+    "Seeders": "Сиды",
+    "Peers": "Пиры",
+    "Rutor": "RuTor"
+  },
+  "nav": {
+    "Search": "Поиск",
+    "Settings": "Настройки",
+    "More": "Ещё"
+  },
+  "CollapseSidebar": "Collapse sidebar",
+  "ExpandSidebar": "Expand sidebar",
+  "Volume": "Volume",
+  "PwaUpdateAvailable": "Update available"
 }

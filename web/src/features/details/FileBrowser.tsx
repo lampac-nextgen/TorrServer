@@ -129,7 +129,7 @@ export default function FileBrowser({
       {hasUsefulFolders ? (
         <div className='rounded-xl border border-border bg-surface-secondary p-2 md:rounded-none md:border-0 md:border-r md:border-border md:bg-transparent md:p-0 md:pr-3'>
           <p className='mb-1.5 px-1 text-xs font-medium uppercase tracking-wide text-muted'>
-            {t('Folders', { defaultValue: 'Folders' })}
+            {t('Folders')}
           </p>
           <Button
             variant={selectedFolderId === 'root' ? 'primary' : 'ghost'}
@@ -137,7 +137,7 @@ export default function FileBrowser({
             className='mb-1 w-full justify-start'
             onPress={() => setSelectedFolderId('root')}
           >
-            {t('AllFiles', { defaultValue: 'All files' })}
+            {t('AllFiles')}
           </Button>
           <DirectoryTreeList node={tree} selectedFolderId={selectedFolderId} onSelect={setSelectedFolderId} />
         </div>

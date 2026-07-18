@@ -470,7 +470,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
               isDisabled={loading || !hasAnySource || !query.trim()}
               className={footerButtonClassName}
             >
-              {loading ? <Spinner size='sm' color='current' /> : t('Search')}
+              {loading ? <Spinner size='sm' color='current' /> : t('nav.Search')}
             </Button>
           </div>
         </div>
@@ -510,7 +510,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
               <AlertCircle className='size-8 text-danger' aria-hidden />
               <p className='text-muted'>{searchError}</p>
               <Button variant='primary' onPress={() => void runSearch()} className={footerButtonClassName}>
-                {t('Retry', { defaultValue: 'Retry' })}
+                {t('Retry')}
               </Button>
             </div>
           ) : null}

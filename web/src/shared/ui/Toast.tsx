@@ -57,6 +57,3 @@ export function AppSnackbarProvider({ children }: { children: ReactNode }) {
 
   return <AppSnackbarContext.Provider value={value}>{children}</AppSnackbarContext.Provider>
 }
-
-/** @deprecated Use AppSnackbarProvider */
-export const AppSnackbar = AppSnackbarProvider

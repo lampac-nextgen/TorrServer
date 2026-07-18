@@ -58,6 +58,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
   const queryClient = useQueryClient()
   const gridRef = useRef<HTMLDivElement>(null)
   const [detailsTorrent, setDetailsTorrent] = useState<TorrentStat | null>(null)
+  const [resumePlay, setResumePlay] = useState<{ fileIndex: number; timecode: number } | null>(null)
   const [editingTorrent, setEditingTorrent] = useState<TorrentStat | null>(null)
   const [libraryQuery, setLibraryQuery] = useState('')
   const [selectionMode, setSelectionMode] = useState(false)
@@ -133,13 +134,13 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
   const toolbar = (
     <div className='sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b border-border/60 bg-background/95 px-3 py-2 backdrop-blur-md sm:px-4'>
       <TextField
-        aria-label={t('LibrarySearch', { defaultValue: 'Search library' })}
+        aria-label={t('LibrarySearch')}
         value={libraryQuery}
         onChange={setLibraryQuery}
         className='min-w-0 flex-1 sm:max-w-xs'
       >
-        <Label className='sr-only'>{t('LibrarySearch', { defaultValue: 'Search library' })}</Label>
-        <Input placeholder={t('LibrarySearch', { defaultValue: 'Search library' })} />
+        <Label className='sr-only'>{t('LibrarySearch')}</Label>
+        <Input placeholder={t('LibrarySearch')} />
       </TextField>
       <Button
         size='sm'
@@ -149,16 +150,16 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
         <CheckSquare className='size-4' aria-hidden />
         {selectionMode
           ? t('Cancel')
-          : t('Select', { defaultValue: 'Select' })}
+          : t('Select')}
       </Button>
       <Button
         size='sm'
         variant='secondary'
         onPress={() => window.open(playlistAllUrl(), '_blank')}
-        aria-label={t('DownloadAllPlaylists', { defaultValue: 'Download all playlists' })}
+        aria-label={t('DownloadAllPlaylists')}
       >
         <ListMusic className='size-4' aria-hidden />
-        <span className='hidden sm:inline'>{t('DownloadAllPlaylists', { defaultValue: 'All playlists' })}</span>
+        <span className='hidden sm:inline'>{t('DownloadAllPlaylists')}</span>
       </Button>
       {selectionMode && selectedHashes.size > 0 ? (
         <>
@@ -196,11 +197,11 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
           <CloudOff size={44} strokeWidth={1.25} className='text-muted' />
           <p className='text-lg font-semibold text-foreground'>
             {unauthorized
-              ? t('AuthRequired', { defaultValue: 'Authentication required' })
-              : t('NoServerConnection', { defaultValue: 'No connection to server' })}
+              ? t('AuthRequired')
+              : t('NoServerConnection')}
           </p>
           <Button variant='primary' onPress={() => void refetch()}>
-            {t('Retry', { defaultValue: 'Retry' })}
+            {t('Retry')}
           </Button>
         </div>
       </div>
@@ -228,7 +229,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
       {continueEntries.length > 0 && !selectionMode && !libraryQuery ? (
         <section className='border-b border-border/60 px-3 py-3 sm:px-4'>
           <p className='mb-2 text-xs font-semibold uppercase tracking-wide text-muted'>
-            {t('ContinueWatching', { defaultValue: 'Continue watching' })}
+            {t('ContinueWatching')}
           </p>
           <div className='flex gap-2 overflow-x-auto pb-1'>
             {continueEntries.map(entry => {
@@ -239,15 +240,17 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
                   key={`${entry.hash}:${entry.fileIndex}`}
                   type='button'
                   className='flex min-w-[220px] max-w-[280px] shrink-0 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-left hover-fine:bg-surface-secondary'
-                  onClick={() => setDetailsTorrent(torrent)}
+                  onClick={() => {
+                    setResumePlay({ fileIndex: entry.fileIndex, timecode: entry.timecode })
+                    setDetailsTorrent(torrent)
+                  }}
                 >
                   <div className='min-w-0 flex-1'>
                     <p className='truncate text-sm font-semibold'>{entry.title}</p>
                     <p className='truncate text-xs text-muted'>{entry.fileName}</p>
                   </div>
-                  <span
-                    role='button'
-                    tabIndex={0}
+                  <button
+                    type='button'
                     className='rounded-md p-1 text-muted hover-fine:bg-surface-tertiary hover-fine:text-foreground'
                     aria-label={t('Clear')}
                     onClick={event => {
@@ -255,17 +258,9 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
                       removeContinueWatching(entry.hash, entry.fileIndex)
                       setContinueTick(v => v + 1)
                     }}
-                    onKeyDown={event => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault()
-                        event.stopPropagation()
-                        removeContinueWatching(entry.hash, entry.fileIndex)
-                        setContinueTick(v => v + 1)
-                      }
-                    }}
                   >
                     <X className='size-4' aria-hidden />
-                  </span>
+                  </button>
                 </button>
               )
             })}
@@ -277,15 +272,15 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
         <div className='grid min-h-[40vh] place-items-center p-6 text-center'>
           <div className='flex flex-col items-center gap-3 text-muted'>
             <SearchX size={36} strokeWidth={1.25} />
-            <p>{libraryQuery.trim() ? t('NoSearchResults', { defaultValue: 'No matches' }) : t('NoTorrentsInCategory')}</p>
+            <p>{libraryQuery.trim() ? t('NoSearchResults') : t('NoTorrentsInCategory')}</p>
             {libraryQuery.trim() ? (
               <Button variant='secondary' onPress={() => setLibraryQuery('')}>
                 <Search className='size-4' aria-hidden />
-                {t('Clear', { defaultValue: 'Clear' })}
+                {t('Clear')}
               </Button>
             ) : onClearCategory ? (
               <Button variant='secondary' onPress={onClearCategory}>
-                {t('ShowAllTorrents', { defaultValue: 'Show all' })}
+                {t('ShowAllTorrents')}
               </Button>
             ) : null}
           </div>
@@ -296,7 +291,10 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
             <TorrentCard
               key={torrent.hash}
               torrent={torrent}
-              onSelect={setDetailsTorrent}
+              onSelect={torrent => {
+                setResumePlay(null)
+                setDetailsTorrent(torrent)
+              }}
               onEdit={setEditingTorrent}
               selectionMode={selectionMode}
               selected={selectedHashes.has(torrent.hash)}
@@ -311,9 +309,15 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
           <DialogErrorBoundary onClose={() => setDetailsTorrent(null)}>
             <DetailsDialog
               torrent={detailsTorrent}
-              onClose={() => setDetailsTorrent(null)}
+              autoPlayFileId={resumePlay?.fileIndex}
+              autoPlayTimecode={resumePlay?.timecode}
+              onClose={() => {
+                setDetailsTorrent(null)
+                setResumePlay(null)
+              }}
               onEdit={(torrent: TorrentStat) => {
                 setDetailsTorrent(null)
+                setResumePlay(null)
                 setEditingTorrent(torrent)
               }}
             />

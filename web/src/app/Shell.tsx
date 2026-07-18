@@ -4,6 +4,7 @@ import { Button, ListBox, Select, Spinner, Tooltip, useMediaQuery } from '@herou
 import { ChevronLeft, Menu, Moon, SortAsc, SortDesc, Sun, SunMoon, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { echoHost } from 'shared/api/hosts'
+import { SUPPORTED_LANGS } from 'shared/i18n'
 import useChangeLanguage from 'shared/lib/useChangeLanguage'
 import useLaunchHandler from 'shared/lib/useLaunchHandler'
 import { detectApplePlatform, isStandaloneApp } from 'shared/lib/platform'
@@ -37,7 +38,7 @@ const lazyDialogFallback = (
   </div>
 )
 
-const LANG_CYCLE = ['en', 'ru', 'ua', 'zh', 'bg', 'fr', 'ro'] as const
+const LANG_CYCLE = SUPPORTED_LANGS
 
 const LANG_OPTIONS: { id: (typeof LANG_CYCLE)[number]; label: string }[] = [
   { id: 'en', label: 'EN' },
@@ -137,10 +138,10 @@ export default function Shell() {
     currentThemeMode === THEME_MODES.LIGHT ? Sun : currentThemeMode === THEME_MODES.DARK ? Moon : SunMoon
   const themeModeLabel =
     currentThemeMode === THEME_MODES.LIGHT
-      ? t('ThemeLight', { defaultValue: 'Light' })
+      ? t('ThemeLight')
       : currentThemeMode === THEME_MODES.DARK
-        ? t('ThemeDark', { defaultValue: 'Dark' })
-        : t('ThemeAuto', { defaultValue: 'Auto' })
+        ? t('ThemeDark')
+        : t('ThemeAuto')
   const SortIcon = sortABC ? SortAsc : SortDesc
   const headerHeight = isShortViewport ? HEADER_HEIGHT_SHORT : HEADER_HEIGHT
 
@@ -164,8 +165,8 @@ export default function Shell() {
           <HeaderIconButton
             label={
               sidebarOpen
-                ? t('CollapseSidebar', { defaultValue: 'Collapse sidebar' })
-                : t('ExpandSidebar', { defaultValue: 'Expand sidebar' })
+                ? t('CollapseSidebar')
+                : t('ExpandSidebar')
             }
             onPress={() => setSidebarOpen(!sidebarOpen)}
           >
@@ -182,7 +183,7 @@ export default function Shell() {
               type='button'
               onClick={() => setGlobalCategoryFilter('all')}
               className='inline-flex min-h-10 shrink-0 items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium hover-fine:bg-white/25'
-              aria-label={t('ClearCategoryFilter', { defaultValue: 'Clear category filter' })}
+              aria-label={t('ClearCategoryFilter')}
             >
               <span className='max-w-[9rem] truncate'>{categoryFilterLabel}</span>
               <X size={13} strokeWidth={2.5} aria-hidden />
@@ -193,20 +194,20 @@ export default function Shell() {
         <HeaderIconButton
           label={
             sortABC
-              ? t('SortByDate', { defaultValue: 'Sort by date' })
-              : t('SortByName', { defaultValue: 'Sort by name' })
+              ? t('SortByDate')
+              : t('SortByName')
           }
           onPress={() => setSortABC(v => !v)}
         >
           <SortIcon size={20} />
         </HeaderIconButton>
 
-        <HeaderIconButton label={`${t('Theme', { defaultValue: 'Theme' })}: ${themeModeLabel}`} onPress={cycleTheme}>
+        <HeaderIconButton label={`${t('Theme')}: ${themeModeLabel}`} onPress={cycleTheme}>
           <ThemeIcon size={20} />
         </HeaderIconButton>
 
         <Select
-          aria-label={t('Language', { defaultValue: 'Language' })}
+          aria-label={t('Language')}
           selectedKey={LANG_CYCLE.includes(currentLang as (typeof LANG_CYCLE)[number]) ? currentLang : 'en'}
           onSelectionChange={key => changeLang(String(key))}
           className='w-[4.25rem] shrink-0'

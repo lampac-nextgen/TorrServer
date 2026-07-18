@@ -58,31 +58,31 @@ function StreamCard({
   if (stream.codec_type === 'video') {
     if (stream.width && stream.height) {
       const ar = stream.display_aspect_ratio && stream.display_aspect_ratio !== '0:0' ? ` (${stream.display_aspect_ratio})` : ''
-      specs.push({ label: t('Resolution', { defaultValue: 'Resolution' }), value: `${stream.width}×${stream.height}${ar}` })
+      specs.push({ label: t('Resolution'), value: `${stream.width}×${stream.height}${ar}` })
     }
-    if (stream.pix_fmt) specs.push({ label: t('FfpPixel', { defaultValue: 'Pixel' }), value: stream.pix_fmt })
+    if (stream.pix_fmt) specs.push({ label: t('FfpPixel'), value: stream.pix_fmt })
     const fps = fpsFromRate(stream.r_frame_rate)
-    if (fps) specs.push({ label: t('FfpFps', { defaultValue: 'FPS' }), value: fps })
+    if (fps) specs.push({ label: t('FfpFps'), value: fps })
     const br = formatFfpBitrate(stream.bit_rate)
-    if (br) specs.push({ label: t('FfpBitrate', { defaultValue: 'Bitrate' }), value: br })
+    if (br) specs.push({ label: t('FfpBitrate'), value: br })
     if (stream.color_space || stream.color_transfer || stream.color_primaries) {
       specs.push({
-        label: t('FfpColor', { defaultValue: 'Color' }),
+        label: t('FfpColor'),
         value: [stream.color_space, stream.color_transfer, stream.color_primaries].filter(Boolean).join(' / '),
       })
     }
   } else if (stream.codec_type === 'audio') {
-    if (stream.sample_rate) specs.push({ label: t('FfpSampleRate', { defaultValue: 'Sample rate' }), value: `${stream.sample_rate} Hz` })
+    if (stream.sample_rate) specs.push({ label: t('FfpSampleRate'), value: `${stream.sample_rate} Hz` })
     if (stream.channels || stream.channel_layout) {
       specs.push({
-        label: t('FfpChannels', { defaultValue: 'Channels' }),
+        label: t('FfpChannels'),
         value: stream.channel_layout || `${stream.channels} ch`,
       })
     }
     const br = formatFfpBitrate(stream.bit_rate)
-    if (br) specs.push({ label: t('FfpBitrate', { defaultValue: 'Bitrate' }), value: br })
+    if (br) specs.push({ label: t('FfpBitrate'), value: br })
   } else if (stream.codec_type === 'subtitle') {
-    if (stream.codec_name) specs.push({ label: t('FfpCodec', { defaultValue: 'Codec' }), value: stream.codec_name })
+    if (stream.codec_name) specs.push({ label: t('FfpCodec'), value: stream.codec_name })
   }
 
   return (
@@ -166,7 +166,7 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
           <Modal.Dialog style={DIALOG_SHEET_M}>
             <Modal.Header>
               <Modal.Heading className='min-w-0 truncate'>
-                {t('MediaInfo', { defaultValue: 'Media info' })}
+                {t('MediaInfo')}
               </Modal.Heading>
               <Modal.CloseTrigger aria-label={t('Close')} />
             </Modal.Header>
@@ -179,10 +179,10 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
                   </span>
                 </p>
                 <div className='grid grid-cols-2 gap-1.5 sm:grid-cols-4'>
-                  <Spec label={t('FfpContainer', { defaultValue: 'Container' })} value={container} />
-                  <Spec label={t('FfpDuration', { defaultValue: 'Duration' })} value={duration} />
+                  <Spec label={t('FfpContainer')} value={container} />
+                  <Spec label={t('FfpDuration')} value={duration} />
                   <Spec label={t('Size')} value={size} />
-                  <Spec label={t('FfpBitrate', { defaultValue: 'Bitrate' })} value={bitrate} />
+                  <Spec label={t('FfpBitrate')} value={bitrate} />
                 </div>
               </div>
 
@@ -200,14 +200,14 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
                     <section className='space-y-2'>
                       <h3 className='flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted'>
                         <Clapperboard className='size-3.5' aria-hidden />
-                        {t('FfpVideo', { defaultValue: 'Video' })} ({groups.video.length})
+                        {t('FfpVideo')} ({groups.video.length})
                       </h3>
                       {groups.video.map((stream, i) => (
                         <StreamCard
                           key={`v-${i}`}
                           index={i}
                           stream={stream}
-                          kindLabel={t('FfpVideo', { defaultValue: 'Video' })}
+                          kindLabel={t('FfpVideo')}
                           icon={<Clapperboard className='size-4' aria-hidden />}
                         />
                       ))}
@@ -218,14 +218,14 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
                     <section className='space-y-2'>
                       <h3 className='flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted'>
                         <AudioLines className='size-3.5' aria-hidden />
-                        {t('FfpAudio', { defaultValue: 'Audio' })} ({groups.audio.length})
+                        {t('FfpAudio')} ({groups.audio.length})
                       </h3>
                       {groups.audio.map((stream, i) => (
                         <StreamCard
                           key={`a-${i}`}
                           index={i}
                           stream={stream}
-                          kindLabel={t('FfpAudio', { defaultValue: 'Audio' })}
+                          kindLabel={t('FfpAudio')}
                           icon={<AudioLines className='size-4' aria-hidden />}
                         />
                       ))}
@@ -236,14 +236,14 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
                     <section className='space-y-2'>
                       <h3 className='flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted'>
                         <Captions className='size-3.5' aria-hidden />
-                        {t('FfpSubtitle', { defaultValue: 'Subtitles' })} ({groups.subtitle.length})
+                        {t('FfpSubtitle')} ({groups.subtitle.length})
                       </h3>
                       {groups.subtitle.map((stream, i) => (
                         <StreamCard
                           key={`s-${i}`}
                           index={i}
                           stream={stream}
-                          kindLabel={t('FfpSubtitle', { defaultValue: 'Subtitles' })}
+                          kindLabel={t('FfpSubtitle')}
                           icon={<Captions className='size-4' aria-hidden />}
                         />
                       ))}
@@ -254,14 +254,14 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
                     <section className='space-y-2'>
                       <h3 className='flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted'>
                         <Layers className='size-3.5' aria-hidden />
-                        {t('FfpOther', { defaultValue: 'Other' })} ({groups.other.length})
+                        {t('FfpOther')} ({groups.other.length})
                       </h3>
                       {groups.other.map((stream, i) => (
                         <StreamCard
                           key={`o-${i}`}
                           index={i}
                           stream={stream}
-                          kindLabel={stream.codec_type || t('FfpOther', { defaultValue: 'Other' })}
+                          kindLabel={stream.codec_type || t('FfpOther')}
                           icon={<Layers className='size-4' aria-hidden />}
                         />
                       ))}
@@ -269,7 +269,7 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
                   ) : null}
 
                   {!groups.video.length && !groups.audio.length && !groups.subtitle.length && !groups.other.length ? (
-                    <p className='py-6 text-center text-sm text-muted'>{t('NoData', { defaultValue: 'No probe data' })}</p>
+                    <p className='py-6 text-center text-sm text-muted'>{t('NoData')}</p>
                   ) : null}
                 </div>
               ) : null}

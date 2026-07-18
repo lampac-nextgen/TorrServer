@@ -43,11 +43,11 @@ export default function CategoriesDrawer({ open, onClose, selectedCategory, onSe
     <Drawer.Root state={state}>
       <Drawer.Backdrop>
         <Drawer.Content placement='left'>
-          <Drawer.Dialog aria-label={t('Category', { defaultValue: 'Category' })}>
+          <Drawer.Dialog aria-label={t('Category')}>
             <Drawer.Header>
               <Drawer.Heading className='flex items-center gap-2'>
                 <LayoutGrid className='size-4' aria-hidden />
-                {t('Category', { defaultValue: 'Category' })}
+                {t('Category')}
               </Drawer.Heading>
               <Drawer.CloseTrigger />
             </Drawer.Header>

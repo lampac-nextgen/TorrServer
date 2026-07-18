@@ -2,13 +2,7 @@ import type { PlayableFile, TorrentFileStat } from 'shared/api/types'
 import { getTorrent } from 'shared/api/torrents'
 import { filesFromMetadata } from 'shared/torrent/fileMetadata'
 import { isFilePlayable } from 'shared/torrent/playable'
-
-const toPlayableFile = (file: TorrentFileStat): PlayableFile => ({
-  id: file.id ?? file.Id ?? 0,
-  path: file.path ?? file.Path ?? '',
-  length: file.length ?? file.Length ?? 0,
-})
-
+import { toPlayableFile } from 'shared/torrent/toPlayableFile'
 export interface WaitForPlayableFilesOptions {
   /** Max time to wait for live file_stats after waking the torrent. Default 20s. */
   timeoutMs?: number

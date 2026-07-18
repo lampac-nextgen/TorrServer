@@ -24,6 +24,9 @@ export interface TorrentActionsProps {
   onViewedChange?: () => void
   onDropped?: () => void
   onShowFiles?: () => void
+  /** Continue Watching: auto-play this file when the list is ready. */
+  autoPlayFileId?: number
+  autoPlayTimecode?: number
 }
 
 type PendingConfirm = 'drop' | 'clearViews' | null
@@ -65,6 +68,8 @@ function TorrentActions({
   onViewedChange,
   onDropped,
   onShowFiles,
+  autoPlayFileId,
+  autoPlayTimecode,
 }: TorrentActionsProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
@@ -92,6 +97,8 @@ function TorrentActions({
     displayName,
     knownPlayableFiles: playableFileList || [],
     onViewedChange,
+    autoPlayFileId,
+    autoPlayTimecode,
   })
 
   /** Only offer app deep links when there's exactly one obvious file to hand off — otherwise Play's file picker covers it. */
@@ -202,7 +209,7 @@ function TorrentActions({
           className='flex items-center gap-1.5 text-xs text-muted transition-colors hover:text-accent'
         >
           <Settings className='size-3.5' aria-hidden />
-          {t('ExternalPlayersHint', { defaultValue: 'Open in VLC, Infuse, etc. — enable in Settings → App' })}
+          {t('ExternalPlayersHint')}
         </button>
       ) : null}
 
@@ -259,7 +266,7 @@ function TorrentActions({
             onPress={() => window.open(playlistAllUrl({ category: undefined }), '_blank')}
           >
             <ListVideo aria-hidden />
-            {t('DownloadAllPlaylists', { defaultValue: 'All playlists' })}
+            {t('DownloadAllPlaylists')}
           </Button>
         </div>
       </div>

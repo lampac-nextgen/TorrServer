@@ -12,10 +12,10 @@ export default function PwaUpdateToast() {
     updateSWRef.current = registerSW({
       immediate: true,
       onNeedRefresh() {
-        toast(t('PwaUpdateAvailable', { defaultValue: 'Update available' }), {
+        toast(t('PwaUpdateAvailable'), {
           duration: Infinity,
           action: {
-            label: t('Reload', { defaultValue: 'Reload' }),
+            label: t('Reload'),
             onClick: () => {
               void updateSWRef.current?.(true)
             },

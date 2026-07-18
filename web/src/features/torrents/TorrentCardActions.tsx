@@ -11,7 +11,8 @@ import { filesFromMetadata } from 'shared/torrent/fileMetadata'
 import { isFilePlayable } from 'shared/torrent/playable'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { useOptionalAppToast } from 'shared/ui/Toast'
-import { toPlayableFile, usePlayLauncher } from 'features/player/usePlayLauncher'
+import { toPlayableFile } from 'shared/torrent/toPlayableFile'
+import { usePlayLauncher } from 'features/player/usePlayLauncher'
 
 export interface TorrentCardActionsProps {
   torrent: TorrentStat
@@ -74,7 +75,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
         toast?.showToast({ message: successMessage, severity: 'success' })
         await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
       })
-      .catch(() => toast?.showToast({ message: t('Error', { defaultValue: 'Error' }), severity: 'error' }))
+      .catch(() => toast?.showToast({ message: t('Error'), severity: 'error' }))
   }
 
   const overlayButtonClass =

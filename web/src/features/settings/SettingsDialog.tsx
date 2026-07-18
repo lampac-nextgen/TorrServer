@@ -107,9 +107,12 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
     const data = await getSettings(signal)
     const loaded = { ...defaultSettings, ...data }
     const mb = Math.round((loaded.CacheSize ?? (defaultSettings.CacheSize ?? 64) * 1024 * 1024) / (1024 * 1024))
-    setLocalSettings({ ...loaded, CacheSize: mb })
+    const next = { ...loaded, CacheSize: mb }
+    setLocalSettings(next)
     setCacheSizeMb(mb)
-  }, [])
+    // Keep play/resume TrackTimecode readers in sync even before Save.
+    queryClient.setQueryData(SETTINGS_QUERY_KEY, { ...loaded, CacheSize: loaded.CacheSize })
+  }, [queryClient])
 
   const loadGstConfig = useCallback(async (signal?: AbortSignal) => {
     try {
@@ -189,6 +192,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
         PreloadCache: settings.PreloadCache ?? defaultSettings.PreloadCache,
       }
       await setSettings(sets)
+      queryClient.setQueryData(SETTINGS_QUERY_KEY, sets)
       if (storageLoadedOk) {
         await setStorageSettings(storageBackends)
       }
@@ -202,7 +206,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
       toast?.showToast({
         message: storageLoadedOk
           ? t('Saved')
-          : t('SavedWithoutStorage', { defaultValue: 'Saved (storage backends unchanged)' }),
+          : t('SavedWithoutStorage'),
         severity: 'success',
       })
       onClose()
@@ -330,9 +334,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
               <PanelFade>
                 {!storageLoadedOk && !loading ? (
                   <Description className='mb-3 text-warning'>
-                    {t('StorageLoadFailed', {
-                      defaultValue: 'Storage backends could not be loaded. Other settings can still be saved.',
-                    })}
+                    {t('StorageLoadFailed')}
                   </Description>
                 ) : null}
                 <StorageSettingsPanel backends={storageBackends} onBackendsChange={setStorageBackends} />

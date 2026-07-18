@@ -135,11 +135,11 @@ export default function AboutDialog({ open, onClose }: AboutDialogProps) {
 
         <div className='mt-3 rounded-lg border border-border bg-surface-secondary p-3'>
           <p className='mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted'>
-            {t('SpeedTest', { defaultValue: 'Speed test' })}
+            {t('SpeedTest')}
           </p>
           <div className='flex flex-wrap items-center gap-2 px-1'>
             <Select
-              aria-label={t('SpeedTestSize', { defaultValue: 'Test size' })}
+              aria-label={t('SpeedTestSize')}
               selectedKey={speedSizeId}
               onSelectionChange={key => {
                 if (key == null) return
@@ -167,7 +167,7 @@ export default function AboutDialog({ open, onClose }: AboutDialogProps) {
               {({ isPending }) => (
                 <>
                   {isPending ? <Spinner size='sm' color='current' /> : <Gauge aria-hidden />}
-                  {t('SpeedTestRun', { defaultValue: 'Run' })}
+                  {t('SpeedTestRun')}
                 </>
               )}
             </Button>

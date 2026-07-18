@@ -758,7 +758,7 @@ export default function VideoPlayer({
                     <div className='pointer-events-none absolute inset-0 grid place-items-center bg-black/50'>
                       <div className='flex flex-col items-center gap-2.5 rounded-2xl border border-white/10 bg-black/40 px-5 py-4 backdrop-blur-md'>
                         <Spinner size='lg' className='text-accent' />
-                        <p className='text-sm font-medium text-white/85'>{t('Buffering', { defaultValue: 'Buffering…' })}</p>
+                        <p className='text-sm font-medium text-white/85'>{t('Buffering')}</p>
                       </div>
                     </div>
                   ) : null}
@@ -903,7 +903,7 @@ export default function VideoPlayer({
                           <button
                             type='button'
                             className='ml-1 min-w-[7.5rem] rounded-md px-1 text-left text-xs tabular-nums tracking-wide text-white/75 hover-fine:bg-white/10 hover-fine:text-white'
-                            title={t('ToggleTimeDisplay', { defaultValue: 'Toggle remaining time' })}
+                            title={t('ToggleTimeDisplay')}
                             onClick={() => setShowRemaining(prev => !prev)}
                           >
                             {formatDuration(currentTime)}
@@ -937,7 +937,7 @@ export default function VideoPlayer({
                             maxValue={100}
                             onChange={handleVolumeChange}
                             className='hidden w-24 sm:flex'
-                            aria-label={t('Volume', { defaultValue: 'Volume' })}
+                            aria-label={t('Volume')}
                           >
                             <Slider.Track className='h-1 bg-white/15'>
                               <Slider.Fill className='bg-accent' />
@@ -952,7 +952,7 @@ export default function VideoPlayer({
                                   isIconOnly
                                   variant='ghost'
                                   className={chromeIconBtn}
-                                  aria-label={t('SelectAudioTrack', { defaultValue: 'Select audio track' })}
+                                  aria-label={t('SelectAudioTrack')}
                                 >
                                   <Music2 aria-hidden />
                                 </Button>
@@ -988,7 +988,7 @@ export default function VideoPlayer({
                                   isIconOnly
                                   variant={activeSubtitleTrack >= 0 ? 'primary' : 'ghost'}
                                   className={activeSubtitleTrack >= 0 ? iconBtn : chromeIconBtn}
-                                  aria-label={t('GStreamer.Subtitles', { defaultValue: 'Subtitles' })}
+                                  aria-label={t('GStreamer.Subtitles')}
                                 >
                                   <Captions aria-hidden />
                                 </Button>
@@ -1018,7 +1018,7 @@ export default function VideoPlayer({
                                 isIconOnly
                                 variant='ghost'
                                 className={chromeIconBtn}
-                                aria-label={t('PlaybackSpeed', { defaultValue: 'Playback speed' })}
+                                aria-label={t('PlaybackSpeed')}
                               >
                                 <Gauge aria-hidden />
                               </Button>
@@ -1046,14 +1046,14 @@ export default function VideoPlayer({
                                   isIconOnly
                                   variant={pipActive ? 'primary' : 'ghost'}
                                   className={pipActive ? iconBtn : chromeIconBtn}
-                                  aria-label={t('PictureInPicture', { defaultValue: 'Picture in picture' })}
+                                  aria-label={t('PictureInPicture')}
                                   onPress={() => void togglePiP()}
                                 >
                                   <PictureInPicture2 aria-hidden />
                                 </Button>
                               </Tooltip.Trigger>
                               <Tooltip.Content>
-                                {t('PictureInPicture', { defaultValue: 'Picture in picture' })}
+                                {t('PictureInPicture')}
                               </Tooltip.Content>
                             </Tooltip>
                           ) : null}
@@ -1067,8 +1067,8 @@ export default function VideoPlayer({
                                   className={chromeIconBtn}
                                   aria-label={
                                     expanded
-                                      ? t('CollapsePlayer', { defaultValue: 'Collapse player' })
-                                      : t('ExpandPlayer', { defaultValue: 'Expand player' })
+                                      ? t('CollapsePlayer')
+                                      : t('ExpandPlayer')
                                   }
                                   onPress={() => {
                                     setExpanded(prev => !prev)
@@ -1080,8 +1080,8 @@ export default function VideoPlayer({
                               </Tooltip.Trigger>
                               <Tooltip.Content>
                                 {expanded
-                                  ? t('CollapsePlayer', { defaultValue: 'Collapse player' })
-                                  : t('ExpandPlayer', { defaultValue: 'Expand player' })}
+                                  ? t('CollapsePlayer')
+                                  : t('ExpandPlayer')}
                               </Tooltip.Content>
                             </Tooltip>
                           ) : null}

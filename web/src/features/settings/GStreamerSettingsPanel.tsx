@@ -301,7 +301,7 @@ export default function GStreamerSettingsPanel({ config, onChange }: GStreamerSe
         </div>
       </div>
 
-      <Description>{t('GStreamer.SaveHint', { defaultValue: 'Changes apply when you press Save.' })}</Description>
+      <Description>{t('GStreamer.SaveHint')}</Description>
     </div>
   )
 }

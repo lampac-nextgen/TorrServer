@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
 import type { BTSets, PlayableFile, TorrentFileStat } from 'shared/api/types'
 import { streamHost } from 'shared/api/hosts'
-import { SETTINGS_QUERY_KEY } from 'shared/api/settings'
+import { getSettings, SETTINGS_QUERY_KEY } from 'shared/api/settings'
 import { getTorrent } from 'shared/api/torrents'
 import { listViewedEntries, VIEWED_QUERY_KEY } from 'shared/api/viewed'
 import { humanizeSize } from 'shared/lib/format'
@@ -27,6 +27,9 @@ import {
   type ProbeTrack,
 } from './audioTrackLabel'
 import { waitForPlayableFiles } from './waitForPlayableFiles'
+import { toPlayableFile } from 'shared/torrent/toPlayableFile'
+
+export { toPlayableFile } from 'shared/torrent/toPlayableFile'
 
 /** Lazy: keeps hls.js out of the initial bundle — only fetched once a file is actually played. */
 const VideoPlayer = lazy(() => import('features/player/VideoPlayer'))
@@ -45,12 +48,6 @@ interface ActivePlayer {
   audioTracks: ProbeTrack[]
   audioIndex: number
 }
-
-export const toPlayableFile = (file: TorrentFileStat): PlayableFile => ({
-  id: file.id ?? file.Id ?? 0,
-  path: file.path ?? file.Path ?? '',
-  length: file.length ?? file.Length ?? 0,
-})
 
 const fileBaseName = (path: string): string => path.split('\\').pop()?.split('/').pop() || path
 
@@ -93,6 +90,10 @@ export interface UsePlayLauncherArgs {
   torrentData?: string
   onViewedChange?: () => void
   onPlayerNotSupported?: (fileId: number) => void
+  /** When set, auto-start this file once playable files are known (Continue Watching). */
+  autoPlayFileId?: number
+  /** Prefer this resume position over server viewed history (local Continue Watching). */
+  autoPlayTimecode?: number
 }
 
 /**
@@ -108,6 +109,8 @@ export function usePlayLauncher({
   torrentData,
   onViewedChange,
   onPlayerNotSupported,
+  autoPlayFileId,
+  autoPlayTimecode,
 }: UsePlayLauncherArgs) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
@@ -117,6 +120,7 @@ export function usePlayLauncher({
   const audioProbeCache = useRef<Record<number, ProbeTrack[]>>({})
   const allTorrentFilesRef = useRef<TorrentFileStat[]>(knownAllFiles?.length ? knownAllFiles : [])
   const abortRef = useRef<AbortController | null>(null)
+  const pendingTimecodeRef = useRef<number | undefined>(undefined)
 
   const [playableFiles, setPlayableFiles] = useState<PlayableFile[]>([])
   const [audioTracks, setAudioTracks] = useState<ProbeTrack[]>([])
@@ -144,11 +148,23 @@ export function usePlayLauncher({
     if (!audioPickerState.isOpen) setResolvingFileId(null)
   }, [audioPickerState.isOpen])
 
-  const trackTimecode = Boolean(queryClient.getQueryData<BTSets>(SETTINGS_QUERY_KEY)?.TrackTimecode)
-
   const notifyViewedChange = () => {
     void queryClient.invalidateQueries({ queryKey: VIEWED_QUERY_KEY(hash) })
     onViewedChange?.()
+  }
+
+  const ensureTrackTimecode = async (): Promise<boolean> => {
+    const cached = queryClient.getQueryData<BTSets>(SETTINGS_QUERY_KEY)
+    if (cached) return Boolean(cached.TrackTimecode)
+    try {
+      const settings = await queryClient.ensureQueryData({
+        queryKey: SETTINGS_QUERY_KEY,
+        queryFn: ({ signal }) => getSettings(signal),
+      })
+      return Boolean(settings.TrackTimecode)
+    } catch {
+      return false
+    }
   }
 
   const ensureAllTorrentFiles = async (): Promise<TorrentFileStat[]> => {
@@ -158,18 +174,27 @@ export function usePlayLauncher({
     return allTorrentFilesRef.current
   }
 
-  const resolveInitialTimecode = async (fileIndex: number): Promise<number> => {
+  const resolveInitialTimecode = async (fileIndex: number, trackTimecode: boolean, override?: number): Promise<number> => {
+    if (override != null && override > 0) return override
     if (!trackTimecode) return 0
     const entries = await listViewedEntries(hash)
     return entries.find(entry => entry.file_index === fileIndex)?.timecode ?? 0
   }
 
-  const openPlayer = async (file: PlayableFile, audioIndex = 0, tracksForPlayer: ProbeTrack[] = []) => {
+  const openPlayer = async (
+    file: PlayableFile,
+    audioIndex = 0,
+    tracksForPlayer: ProbeTrack[] = [],
+    timecodeOverride?: number,
+  ) => {
+    const trackTimecode = await ensureTrackTimecode()
     const useHls = shouldUseGStreamerPlayer(file.path, gstRuntime)
     const directStream = fileStreamUrl(hash, file)
     const allFiles = await ensureAllTorrentFiles()
     const captionSrc = findCaptionSrc(file, allFiles, hash)
-    const initialTimecode = await resolveInitialTimecode(file.id)
+    const override = timecodeOverride ?? pendingTimecodeRef.current
+    pendingTimecodeRef.current = undefined
+    const initialTimecode = await resolveInitialTimecode(file.id, trackTimecode, override)
     const audioTracksForPlayer =
       tracksForPlayer.length > 0
         ? tracksForPlayer
@@ -197,14 +222,15 @@ export function usePlayLauncher({
     setResolvingFileId(null)
   }
 
-  const resolveAndPlay = async (file: PlayableFile) => {
+  const resolveAndPlay = async (file: PlayableFile, timecodeOverride?: number) => {
     setResolvingFileId(file.id)
     setIsResolving(true)
     let openedAudioPicker = false
+    pendingTimecodeRef.current = timecodeOverride
     try {
       const useHls = shouldUseGStreamerPlayer(file.path, gstRuntime)
       if (!useHls) {
-        await openPlayer(file)
+        await openPlayer(file, 0, [], timecodeOverride)
         return
       }
 
@@ -218,7 +244,7 @@ export function usePlayLauncher({
       const cachedTracks = audioProbeCache.current[file.id]
       if (cachedTracks !== undefined) {
         if (cachedTracks.length <= 1) {
-          await openPlayer(file, 0, cachedTracks)
+          await openPlayer(file, 0, cachedTracks, timecodeOverride)
           return
         }
         openAudioPicker(cachedTracks)
@@ -230,18 +256,30 @@ export function usePlayLauncher({
         const tracks = extractAudioTracks(data)
         audioProbeCache.current[file.id] = tracks
         if (tracks.length <= 1) {
-          await openPlayer(file, 0, tracks)
+          await openPlayer(file, 0, tracks, timecodeOverride)
           return
         }
         openAudioPicker(tracks)
       } catch {
-        await openPlayer(file, 0)
+        await openPlayer(file, 0, [], timecodeOverride)
       }
     } finally {
       setIsResolving(false)
       if (!openedAudioPicker) setResolvingFileId(null)
     }
   }
+
+  const autoPlayDoneRef = useRef(false)
+  useEffect(() => {
+    if (autoPlayFileId == null || autoPlayDoneRef.current) return
+    const file =
+      knownPlayableFiles.find(item => item.id === autoPlayFileId) ||
+      playableFiles.find(item => item.id === autoPlayFileId)
+    if (!file) return
+    autoPlayDoneRef.current = true
+    void resolveAndPlay(file, autoPlayTimecode)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot resume when the target file appears
+  }, [autoPlayFileId, autoPlayTimecode, knownPlayableFiles, playableFiles])
 
   const handlePlay = async () => {
     abortRef.current?.abort()
@@ -275,7 +313,7 @@ export function usePlayLauncher({
       filePickerState.open()
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') return
-      toast?.showToast({ message: t('Error', { defaultValue: 'Error' }), severity: 'error' })
+      toast?.showToast({ message: t('Error'), severity: 'error' })
     } finally {
       setIsResolving(false)
     }
@@ -331,9 +369,9 @@ export function usePlayLauncher({
         <Modal state={audioPickerState}>
           <Modal.Backdrop isDismissable>
             <Modal.Container size='sm'>
-              <Modal.Dialog aria-label={t('SelectAudioTrack', { defaultValue: 'Select audio track' })}>
+              <Modal.Dialog aria-label={t('SelectAudioTrack')}>
                 <Modal.Header>
-                  <Modal.Heading>{t('SelectAudioTrack', { defaultValue: 'Select audio track' })}</Modal.Heading>
+                  <Modal.Heading>{t('SelectAudioTrack')}</Modal.Heading>
                 </Modal.Header>
                 <Modal.Body className='flex max-h-[60vh] flex-col gap-1.5 overflow-y-auto'>
                   {audioTracks.map((track, index) => {

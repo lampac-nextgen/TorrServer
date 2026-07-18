@@ -5,7 +5,7 @@ import { cacheHost } from 'shared/api/hosts'
 
 import { buildFocusModel, type CacheDrawModel } from './buildCacheMap'
 
-/** Active fill cadence (classic TorrServer) — near-real-time for debug. */
+/** Active fill cadence while pieces/readers change (near-real-time snake). */
 const CACHE_POLL_ACTIVE_MS = 100
 /** Idle cadence when cache snapshot is unchanged and no readers. */
 const CACHE_POLL_IDLE_MS = 400

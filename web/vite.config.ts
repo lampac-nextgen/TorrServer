@@ -68,6 +68,10 @@ export default defineConfig(({ mode }) => {
         '/search': proxyTarget,
         '/tmdb': proxyTarget,
         '/gst': proxyTarget,
+        '/ffp': proxyTarget,
+        '/download': proxyTarget,
+        '/storage': proxyTarget,
+        '/playlistall': proxyTarget,
       },
     },
     build: {

@@ -9,12 +9,21 @@ import translationBG from 'locales/bg/translation.json'
 import translationFR from 'locales/fr/translation.json'
 import translationRO from 'locales/ro/translation.json'
 
+export const SUPPORTED_LANGS = ['en', 'ru', 'ua', 'zh', 'bg', 'fr', 'ro'] as const
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    fallbackLng: 'en', // default language will be used if none of declared lanuages detected (en, ru)
-    interpolation: { escapeValue: false }, // react already safes from xss
+    supportedLngs: [...SUPPORTED_LANGS],
+    nonExplicitSupportedLngs: true,
+    load: 'languageOnly',
+    fallbackLng: 'en',
+    interpolation: { escapeValue: false },
+    detection: {
+      order: ['localStorage', 'navigator'],
+      caches: ['localStorage'],
+    },
     resources: {
       en: { translation: translationEN },
       ru: { translation: translationRU },

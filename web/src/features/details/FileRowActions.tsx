@@ -152,13 +152,13 @@ export default function FileRowActions({
               size='sm'
               isIconOnly
               className={iconBtn}
-              aria-label={t('MediaInfo', { defaultValue: 'Media info' })}
+              aria-label={t('MediaInfo')}
               onPress={onProbeMedia}
             >
               <Info aria-hidden />
             </Button>
           </Tooltip.Trigger>
-          <Tooltip.Content>{t('MediaInfo', { defaultValue: 'Media info' })}</Tooltip.Content>
+          <Tooltip.Content>{t('MediaInfo')}</Tooltip.Content>
         </Tooltip.Root>
       ) : null}
     </div>
