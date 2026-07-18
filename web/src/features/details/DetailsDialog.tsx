@@ -394,8 +394,8 @@ export default function DetailsDialog({
                   </div>
                 </Tabs.Panel>
 
-                <Tabs.Panel id='cache' className='min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pt-4'>
-                  <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
+                <Tabs.Panel id='cache' className='flex min-h-0 flex-1 flex-col gap-4 overflow-hidden pt-4'>
+                  <div className='flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
                     <p className='text-sm font-semibold text-muted'>{t('Cache')}</p>
                     <Checkbox isSelected={isSnakeDebugMode} onChange={setIsSnakeDebugMode}>
                       <Checkbox.Content>
@@ -407,7 +407,9 @@ export default function DetailsDialog({
                     </Checkbox>
                   </div>
 
-                  <TorrentCache cache={cache} mode='detailed' isSnakeDebugMode={isSnakeDebugMode} />
+                  <div className='flex min-h-0 min-w-0 flex-1 flex-col'>
+                    <TorrentCache cache={cache} mode='detailed' isSnakeDebugMode={isSnakeDebugMode} />
+                  </div>
                 </Tabs.Panel>
               </Tabs.Root>
             </Modal.Body>

@@ -59,6 +59,7 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
   const isMiniView = mode === 'mini'
 
   const [containerWidth, setContainerWidth] = useState(0)
+  const [containerHeight, setContainerHeight] = useState(0)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const scrollWrapperRef = useRef<HTMLDivElement | null>(null)
   const rootRef = useRef<HTMLDivElement | null>(null)
@@ -69,19 +70,23 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
   const [tooltip, setTooltip] = useState<{ index: number; x: number; y: number; text: string } | null>(null)
 
   useEffect(() => {
-    const el = rootRef.current
+    const el = isMiniView ? rootRef.current : scrollWrapperRef.current
     if (!el || typeof ResizeObserver === 'undefined') return
     const observer = new ResizeObserver(entries => {
-      setContainerWidth(entries[0]?.contentRect.width ?? 0)
+      const box = entries[0]?.contentRect
+      setContainerWidth(box?.width ?? 0)
+      if (!isMiniView) setContainerHeight(box?.height ?? 0)
     })
     observer.observe(el)
-    setContainerWidth(el.getBoundingClientRect().width)
+    const rect = el.getBoundingClientRect()
+    setContainerWidth(rect.width)
+    if (!isMiniView) setContainerHeight(rect.height)
     return () => observer.disconnect()
-  }, [])
+  }, [isMiniView])
 
   const visibleCellBudget = useMemo(
-    () => resolveFocusVisibleCells(containerWidth, isMiniView),
-    [containerWidth, isMiniView],
+    () => resolveFocusVisibleCells(containerWidth, isMiniView, isMiniView ? 0 : containerHeight),
+    [containerWidth, containerHeight, isMiniView],
   )
   const focusModel = useCreateFocusMap(cache, visibleCellBudget)
   const cells = focusModel.cells
@@ -291,13 +296,16 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
   }, [tooltip])
 
   return (
-    <div ref={rootRef} className='relative flex w-full min-w-0 flex-col'>
+    <div
+      ref={rootRef}
+      className={`relative flex w-full min-w-0 flex-col ${isMiniView ? '' : 'min-h-0 flex-1'}`}
+    >
       <div
         ref={scrollWrapperRef}
         className={`relative w-full min-w-0 rounded-lg border border-border bg-surface-secondary p-2 ${
           isMiniView
             ? 'grid max-h-[420px] justify-center overflow-hidden'
-            : 'max-h-[min(70dvh,640px)] min-w-0 overflow-auto overscroll-contain'
+            : 'min-h-0 min-w-0 flex-1 overflow-auto overscroll-contain'
         }`}
         style={
           isMiniView
@@ -336,7 +344,7 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
       {focusModel.windowStart != null &&
       focusModel.windowEnd != null &&
       focusModel.windowEnd >= focusModel.windowStart ? (
-        <p className='mt-2 self-center text-xs uppercase tracking-wide text-muted'>
+        <p className='mt-2 shrink-0 self-center text-xs uppercase tracking-wide text-muted'>
           {t('SnakeFocusRange', { start: focusModel.windowStart, end: focusModel.windowEnd })}
           {!hasActiveReaders ? ` · ${t('SnakeIdleFrozen')}` : null}
         </p>
