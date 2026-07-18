@@ -24,7 +24,7 @@ import { CLOSED, GETTING_INFO, IN_DB, PRELOAD, WORKING } from 'shared/torrent/st
 import { queryMax } from 'shared/theme/breakpoints'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { iconBtn } from 'shared/ui/controlClasses'
-import { DIALOG_SHEET_L } from 'shared/ui/dialogSizes'
+import { DIALOG_DETAILS } from 'shared/ui/dialogSizes'
 import { toPlayableFile } from 'shared/torrent/toPlayableFile'
 
 import FileBrowser from './FileBrowser'
@@ -212,8 +212,11 @@ export default function DetailsDialog({
         <Modal.Container size={isFullScreen ? 'full' : 'lg'} scroll='inside'>
           {/* Inline style: HeroUI's size ceiling + our collapse-prevention floor (index.css) live in CSS
               layers, so a plain width utility can lose to them regardless of specificity — see AppDialog. */}
-          <Modal.Dialog style={isFullScreen ? undefined : DIALOG_SHEET_L}>
-            <Modal.Header className='flex items-center gap-2'>
+          <Modal.Dialog
+            className='flex flex-col overflow-hidden'
+            style={isFullScreen ? { height: '100%', maxHeight: '100%' } : DIALOG_DETAILS}
+          >
+            <Modal.Header className='flex shrink-0 items-center gap-2'>
               <Modal.Heading className='min-w-0 flex-1 truncate'>{t('TorrentDetails')}</Modal.Heading>
               {onEdit ? (
                 <Button
@@ -231,8 +234,8 @@ export default function DetailsDialog({
               </Modal.CloseTrigger>
             </Modal.Header>
 
-            <Modal.Body className='gap-4'>
-              <div className='flex flex-col gap-4 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-4 sm:flex-row sm:items-start'>
+            <Modal.Body className='flex min-h-0 flex-1 flex-col gap-4 overflow-hidden'>
+              <div className='flex shrink-0 flex-col gap-4 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-4 sm:flex-row sm:items-start'>
                 {poster ? (
                   <div className='mx-auto grid aspect-[2/3] w-full max-w-[120px] shrink-0 place-items-center overflow-hidden rounded-lg bg-surface-secondary sm:mx-0'>
                     <img
@@ -294,8 +297,9 @@ export default function DetailsDialog({
                 variant='secondary'
                 selectedKey={resolvedTab}
                 onSelectionChange={key => setActiveTab(String(key) as DetailsTab)}
+                className='flex min-h-0 flex-1 flex-col overflow-hidden'
               >
-                <Tabs.ListContainer className='w-full max-w-full'>
+                <Tabs.ListContainer className='w-full max-w-full shrink-0'>
                   <Tabs.List aria-label={t('TorrentDetails')} className={isMobile ? 'w-full min-w-full' : undefined}>
                     <Tabs.Tab
                       id='overview'
@@ -322,7 +326,7 @@ export default function DetailsDialog({
                   </Tabs.List>
                 </Tabs.ListContainer>
 
-                <Tabs.Panel id='overview' className='space-y-4 pt-4'>
+                <Tabs.Panel id='overview' className='min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pt-4'>
                   <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} />
 
                   <div className='rounded-xl border border-border bg-surface-secondary p-4'>
@@ -350,7 +354,7 @@ export default function DetailsDialog({
                   />
                 </Tabs.Panel>
 
-                <Tabs.Panel id='files' className='pt-4'>
+                <Tabs.Panel id='files' className='min-h-0 flex-1 overflow-y-auto overscroll-contain pt-4'>
                   <div className='rounded-xl bg-surface-secondary p-4'>
                     {isLoadingMetadata ? (
                       <p className='text-sm text-muted'>{t('TorrentGettingInfo')}</p>
@@ -390,7 +394,7 @@ export default function DetailsDialog({
                   </div>
                 </Tabs.Panel>
 
-                <Tabs.Panel id='cache' className='space-y-4 pt-4'>
+                <Tabs.Panel id='cache' className='min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pt-4'>
                   <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
                     <p className='text-sm font-semibold text-muted'>{t('Cache')}</p>
                     <Checkbox isSelected={isSnakeDebugMode} onChange={setIsSnakeDebugMode}>

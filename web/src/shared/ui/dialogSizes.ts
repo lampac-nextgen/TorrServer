@@ -47,3 +47,11 @@ export const DIALOG_SETTINGS: CSSProperties = {
   ...DIALOG_SHEET_L,
   minHeight: 'min(78dvh, 44rem)',
 }
+
+/** Details sheet — fixed height so Overview / Files / Cache tabs don't resize the window. */
+export const DIALOG_DETAILS: CSSProperties = {
+  ...DIALOG_SHEET_L,
+  height: 'min(88dvh, 52rem)',
+  maxHeight: 'min(88dvh, 52rem)',
+  minHeight: 'min(88dvh, 52rem)',
+}
