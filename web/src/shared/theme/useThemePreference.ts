@@ -20,6 +20,40 @@ export const THEME_PALETTES = {
   FOG: 'fog',
   COPPER: 'copper',
   CITRUS: 'citrus',
+  MIDNIGHT: 'midnight',
+  SAGE: 'sage',
+  CORAL: 'coral',
+  HONEY: 'honey',
+  MOSS: 'moss',
+  SKY: 'sky',
+  WINE: 'wine',
+  MINT: 'mint',
+  CHARCOAL: 'charcoal',
+  LAVA: 'lava',
+  ICE: 'ice',
+  OLIVE: 'olive',
+  STEEL: 'steel',
+  BLOSSOM: 'blossom',
+  SAND: 'sand',
+  PINE: 'pine',
+  AZURE: 'azure',
+  GRAPHITE: 'graphite',
+  NOIR: 'noir',
+  JADE: 'jade',
+  NAVY: 'navy',
+  RUST: 'rust',
+  ESPRESSO: 'espresso',
+  SEAFOAM: 'seafoam',
+  BRICK: 'brick',
+  STORM: 'storm',
+  SAFFRON: 'saffron',
+  DENIM: 'denim',
+  CEDAR: 'cedar',
+  VOLT: 'volt',
+  PEARL: 'pearl',
+  INK: 'ink',
+  FERN: 'fern',
+  BRONZE: 'bronze',
 } as const
 
 export type ThemePalette = (typeof THEME_PALETTES)[keyof typeof THEME_PALETTES]
@@ -71,7 +105,7 @@ export interface ThemePreferenceState {
 
 /**
  * Applies `dark` class + `data-palette` on html and persists both axes in localStorage.
- * Brightness: light / dark / system. Palette: forest … citrus (see THEME_PALETTES).
+ * Brightness: light / dark / system. Palette: see THEME_PALETTES.
  */
 export function useThemePreference(): ThemePreferenceState {
   const [preference, setPreferenceState] = useState<ThemePreference>(() => readStoredPreference())

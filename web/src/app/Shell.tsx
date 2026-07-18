@@ -15,7 +15,6 @@ import { MEDIA_SHORT_VIEWPORT, queryMax } from 'shared/theme/breakpoints'
 import {
   THEME_MODES,
   THEME_PALETTE_IDS,
-  THEME_PALETTES,
   useThemePreference,
   type ThemePalette,
 } from 'shared/theme/useThemePreference'
@@ -223,18 +222,12 @@ export default function Shell() {
           current={palette}
           label={t('ThemePalette')}
           onChange={setPalette}
-          labels={{
-            [THEME_PALETTES.FOREST]: t('ThemePaletteForest'),
-            [THEME_PALETTES.OCEAN]: t('ThemePaletteOcean'),
-            [THEME_PALETTES.SLATE]: t('ThemePaletteSlate'),
-            [THEME_PALETTES.EMBER]: t('ThemePaletteEmber'),
-            [THEME_PALETTES.ARCTIC]: t('ThemePaletteArctic'),
-            [THEME_PALETTES.ROSE]: t('ThemePaletteRose'),
-            [THEME_PALETTES.MEADOW]: t('ThemePaletteMeadow'),
-            [THEME_PALETTES.FOG]: t('ThemePaletteFog'),
-            [THEME_PALETTES.COPPER]: t('ThemePaletteCopper'),
-            [THEME_PALETTES.CITRUS]: t('ThemePaletteCitrus'),
-          }}
+          labels={Object.fromEntries(
+            THEME_PALETTE_IDS.map(id => [
+              id,
+              t(`ThemePalette${id.charAt(0).toUpperCase()}${id.slice(1)}`),
+            ]),
+          ) as Record<ThemePalette, string>}
         />
 
         <LanguageMenu
@@ -358,7 +351,7 @@ function PaletteMenu({
           </span>
         </Button>
       </Dropdown.Trigger>
-      <Dropdown.Popover placement='bottom end' className='min-w-[11rem]'>
+      <Dropdown.Popover placement='bottom end' className='max-h-[min(70dvh,28rem)] min-w-[11rem] overflow-y-auto'>
         <Dropdown.Menu aria-label={label}>
           {THEME_PALETTE_IDS.map(id => {
             const selected = id === current
