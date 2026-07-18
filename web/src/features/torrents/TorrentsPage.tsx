@@ -3,7 +3,7 @@ import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { Button, Input, Label, Spinner, TextField, useMediaQuery } from '@heroui/react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { CheckSquare, CloudOff, FolderPlus, ListMusic, Search, SearchX, Share2, Trash2, X } from 'lucide-react'
+import { CheckSquare, CloudOff, FolderPlus, Import, ListMusic, Search, SearchX, Share2, Trash2, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat, ViewedFileEntry } from 'shared/api/types'
 import { filteredPlaylistAllUrl } from 'shared/api/extras'
@@ -24,6 +24,7 @@ import TorrentCard from './TorrentCard'
 const DetailsDialog = lazy(() => import('features/details/DetailsDialog'))
 const EditTorrentDialog = lazy(() => import('features/add/EditTorrentDialog'))
 const ExportLibraryDialog = lazy(() => import('./ExportLibraryDialog'))
+const ImportLibraryDialog = lazy(() => import('./ImportLibraryDialog'))
 
 const lazyDialogFallback = (
   <div className='grid place-items-center p-4'>
@@ -94,6 +95,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
     'all',
   )
   const [exportOpen, setExportOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
 
   const visibleTorrents = useMemo(() => {
     const sorted = torrents ? sortTorrents(torrents, sortABC, sortCategory) : []
@@ -259,6 +261,16 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
       >
         <ListMusic {...iconMenu} aria-hidden />
         <span className='hidden sm:inline'>{t('DownloadAllPlaylists')}</span>
+      </Button>
+      <Button
+        size='sm'
+        variant='secondary'
+        className='min-h-11'
+        onPress={() => setImportOpen(true)}
+        aria-label={t('ImportLibrary')}
+      >
+        <Import {...iconMenu} aria-hidden />
+        <span className='hidden sm:inline'>{t('ImportLibrary')}</span>
       </Button>
       <Button
         size='sm'
@@ -483,6 +495,9 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
       <Suspense fallback={lazyDialogFallback}>
         <DialogErrorBoundary onClose={() => setExportOpen(false)}>
           <ExportLibraryDialog open={exportOpen} onClose={() => setExportOpen(false)} torrents={torrents ?? []} />
+        </DialogErrorBoundary>
+        <DialogErrorBoundary onClose={() => setImportOpen(false)}>
+          <ImportLibraryDialog open={importOpen} onClose={() => setImportOpen(false)} />
         </DialogErrorBoundary>
       </Suspense>
     </>
