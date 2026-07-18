@@ -56,6 +56,14 @@ export const DIALOG_DETAILS: CSSProperties = {
   minHeight: 'min(88dvh, 52rem)',
 }
 
+/** Edit torrent — fixed height so poster search results don't resize the sheet. */
+export const DIALOG_EDIT: CSSProperties = {
+  ...DIALOG_SHEET_L,
+  height: 'min(80dvh, 40rem)',
+  maxHeight: 'min(80dvh, 40rem)',
+  minHeight: 'min(80dvh, 40rem)',
+}
+
 /** Full cache-map workspace stacked above Details. */
 export const DIALOG_CACHE: CSSProperties = {
   minWidth: 'min(96vw, 80rem)',

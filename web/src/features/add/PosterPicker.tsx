@@ -33,7 +33,7 @@ export default function PosterPicker({
             aria-pressed={selected}
             disabled={disabled}
             className={`relative shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
-              isScroll ? 'h-24 w-16' : 'h-[108px] w-[72px]'
+              isScroll ? 'h-24 w-16' : 'h-[132px] w-[88px]'
             } ${selected ? 'border-accent' : 'border-border hover:border-accent/50'}`}
           >
             <img src={url} alt='' className='h-full w-full object-cover' />

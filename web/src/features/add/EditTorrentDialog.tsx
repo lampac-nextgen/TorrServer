@@ -10,7 +10,7 @@ import { getMoviePosters, shortenTitleForPosterSearch } from 'shared/lib/torrent
 import { queryMax } from 'shared/theme/breakpoints'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import AppDialog from 'shared/ui/AppDialog'
-import { DIALOG_SHEET_M } from 'shared/ui/dialogSizes'
+import { DIALOG_EDIT } from 'shared/ui/dialogSizes'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
 import PosterPicker from './PosterPicker'
@@ -99,67 +99,83 @@ export default function EditTorrentDialog({ torrent, open, onClose }: EditTorren
     <AppDialog
       open={open && Boolean(torrent)}
       onClose={onClose}
-      size='md'
+      size='lg'
       fullScreen={isFullScreenBreakpoint}
-      dialogStyle={isMobile ? undefined : DIALOG_SHEET_M}
+      dialogClassName='flex flex-col overflow-hidden'
+      dialogStyle={isMobile ? undefined : DIALOG_EDIT}
     >
-      <Modal.Header>
+      <Modal.Header className='shrink-0'>
         <Modal.Heading>{t('EditTorrent')}</Modal.Heading>
         <Modal.CloseTrigger aria-label={t('Close')} />
       </Modal.Header>
-      <Modal.Body className='space-y-4'>
-        <p className='truncate font-mono text-xs text-muted'>{torrent?.hash}</p>
+      <Modal.Body className='flex min-h-0 flex-1 flex-col gap-4 overflow-hidden'>
+        <div className='shrink-0 space-y-4'>
+          <p className='break-all font-mono text-xs text-muted' title={torrent?.hash}>
+            {torrent?.hash}
+          </p>
 
-        <TextField value={title} onChange={setTitle} isDisabled={saving} autoFocus>
-          <Label>{t('AddDialog.TitleBlank')}</Label>
-          <Input />
-        </TextField>
+          <TextField value={title} onChange={setTitle} isDisabled={saving} autoFocus>
+            <Label>{t('AddDialog.TitleBlank')}</Label>
+            <Input />
+          </TextField>
 
-        <Select
-          selectedKey={category || 'none'}
-          onSelectionChange={key => setCategory(key === 'none' ? '' : String(key))}
-          isDisabled={saving}
-        >
-          <Label>{t('Category')}</Label>
-          <Select.Trigger>
-            <Select.Value />
-            <Select.Indicator />
-          </Select.Trigger>
-          <Select.Popover>
-            <ListBox>
-              <ListBox.Item id='none'>{t('Uncategorized')}</ListBox.Item>
-              {TORRENT_CATEGORIES.map(cat => (
-                <ListBox.Item key={cat.key} id={cat.key}>
-                  {t(cat.name)}
-                </ListBox.Item>
-              ))}
-            </ListBox>
-          </Select.Popover>
-        </Select>
+          <Select
+            selectedKey={category || 'none'}
+            onSelectionChange={key => setCategory(key === 'none' ? '' : String(key))}
+            isDisabled={saving}
+          >
+            <Label>{t('Category')}</Label>
+            <Select.Trigger>
+              <Select.Value />
+              <Select.Indicator />
+            </Select.Trigger>
+            <Select.Popover>
+              <ListBox>
+                <ListBox.Item id='none'>{t('Uncategorized')}</ListBox.Item>
+                {TORRENT_CATEGORIES.map(cat => (
+                  <ListBox.Item key={cat.key} id={cat.key}>
+                    {t(cat.name)}
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </Select.Popover>
+          </Select>
 
-        <TextField value={poster} onChange={setPoster} isDisabled={saving}>
-          <Label>{t('AddDialog.AddPosterLinkInput')}</Label>
-          <Input />
-        </TextField>
+          <TextField value={poster} onChange={setPoster} isDisabled={saving}>
+            <Label>{t('AddDialog.AddPosterLinkInput')}</Label>
+            <Input />
+          </TextField>
+        </div>
 
-        {postersLoading || posterOptions.length > 0 ? (
-          <div>
-            <p className='mb-2 flex items-center gap-1.5 text-xs text-muted'>
-              <Film className='size-3.5' aria-hidden />
-              {t('AddDialog.AddPosterLinkInput')}
-              {postersLoading ? '…' : ''}
-            </p>
-            <PosterPicker
-              poster={poster}
-              posterOptions={posterOptions}
-              onSelect={setPoster}
-              disabled={saving}
-              layout='wrap'
-            />
+        {/* Always mounted — reserved height so TMDB results never resize the dialog. */}
+        <div className='flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-surface-secondary p-3'>
+          <p className='mb-2 flex shrink-0 items-center gap-1.5 text-xs text-muted'>
+            <Film className='size-3.5' aria-hidden />
+            {t('AddDialog.AddPosterLinkInput')}
+            {postersLoading ? '…' : ''}
+          </p>
+          <div className='min-h-0 flex-1 overflow-y-auto overscroll-contain'>
+            {postersLoading && posterOptions.length === 0 ? (
+              <div className='flex flex-wrap gap-2' aria-hidden>
+                {Array.from({ length: 8 }, (_, i) => (
+                  <div key={i} className='h-[132px] w-[88px] animate-pulse rounded-lg bg-surface-tertiary' />
+                ))}
+              </div>
+            ) : posterOptions.length > 0 ? (
+              <PosterPicker
+                poster={poster}
+                posterOptions={posterOptions}
+                onSelect={setPoster}
+                disabled={saving}
+                layout='wrap'
+              />
+            ) : (
+              <div className='min-h-[132px]' aria-hidden />
+            )}
           </div>
-        ) : null}
+        </div>
       </Modal.Body>
-      <Modal.Footer>
+      <Modal.Footer className='shrink-0'>
         <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName}>
           {t('Cancel')}
         </Button>
