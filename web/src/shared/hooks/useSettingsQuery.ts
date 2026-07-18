@@ -1,10 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, type UseMutationResult, type UseQueryResult } from '@tanstack/react-query'
 
 import { getSettings, setSettings, SETTINGS_QUERY_KEY } from 'shared/api/settings'
 import type { BTSets } from 'shared/api/types'
 import { notifySettingsChanged } from 'shared/lib/settingsEvents'
 
-export function useSettingsQuery(options?: { enabled?: boolean }) {
+export function useSettingsQuery(options?: { enabled?: boolean }): UseQueryResult<BTSets, Error> {
   return useQuery({
     queryKey: SETTINGS_QUERY_KEY,
     queryFn: ({ signal }) => getSettings(signal),
@@ -13,7 +13,7 @@ export function useSettingsQuery(options?: { enabled?: boolean }) {
   })
 }
 
-export function useSaveSettingsMutation() {
+export function useSaveSettingsMutation(): UseMutationResult<void, Error, BTSets> {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (sets: BTSets) => setSettings(sets),

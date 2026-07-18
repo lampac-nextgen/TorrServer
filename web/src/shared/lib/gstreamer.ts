@@ -14,7 +14,7 @@ const loadGStreamerRuntime = async (): Promise<GStreamerRuntime> => {
 }
 
 export const useGStreamerRuntime = (): GStreamerRuntime => {
-  const { data } = useQuery({
+  const { data } = useQuery<GStreamerRuntime, Error>({
     queryKey: [GST_RUNTIME_QUERY_KEY],
     queryFn: loadGStreamerRuntime,
     staleTime: 60 * 1000,
