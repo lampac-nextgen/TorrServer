@@ -121,9 +121,7 @@ export default function MobilePlayersSection() {
       ) : null}
 
       <div className='space-y-1.5 pt-2'>
-        <p className='block text-sm font-medium leading-snug text-foreground'>
-          {t('SettingsDialog.PosterPlayAction')}
-        </p>
+        <p className='block text-sm font-medium leading-snug text-foreground'>{t('SettingsDialog.PosterPlayAction')}</p>
         <p className='block text-sm leading-relaxed text-muted'>{t('SettingsDialog.PosterPlayActionHint')}</p>
         <Select
           selectedKey={posterPlayAction}
