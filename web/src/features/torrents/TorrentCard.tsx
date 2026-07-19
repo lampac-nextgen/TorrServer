@@ -3,11 +3,13 @@ import { Chip, useMediaQuery } from '@heroui/react'
 import { ArrowDown, HardDrive, ImageOff, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
+import { useSettingsQuery } from 'shared/hooks/useSettingsQuery'
 import { humanizeSize, humanizeSpeed } from 'shared/lib/format'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import { GETTING_INFO, PRELOAD, WORKING } from 'shared/torrent/states'
 
 import TorrentCardActions from './TorrentCardActions'
+import { shouldShowTorrentCacheProgress, torrentCacheProgressPercent } from './torrentCardProgress'
 
 export interface TorrentCardProps {
   torrent: TorrentStat
@@ -30,15 +32,6 @@ function statusChipColor(stat?: number): ChipColor {
     default:
       return 'default'
   }
-}
-
-/** Meaningful fill only — avoid noisy "0%" from tiny loaded_size / rounding. */
-function progressPercent(torrent: TorrentStat): number | null {
-  const size = torrent.torrent_size ?? 0
-  const loaded = torrent.loaded_size ?? 0
-  if (size <= 0 || loaded <= 0) return null
-  const pct = Math.min(100, Math.round((loaded / size) * 100))
-  return pct > 0 ? pct : null
 }
 
 function MetaItem({ icon, label, tip }: { icon: ReactNode; label: string; tip?: string }) {
@@ -67,10 +60,11 @@ export default function TorrentCard({
   const cardRef = useRef<HTMLElement>(null)
   const hoverFine = useMediaQuery(HOVER_FINE_MQ)
   const [posterBroken, setPosterBroken] = useState(false)
+  const { data: settings } = useSettingsQuery()
 
   const title = torrent.title || torrent.name || torrent.hash
-  const percent = progressPercent(torrent)
-  const showProgress = percent != null && percent < 100
+  const percent = torrentCacheProgressPercent(torrent, settings?.CacheSize)
+  const showProgress = shouldShowTorrentCacheProgress(percent, torrent)
   const downloadSpeed = torrent.download_speed ?? 0
   const showSpeed = torrent.stat === WORKING || torrent.stat === PRELOAD || downloadSpeed > 0
 
