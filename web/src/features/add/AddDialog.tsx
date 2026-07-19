@@ -324,7 +324,14 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
             onChange={setSaveToDb}
             isDisabled={saving}
             aria-label={t('AddDialog.SaveToDb')}
-          />
+            className='mt-0.5 shrink-0'
+          >
+            <Switch.Content>
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch.Content>
+          </Switch>
         </div>
       </Modal.Body>
       <Modal.Footer className='shrink-0'>

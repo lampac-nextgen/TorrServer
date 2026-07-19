@@ -178,7 +178,14 @@ export default function ImportLibraryDialog({ open, onClose }: ImportLibraryDial
             onChange={setSaveToDb}
             isDisabled={running}
             aria-label={t('AddDialog.SaveToDb')}
-          />
+            className='mt-0.5 shrink-0'
+          >
+            <Switch.Content>
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch.Content>
+          </Switch>
         </div>
         <div className='flex min-h-11 items-start justify-between gap-4'>
           <div className='min-w-0 flex-1'>
@@ -189,7 +196,14 @@ export default function ImportLibraryDialog({ open, onClose }: ImportLibraryDial
             onChange={setSkipExisting}
             isDisabled={running}
             aria-label={t('ImportLibrarySkipExisting')}
-          />
+            className='mt-0.5 shrink-0'
+          >
+            <Switch.Content>
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch.Content>
+          </Switch>
         </div>
         {progress ? (
           <p className='flex items-center gap-2 text-sm text-muted'>
