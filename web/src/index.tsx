@@ -11,7 +11,8 @@ import './index.css'
 
 // Before React paint — iOS PWA mis-resolves 100dvh; pin --app-height early (master used 100vh).
 installAppHeight()
-bootstrapTelegramWebApp()
+// Mini App SDK only when ?tg=1 — do not await (blocked telegram.org must not delay UI).
+void bootstrapTelegramWebApp()
 
 const queryClient = new QueryClient({
   defaultOptions: {
