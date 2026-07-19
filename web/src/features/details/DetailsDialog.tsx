@@ -18,7 +18,7 @@ import { useUpdateCache } from 'shared/cache/useUpdateCache'
 import { useTorrentDetail } from 'shared/hooks/useTorrentDetail'
 import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
-import { getPeerString, humanizeSize, humanizeSpeed, removeRedundantCharacters } from 'shared/lib/format'
+import { getPeerString, formatCacheFilledLabel, humanizeSize, humanizeSpeed, removeRedundantCharacters } from 'shared/lib/format'
 import { filesFromMetadata } from 'shared/torrent/fileMetadata'
 import { isFilePlayable } from 'shared/torrent/playable'
 import { CLOSED, GETTING_INFO, IN_DB, PRELOAD, WORKING } from 'shared/torrent/states'
@@ -231,18 +231,7 @@ export default function DetailsDialog({
   const isLoadingMetadata = stat === GETTING_INFO && playableFileList.length === 0
   const hasMultipleSeasons = (seasonList?.length ?? 0) > 1
 
-  const cacheFilledValue =
-    cache.Filled != null && cache.Capacity != null
-      ? (() => {
-          const filled = cache.Filled
-          const capacity = cache.Capacity
-          const shown = Math.min(filled, capacity)
-          const over = filled > capacity
-          return over
-            ? `${humanizeSize(shown)} / ${humanizeSize(capacity)} · ${Math.round((filled / capacity) * 100)}%`
-            : `${humanizeSize(filled)} / ${humanizeSize(capacity)}`
-        })()
-      : '—'
+  const cacheFilledValue = formatCacheFilledLabel(cache.Filled, cache.Capacity) ?? '—'
 
   const primaryStats = (
     <>

@@ -35,6 +35,26 @@ export function getPeerString(torrent?: TorrentStat | null): string | null {
 }
 
 /**
+ * Cache fill label — same shape as Details «Кеш» widget.
+ * `percent: 'whenOver'` → sizes only until filled exceeds capacity, then `· N%` (can exceed 100).
+ * `percent: 'always'` → always append `· N%` (card progress).
+ */
+export function formatCacheFilledLabel(
+  filled?: number | null,
+  capacity?: number | null,
+  opts?: { percent?: 'whenOver' | 'always' },
+): string | null {
+  if (filled == null || capacity == null || capacity <= 0 || filled < 0) return null
+  const shown = Math.min(filled, capacity)
+  const pct = Math.round((filled / capacity) * 100)
+  const over = filled > capacity
+  const sizes = `${humanizeSize(shown)} / ${humanizeSize(capacity)}`
+  const mode = opts?.percent ?? 'whenOver'
+  if (mode === 'always' || over) return `${sizes} · ${pct}%`
+  return sizes
+}
+
+/**
  * Strip unbalanced trailing bracket groups and trailing dots/spaces from titles
  * (common in release-group naming) so display names stay readable.
  */

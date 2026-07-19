@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { authFetch, withAuthMediaUrl } from 'shared/api/authCredentials'
 import { useUpdateCache } from 'shared/cache/useUpdateCache'
 import { useTorrentDetail } from 'shared/hooks/useTorrentDetail'
-import { humanizeSize, humanizeSpeed } from 'shared/lib/format'
+import { formatCacheFilledLabel, humanizeSpeed } from 'shared/lib/format'
 import { gstreamerMasterUrl, gstreamerProbeUrl } from 'shared/lib/gstreamer'
 import { setNowPlaying } from 'shared/lib/nowPlaying'
 import { queryMax } from 'shared/theme/breakpoints'
@@ -307,17 +307,7 @@ export default function VideoPlayer({
   const seeders = liveTorrent?.connected_seeders ?? 0
   const peersLabel = peersActive == null ? '—' : `${peersActive}/${peersTotal}`
   const seedersLabel = peersActive == null ? '—' : `↑${seeders}`
-  const cacheFilledLabel =
-    cache.Filled != null && cache.Capacity != null
-      ? (() => {
-          const filled = cache.Filled
-          const capacity = cache.Capacity
-          const shown = Math.min(filled, capacity)
-          return filled > capacity
-            ? `${humanizeSize(shown)} / ${humanizeSize(capacity)} · ${Math.round((filled / capacity) * 100)}%`
-            : `${humanizeSize(filled)} / ${humanizeSize(capacity)}`
-        })()
-      : '—'
+  const cacheFilledLabel = formatCacheFilledLabel(cache.Filled, cache.Capacity) ?? '—'
 
   const torrentStatsRow =
     hash != null ? (

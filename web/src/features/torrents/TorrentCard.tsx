@@ -3,13 +3,11 @@ import { Chip, useMediaQuery } from '@heroui/react'
 import { ArrowDown, HardDrive, ImageOff, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
-import { useSettingsQuery } from 'shared/hooks/useSettingsQuery'
 import { humanizeSize, humanizeSpeed } from 'shared/lib/format'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import { GETTING_INFO, PRELOAD, WORKING } from 'shared/torrent/states'
 
 import TorrentCardActions from './TorrentCardActions'
-import { shouldShowTorrentCacheProgress, torrentCacheProgressPercent } from './torrentCardProgress'
 
 export interface TorrentCardProps {
   torrent: TorrentStat
@@ -60,11 +58,8 @@ export default function TorrentCard({
   const cardRef = useRef<HTMLElement>(null)
   const hoverFine = useMediaQuery(HOVER_FINE_MQ)
   const [posterBroken, setPosterBroken] = useState(false)
-  const { data: settings } = useSettingsQuery()
 
   const title = torrent.title || torrent.name || torrent.hash
-  const percent = torrentCacheProgressPercent(torrent, settings?.CacheSize)
-  const showProgress = shouldShowTorrentCacheProgress(percent, torrent)
   const downloadSpeed = torrent.download_speed ?? 0
   const showSpeed = torrent.stat === WORKING || torrent.stat === PRELOAD || downloadSpeed > 0
 
@@ -143,34 +138,21 @@ export default function TorrentCard({
           </div>
         )}
 
-        {showProgress ? (
-          <div className='pointer-events-none absolute inset-x-0 bottom-0 h-1 bg-black/45'>
-            <div
-              className='h-full bg-accent transition-[width] duration-300'
-              style={{ width: `${percent}%` }}
-              aria-hidden
-            />
-          </div>
-        ) : null}
-
-        <div className='pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-1 bg-gradient-to-b from-black/60 to-transparent p-2'>
-          {statusLabel || showProgress ? (
+        <div className='pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-1.5 bg-gradient-to-b from-black/60 to-transparent p-2'>
+          {statusLabel ? (
             <Chip
               size='sm'
-              color={statusLabel ? statusChipColor(torrent.stat) : 'default'}
+              color={statusChipColor(torrent.stat)}
               variant={torrent.stat === WORKING ? 'primary' : 'secondary'}
             >
-              <Chip.Label className='inline-flex items-center gap-1'>
-                {statusLabel || null}
-                {showProgress ? <span className={statusLabel ? 'opacity-90' : undefined}>{percent}%</span> : null}
-              </Chip.Label>
+              <Chip.Label>{statusLabel}</Chip.Label>
             </Chip>
           ) : (
             <span />
           )}
           {categoryLabel ? (
-            <Chip size='sm' variant='soft'>
-              <Chip.Label className='max-w-[6.5rem] truncate'>{categoryLabel}</Chip.Label>
+            <Chip size='sm' variant='soft' className='max-w-[42%] shrink-0'>
+              <Chip.Label className='truncate'>{categoryLabel}</Chip.Label>
             </Chip>
           ) : null}
         </div>
