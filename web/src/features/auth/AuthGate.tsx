@@ -9,6 +9,7 @@ import {
   getStoredCredentials,
 } from 'shared/api/authCredentials'
 import { torrentsHost } from 'shared/api/hosts'
+import { getTelegramInitData } from 'shared/lib/telegramWebApp'
 
 import LoginScreen from './LoginScreen'
 
@@ -21,13 +22,17 @@ const spaHeaders = {
 
 async function postTorrentsList(authorization?: string) {
   const hadDefault = axios.defaults.headers.common.Authorization
+  const initData = getTelegramInitData()
   try {
     if (!authorization) delete axios.defaults.headers.common.Authorization
+    const headers: Record<string, string> = { ...spaHeaders }
+    if (authorization) headers.Authorization = authorization
+    if (initData) headers['X-Telegram-Init-Data'] = initData
     return await axios.post(
       torrentsHost(),
       { action: 'list' },
       {
-        headers: authorization ? { ...spaHeaders, Authorization: authorization } : { ...spaHeaders },
+        headers,
         validateStatus: status => status === 200 || status === 401 || status === 403,
       },
     )
@@ -73,6 +78,16 @@ export default function AuthGate({ children }: AuthGateProps) {
     let cancelled = false
     ;(async () => {
       applyAuthToAxios()
+
+      // Mini App: try initData before showing Basic login.
+      if (getTelegramInitData()) {
+        const tgOk = await postTorrentsList()
+        if (cancelled) return
+        if (tgOk.status === 200) {
+          setState('ready')
+          return
+        }
+      }
 
       if (getStoredCredentials()) {
         const valid = await validateStoredCredentials()

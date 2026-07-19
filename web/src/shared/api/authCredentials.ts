@@ -1,6 +1,9 @@
 import axios from 'axios'
 
+import { getTelegramInitData } from 'shared/lib/telegramWebApp'
+
 const STORAGE_KEY = 'torrserver.basicAuth'
+const TG_HEADER = 'X-Telegram-Init-Data'
 
 export interface BasicCredentials {
   username: string
@@ -49,11 +52,16 @@ export function clearCredentials(): void {
   delete axios.defaults.headers.common.Authorization
 }
 
-/** Apply stored Basic to axios defaults (call at boot / after login). */
+/** Apply stored Basic and/or Telegram Mini App initData to axios defaults. */
 export function applyAuthToAxios(): void {
   const header = getAuthorizationHeader()
   if (header) axios.defaults.headers.common.Authorization = header
   else delete axios.defaults.headers.common.Authorization
+
+  const initData = getTelegramInitData()
+  if (initData) axios.defaults.headers.common[TG_HEADER] = initData
+  else delete axios.defaults.headers.common[TG_HEADER]
+
   // Helps CheckAuth skip WWW-Authenticate for SPA probes.
   axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
 }
@@ -74,12 +82,13 @@ export function withAuthMediaUrl(url: string): string {
   }
 }
 
-/** fetch() with Authorization when credentials are stored. */
+/** fetch() with Authorization / Telegram initData when available. */
 export function authFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-  const header = getAuthorizationHeader()
-  if (!header) return fetch(input, init)
   const headers = new Headers(init?.headers)
-  if (!headers.has('Authorization')) headers.set('Authorization', header)
+  const header = getAuthorizationHeader()
+  if (header && !headers.has('Authorization')) headers.set('Authorization', header)
+  const initData = getTelegramInitData()
+  if (initData && !headers.has(TG_HEADER)) headers.set(TG_HEADER, initData)
   return fetch(input, { ...init, headers })
 }
 

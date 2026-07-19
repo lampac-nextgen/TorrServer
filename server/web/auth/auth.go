@@ -65,6 +65,13 @@ func BasicAuth(accounts gin.Accounts) gin.HandlerFunc {
 		user, found := pairs.searchCredential(c.Request.Header.Get("Authorization"))
 		if found {
 			c.Set(gin.AuthUserKey, user)
+			return
+		}
+
+		if initData := c.GetHeader("X-Telegram-Init-Data"); initData != "" {
+			if tgUser, ok := TryTelegramAuth(initData); ok {
+				c.Set(gin.AuthUserKey, tgUser)
+			}
 		}
 	}
 }
@@ -77,6 +84,13 @@ func CheckAuth() gin.HandlerFunc {
 
 		if _, ok := c.Get(gin.AuthUserKey); ok {
 			return
+		}
+
+		if initData := c.GetHeader("X-Telegram-Init-Data"); initData != "" {
+			if user, ok := TryTelegramAuth(initData); ok {
+				c.Set(gin.AuthUserKey, user)
+				return
+			}
 		}
 
 		// SPA XHR/fetch probes must not trigger the browser's native Basic dialog.

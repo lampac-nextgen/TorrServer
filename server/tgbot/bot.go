@@ -88,32 +88,30 @@ func Start(token string) error {
 	up.EscapeFunc = escapeHtml
 
 	if err := b.SetCommands([]tele.Command{
+		{Text: "start", Description: "Main menu"},
 		{Text: "help", Description: "Help and user ID"},
-		{Text: "start", Description: "Start bot"},
-		{Text: "list", Description: "List torrents"},
+		{Text: "list", Description: "Library"},
 		{Text: "add", Description: "Add torrent"},
-		{Text: "search", Description: "Search all (RuTor+Torznab)"},
+		{Text: "search", Description: "Search torrents"},
 		{Text: "rutor", Description: "Search RuTor"},
 		{Text: "torznab", Description: "Search Torznab"},
-		{Text: "remove", Description: "Remove torrent"},
 		{Text: "status", Description: "Torrent status"},
+		{Text: "stat", Description: "Detailed status"},
+		{Text: "stats", Description: "Summary statistics"},
 		{Text: "link", Description: "Stream link"},
 		{Text: "m3u", Description: "M3U playlist"},
-		{Text: "preload", Description: "Preload file"},
-		{Text: "queue", Description: "Upload queue status"},
-		{Text: "server", Description: "Server info"},
-		{Text: "stats", Description: "Summary statistics"},
-		{Text: "stat", Description: "Detailed status"},
-		{Text: "snake", Description: "Cache visualization"},
-		{Text: "clear", Description: "Remove all torrents"},
-		{Text: "hash", Description: "Show hashes"},
 		{Text: "export", Description: "Export torrents"},
 		{Text: "import", Description: "Import torrents"},
-		{Text: "categories", Description: "List categories"},
-		{Text: "lang", Description: "Set language RU|EN"},
+		{Text: "lang", Description: "Language RU|EN"},
+		{Text: "cancel", Description: "Cancel pending input"},
+		{Text: "settings", Description: "Settings (admin)"},
+		{Text: "shutdown", Description: "Shutdown (admin)"},
+		{Text: "preset", Description: "Preset (admin)"},
 	}); err != nil {
 		log.TLogln("tg setcmd err", err)
 	}
+
+	setupMenuButton(b)
 
 	if len(config.Cfg.WhiteIds) > 0 {
 		b.Use(middleware.Whitelist(config.Cfg.WhiteIds...))
@@ -143,8 +141,9 @@ func Start(token string) error {
 	b.Handle("Help", help)
 	b.Handle("/help", help)
 	b.Handle("/Help", help)
-	b.Handle("/start", help)
+	b.Handle("/start", cmdStart)
 	b.Handle("/id", help)
+	b.Handle("/cancel", cmdCancel)
 
 	b.Handle("/list", list)
 	b.Handle("/clear", clear)
@@ -197,7 +196,7 @@ func Start(token string) error {
 			if err != nil {
 				return err
 			}
-			return list(c)
+			return sendListHub(c, 0, false)
 		}
 		return nil
 	})
@@ -207,6 +206,10 @@ func Start(token string) error {
 		if handleSettingsInputReply(c) {
 			return nil
 		}
+		uid := c.Sender().ID
+		if isMenuButton(uid, txt) {
+			return handleMenuButton(c, txt)
+		}
 		lower := strings.ToLower(txt)
 		if strings.HasPrefix(lower, "magnet:") || strings.HasPrefix(lower, "torrs://") ||
 			strings.HasPrefix(lower, "http://") || strings.HasPrefix(lower, "https://") ||
@@ -215,7 +218,7 @@ func Start(token string) error {
 			if err != nil {
 				return err
 			}
-			return list(c)
+			return sendListHub(c, 0, false)
 		} else if c.Message().ReplyTo != nil && c.Message().ReplyTo.ReplyMarkup != nil && len(c.Message().ReplyTo.ReplyMarkup.InlineKeyboard) > 0 {
 			var hash string
 			for _, row := range c.Message().ReplyTo.ReplyMarkup.InlineKeyboard {
@@ -251,7 +254,7 @@ func Start(token string) error {
 			}
 			return nil
 		} else {
-			return c.Send(tr(c.Sender().ID, "add_magnet"))
+			return c.Send(tr(c.Sender().ID, "add_magnet"), mainMenuKeyboard(uid))
 		}
 	})
 
@@ -283,47 +286,18 @@ func Start(token string) error {
 func help(c tele.Context) error {
 	uid := c.Sender().ID
 	id := strconv.FormatInt(uid, 10)
-	var arr []string
-	if c.Sender().Username != "" {
-		arr = append(arr, c.Sender().Username)
-	}
-	if c.Sender().FirstName != "" {
-		arr = append(arr, c.Sender().FirstName)
-	}
-	if c.Sender().LastName != "" {
-		arr = append(arr, c.Sender().LastName)
-	}
 	msg := "🤖 <b>" + tr(uid, "help") + "</b>\n\n"
-	msg += "📋 <b>" + tr(uid, "help_main") + "</b>\n"
-	msg += "  • /help — " + tr(uid, "help_help") + "\n"
-	msg += "  • " + tr(uid, "help_list") + "\n"
-	msg += "  • " + tr(uid, "help_clear") + "\n"
-	msg += "  • " + tr(uid, "help_add") + "\n"
-	msg += "  • " + tr(uid, "help_hash") + "\n"
-	msg += "  • /stats, /stat — " + tr(uid, "help_stats") + ", " + tr(uid, "help_stat") + "\n\n"
-	msg += "🎛 <b>" + tr(uid, "help_manage") + "</b> " + tr(uid, "help_manage_desc") + "\n"
-	msg += "  • " + tr(uid, "help_remove") + "\n"
-	msg += "  • " + tr(uid, "help_links") + "\n\n"
-	msg += "🔍 <b>" + tr(uid, "help_search") + "</b> " + tr(uid, "help_search_desc") + "\n"
-	msg += "  • " + tr(uid, "help_search_cmd") + "\n\n"
-	msg += "📦 <b>" + tr(uid, "help_export_import") + "</b>\n"
-	msg += "  • " + tr(uid, "help_export") + "\n"
-	msg += "  • " + tr(uid, "help_import") + "\n\n"
-	msg += "📁 <b>" + tr(uid, "help_categories_section") + "</b>\n"
-	msg += "  • " + tr(uid, "help_categories") + "\n\n"
-	msg += "🖥 <b>" + tr(uid, "help_server") + "</b>\n"
-	msg += "  • " + tr(uid, "help_server_cmd") + "\n"
-	msg += "  • " + tr(uid, "help_echo") + "\n"
-	msg += "  • " + tr(uid, "help_db") + "\n\n"
-	msg += "⚙️ <b>" + tr(uid, "help_other") + "</b>\n"
-	msg += "  • " + tr(uid, "help_other_cmd") + "\n"
-	msg += "  • " + tr(uid, "help_lang") + "\n"
-	msg += "  • " + tr(uid, "help_admin") + "\n\n"
-	msg += "👤 " + tr(uid, "help_id") + ": <code>" + id + "</code>"
-	if len(arr) > 0 {
-		msg += " • " + strings.Join(arr, ", ")
+	msg += tr(uid, "help_short") + "\n\n"
+	msg += "• /list — " + tr(uid, "menu_library") + "\n"
+	msg += "• /search — " + tr(uid, "help_search") + "\n"
+	msg += "• /add — " + tr(uid, "help_add") + "\n"
+	msg += "• /cancel — " + tr(uid, "help_cancel") + "\n"
+	msg += "• /lang RU|EN\n"
+	if isAdmin(uid) {
+		msg += "• /settings, /preset, /shutdown — " + tr(uid, "help_admin") + "\n"
 	}
-	return c.Send(msg)
+	msg += "\n👤 " + tr(uid, "help_id") + ": <code>" + id + "</code>"
+	return c.Send(msg, mainMenuKeyboard(uid))
 }
 
 func isHash(txt string) bool {
