@@ -396,7 +396,7 @@ export default function VideoPlayer({
                         : { width: '100%', maxHeight: cinemaMaxHeight, aspectRatio: '16 / 9' }
                     }
                     topChrome={
-                      <div className='flex items-start gap-2 px-3 pb-10 pt-[max(0.75rem,env(safe-area-inset-top))]'>
+                      <div className='flex items-start gap-2 px-3 pb-10 pt-[max(0.75rem,env(safe-area-inset-top))] pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))]'>
                         <p
                           className='min-w-0 flex-1 truncate text-sm font-semibold text-white drop-shadow'
                           title={title || t('Play')}

@@ -460,12 +460,12 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
       </Modal.Body>
       <Modal.Footer className='shrink-0'>
         {isMobile ? (
-          <div className='flex w-full gap-2'>
+          <div className='flex w-full flex-col gap-2'>
             <Button
               onPress={() => void handleResetDefaults()}
               isDisabled={loading || saving}
               variant='outline'
-              className={`${footerButtonClassName || ''} flex-1`.trim()}
+              className={`${footerButtonClassName || ''} w-full`.trim()}
             >
               {t('SettingsDialog.ResetToDefault')}
             </Button>
@@ -473,7 +473,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
               variant='primary'
               onPress={() => void handleSave()}
               isDisabled={loading || saving}
-              className={`${footerButtonClassName || ''} flex-1`.trim()}
+              className={`${footerButtonClassName || ''} w-full`.trim()}
             >
               {saving ? <Spinner size='sm' color='current' /> : t('Save')}
             </Button>

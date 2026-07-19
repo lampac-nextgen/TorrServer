@@ -60,7 +60,7 @@ export default function PWAInstallationGuide() {
           variant='ghost'
           aria-label={t('Close')}
           onPress={dismiss}
-          className='min-h-10 min-w-10'
+          className='min-h-11 min-w-11'
         >
           <X {...iconMenu} />
         </Button>

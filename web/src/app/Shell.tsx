@@ -23,7 +23,6 @@ import DialogErrorBoundary from 'shared/ui/DialogErrorBoundary'
 
 import BottomNav from './BottomNav'
 import Sidebar from './Sidebar'
-import NowPlayingBar from './NowPlayingBar'
 
 const CommandPalette = lazy(() => import('./CommandPalette'))
 const AddDialog = lazy(() => import('features/add/AddDialog'))
@@ -188,8 +187,9 @@ export default function Shell() {
 
   return (
     <div
-      className='grid h-dvh max-h-dvh overflow-hidden bg-background'
+      className='grid min-h-0 overflow-hidden bg-background'
       style={{
+        height: 'var(--app-height, 100vh)',
         gridTemplateRows: isMobile ? `${headerHeight} minmax(0, 1fr) auto` : `${headerHeight} minmax(0, 1fr)`,
         gridTemplateColumns: isMobile ? '1fr' : `${sidebarWidth}px 1fr`,
         gridTemplateAreas: isMobile ? '"header" "content" "nav"' : '"header header" "sidebar content"',
@@ -266,7 +266,7 @@ export default function Shell() {
       ) : null}
 
       <main
-        className='min-h-0 min-w-0 overflow-auto bg-background [-webkit-overflow-scrolling:touch]'
+        className='min-h-0 min-w-0 overflow-auto overscroll-y-contain bg-background [-webkit-overflow-scrolling:touch]'
         style={{ gridArea: 'content' }}
       >
         <TorrentsPage
@@ -367,9 +367,11 @@ export default function Shell() {
         </DialogErrorBoundary>
         {detectApplePlatform().isIOS && !isStandaloneApp ? <PWAInstallationGuide /> : null}
         {!detectApplePlatform().isIOS && !isStandaloneApp ? <AndroidInstallBanner /> : null}
-        <DonateSnackbar onSupport={() => setDonateOpen(true)} />
+        {/* Hide donate while iOS install guide is showing — both compete for the bottom band. */}
+        {!(detectApplePlatform().isIOS && !isStandaloneApp) ? (
+          <DonateSnackbar onSupport={() => setDonateOpen(true)} />
+        ) : null}
       </Suspense>
-      <NowPlayingBar />
     </div>
   )
 }

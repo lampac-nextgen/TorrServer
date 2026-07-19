@@ -67,7 +67,7 @@ export default function SearchResultsGrid({
                 variant='primary'
                 isDisabled={adding}
                 onPress={() => onAdd(item)}
-                className='min-h-10 shrink-0 self-center px-3'
+                className='min-h-11 shrink-0 self-center px-3'
               >
                 {busy ? <Spinner size='sm' color='current' /> : t('Add')}
               </Button>

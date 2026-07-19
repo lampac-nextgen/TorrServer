@@ -2237,20 +2237,39 @@ html,
 body,
 #root {
   height: 100%;
-  height: 100dvh;
-  max-height: 100dvh;
   margin: 0;
-  /* iOS PWA: fill the real screen including the home-indicator region */
-  min-height: 100%;
-  min-height: 100dvh;
-  min-height: -webkit-fill-available;
+  /*
+   * iOS standalone PWA: use 100vh (NOT 100dvh). On iOS 17–26, 100dvh often equals
+   * the layout viewport minus the home-indicator band, leaving a dead strip under
+   * the bottom nav. Master used `height: 100vh` in display-mode:standalone for this.
+   * `--app-height` (JS) overrides with a measured full-screen value.
+   */
+  height: 100vh;
+  min-height: 100vh;
+  height: var(--app-height, 100vh);
+  min-height: var(--app-height, 100vh);
+}
+
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  html,
+  body,
+  #root {
+    height: 100vh;
+    min-height: 100vh;
+    height: var(--app-height, 100vh);
+    min-height: var(--app-height, 100vh);
+  }
+}
+
+html,
+body {
+  overscroll-behavior: none;
 }
 
 body {
   font-family: "Plus Jakarta Sans", system-ui, sans-serif;
-  /* Hex fallback — iOS standalone can fail to paint oklch/var backgrounds into the home-indicator strip */
-  background-color: #f4f6f5;
-  background: var(--background);
+  background-color: #ffffff;
+  background: var(--surface);
   color: var(--foreground);
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
@@ -2258,9 +2277,8 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-html.dark body,
-html[data-theme='dark'] body {
-  background-color: #0a0f0d;
+html.dark body {
+  background-color: #121a16;
 }
 
 #root {
@@ -2484,9 +2502,13 @@ body[data-immersive='true'] .ts-bottom-nav {
 
 .ts-player-bar {
   width: 100%;
-  padding: 0.35rem 0.5rem max(0.5rem, env(safe-area-inset-bottom, 0px));
+  padding: 0.35rem max(0.5rem, env(safe-area-inset-right, 0px)) max(0.5rem, env(safe-area-inset-bottom, 0px))
+    max(0.5rem, env(safe-area-inset-left, 0px));
   background: linear-gradient(to top, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.45));
   backdrop-filter: blur(12px);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .ts-player-play-lg {
@@ -2515,10 +2537,9 @@ body[data-immersive='true'] .ts-bottom-nav {
 }
 
 
-/* Poster library density: ~2 cols on phone, denser on tablet+, roomier on desktop. */
+/* Poster library density: ~2 cols on phone (~360+), denser on tablet+, roomier on desktop. */
 .torrent-poster-grid {
-  /* ~168px min → typically 2 columns on iPhone portrait (~390px). */
-  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
 }
 
 @media (min-width: 700px) {

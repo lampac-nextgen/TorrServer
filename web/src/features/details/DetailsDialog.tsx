@@ -450,8 +450,9 @@ export default function DetailsDialog({
                         variant='ghost'
                         className='min-h-11 shrink-0'
                         onPress={() => setCacheMapOpen(true)}
+                        aria-label={t('DetailedCacheView.button')}
                       >
-                        {t('DetailedCacheView.button')}
+                        {t('Cache')}
                       </Button>
                     </div>
                   ) : (

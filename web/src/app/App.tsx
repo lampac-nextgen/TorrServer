@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react'
+import { type ReactNode, useEffect } from 'react'
 import { useMediaQuery } from '@heroui/react'
 import { Toaster } from 'sonner'
 
@@ -21,7 +21,15 @@ function SettingsQueryBootstrap() {
 
 /** Apply `dark` / `data-palette` on `<html>` for the whole session (prefs live in localStorage). */
 function ThemeBootstrap() {
-  useThemePreference()
+  const { isDark, palette } = useThemePreference()
+  useEffect(() => {
+    // Module-load apply can run before <body>; re-sync surface paint for iOS home-indicator.
+    const surface = getComputedStyle(document.documentElement).getPropertyValue('--surface').trim()
+    if (surface) {
+      document.documentElement.style.backgroundColor = surface
+      document.body.style.backgroundColor = surface
+    }
+  }, [isDark, palette])
   return null
 }
 
@@ -37,6 +45,7 @@ function AuthedApp({ children }: { children: ReactNode }) {
 /**
  * Root providers: modal-open chrome, snackbars, auth gate, settings cache bootstrap, Shell.
  * Toaster offset clears the mobile BottomNav when present.
+ * `--app-height` is installed from `index.tsx` before first paint.
  */
 export default function App() {
   const hasBottomNav = useMediaQuery(queryMax('mobile'))
@@ -51,7 +60,12 @@ export default function App() {
           </AuthedApp>
         </AuthGate>
         <PwaUpdateToast />
-        <Toaster richColors closeButton position='bottom-center' offset={hasBottomNav ? BOTTOM_NAV_TOAST_OFFSET : 24} />
+        <Toaster
+          richColors
+          closeButton
+          position='bottom-center'
+          offset={hasBottomNav ? BOTTOM_NAV_TOAST_OFFSET : 'calc(24px + env(safe-area-inset-bottom, 0px))'}
+        />
       </AppSnackbarProvider>
     </ModalOpenProvider>
   )

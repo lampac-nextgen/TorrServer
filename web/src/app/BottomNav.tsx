@@ -51,7 +51,7 @@ export default function BottomNav({
       onPress={onPress}
       aria-label={label}
       aria-current={active ? 'true' : undefined}
-      className={`flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-none px-1 py-2 text-xs font-medium ${
+      className={`flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-0.5 rounded-none px-1 pb-1 pt-1.5 text-xs font-medium ${
         active ? 'text-accent' : ''
       }`}
     >
@@ -69,7 +69,7 @@ export default function BottomNav({
         closeMore()
         onPress()
       }}
-      className={`justify-start gap-3 px-4 py-3 ${danger ? 'text-danger' : ''}`}
+      className={`justify-start gap-3 px-4 py-3 min-h-11 ${danger ? 'text-danger' : ''}`}
     >
       {icon}
       {label}
@@ -78,7 +78,10 @@ export default function BottomNav({
 
   return (
     <>
-      <div className='ts-bottom-nav shrink-0 border-t border-border bg-surface pb-[env(safe-area-inset-bottom,0px)]'>
+      <div
+        className='ts-bottom-nav shrink-0 border-t border-border pb-[env(safe-area-inset-bottom,0px)]'
+        style={{ backgroundColor: 'var(--surface)' }}
+      >
         <div className='mx-auto flex max-w-lg items-stretch' style={{ height: BOTTOM_NAV_CONTENT_PX }}>
           {tab(t('Add'), <FolderPlus {...iconNavMobile} />, onAdd, disabled)}
           {tab(t('nav.Search'), <Search {...iconNavMobile} />, onSearch, disabled)}

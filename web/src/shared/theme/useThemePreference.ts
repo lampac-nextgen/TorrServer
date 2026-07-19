@@ -93,6 +93,13 @@ function applyThemeToDocument(isDark: boolean, palette: ThemePalette) {
   const root = document.documentElement
   root.classList.toggle('dark', isDark)
   root.dataset.palette = palette
+  // Force paint into the iOS home-indicator strip (var() backgrounds can fail there).
+  // Use --surface so any gap under BottomNav matches the tab bar.
+  const surface = getComputedStyle(root).getPropertyValue('--surface').trim()
+  if (surface) {
+    root.style.backgroundColor = surface
+    if (document.body) document.body.style.backgroundColor = surface
+  }
 }
 
 function readSystemDark(): boolean {

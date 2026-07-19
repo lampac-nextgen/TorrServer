@@ -45,12 +45,12 @@ export default function CategoriesDrawer({ open, onClose, selectedCategory, onSe
       <Drawer.Backdrop>
         <Drawer.Content placement='left'>
           <Drawer.Dialog aria-label={t('Category')}>
-            <Drawer.Header>
+            <Drawer.Header className='pt-[max(0.75rem,env(safe-area-inset-top,0px))]'>
               <Drawer.Heading className='flex items-center gap-2'>
                 <LayoutGrid {...iconMenu} aria-hidden />
                 {t('Category')}
               </Drawer.Heading>
-              <Drawer.CloseTrigger />
+              <Drawer.CloseTrigger className='min-h-11 min-w-11' />
             </Drawer.Header>
             <Drawer.Body className='w-[280px] space-y-1 pt-1'>
               <button type='button' className={itemClass(selectedCategory === 'all')} onClick={() => select('all')}>

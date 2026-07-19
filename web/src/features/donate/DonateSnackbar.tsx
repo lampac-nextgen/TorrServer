@@ -40,7 +40,7 @@ export default function DonateSnackbar({ onSupport }: DonateSnackbarProps) {
         <Button
           size='sm'
           variant='secondary'
-          className='min-h-10 shrink-0 gap-1.5'
+          className='min-h-11 shrink-0 gap-1.5'
           onPress={() => {
             dismiss()
             onSupport()
@@ -55,7 +55,7 @@ export default function DonateSnackbar({ onSupport }: DonateSnackbarProps) {
           variant='ghost'
           aria-label={t('Close')}
           onPress={dismiss}
-          className='min-h-10 min-w-10 shrink-0'
+          className='min-h-11 min-w-11 shrink-0'
         >
           <X {...iconMenu} />
         </Button>
