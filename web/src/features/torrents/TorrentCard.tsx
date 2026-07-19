@@ -92,10 +92,12 @@ export default function TorrentCard({
   const seeders = torrent.connected_seeders ?? 0
   const peersLabel =
     peersActive == null
-      ? null
+      ? '—'
       : seeders > 0
         ? `${peersActive}/${peersTotal} · ↑${seeders}`
         : `${peersActive}/${peersTotal}`
+
+  const speedLabel = showSpeed ? (downloadSpeed > 0 ? humanizeSpeed(downloadSpeed) : '—') : '—'
 
   const blurFocusedControl = () => {
     const active = document.activeElement
@@ -198,27 +200,23 @@ export default function TorrentCard({
 
       <div className='min-w-0 px-0.5'>
         <h3
-          className='line-clamp-3 text-xs font-semibold leading-snug text-foreground sm:line-clamp-2 sm:text-sm'
+          className='line-clamp-2 min-h-[2.5rem] text-xs font-semibold leading-snug text-foreground sm:min-h-[2.625rem] sm:text-sm'
           title={title}
         >
           {title}
         </h3>
-        <div className='mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] leading-none text-muted sm:text-xs'>
+        <div className='mt-1 grid h-[2rem] grid-cols-2 content-start gap-x-2.5 gap-y-1 text-[11px] leading-none text-muted sm:h-[2.125rem] sm:text-xs'>
           <MetaItem
             icon={<HardDrive className='size-3' strokeWidth={2} />}
             label={humanizeSize(torrent.torrent_size)}
             tip={t('Size')}
           />
-          {showSpeed ? (
-            <MetaItem
-              icon={<ArrowDown className='size-3' strokeWidth={2.25} />}
-              label={downloadSpeed > 0 ? humanizeSpeed(downloadSpeed) : '—'}
-              tip={t('DownloadSpeed')}
-            />
-          ) : null}
-          {peersLabel ? (
-            <MetaItem icon={<Users className='size-3' strokeWidth={2} />} label={peersLabel} tip={t('Peers')} />
-          ) : null}
+          <MetaItem
+            icon={<ArrowDown className='size-3' strokeWidth={2.25} />}
+            label={speedLabel}
+            tip={t('DownloadSpeed')}
+          />
+          <MetaItem icon={<Users className='size-3' strokeWidth={2} />} label={peersLabel} tip={t('Peers')} />
         </div>
       </div>
     </article>
