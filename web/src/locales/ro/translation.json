@@ -273,7 +273,7 @@
     "SectionDialogs": "Dialoguri",
     "DialogsInstantHint": "Aceste opțiuni se aplică imediat în acest browser — Salvare nu este necesară.",
     "DialogsFullScreen": "Deschide dialogurile pe ecran complet",
-    "DialogsFullScreenHint": "Detalii, setări, căutare și alte ferestre se deschid pe ecran complet chiar și pe ecran lat."
+    "DialogsFullScreenHint": "Implicit pe telefoane și tablete în landscape. Activați pentru ecran complet și pe monitoare late."
   },
   "Size": "Mărime",
   "SpecialThanks": "Mulțumiri speciale",

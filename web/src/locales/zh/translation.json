@@ -273,7 +273,7 @@
     "SectionDialogs": "对话框",
     "DialogsInstantHint": "这些选项会立即在本浏览器中生效，无需点保存。",
     "DialogsFullScreen": "全屏打开对话框",
-    "DialogsFullScreenHint": "详情、设置、搜索等面板即使在宽屏上也会全屏打开。"
+    "DialogsFullScreenHint": "手机与平板横屏默认全屏。开启后宽屏显示器也会强制全屏打开面板。"
   },
   "Size": "大小",
   "SpecialThanks": "特别感谢",

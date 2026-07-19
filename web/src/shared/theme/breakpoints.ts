@@ -33,3 +33,10 @@ export const queryMax = (name: Breakpoint): string => `(max-width: ${BP[name]}px
 
 /** Short landscape phones / split-view: hide tall chrome that would crush content. */
 export const MEDIA_SHORT_VIEWPORT = '(max-height: 500px)'
+
+/**
+ * iPad / tablet landscape: wide enough for a "desktop" sheet, but short — prefer
+ * edge-to-edge dialogs. Covers iPad 11 Pro landscape (~1194×834); skips typical 1440+ laptops.
+ */
+export const MEDIA_TABLET_LANDSCAPE =
+  '(min-width: 701px) and (max-width: 1366px) and (orientation: landscape) and (max-height: 1024px)'

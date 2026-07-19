@@ -273,7 +273,7 @@
     "SectionDialogs": "Dialogs",
     "DialogsInstantHint": "These options apply immediately in this browser — Save is not required.",
     "DialogsFullScreen": "Open dialogs fullscreen",
-    "DialogsFullScreenHint": "Details, Settings, Search, and other sheets open edge-to-edge even on wide screens."
+    "DialogsFullScreenHint": "On by default for phones and tablets in landscape. Turn on to force edge-to-edge sheets on wide monitors too."
   },
   "Size": "Size",
   "SpecialThanks": "Special Thanks",

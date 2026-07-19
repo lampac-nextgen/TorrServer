@@ -273,7 +273,7 @@
     "SectionDialogs": "Dialogues",
     "DialogsInstantHint": "Ces options s’appliquent immédiatement dans ce navigateur — Enregistrer n’est pas nécessaire.",
     "DialogsFullScreen": "Ouvrir les dialogues en plein écran",
-    "DialogsFullScreenHint": "Détails, paramètres, recherche et autres fenêtres s’ouvrent en plein écran même sur grand écran."
+    "DialogsFullScreenHint": "Par défaut sur téléphones et tablettes en paysage. Activez pour forcer le plein écran aussi sur grand moniteur."
   },
   "Size": "Taille",
   "SpecialThanks": "Remerciements spéciaux",

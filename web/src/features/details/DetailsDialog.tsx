@@ -22,7 +22,7 @@ import { getPeerString, humanizeSize, humanizeSpeed, removeRedundantCharacters }
 import { filesFromMetadata } from 'shared/torrent/fileMetadata'
 import { isFilePlayable } from 'shared/torrent/playable'
 import { CLOSED, GETTING_INFO, IN_DB, PRELOAD, WORKING } from 'shared/torrent/states'
-import { queryMax } from 'shared/theme/breakpoints'
+import { MEDIA_SHORT_VIEWPORT, queryMax } from 'shared/theme/breakpoints'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { iconBtn } from 'shared/ui/controlClasses'
 import { DIALOG_DETAILS, DIALOG_FULLSCREEN } from 'shared/ui/dialogSizes'
@@ -114,6 +114,9 @@ export default function DetailsDialog({
   const isFullScreen = useDialogFullScreen()
   /** Equal-width Overview/Files/Cache segments — only needed below the phone breakpoint. */
   const isMobile = useMediaQuery(queryMax('mobile'))
+  const isShortViewport = useMediaQuery(MEDIA_SHORT_VIEWPORT)
+  /** Phone-compact hero/actions — not tied to fullscreen surface (iPad landscape stays wide). */
+  const useCompactDetails = isMobile || isShortViewport
   useSyncModalOpen(true)
 
   const overlayState = useOverlayState({
@@ -243,10 +246,10 @@ export default function DetailsDialog({
 
   const primaryStats = (
     <>
-      <StatWidget dense={!isFullScreen} label={t('DownloadSpeed')} value={humanizeSpeed(downloadSpeed)} />
-      <StatWidget dense={!isFullScreen} label={t('UploadSpeed')} value={humanizeSpeed(uploadSpeed)} />
-      <StatWidget dense={!isFullScreen} label={t('Peers')} value={getPeerString(torrent) || '—'} />
-      <StatWidget dense={!isFullScreen} label={t('Size')} value={humanizeSize(torrentSize)} />
+      <StatWidget dense={!useCompactDetails} label={t('DownloadSpeed')} value={humanizeSpeed(downloadSpeed)} />
+      <StatWidget dense={!useCompactDetails} label={t('UploadSpeed')} value={humanizeSpeed(uploadSpeed)} />
+      <StatWidget dense={!useCompactDetails} label={t('Peers')} value={getPeerString(torrent) || '—'} />
+      <StatWidget dense={!useCompactDetails} label={t('Size')} value={humanizeSize(torrentSize)} />
     </>
   )
 
@@ -293,13 +296,13 @@ export default function DetailsDialog({
             </Modal.Header>
 
             <Modal.Body className='flex min-h-0 flex-1 flex-col gap-3 overflow-hidden'>
-              {/* Compact on fullscreen (no nested scroll); denser hero on desktop sheet. */}
+              {/* Compact hero on phone/short viewport; wide hero on tablet/desktop (incl. fullscreen iPad). */}
               <div
                 className={`shrink-0 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 ${
-                  isFullScreen ? 'space-y-3 p-3' : 'flex flex-col gap-3 p-3 sm:flex-row sm:items-start'
+                  useCompactDetails ? 'space-y-3 p-3' : 'flex flex-col gap-3 p-3 sm:flex-row sm:items-start'
                 }`}
               >
-                {isFullScreen ? (
+                {useCompactDetails ? (
                   <>
                     <div className='flex items-start gap-3'>
                       <button
@@ -424,7 +427,7 @@ export default function DetailsDialog({
                 </Tabs.ListContainer>
 
                 <Tabs.Panel id='overview' className='min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pt-3'>
-                  {isFullScreen ? (
+                  {useCompactDetails ? (
                     <div className='grid grid-cols-2 gap-1.5 sm:grid-cols-3'>{secondaryStats}</div>
                   ) : null}
 
@@ -434,7 +437,7 @@ export default function DetailsDialog({
 
                   <CacheHeatSparkline filled={cache.Filled} capacity={cache.Capacity} />
 
-                  {isFullScreen ? (
+                  {useCompactDetails ? (
                     <div className='flex gap-2'>
                       <Button
                         size='sm'
@@ -480,7 +483,7 @@ export default function DetailsDialog({
                     onShowFiles={() => setActiveTab('files')}
                     autoPlayFileId={autoPlayFileId}
                     autoPlayTimecode={autoPlayTimecode}
-                    compact
+                    compact={useCompactDetails}
                   />
                 </Tabs.Panel>
 
@@ -537,9 +540,9 @@ export default function DetailsDialog({
                   className='flex min-h-0 flex-1 flex-col gap-2 overflow-hidden pt-3 sm:gap-4 sm:pt-4'
                 >
                   <div className='flex shrink-0 items-center justify-between gap-2'>
-                    {isFullScreen ? null : <p className='text-sm font-semibold text-muted'>{t('Cache')}</p>}
+                    {useCompactDetails ? null : <p className='text-sm font-semibold text-muted'>{t('Cache')}</p>}
                     <div
-                      className={`flex flex-wrap items-center gap-2 ${isFullScreen ? 'w-full justify-between' : ''}`}
+                      className={`flex flex-wrap items-center gap-2 ${useCompactDetails ? 'w-full justify-between' : ''}`}
                     >
                       <Checkbox isSelected={isSnakeDebugMode} onChange={setIsSnakeDebugMode}>
                         <Checkbox.Content>
