@@ -1,6 +1,7 @@
 package tgbot
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -14,15 +15,21 @@ import (
 )
 
 func cmdSearch(c tele.Context) error {
-	if sets.BTsets == nil || (!sets.BTsets.EnableRutorSearch && !sets.BTsets.EnableTorznabSearch) {
-		return c.Send(tr(c.Sender().ID, "search_disabled_rutor"))
-	}
-
 	args := c.Args()
 	if len(args) == 0 {
 		return c.Send(tr(c.Sender().ID, "search_usage"))
 	}
-	query := strings.Join(args, " ")
+	return runSearchQuery(c, strings.Join(args, " "))
+}
+
+func runSearchQuery(c tele.Context, query string) error {
+	query = strings.TrimSpace(query)
+	if query == "" {
+		return c.Send(tr(c.Sender().ID, "search_usage"))
+	}
+	if sets.BTsets == nil || (!sets.BTsets.EnableRutorSearch && !sets.BTsets.EnableTorznabSearch) {
+		return c.Send(tr(c.Sender().ID, "search_disabled_rutor"))
+	}
 	uid := c.Sender().ID
 	statusMsg, err := c.Bot().Send(c.Sender(), tr(uid, "searching"))
 	if err != nil {
@@ -34,7 +41,7 @@ func cmdSearch(c tele.Context) error {
 			list = append(list, rutor.Search(query)...)
 		}
 		if sets.BTsets != nil && sets.BTsets.EnableTorznabSearch {
-			list = append(list, torznab.Search(query, -1)...)
+			list = append(list, torznab.Search(context.Background(), query, -1, "", 0, 0)...)
 		}
 		source := "RuTor+Torznab"
 		sendSearchResultsAsync(c.Bot(), c.Sender(), statusMsg, uid, query, list, source)
@@ -87,7 +94,7 @@ func cmdTorznab(c tele.Context) error {
 		return err
 	}
 	go func() {
-		list := torznab.Search(query, index)
+		list := torznab.Search(context.Background(), query, index, "", 0, 0)
 		sendSearchResultsAsync(c.Bot(), c.Sender(), statusMsg, uid, query, list, "Torznab")
 	}()
 	return nil

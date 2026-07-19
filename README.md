@@ -327,11 +327,13 @@ cd server && go run ./cmd
 
 ### Web development
 
-```bash
-cd web && yarn start
-```
+React 19 + Vite 8 + HeroUI v3 UI. See **[web/README.md](web/README.md)** for stack, scripts, and env setup.
 
-More info at <https://github.com/YouROK/TorrServer/tree/master/web#readme>
+```bash
+cd web && yarn && yarn start
+# ship into binary:
+cd web && yarn build && cd .. && make webgen-clean
+```
 
 ### Build
 
@@ -367,7 +369,7 @@ goreleaser build --snapshot --clean --single-target --id binary
 GOOS=linux GOARCH=amd64 goreleaser build --snapshot --clean --single-target --id binary
 ```
 
-Web UI build inside `gen_web.go` needs Node 16–18, or Node 17+ with OpenSSL legacy (`NODE_OPTIONS=--openssl-legacy-provider`, set in Makefile / GoReleaser).
+Web UI build inside `gen_web.go` needs **Node.js 22+** (see `web/.nvmrc`).
 
 `binary` builds use **Go 1.26.4**; `android` uses **Go 1.25.7**.
 
@@ -381,9 +383,9 @@ See [docs/BUILD.md](docs/BUILD.md) for cross-compilation, Docker builder mode (`
 
 #### Web
 
-- Install **npm** and **yarn**
-- Go to the web directory
-- Run `make web-build` or `NODE_OPTIONS=--openssl-legacy-provider yarn build`
+- Install **Node.js 22+** and **yarn**
+- Go to the web directory, run `yarn build`
+- From the repo root, embed with `make webgen-clean` (or `go run gen_web.go --clean`)
 
 #### Android
 
@@ -445,35 +447,41 @@ local:127.0.0.1
 
 TorrServer can talk to **Torznab** indexers so you can search for torrents from tools like **Jackett** and **Prowlarr**, including searching several configured indexers at once.
 
-Configure it in the web UI: **Settings → Torznab**.
+Configure it in the web UI: **Settings → Search**.
 
 ### Indexer parameters
 
 Each Torznab indexer needs:
 
-- **Host URL**: full URL to the Torznab API endpoint.
+- **Host URL**: full URL to the Torznab API endpoint (or indexer base that TorrServer can turn into `/api`).
   - Jackett example:
 
   ```shell
   http://192.168.1.10:9117/api/v2.0/indexers/all/results/torznab/
   ```
 
+  TorrServer normalizes this to `…/torznab/api` when the path does not already end with `/api`.
+
   - Prowlarr example:
-  
+
   ```shell
   http://localhost:9696/1
   ```
-  
-  - Make sure to include the correct trailing slash (`/`) in your indexer's URL,
-  as required by your Torznab provider. TorrServer will try to properly format the path,
-  but matching your indexer's expected format is best to avoid connection issues.
-  
+
+  That becomes `http://localhost:9696/1/api`.
+
+  - Matching your indexer's expected format is best to avoid connection issues. A missing `http://` / `https://` scheme is added automatically.
+
 - **API Key**: the key from your Torznab indexer manager.
+
+Search requests are not limited to Movies/TV categories; results come from all categories the indexer returns.
+
+In the web **Search** dialog, **All Trackers** queries every configured Torznab indexer and, when RuTor search is also enabled, merges RuTor results into the same list.
 
 ### Enabling Torznab search
 
 1. Open **Settings**.
-2. Open the **Torznab** tab.
+2. Open the **Search** tab.
 3. Turn on **Enable Torznab Search**.
 4. Enter **Host URL** and **API Key**, then **Add Server** for each indexer.
 5. **Save** settings.

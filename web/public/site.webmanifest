@@ -5,13 +5,13 @@
   "description": "TorrServer - stream torrent files via HTTP",
   "lang": "en",
   "dir": "ltr",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "orientation": "any",
-  "theme_color": "#00a572",
-  "background_color": "#ffffff",
+  "theme_color": "#0e1613",
+  "background_color": "#0a0f0d",
   "categories": ["entertainment", "utilities"],
   "icons": [
     {
@@ -56,6 +56,10 @@
     {
       "protocol": "magnet",
       "url": "/?magnet=%s"
+    },
+    {
+      "protocol": "torrs",
+      "url": "/?torrs=%s"
     }
   ],
   "file_handlers": [
@@ -70,6 +74,7 @@
   "share_target": {
     "action": "/",
     "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
     "params": {
       "title": "title",
       "text": "text",

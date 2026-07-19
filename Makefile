@@ -4,8 +4,6 @@
 SHELL := /bin/bash
 .SHELLFLAGS := -eu -o pipefail -c
 
-export NODE_OPTIONS ?= --openssl-legacy-provider
-
 -include .github/versions.env
 
 GORELEASER_CONFIG         ?= .goreleaser.local.yaml

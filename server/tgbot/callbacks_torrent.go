@@ -71,6 +71,19 @@ func handleCallbackTorrent(c tele.Context, args []string) error {
 		if len(args) > 1 {
 			return callbackListRefresh(c, args[1])
 		}
+	case "\fftpick":
+		if len(args) >= 3 {
+			return callbackTorrentPick(c, args[1], args[2])
+		}
+		if len(args) == 2 {
+			return callbackTorrentPick(c, args[1], "0")
+		}
+	case "\ffbacklist":
+		page := "0"
+		if len(args) >= 2 {
+			page = args[1]
+		}
+		return callbackBackList(c, page)
 	case "\ffitems":
 		if len(args) >= 3 {
 			return callbackFileListPage(c, args[1], args[2])

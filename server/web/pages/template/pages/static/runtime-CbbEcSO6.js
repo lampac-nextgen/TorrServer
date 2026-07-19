@@ -1,0 +1,1 @@
+import{i as e}from"./vendor-D73vhE3s.js";import{u as t}from"./hosts-DnQLd-FX.js";var n=[`runtime-status`],r=async n=>{let{data:r}=await e.get(t(),{signal:n});return r};export{r as n,n as t};

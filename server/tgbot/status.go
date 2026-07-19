@@ -177,16 +177,19 @@ func sendStatus(c tele.Context, t *torr.Torrent) error {
 }
 
 func statusKeyboard(uid int64, hash string, active bool) *tele.ReplyMarkup {
+	back := tele.InlineButton{Text: tr(uid, "btn_back_torrent"), Unique: "ftpick", Data: hash + "|0"}
 	if active {
 		return &tele.ReplyMarkup{InlineKeyboard: [][]tele.InlineButton{
 			{
 				{Text: "🔄", Unique: "fstatusrefresh", Data: hash},
 				{Text: tr(uid, "status_stop_btn"), Unique: "fstatusstop", Data: hash},
 			},
+			{back},
 		}}
 	}
 	return &tele.ReplyMarkup{InlineKeyboard: [][]tele.InlineButton{
 		{{Text: tr(uid, "status_refresh_btn"), Unique: "fstatusrefresh", Data: hash}},
+		{back},
 	}}
 }
 
