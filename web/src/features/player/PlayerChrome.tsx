@@ -4,7 +4,6 @@ import {
   MediaControlBar,
   MediaController,
   MediaFullscreenButton,
-  MediaLoadingIndicator,
   MediaMuteButton,
   MediaPipButton,
   MediaPlaybackRateButton,
@@ -34,6 +33,7 @@ const noTip = { noTooltip: true } as const
 /**
  * Brand Media Chrome shell — TorrServer dark cinema OSD.
  * `children` must include the `<video slot="media" />` (and optional tracks).
+ * Loading/buffering UI lives in VideoPlayer (HeroUI Spinner) — no MediaLoadingIndicator.
  */
 export default function PlayerChrome({
   isMobile,
@@ -48,7 +48,6 @@ export default function PlayerChrome({
   return (
     <MediaController className={`ts-player ${className || ''}`.trim()} autohide='2' style={style}>
       {children}
-      <MediaLoadingIndicator slot='centered-chrome' />
       <div slot='top-chrome' className='ts-player-top'>
         {topChrome}
       </div>

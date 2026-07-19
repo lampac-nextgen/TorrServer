@@ -1,22 +1,25 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import axios from 'axios'
 import Hls from 'hls.js'
 import { Alert, Button, Modal, Popover, Spinner, useMediaQuery, useOverlayState } from '@heroui/react'
-import { Maximize2, Minimize2, Music2, Play, X } from 'lucide-react'
+import { ArrowDown, Database, Maximize2, Minimize2, Music2, Play, Users, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { authFetch, withAuthMediaUrl } from 'shared/api/authCredentials'
+import { useUpdateCache } from 'shared/cache/useUpdateCache'
+import { useTorrentDetail } from 'shared/hooks/useTorrentDetail'
+import { humanizeSize, humanizeSpeed } from 'shared/lib/format'
 import { gstreamerMasterUrl, gstreamerProbeUrl } from 'shared/lib/gstreamer'
 import { setNowPlaying } from 'shared/lib/nowPlaying'
 import { queryMax } from 'shared/theme/breakpoints'
-import { useModalOpen, useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { iconBtn } from 'shared/ui/controlClasses'
-import { iconMenu, iconPlayerCompact } from 'shared/ui/iconProps'
 import { PLAYER_DIALOG_EXPANDED, PLAYER_DIALOG_MOBILE, PLAYER_DIALOG_NORMAL } from 'shared/ui/dialogSizes'
+import { iconMenu, iconPlayerCompact } from 'shared/ui/iconProps'
+import { useModalOpen, useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 
 import { extractAudioTracks, formatAudioTrackDisplay, type ProbeTrack } from './audioTrackLabel'
 import PlayerChrome from './PlayerChrome'
 import { useHlsAttach, type SubtitleTrackInfo } from './useHlsAttach'
 import { useTimecodePersist } from './useTimecodePersist'
-import { authFetch, withAuthMediaUrl } from 'shared/api/authCredentials'
 
 export interface VideoPlayerProps {
   videoSrc: string
@@ -42,6 +45,14 @@ export interface VideoPlayerProps {
 }
 
 const HEARTBEAT_INTERVAL_MS = 30_000
+
+function PlayerStat({ tip, children }: { tip: string; children: ReactNode }) {
+  return (
+    <span className='inline-flex min-w-0 max-w-full items-center gap-1' title={tip}>
+      {children}
+    </span>
+  )
+}
 
 function nativeMimeType(url: string): string {
   switch (url.split('?')[0].split('.').pop()?.toLowerCase()) {
@@ -107,6 +118,10 @@ export default function VideoPlayer({
   const [activeAudioIndex, setActiveAudioIndex] = useState(audioIndex)
   const [playbackSrc, setPlaybackSrc] = useState(videoSrc)
   const [resolvedAudioTracks, setResolvedAudioTracks] = useState<ProbeTrack[]>(audioTracks)
+
+  const liveHash = open ? hash : undefined
+  const { data: liveTorrent } = useTorrentDetail(liveHash)
+  const cache = useUpdateCache(hash, { enabled: open && Boolean(hash), fast: false })
 
   const shouldPersistTimecode = Boolean(hash && fileIndex != null && trackTimecode)
   const canSwitchAudio = hls && Boolean(hash) && fileIndex != null && resolvedAudioTracks.length > 1
@@ -286,6 +301,46 @@ export default function VideoPlayer({
 
   const chromeIcon = iconPlayerCompact
 
+  const downloadSpeed = liveTorrent?.download_speed ?? 0
+  const peersActive = liveTorrent?.active_peers
+  const peersTotal = liveTorrent?.total_peers ?? 0
+  const seeders = liveTorrent?.connected_seeders ?? 0
+  const peersLabel = peersActive == null ? '—' : `${peersActive}/${peersTotal}`
+  const seedersLabel = peersActive == null ? '—' : `↑${seeders}`
+  const cacheFilledLabel =
+    cache.Filled != null && cache.Capacity != null
+      ? (() => {
+          const filled = cache.Filled
+          const capacity = cache.Capacity
+          const shown = Math.min(filled, capacity)
+          return filled > capacity
+            ? `${humanizeSize(shown)} / ${humanizeSize(capacity)} · ${Math.round((filled / capacity) * 100)}%`
+            : `${humanizeSize(filled)} / ${humanizeSize(capacity)}`
+        })()
+      : '—'
+
+  const torrentStatsRow =
+    hash != null ? (
+      <div
+        className='mt-0.5 flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] leading-none text-white/80 drop-shadow sm:text-xs'
+        aria-label={`${t('DownloadSpeed')}, ${t('Peers')}, ${t('CacheFilled')}`}
+      >
+        <PlayerStat tip={t('DownloadSpeed')}>
+          <ArrowDown className='size-3 shrink-0' strokeWidth={2.25} aria-hidden />
+          <span className='tabular-nums'>{humanizeSpeed(downloadSpeed)}</span>
+        </PlayerStat>
+        <PlayerStat tip={t('Peers')}>
+          <Users className='size-3 shrink-0' strokeWidth={2} aria-hidden />
+          <span className='tabular-nums'>{peersLabel}</span>
+          <span className='tabular-nums text-white/70'>{seedersLabel}</span>
+        </PlayerStat>
+        <PlayerStat tip={t('CacheFilled')}>
+          <Database className='size-3 shrink-0' strokeWidth={2} aria-hidden />
+          <span className='min-w-0 truncate tabular-nums'>{cacheFilledLabel}</span>
+        </PlayerStat>
+      </div>
+    ) : null
+
   const audioExtra = canSwitchAudio ? (
     <Popover isOpen={audioMenuOpen} onOpenChange={setAudioMenuOpen}>
       <Popover.Trigger>
@@ -397,12 +452,15 @@ export default function VideoPlayer({
                     }
                     topChrome={
                       <div className='flex items-start gap-2 px-3 pb-10 pt-[max(0.75rem,env(safe-area-inset-top))] pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))]'>
-                        <p
-                          className='min-w-0 flex-1 truncate text-sm font-semibold text-white drop-shadow'
-                          title={title || t('Play')}
-                        >
-                          {title || t('Play')}
-                        </p>
+                        <div className='min-w-0 flex-1'>
+                          <p
+                            className='truncate text-sm font-semibold text-white drop-shadow'
+                            title={title || t('Play')}
+                          >
+                            {title || t('Play')}
+                          </p>
+                          {torrentStatsRow}
+                        </div>
                         {audioExtra}
                         {expandExtra}
                         <Button
