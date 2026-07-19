@@ -144,6 +144,7 @@ export default function MobilePlayersSection() {
             </ListBox>
           </Select.Popover>
         </Select>
+        <p className='block text-sm leading-relaxed text-muted'>{t('SettingsDialog.TorrsProtocolHint')}</p>
       </div>
     </SettingsSection>
   )

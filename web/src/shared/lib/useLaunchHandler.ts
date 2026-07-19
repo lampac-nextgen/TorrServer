@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 
+import { hasLaunchQuery, readLaunchSourceFromUrl } from 'shared/lib/launchSource'
+
 interface LaunchQueueFileHandle {
   getFile: () => Promise<File>
 }
@@ -18,19 +20,18 @@ declare global {
   }
 }
 
-function readLaunchSourceFromUrl(): string | null {
+function consumeLaunchSourceFromUrl(): string | null {
   if (typeof window === 'undefined') return null
-  const params = new URLSearchParams(window.location.search)
-  const source = params.get('magnet') || params.get('url') || params.get('text') || null
-  if (source) {
+  const source = readLaunchSourceFromUrl(window.location.search)
+  if (source && hasLaunchQuery(window.location.search)) {
     window.history.replaceState(null, '', window.location.pathname)
   }
   return source
 }
 
-/** Handles PWA launch via protocol_handlers (magnet:), share_target, and file_handlers (.torrent). */
+/** Handles PWA launch via protocol_handlers (magnet: / torrs:), share_target, and file_handlers (.torrent). */
 export default function useLaunchHandler() {
-  const [launchSource, setLaunchSource] = useState<string | null>(() => readLaunchSourceFromUrl())
+  const [launchSource, setLaunchSource] = useState<string | null>(() => consumeLaunchSourceFromUrl())
   const [launchFiles, setLaunchFiles] = useState<File[] | null>(null)
 
   useEffect(() => {

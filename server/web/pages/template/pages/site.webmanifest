@@ -56,6 +56,10 @@
     {
       "protocol": "magnet",
       "url": "/?magnet=%s"
+    },
+    {
+      "protocol": "torrs",
+      "url": "/?torrs=%s"
     }
   ],
   "file_handlers": [

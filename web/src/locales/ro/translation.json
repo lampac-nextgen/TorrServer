@@ -186,6 +186,7 @@
     "PosterPlayAction": "Butonul Play",
     "PosterPlayActionHint": "Ce face Play pe posterele din bibliotecă și în detaliile torrentului. Playerele externe apar aici după ce le activați mai sus. Pe iPhone/iPad, implicit se copiază linkul — playerul integrat este limitat.",
     "PosterPlayBuiltin": "Player integrat",
+    "TorrsProtocolHint": "Aplicația Chrome/Edge instalată poate deschide linkuri magnet: și torrs:// (permiteți protocolul când vi se cere). În Safari: lipiți linkul în Adăugare.",
     "PeersListenPort": "Port pentru conexiuni de la peers",
     "PeersListenPortHint": "1024 - 65535, 0 - aleatoriu",
     "PreloadCache": "Preîncărcare cache înainte de redare",
