@@ -26,11 +26,7 @@ func handleCallback(c tele.Context) error {
 	case "\ffclear", "\ffshutdown", "\ffpreset", "\ffset":
 		return handleCallbackAdmin(c, args)
 	case "\ffmenu":
-		action := ""
-		if len(args) >= 2 {
-			action = args[1]
-		}
-		return callbackMenu(c, action)
+		return callbackMenu(c, args[1:])
 	default:
 		return c.Respond(&tele.CallbackResponse{Text: tr(c.Sender().ID, "callback_unknown")})
 	}

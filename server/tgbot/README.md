@@ -78,15 +78,30 @@ If your network cannot connect to Telegram’s API directly, run a local SOCKS5 
 
 ## Commands
 
+Slash menu (`/`) shows **primary** commands only: `/start`, `/help`, `/list`, `/add`, `/search`, `/more`, `/cancel`, `/lang`, plus admin `/settings`, `/preset`, `/shutdown`. Everything else still works if typed; use **⋯ More** / `/more` for the hub.
+
+### Reply keyboard
+
+| Button | Action |
+|--------|--------|
+| Library | `/list` hub (one message) |
+| Search | Ask for query (next message), or `/search <query>` |
+| Status | `/stat` |
+| Add | Hint to paste magnet/hash |
+| More | Inline hub: Library / Tools / Links / Admin / Help / Open Web |
+
 ### Core
 
 | Command | Description |
 |---------|-------------|
 | `/help`, `/start`, `/id` | Help and user ID |
-| `/list [compact]` | List torrents with buttons |
+| `/more` | Extra actions hub |
+| `/list` | Library hub |
 | `/add <link>` | Add torrent (magnet, hash, torrs://) |
 | `/clear` | Remove all (with confirmation) |
 | `/hash [N]` | Show info hashes |
+| `/cancel` | Cancel pending settings/preset/search input |
+| `/lang [RU\|EN]` | Language |
 
 ### Management
 
@@ -125,7 +140,9 @@ If your network cannot connect to Telegram’s API directly, run a local SOCKS5 
 | `/ffp <hash\|N> <id> [json]` | FFprobe metadata |
 | `/speedtest [size]` | Download test (1–100 MB) |
 | `/snake [hash\|N] [cols] [rows]` | Cache visualization |
-| `/lang [RU\|EN]` | Language |
+| `/queue` | Telegram upload queue |
+| `/echo` | Version |
+| `/db` | DB dump |
 
 ### Admin Only
 

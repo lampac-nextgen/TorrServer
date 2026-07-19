@@ -6,9 +6,9 @@ func cmdCancel(c tele.Context) error {
 	uid := c.Sender().ID
 	cleared := clearPendingForUser(uid)
 	if cleared {
-		return c.Send(tr(uid, "canceled"), mainMenuKeyboard(uid))
+		return sendWithMenu(c, tr(uid, "canceled"))
 	}
-	return c.Send(tr(uid, "cancel_nothing"), mainMenuKeyboard(uid))
+	return sendWithMenu(c, tr(uid, "cancel_nothing"))
 }
 
 func clearPendingForUser(uid int64) bool {
@@ -30,5 +30,9 @@ func clearPendingForUser(uid int64) bool {
 		}
 	}
 	pendingPresetMu.Unlock()
+
+	if clearPendingSearch(uid) {
+		cleared = true
+	}
 	return cleared
 }
