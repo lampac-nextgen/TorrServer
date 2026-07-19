@@ -373,7 +373,7 @@ export function usePlayLauncher({
                       <Button
                         key={file.id}
                         variant='ghost'
-                        className='h-auto flex-col items-start gap-0.5 py-2.5'
+                        className='h-auto w-full flex-col items-start justify-start gap-0.5 px-3 py-2.5'
                         isPending={pending}
                         onPress={() => pickFileFromList(file)}
                       >
@@ -412,7 +412,7 @@ export function usePlayLauncher({
                       <Button
                         key={index}
                         variant='ghost'
-                        className='h-auto justify-start gap-3 py-2.5'
+                        className='h-auto w-full justify-start gap-3 px-3 py-2.5'
                         onPress={() => pendingAudioFile && void openPlayer(pendingAudioFile, index, audioTracks)}
                       >
                         <span className='flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-accent'>
@@ -432,7 +432,16 @@ export function usePlayLauncher({
         </Modal>
 
         {activePlayer ? (
-          <Suspense fallback={null}>
+          <Suspense
+            fallback={
+              <div className='fixed inset-0 z-[100] grid place-items-center bg-black/55'>
+                <div className='flex flex-col items-center gap-3'>
+                  <Spinner size='lg' color='current' className='text-accent' />
+                  <p className='text-sm font-medium text-white/90'>{t('Buffering')}</p>
+                </div>
+              </div>
+            }
+          >
             <VideoPlayer
               initiallyOpen
               showTrigger={false}

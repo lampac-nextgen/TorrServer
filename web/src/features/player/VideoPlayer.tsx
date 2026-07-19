@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
 import axios from 'axios'
 import Hls from 'hls.js'
-import { Alert, Button, Modal, Popover, useMediaQuery, useOverlayState } from '@heroui/react'
+import { Alert, Button, Modal, Popover, Spinner, useMediaQuery, useOverlayState } from '@heroui/react'
 import { Maximize2, Minimize2, Music2, Play, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { gstreamerMasterUrl, gstreamerProbeUrl } from 'shared/lib/gstreamer'
@@ -454,8 +454,11 @@ export default function VideoPlayer({
                   </PlayerChrome>
                 )}
                 {loading && !mediaError ? (
-                  <div className='pointer-events-none absolute inset-0 grid place-items-center'>
-                    {/* MediaLoadingIndicator also shows; keep a soft fallback */}
+                  <div className='pointer-events-none absolute inset-0 z-10 grid place-items-center bg-black/55'>
+                    <div className='flex flex-col items-center gap-3 px-4 text-center'>
+                      <Spinner size='lg' color='current' className='text-accent' />
+                      <p className='text-sm font-medium text-white/90'>{t('Buffering')}</p>
+                    </div>
                   </div>
                 ) : null}
               </Modal.Body>

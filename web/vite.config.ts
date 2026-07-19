@@ -59,6 +59,10 @@ export default defineConfig(({ mode }) => {
             /^\/storage/,
             /^\/shutdown/,
             /^\/playlistall/,
+            // API docs must hit gin-swagger, not SPA navigateFallback (else ./static → /swagger/static 404).
+            /^\/swagger/,
+            /^\/stat/,
+            /^\/magnets/,
           ],
           cleanupOutdatedCaches: true,
           clientsClaim: true,

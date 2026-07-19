@@ -30,12 +30,12 @@ export default function DonateDialog({ open, onClose }: DonateDialogProps) {
       <Modal.Body>
         <ul className='flex flex-col gap-2 sm:flex-row sm:flex-wrap'>
           {DONATE_LINKS.map(link => (
-            <li key={link.id} className='sm:min-w-[8.5rem] sm:flex-1'>
+            <li key={link.id} className='w-full sm:min-w-[8.5rem] sm:flex-1'>
               <Link
                 href={link.href}
                 target='_blank'
                 rel='noopener noreferrer'
-                className='flex min-h-11 items-center justify-between gap-2 rounded-lg border border-border bg-surface-secondary px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover-fine:border-accent/40 hover-fine:bg-accent-soft/40'
+                className='flex min-h-11 w-full items-center justify-between gap-2 rounded-lg border border-border bg-surface-secondary px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover-fine:border-accent/40 hover-fine:bg-accent-soft/40'
               >
                 <span>{link.name}</span>
                 <SquareArrowOutUpRight size={14} strokeWidth={1.75} className='shrink-0 text-muted' aria-hidden />

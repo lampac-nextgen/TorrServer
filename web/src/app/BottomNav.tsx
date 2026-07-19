@@ -69,7 +69,7 @@ export default function BottomNav({
         closeMore()
         onPress()
       }}
-      className={`justify-start gap-3 px-4 py-3 min-h-11 ${danger ? 'text-danger' : ''}`}
+      className={`h-auto w-full justify-start gap-3 px-4 py-3 min-h-11 ${danger ? 'text-danger' : ''}`}
     >
       {icon}
       {label}

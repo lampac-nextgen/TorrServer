@@ -112,7 +112,7 @@ export default function CommandPalette({
         </TextField>
         <div className='flex max-h-72 flex-col gap-1 overflow-y-auto'>
           {filtered.map(cmd => (
-            <Button key={cmd.id} variant='ghost' className='min-h-11 justify-start' onPress={cmd.run}>
+            <Button key={cmd.id} variant='ghost' className='min-h-11 w-full justify-start' onPress={cmd.run}>
               {cmd.label}
             </Button>
           ))}

@@ -105,7 +105,7 @@ export default function ExportLibraryDialog({ open, onClose, torrents }: ExportL
         <div className='flex flex-col gap-2'>
           <Button
             variant='secondary'
-            className='min-h-11'
+            className='min-h-11 w-full justify-start'
             isDisabled={!torrents.length}
             onPress={() => void copy('magnets')}
           >
@@ -113,7 +113,7 @@ export default function ExportLibraryDialog({ open, onClose, torrents }: ExportL
           </Button>
           <Button
             variant='secondary'
-            className='min-h-11'
+            className='min-h-11 w-full justify-start'
             isDisabled={!torrents.length}
             onPress={() => void copy('torrs')}
           >
@@ -121,7 +121,7 @@ export default function ExportLibraryDialog({ open, onClose, torrents }: ExportL
           </Button>
           <Button
             variant='secondary'
-            className='min-h-11'
+            className='min-h-11 w-full justify-start'
             isDisabled={!torrents.length}
             onPress={() => void copy('json')}
           >
@@ -132,16 +132,26 @@ export default function ExportLibraryDialog({ open, onClose, torrents }: ExportL
           <p className='text-xs text-muted'>{t('ExportDownloadHint')}</p>
           <Button
             variant='ghost'
-            className='min-h-11'
+            className='min-h-11 w-full justify-start'
             isDisabled={!torrents.length}
             onPress={() => download('magnets')}
           >
             {t('ExportDownloadMagnets')}
           </Button>
-          <Button variant='ghost' className='min-h-11' isDisabled={!torrents.length} onPress={() => download('torrs')}>
+          <Button
+            variant='ghost'
+            className='min-h-11 w-full justify-start'
+            isDisabled={!torrents.length}
+            onPress={() => download('torrs')}
+          >
             {t('ExportDownloadTorrs')}
           </Button>
-          <Button variant='ghost' className='min-h-11' isDisabled={!torrents.length} onPress={() => download('json')}>
+          <Button
+            variant='ghost'
+            className='min-h-11 w-full justify-start'
+            isDisabled={!torrents.length}
+            onPress={() => download('json')}
+          >
             {t('ExportDownloadJson')}
           </Button>
         </div>
