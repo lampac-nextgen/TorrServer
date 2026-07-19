@@ -28,6 +28,7 @@ import { queryMax } from 'shared/theme/breakpoints'
 import { iconBtn } from 'shared/ui/controlClasses'
 import { iconMenu } from 'shared/ui/iconProps'
 import { useOptionalAppToast } from 'shared/ui/Toast'
+import { useConfiguredPlayAction } from 'features/player/useConfiguredPlayAction'
 import { usePlayLauncher } from 'features/player/usePlayLauncher'
 
 export interface TorrentActionsProps {
@@ -127,7 +128,7 @@ function TorrentActions({
   const fromLatestPlaylistLink = `${fullPlaylistLink}&fromlast`
   const magnetLink = `magnet:?xt=urn:btih:${hash}&dn=${encodeURIComponent(name || title || '')}`
 
-  const { handlePlay, isResolving, playerModals } = usePlayLauncher({
+  const { handlePlay, resolvePlayableFile, isResolving, playerModals } = usePlayLauncher({
     hash,
     displayName,
     knownPlayableFiles: playableFileList || [],
@@ -135,6 +136,8 @@ function TorrentActions({
     autoPlayFileId,
     autoPlayTimecode,
   })
+
+  const { runConfiguredPlay } = useConfiguredPlayAction()
 
   /** Only offer app deep links when there's exactly one obvious file to hand off — otherwise Play's file picker covers it. */
   const { buildExternalPlayers, hasAnyExternalPlayer } = useExternalPlayers()
@@ -229,11 +232,18 @@ function TorrentActions({
       : t('Play')
 
   const onPlayPress = () => {
-    if (!isSingleFileTorrent && onShowFiles) {
-      onShowFiles()
-      return
-    }
-    handlePlay()
+    runConfiguredPlay({
+      hash,
+      displayName,
+      knownPlayableFiles: playableFileList || [],
+      handlePlay,
+      resolvePlayableFile,
+      copyText: text =>
+        copyToClipboard(text)
+          .then(() => toast?.showToast({ message: t('Copied'), severity: 'success' }))
+          .catch(() => toast?.showToast({ message: t('Error'), severity: 'error' })),
+      onBuiltinMultiFile: onShowFiles,
+    })
   }
 
   const confirmModal = (

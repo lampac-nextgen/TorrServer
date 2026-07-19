@@ -1,9 +1,17 @@
 import { Clapperboard } from 'lucide-react'
-import { Description, Link } from '@heroui/react'
+import { Description, Link, ListBox, Select } from '@heroui/react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
-import { isAppleDevice, isDesktop, isMacOS } from 'shared/lib/platform'
+import { useLocalBoolPref, useLocalJsonPref } from 'shared/hooks/useLocalPref'
+import { isAppleDevice, isDesktop, isMacOS, detectApplePlatform } from 'shared/lib/platform'
+import {
+  availablePosterPlayActions,
+  coercePosterPlayAction,
+  defaultPosterPlayAction,
+  POSTER_PLAY_ACTION_KEY,
+  type PosterPlayAction,
+} from 'shared/lib/posterPlay'
 
 import { SettingSwitch } from './SettingSwitch'
 import SettingsSection from './SettingsSection'
@@ -21,11 +29,43 @@ export default function MobilePlayersSection() {
   const isMac = isMacOS()
   const isApple = isAppleDevice()
   const isDesktopPlatform = isDesktop()
+  const isIOS = detectApplePlatform().isIOS
 
   const [isVlcUsed, setIsVlcUsed] = useLocalBoolPref(PLAYER_KEYS.vlc)
   const [isInfuseUsed, setIsInfuseUsed] = useLocalBoolPref(PLAYER_KEYS.infuse)
   const [isSenPlayerUsed, setIsSenPlayerUsed] = useLocalBoolPref(PLAYER_KEYS.senPlayer)
   const [isIinaUsed, setIsIinaUsed] = useLocalBoolPref(PLAYER_KEYS.iina)
+
+  const playerFlags = useMemo(
+    () => ({ isVlcUsed, isInfuseUsed, isSenPlayerUsed, isIinaUsed, isApple, isMac }),
+    [isVlcUsed, isInfuseUsed, isSenPlayerUsed, isIinaUsed, isApple, isMac],
+  )
+
+  const [posterPlayStored, setPosterPlayStored] = useLocalJsonPref<PosterPlayAction>(
+    POSTER_PLAY_ACTION_KEY,
+    defaultPosterPlayAction(isIOS),
+  )
+  const posterPlayAction = coercePosterPlayAction(posterPlayStored, playerFlags, isIOS)
+  const posterPlayOptions = availablePosterPlayActions(playerFlags)
+
+  const posterPlayLabel = (action: PosterPlayAction): string => {
+    switch (action) {
+      case 'builtin':
+        return t('SettingsDialog.PosterPlayBuiltin')
+      case 'copyLink':
+        return t('CopyLink')
+      case 'vlc':
+        return t('VLC')
+      case 'infuse':
+        return t('Infuse')
+      case 'senPlayer':
+        return t('SenPlayer')
+      case 'iina':
+        return t('IINA')
+      default:
+        return action
+    }
+  }
 
   return (
     <SettingsSection
@@ -79,6 +119,34 @@ export default function MobilePlayersSection() {
           onChange={(_id, checked) => setIsIinaUsed(checked)}
         />
       ) : null}
+
+      <div className='space-y-1.5 pt-2'>
+        <p className='block text-sm font-medium leading-snug text-foreground'>
+          {t('SettingsDialog.PosterPlayAction')}
+        </p>
+        <p className='block text-sm leading-relaxed text-muted'>{t('SettingsDialog.PosterPlayActionHint')}</p>
+        <Select
+          selectedKey={posterPlayAction}
+          onSelectionChange={key => {
+            if (key == null) return
+            setPosterPlayStored(String(key) as PosterPlayAction)
+          }}
+        >
+          <Select.Trigger className='min-h-11 w-full'>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              {posterPlayOptions.map(action => (
+                <ListBox.Item key={action} id={action} textValue={posterPlayLabel(action)}>
+                  {posterPlayLabel(action)}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
+      </div>
     </SettingsSection>
   )
 }

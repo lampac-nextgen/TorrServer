@@ -127,11 +127,17 @@ export function usePlayLauncher({
   const [isResolving, setIsResolving] = useState(false)
   const [resolvingFileId, setResolvingFileId] = useState<number | null>(null)
   const [activePlayer, setActivePlayer] = useState<ActivePlayer | null>(null)
+  /** When set, file-picker selection hands off here instead of opening the built-in player. */
+  const fileHandoffRef = useRef<((file: PlayableFile) => void) | null>(null)
 
   const filePickerState = useOverlayState()
   const audioPickerState = useOverlayState()
 
   useSyncModalOpen(filePickerState.isOpen || audioPickerState.isOpen)
+
+  useEffect(() => {
+    if (!filePickerState.isOpen) fileHandoffRef.current = null
+  }, [filePickerState.isOpen])
 
   useEffect(() => {
     if (knownAllFiles?.length) allTorrentFilesRef.current = knownAllFiles
@@ -282,10 +288,26 @@ export function usePlayLauncher({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot resume when the target file appears
   }, [autoPlayFileId, autoPlayTimecode, knownPlayableFiles, playableFiles])
 
-  const handlePlay = async () => {
+  const pickFileFromList = (file: PlayableFile) => {
+    const handoff = fileHandoffRef.current
+    fileHandoffRef.current = null
+    if (handoff) {
+      filePickerState.close()
+      handoff(file)
+      return
+    }
+    void resolveAndPlay(file)
+  }
+
+  /**
+   * Resolve playable file(s): one file → `onFile` immediately; several → file picker then `onFile`.
+   * Used by poster Play for copy-link / external-player handoff without opening VideoPlayer.
+   */
+  const resolvePlayableFile = async (onFile: (file: PlayableFile) => void) => {
     abortRef.current?.abort()
     const controller = new AbortController()
     abortRef.current = controller
+    fileHandoffRef.current = null
 
     setIsResolving(true)
     setResolvingFileId(null)
@@ -307,9 +329,10 @@ export function usePlayLauncher({
         return
       }
       if (candidates.length === 1) {
-        await resolveAndPlay(candidates[0])
+        onFile(candidates[0])
         return
       }
+      fileHandoffRef.current = onFile
       setPlayableFiles(candidates)
       filePickerState.open()
     } catch (err) {
@@ -320,7 +343,15 @@ export function usePlayLauncher({
     }
   }
 
+  const handlePlay = async () => {
+    fileHandoffRef.current = null
+    await resolvePlayableFile(file => {
+      void resolveAndPlay(file)
+    })
+  }
+
   const playFile = (file: PlayableFile) => {
+    fileHandoffRef.current = null
     void resolveAndPlay(file)
   }
 
@@ -344,7 +375,7 @@ export function usePlayLauncher({
                         variant='ghost'
                         className='h-auto flex-col items-start gap-0.5 py-2.5'
                         isPending={pending}
-                        onPress={() => void resolveAndPlay(file)}
+                        onPress={() => pickFileFromList(file)}
                       >
                         {({ isPending }) => (
                           <>
@@ -452,6 +483,7 @@ export function usePlayLauncher({
 
   return {
     handlePlay: () => void handlePlay(),
+    resolvePlayableFile: (onFile: (file: PlayableFile) => void) => void resolvePlayableFile(onFile),
     playFile,
     isResolving,
     resolvingFileId,

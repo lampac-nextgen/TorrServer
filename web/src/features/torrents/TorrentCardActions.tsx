@@ -1,20 +1,34 @@
 import { useMemo, useState } from 'react'
 import { Button, Dropdown, Modal, Spinner, Tooltip, useOverlayState } from '@heroui/react'
-import { Info, ListMusic, MoreVertical, Pencil, Play, Share2, SquareArrowOutUpRight, Trash2, X } from 'lucide-react'
+import {
+  Hash,
+  Info,
+  Link2,
+  ListMusic,
+  Magnet,
+  MoreVertical,
+  Pencil,
+  Play,
+  Share2,
+  SquareArrowOutUpRight,
+  Trash2,
+  X,
+} from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
 import { torrsShareUrl } from 'shared/api/extras'
-import { playlistTorrHost, streamHost } from 'shared/api/hosts'
 import { dropTorrent, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { copyToClipboard } from 'shared/lib/clipboard'
 import { useExternalPlayers } from 'shared/lib/externalPlayers'
+import { magnetFromHash, streamPlayUrl, torrentPlaylistUrl } from 'shared/lib/posterPlay'
 import { filesFromMetadata } from 'shared/torrent/fileMetadata'
 import { isFilePlayable } from 'shared/torrent/playable'
 import { iconAction, iconMenu } from 'shared/ui/iconProps'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 import { toPlayableFile } from 'shared/torrent/toPlayableFile'
+import { useConfiguredPlayAction } from 'features/player/useConfiguredPlayAction'
 import { usePlayLauncher } from 'features/player/usePlayLauncher'
 
 export interface TorrentCardActionsProps {
@@ -45,7 +59,8 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
 
   const hash = torrent.hash
   const displayName = torrent.title || torrent.name || hash
-  const playlistHref = `${playlistTorrHost()}/${encodeURIComponent(displayName)}.m3u?link=${hash}&m3u`
+  const playlistHref = torrentPlaylistUrl(hash, displayName)
+  const magnetHref = magnetFromHash(hash, displayName)
 
   const knownPlayableFiles = useMemo(() => {
     const stats = torrent.file_stats
@@ -53,25 +68,51 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
     return files.filter(file => isFilePlayable(file.path))
   }, [torrent.file_stats, torrent.data])
 
-  const { handlePlay, isResolving, playerModals } = usePlayLauncher({
+  const { handlePlay, resolvePlayableFile, isResolving, playerModals } = usePlayLauncher({
     hash,
     displayName,
     knownPlayableFiles,
     torrentData: torrent.data,
   })
 
+  const { runConfiguredPlay } = useConfiguredPlayAction()
+  const { buildExternalPlayers } = useExternalPlayers()
+
   useSyncModalOpen(confirmState.isOpen || dropdownState.isOpen)
 
   /** Only offer app deep links when there's exactly one obvious file to hand off — otherwise Play's file picker covers it. */
-  const { buildExternalPlayers } = useExternalPlayers()
   const externalPlayers = useMemo(() => {
     if (knownPlayableFiles.length !== 1) return []
     const file = knownPlayableFiles[0]
-    const fileName = file.path.split('\\').pop()?.split('/').pop() || file.path
-    const link = `${streamHost()}/${encodeURIComponent(fileName)}?link=${hash}&index=${file.id}&play`
+    const link = streamPlayUrl(hash, file)
     const fullLink = new URL(link, window.location.href).toString()
     return buildExternalPlayers(fullLink)
   }, [knownPlayableFiles, hash, buildExternalPlayers])
+
+  const singleFileStreamHref = useMemo(() => {
+    if (knownPlayableFiles.length !== 1) return null
+    return new URL(streamPlayUrl(hash, knownPlayableFiles[0]), window.location.href).toString()
+  }, [knownPlayableFiles, hash])
+
+  const copyText = async (text: string) => {
+    try {
+      await copyToClipboard(text)
+      toast?.showToast({ message: t('Copied'), severity: 'success' })
+    } catch {
+      toast?.showToast({ message: t('Error'), severity: 'error' })
+    }
+  }
+
+  const handlePosterPlay = () => {
+    runConfiguredPlay({
+      hash,
+      displayName,
+      knownPlayableFiles,
+      handlePlay,
+      resolvePlayableFile,
+      copyText,
+    })
+  }
 
   const runConfirmedAction = () => {
     const action = confirmKind
@@ -110,7 +151,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
               className={overlayButtonClass}
               aria-label={t('Play')}
               isPending={isResolving}
-              onPress={handlePlay}
+              onPress={handlePosterPlay}
             >
               {({ isPending }) =>
                 isPending ? (
@@ -148,11 +189,23 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
                   {t('EditTorrent')}
                 </Dropdown.Item>
               ) : null}
+              {singleFileStreamHref ? (
+                <Dropdown.Item onPress={() => void copyText(singleFileStreamHref)}>
+                  <Link2 {...iconMenu} />
+                  {t('CopyLink')}
+                </Dropdown.Item>
+              ) : null}
+              <Dropdown.Item onPress={() => void copyText(magnetHref)}>
+                <Magnet {...iconMenu} />
+                {t('CopyMagnet')}
+              </Dropdown.Item>
+              <Dropdown.Item onPress={() => void copyText(hash)}>
+                <Hash {...iconMenu} />
+                {t('CopyHash')}
+              </Dropdown.Item>
               <Dropdown.Item
                 onPress={() => {
-                  void copyToClipboard(torrsShareUrl(torrent))
-                    .then(() => toast?.showToast({ message: t('Copied'), severity: 'success' }))
-                    .catch(() => toast?.showToast({ message: t('Error'), severity: 'error' }))
+                  void copyText(torrsShareUrl(torrent))
                 }}
               >
                 <Share2 {...iconMenu} />
