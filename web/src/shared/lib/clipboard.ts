@@ -74,9 +74,9 @@ function copyWithExecCommand(text: string): void {
   textarea.select()
   textarea.setSelectionRange(0, text.length)
 
-  let ok = false
   try {
-    ok = document.execCommand('copy')
+    const ok = document.execCommand('copy')
+    if (!ok) throw new Error('Clipboard copy failed')
   } finally {
     parent.removeChild(textarea)
     if (selection) {
@@ -90,6 +90,4 @@ function copyWithExecCommand(text: string): void {
       }
     }
   }
-
-  if (!ok) throw new Error('Clipboard copy failed')
 }
