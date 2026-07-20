@@ -1,19 +1,17 @@
+import { toApiTorrsLink } from './torrsLink'
+
 /**
  * Normalize a `?torrs=` protocol-handler payload into a full `torrs://…` link.
  * Chromium may pass the full URL, a bare token/hash, or a `web+torrs://` form.
  */
 export function normalizeTorrsLaunchParam(raw: string): string {
-  const trimmed = raw.trim()
-  if (!trimmed) return trimmed
-  if (/^torrs:\/\//i.test(trimmed)) return trimmed
-  if (/^web\+torrs:\/\//i.test(trimmed)) return trimmed.replace(/^web\+/i, '')
-  return `torrs://${trimmed.replace(/^\/+/, '')}`
+  return toApiTorrsLink(raw)
 }
 
-/** Pull the first `torrs://…` token out of shared text / a free-form URL param. */
+/** Pull the first `torrs://…` / `web+torrs://…` token out of shared text / a free-form URL param. */
 export function extractTorrsFromText(text: string): string | null {
-  const match = text.match(/torrs:\/\/[^\s]+/i)
-  return match ? match[0] : null
+  const match = text.match(/(?:web\+)?torrs:\/\/[^\s]+/i)
+  return match ? toApiTorrsLink(match[0]) : null
 }
 
 /**

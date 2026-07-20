@@ -1,3 +1,5 @@
+import { toApiTorrsLink } from './torrsLink'
+
 export interface LibraryImportItem {
   link: string
   title?: string
@@ -18,11 +20,11 @@ interface ExportJsonRow {
 
 const BTIH_RE = /(?:urn:)?btih:([a-fA-F0-9]{40}|[a-zA-Z2-7]{32})/i
 const MAGNET_IN_LINE_RE = /magnet:\?[^\s"'<>]+/i
-const TORRS_IN_LINE_RE = /torrs:\/\/[^\s"'<>]+/i
+const TORRS_IN_LINE_RE = /(?:web\+)?torrs:\/\/[^\s"'<>]+/i
 const HASH_ONLY_RE = /^\b[0-9a-f]{32}\b$|^\b[0-9a-f]{40}\b$|^\b[0-9a-f]{64}\b$/i
 const MAGNET_RE = /^magnet:\?xt=urn:[a-z0-9].*/i
 const HTTP_RE = /^(http(s?)):\/\/.*/i
-const TORRS_RE = /^(torrs):\/\/.*/i
+const TORRS_RE = /^(?:web\+)?torrs:\/\/.*/i
 const TORRENT_FILE_RE = /^.*\.(torrent)$/i
 
 /** Same acceptance rules as Add dialog sources — kept local to avoid pulling browser hosts into unit tests. */
@@ -37,9 +39,7 @@ function isTorrentSource(source: string): boolean {
 }
 
 function normalizeTorrsLink(value: string): string {
-  const trimmed = value.trim()
-  if (!trimmed) return ''
-  return trimmed.startsWith('torrs://') ? trimmed : `torrs://${trimmed}`
+  return toApiTorrsLink(value)
 }
 
 function hashFromLink(link: string): string | undefined {
@@ -89,11 +89,12 @@ function itemFromLine(line: string): LibraryImportItem | null {
 
   const torrs = trimmed.match(TORRS_IN_LINE_RE)?.[0]
   if (torrs && isTorrentSource(torrs)) {
-    return { link: torrs, hashHint: hashFromLink(torrs) }
+    return { link: normalizeTorrsLink(torrs), hashHint: hashFromLink(torrs) }
   }
 
   if (isTorrentSource(trimmed)) {
-    return { link: trimmed, hashHint: hashFromLink(trimmed) }
+    const link = TORRS_RE.test(trimmed) ? normalizeTorrsLink(trimmed) : trimmed
+    return { link, hashHint: hashFromLink(trimmed) }
   }
 
   return null
@@ -113,7 +114,7 @@ function dedupeItems(items: LibraryImportItem[]): LibraryImportItem[] {
 
 /**
  * Parse clipboard / file text produced by Export library (JSON array, magnets,
- * torrs:// lines) or a loose mix of the same.
+ * torrs:// / web+torrs:// lines) or a loose mix of the same.
  */
 export function parseLibraryImportText(raw: string): LibraryImportItem[] {
   const text = raw.replace(/^\uFEFF/, '').trim()

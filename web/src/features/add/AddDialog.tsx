@@ -29,6 +29,7 @@ import {
   parseTorrentTitle,
   shortenTitleForPosterSearch,
 } from 'shared/lib/torrentHelpers'
+import { isTorrsLink, toApiTorrsLink } from 'shared/lib/torrsLink'
 import { queryMax } from 'shared/theme/breakpoints'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import AppDialog from 'shared/ui/AppDialog'
@@ -187,9 +188,9 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
     setSaving(true)
     try {
       await addTorrent({
-        link: trimmed,
+        link: isTorrsLink(trimmed) ? toApiTorrsLink(trimmed) : trimmed,
         title: title || undefined,
-        category: category || undefined,
+        category: category.trim() || undefined,
         poster: poster || '',
         save_to_db: saveToDb,
       })

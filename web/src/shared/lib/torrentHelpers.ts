@@ -95,9 +95,9 @@ const magnetRegex = /^magnet:\?xt=urn:[a-z0-9].*/i
 const hashRegex = /^\b[0-9a-f]{32}\b$|^\b[0-9a-f]{40}\b$|^\b[0-9a-f]{64}\b$/i
 const torrentRegex = /^.*\.(torrent)$/i
 const linkRegex = /^(http(s?)):\/\/.*/i
-const torrsRegex = /^(torrs):\/\/.*/i
+const torrsRegex = /^(?:web\+)?torrs:\/\/.*/i
 
-/** Accepts infohash, magnet, `.torrent` path, http(s) torrent URL, or `torrs://` deep link. */
+/** Accepts infohash, magnet, `.torrent` path, http(s) torrent URL, or `torrs://` / `web+torrs://` deep link. */
 export const checkTorrentSource = (source: string): boolean =>
   source.match(hashRegex) !== null ||
   source.match(magnetRegex) !== null ||

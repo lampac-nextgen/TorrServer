@@ -29,7 +29,7 @@ function downloadText(filename: string, text: string, mime: string) {
   URL.revokeObjectURL(url)
 }
 
-/** Full-library export (magnets / torrs:// / JSON) — uses the complete torrents list from API, not UI filters. */
+/** Full-library export (magnets / web+torrs:// / JSON) — uses the complete torrents list from API, not UI filters. */
 export default function ExportLibraryDialog({ open, onClose, torrents }: ExportLibraryDialogProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()

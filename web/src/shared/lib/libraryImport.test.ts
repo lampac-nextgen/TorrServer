@@ -37,14 +37,16 @@ describe('parseLibraryImportText', () => {
 # header
 magnet:?xt=urn:btih:cccccccccccccccccccccccccccccccccccccccc&dn=C
 torrs://token-d
+web+torrs://token-e
 
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 `)
 
-    expect(items).toHaveLength(3)
+    expect(items).toHaveLength(4)
     expect(items[0].link.startsWith('magnet:')).toBe(true)
     expect(items[1].link).toBe('torrs://token-d')
-    expect(items[2].link).toBe('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+    expect(items[2].link).toBe('torrs://token-e')
+    expect(items[3].link).toBe('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
   })
 
   it('dedupes by hash hint', () => {

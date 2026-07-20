@@ -19,6 +19,7 @@ describe('launchSource', () => {
 
   it('extracts torrs:// from shared text', () => {
     expect(extractTorrsFromText('see torrs://deadbeef and more')).toBe('torrs://deadbeef')
+    expect(extractTorrsFromText('see web+torrs://deadbeef and more')).toBe('torrs://deadbeef')
     expect(extractTorrsFromText('magnet:?xt=urn:btih:aaa')).toBeNull()
   })
 

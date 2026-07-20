@@ -2,6 +2,7 @@ import axios from 'axios'
 
 import { authFetch } from 'shared/api/authCredentials'
 import { downloadTestHost, ffpHost, playlistAllHost } from 'shared/api/hosts'
+import { toShareTorrsLink } from 'shared/lib/torrsLink'
 
 /**
  * Maps UI category filter (`all` / `''` uncategorized / named) to the M3U API query value.
@@ -29,13 +30,12 @@ export const filteredPlaylistAllUrl = (sortCategory: string, libraryQuery?: stri
     search: libraryQuery?.trim() || undefined,
   })
 
-/** Prefer server-packed token; otherwise a bare infohash link (still importable). */
-export const torrsShareUrl = (torrent: { hash: string; torrs_hash?: string }): string =>
-  torrent.torrs_hash
-    ? torrent.torrs_hash.startsWith('torrs://')
-      ? torrent.torrs_hash
-      : `torrs://${torrent.torrs_hash}`
-    : `torrs://${torrent.hash}`
+/** Prefer server-packed token; otherwise a bare infohash link (still importable).
+ *  Clipboard / export use `web+torrs://` so Chromium PWA protocol_handlers can open the link. */
+export const torrsShareUrl = (torrent: { hash: string; torrs_hash?: string }): string => {
+  const raw = torrent.torrs_hash?.trim() || torrent.hash
+  return toShareTorrsLink(raw)
+}
 
 export interface FfpStream {
   index?: number
