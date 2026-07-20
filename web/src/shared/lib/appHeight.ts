@@ -1,4 +1,4 @@
-import { detectStandaloneApp } from './platform'
+import { detectApplePlatform, detectStandaloneApp } from './platform'
 
 const APP_HEIGHT_VAR = '--app-height'
 
@@ -11,16 +11,26 @@ const APP_HEIGHT_VAR = '--app-height'
  *
  * Master avoided this with `height: 100vh` in `@media (display-mode: standalone)`.
  * Modern guidance (piclaw PWA.md, meshcore-webui, SO 79902310): prefer CSS `100vh`
- * (probe) / `screen` metrics over `100dvh` in standalone.
+ * (probe) / `screen` metrics over `100dvh` in standalone — **iOS only**.
+ *
+ * Desktop standalone PWAs (macOS/Windows) are windowed: `screen.height` is the
+ * display, not the app window. Using it makes `--app-height` taller than the
+ * window and clips the sidebar footer / bottom chrome.
  */
 function readViewportHeightPx(): number {
   if (typeof window === 'undefined') return 0
 
   const inner = window.innerHeight || 0
   const client = document.documentElement?.clientHeight || 0
+  const visual = Math.round(window.visualViewport?.height || 0)
 
   if (!detectStandaloneApp()) {
     return Math.round(Math.max(inner, client) || inner)
+  }
+
+  // Windowed desktop PWA — track the app window, never the display.
+  if (!detectApplePlatform().isIOS) {
+    return Math.round(Math.max(inner, client, visual) || inner)
   }
 
   let vhProbe = 0
