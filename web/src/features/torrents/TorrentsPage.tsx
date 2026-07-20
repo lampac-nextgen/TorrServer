@@ -144,7 +144,7 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
 
       prevViewRef.current = { sortABC, sortCategory, libraryQuery }
 
-      let tiles: Element[] = []
+      let tiles: Element[]
       if (viewChanged || prevHashes.size === 0) {
         tiles = Array.from(root.querySelectorAll('.torrent-card'))
       } else {
