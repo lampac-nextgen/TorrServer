@@ -18,7 +18,13 @@ import { useUpdateCache } from 'shared/cache/useUpdateCache'
 import { useTorrentDetail } from 'shared/hooks/useTorrentDetail'
 import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
-import { getPeerString, formatCacheFilledLabel, humanizeSize, humanizeSpeed, removeRedundantCharacters } from 'shared/lib/format'
+import {
+  getPeerString,
+  formatCacheFilledLabel,
+  humanizeSize,
+  humanizeSpeed,
+  removeRedundantCharacters,
+} from 'shared/lib/format'
 import { filesFromMetadata } from 'shared/torrent/fileMetadata'
 import { isFilePlayable } from 'shared/torrent/playable'
 import { CLOSED, GETTING_INFO, IN_DB, PRELOAD, WORKING } from 'shared/torrent/states'
