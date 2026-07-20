@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next'
 import { addTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
+import { detectApplePlatform } from 'shared/lib/platform'
 import {
   checkTorrentSource,
   getMoviePosters,
@@ -133,14 +134,30 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
     }
   }, [open, source])
 
-  const handleFiles = useCallback((files: File[]) => {
-    if (!files.length) return
-    setMultiFiles(files)
-  }, [])
+  const handleFiles = useCallback(
+    (files: File[]) => {
+      // Always filter by extension — iOS may ignore/mis-handle accept MIME filters.
+      const torrents = files.filter(file => file.name.toLowerCase().endsWith('.torrent'))
+      if (!torrents.length) {
+        if (files.length > 0) {
+          toast?.showToast({ message: t('AddDialog.WrongTorrentSource'), severity: 'error' })
+        }
+        return
+      }
+      setMultiFiles(torrents)
+    },
+    [t, toast],
+  )
+
+  // iOS Safari/Edge grey out .torrent when accept lists only application/x-bittorrent
+  // (UTType unknown). Omit accept on iOS; keep MIME+ext filter elsewhere for nicer pickers.
+  const dropzoneAccept = detectApplePlatform().isIOS
+    ? undefined
+    : { 'application/x-bittorrent': ['.torrent'], 'application/octet-stream': ['.torrent'] }
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: handleFiles,
-    accept: { 'application/x-bittorrent': ['.torrent'] },
+    ...(dropzoneAccept ? { accept: dropzoneAccept } : {}),
     multiple: true,
     noClick: false,
     disabled: saving,
