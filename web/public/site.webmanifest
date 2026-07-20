@@ -58,7 +58,7 @@
       "url": "/?magnet=%s"
     },
     {
-      "protocol": "torrs",
+      "protocol": "web+torrs",
       "url": "/?torrs=%s"
     }
   ],

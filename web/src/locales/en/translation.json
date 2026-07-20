@@ -186,7 +186,7 @@
     "PosterPlayAction": "Play button",
     "PosterPlayActionHint": "What Play does on library posters and in torrent details. External players appear here after you enable them above. On iPhone/iPad, Copy link is the default because the built-in player is limited.",
     "PosterPlayBuiltin": "Built-in player",
-    "TorrsProtocolHint": "Installed Chrome/Edge app can open magnet: and torrs:// links (allow the protocol when prompted). Safari: paste the link into Add.",
+    "TorrsProtocolHint": "Installed Chrome/Edge app can open magnet: and web+torrs:// links (allow the protocol when prompted). Safari: paste a torrs:// link into Add.",
     "PeersListenPort": "Peers Listen Port",
     "PeersListenPortHint": "1024 - 65535, 0 - random",
     "PreloadCache": "Preload Cache Before Play",

@@ -29,7 +29,7 @@ function consumeLaunchSourceFromUrl(): string | null {
   return source
 }
 
-/** Handles PWA launch via protocol_handlers (magnet: / torrs:), share_target, and file_handlers (.torrent). */
+/** Handles PWA launch via protocol_handlers (magnet: / web+torrs:), share_target, and file_handlers (.torrent). */
 export default function useLaunchHandler() {
   const [launchSource, setLaunchSource] = useState<string | null>(() => consumeLaunchSourceFromUrl())
   const [launchFiles, setLaunchFiles] = useState<File[] | null>(null)
