@@ -2234,36 +2234,35 @@
 }
 
 html,
-body,
-#root {
-  height: 100%;
+body {
   margin: 0;
   /*
    * iOS standalone PWA: use 100vh (NOT 100dvh). On iOS 17–26, 100dvh often equals
    * the layout viewport minus the home-indicator band, leaving a dead strip under
    * the bottom nav. Master used `height: 100vh` in display-mode:standalone for this.
    * `--app-height` (JS) overrides with a measured full-screen value.
+   *
+   * Flex column so an optional sibling above #root (e.g. nginx inject) keeps its
+   * natural height and #root fills the remaining viewport — bottom chrome stays put.
    */
   height: 100vh;
-  min-height: 100vh;
+  max-height: 100vh;
   height: var(--app-height, 100vh);
-  min-height: var(--app-height, 100vh);
+  max-height: var(--app-height, 100vh);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overscroll-behavior: none;
 }
 
 @media (display-mode: standalone), (display-mode: fullscreen) {
   html,
-  body,
-  #root {
+  body {
     height: 100vh;
-    min-height: 100vh;
+    max-height: 100vh;
     height: var(--app-height, 100vh);
-    min-height: var(--app-height, 100vh);
+    max-height: var(--app-height, 100vh);
   }
-}
-
-html,
-body {
-  overscroll-behavior: none;
 }
 
 body {
@@ -2282,7 +2281,12 @@ html.dark body {
 }
 
 #root {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 body[data-modal-open='true'] .ts-bottom-nav {

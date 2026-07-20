@@ -35,10 +35,10 @@ function ThemeBootstrap() {
 
 function AuthedApp({ children }: { children: ReactNode }) {
   return (
-    <>
+    <div className='flex min-h-0 flex-1 flex-col'>
       <SettingsQueryBootstrap />
       {children}
-    </>
+    </div>
   )
 }
 
@@ -51,22 +51,24 @@ export default function App() {
   const hasBottomNav = useMediaQuery(queryMax('mobile'))
 
   return (
-    <ModalOpenProvider>
-      <AppSnackbarProvider>
-        <ThemeBootstrap />
-        <AuthGate>
-          <AuthedApp>
-            <Shell />
-          </AuthedApp>
-        </AuthGate>
-        <PwaUpdateToast />
-        <Toaster
-          richColors
-          closeButton
-          position='bottom-center'
-          offset={hasBottomNav ? BOTTOM_NAV_TOAST_OFFSET : 'calc(24px + env(safe-area-inset-bottom, 0px))'}
-        />
-      </AppSnackbarProvider>
-    </ModalOpenProvider>
+    <div className='flex min-h-0 flex-1 flex-col'>
+      <ModalOpenProvider>
+        <AppSnackbarProvider>
+          <ThemeBootstrap />
+          <AuthGate>
+            <AuthedApp>
+              <Shell />
+            </AuthedApp>
+          </AuthGate>
+          <PwaUpdateToast />
+          <Toaster
+            richColors
+            closeButton
+            position='bottom-center'
+            offset={hasBottomNav ? BOTTOM_NAV_TOAST_OFFSET : 'calc(24px + env(safe-area-inset-bottom, 0px))'}
+          />
+        </AppSnackbarProvider>
+      </ModalOpenProvider>
+    </div>
   )
 }

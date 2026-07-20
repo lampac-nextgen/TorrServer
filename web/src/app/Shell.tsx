@@ -187,9 +187,10 @@ export default function Shell() {
 
   return (
     <div
-      className='grid min-h-0 overflow-hidden bg-background'
+      className='grid min-h-0 w-full overflow-hidden bg-background'
       style={{
-        height: 'var(--app-height, 100vh)',
+        height: '100%',
+        minHeight: 0,
         gridTemplateRows: isMobile ? `${headerHeight} minmax(0, 1fr) auto` : `${headerHeight} minmax(0, 1fr)`,
         gridTemplateColumns: isMobile ? '1fr' : `${sidebarWidth}px 1fr`,
         gridTemplateAreas: isMobile ? '"header" "content" "nav"' : '"header header" "sidebar content"',
@@ -258,7 +259,7 @@ export default function Shell() {
 
       {!isMobile ? (
         <aside
-          className='min-h-0 overflow-hidden'
+          className='flex h-full min-h-0 flex-col overflow-hidden'
           style={{ gridArea: 'sidebar', width: sidebarWidth, transition: 'width 200ms ease' }}
         >
           <Sidebar {...navProps} collapsed={!sidebarOpen} />
@@ -278,7 +279,7 @@ export default function Shell() {
       </main>
 
       {isMobile ? (
-        <div style={{ gridArea: 'nav' }}>
+        <div className='min-h-0 shrink-0' style={{ gridArea: 'nav' }}>
           <BottomNav {...navProps} />
         </div>
       ) : null}

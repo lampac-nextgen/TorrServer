@@ -111,7 +111,7 @@ export default function AuthGate({ children }: AuthGateProps) {
 
   if (state === 'loading') {
     return (
-      <div className='grid min-h-dvh place-items-center bg-background'>
+      <div className='grid min-h-0 flex-1 place-items-center bg-background'>
         <Spinner size='lg' />
       </div>
     )
@@ -128,5 +128,5 @@ export default function AuthGate({ children }: AuthGateProps) {
     )
   }
 
-  return children
+  return <div className='flex min-h-0 flex-1 flex-col'>{children}</div>
 }

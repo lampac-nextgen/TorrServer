@@ -57,7 +57,7 @@ export default function LoginScreen({ onSuccess }: LoginScreenProps) {
   }
 
   return (
-    <div className='relative flex min-h-dvh flex-col items-center justify-center overflow-y-auto bg-background px-4 py-[max(2.5rem,env(safe-area-inset-top,0px))] pb-[max(2.5rem,env(safe-area-inset-bottom,0px))]'>
+    <div className='relative flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto bg-background px-4 py-[max(2.5rem,env(safe-area-inset-top,0px))] pb-[max(2.5rem,env(safe-area-inset-bottom,0px))]'>
       <div
         className='pointer-events-none absolute inset-0 opacity-80'
         style={{
