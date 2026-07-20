@@ -1,5 +1,5 @@
 import axios from 'axios'
-import parseTorrent from 'parse-torrent'
+import { remote as parseTorrentRemote } from 'parse-torrent'
 import ptt from 'parse-torrent-title'
 import { tmdbSettingsHost } from 'shared/api/hosts'
 import type { TMDBSettingsConfig } from 'shared/api/types'
@@ -154,7 +154,7 @@ export const parseTorrentTitle = (
   parsingSource: string | File,
   callback: (result: ParseTorrentTitleResult) => void,
 ): void => {
-  parseTorrent.remote(parsingSource, (err, parsed = {}) => {
+  parseTorrentRemote(parsingSource, (err, parsed = {}) => {
     const { name, files } = parsed
     if (!name || err) return callback({ parsedTitle: null, originalName: null })
 
@@ -170,10 +170,10 @@ export const parseTorrentTitle = (
   })
 }
 
-/** Resolve infoHash from a .torrent File (async wrapper around parseTorrent.remote). */
+/** Resolve infoHash from a .torrent File (async wrapper around parse-torrent `remote`). */
 export const parseTorrentInfoHash = (file: File): Promise<string | null> =>
   new Promise(resolve => {
-    parseTorrent.remote(file, (err, parsed) => {
+    parseTorrentRemote(file, (err, parsed) => {
       if (err || !parsed?.infoHash) resolve(null)
       else resolve(String(parsed.infoHash))
     })
@@ -187,7 +187,7 @@ export const parseSourceInfoHash = (source: string): Promise<string | null> =>
       resolve(null)
       return
     }
-    parseTorrent.remote(trimmed, (err, parsed) => {
+    parseTorrentRemote(trimmed, (err, parsed) => {
       if (err || !parsed?.infoHash) resolve(null)
       else resolve(String(parsed.infoHash).toLowerCase())
     })
