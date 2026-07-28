@@ -28,7 +28,7 @@ import {
 import { filesFromMetadata } from 'shared/torrent/fileMetadata'
 import { isFilePlayable } from 'shared/torrent/playable'
 import { CLOSED, GETTING_INFO, IN_DB, PRELOAD, WORKING } from 'shared/torrent/states'
-import { MEDIA_SHORT_VIEWPORT, queryMax } from 'shared/theme/breakpoints'
+import { MEDIA_SHORT_VIEWPORT, queryMax, queryMin } from 'shared/theme/breakpoints'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { iconBtn } from 'shared/ui/controlClasses'
 import { DIALOG_DETAILS, DIALOG_FULLSCREEN } from 'shared/ui/dialogSizes'
@@ -177,8 +177,11 @@ export default function DetailsDialog({
   /** Equal-width Files/Stats/Cache segments — only needed below the phone breakpoint. */
   const isMobile = useMediaQuery(queryMax('mobile'))
   const isShortViewport = useMediaQuery(MEDIA_SHORT_VIEWPORT)
+  /** Wider phones (≥420px): hero can fit 6 chips including Cache + Status. */
+  const isPhoneWide = useMediaQuery(queryMin('phone'))
   /** Phone-compact hero/actions — not tied to fullscreen surface (iPad landscape stays wide). */
   const useCompactDetails = isMobile || isShortViewport
+  const showHeroSix = useCompactDetails && isPhoneWide
   useSyncModalOpen(true)
 
   const overlayState = useOverlayState({
@@ -337,7 +340,7 @@ export default function DetailsDialog({
     </>
   )
 
-  const secondaryStats = (
+  const cacheStatusStats = (
     <>
       <StatWidget
         dense
@@ -353,6 +356,12 @@ export default function DetailsDialog({
         label={t('Status')}
         value={statusLabel(stat)}
       />
+    </>
+  )
+
+  const secondaryStats = (
+    <>
+      {cacheStatusStats}
       <StatWidget
         dense
         compact={useCompactDetails}
@@ -377,10 +386,14 @@ export default function DetailsDialog({
     </>
   )
 
-  /** Stats-tab dense rows (mobile) — same fields as secondary hero chips. */
+  /** Stats-tab dense rows (mobile) — omit Cache/Status when already in the 6-chip hero. */
   const secondaryMetricItems = [
-    { label: t('CacheFilled'), value: cacheFilledValue },
-    { label: t('Status'), value: statusLabel(stat) },
+    ...(showHeroSix
+      ? []
+      : [
+          { label: t('CacheFilled'), value: cacheFilledValue },
+          { label: t('Status'), value: statusLabel(stat) },
+        ]),
     { label: t('Category'), value: category || '—' },
     { label: t('PiecesCount'), value: cache.PiecesCount != null ? String(cache.PiecesCount) : '—' },
     {
@@ -450,7 +463,7 @@ export default function DetailsDialog({
 
             <Modal.Body className='flex min-h-0 flex-1 flex-col gap-2 overflow-hidden pt-1 sm:gap-3'>
               {useCompactDetails ? (
-                /* Phone: identity row, then 2×2 primary metrics (rest live on Stats). */
+                /* Phone: identity row, then 2×2 (4) or 3×2 (6: +Cache/Status) metrics. */
                 <div className='shrink-0 space-y-2 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2 pr-11'>
                   <div className='flex items-start gap-2'>
                     <button
@@ -475,7 +488,10 @@ export default function DetailsDialog({
                     </button>
                     <TitleRow title={displayTitle} subtitle={subtitle} compact editControl={editControl} />
                   </div>
-                  <div className='grid w-full grid-cols-2 gap-1'>{primaryStats}</div>
+                  <div className={`grid w-full gap-1 ${showHeroSix ? 'grid-cols-3' : 'grid-cols-2'}`}>
+                    {primaryStats}
+                    {showHeroSix ? cacheStatusStats : null}
+                  </div>
                 </div>
               ) : (
                 /*
@@ -591,11 +607,16 @@ export default function DetailsDialog({
                   </div>
                 </Tabs.Panel>
 
-                <Tabs.Panel id='stats' className='flex min-h-0 flex-1 flex-col gap-3 overflow-hidden pt-3'>
+                <Tabs.Panel
+                  id='stats'
+                  className='flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain pt-3'
+                >
                   {useCompactDetails ? (
-                    <div className='min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain'>
+                    <div className='space-y-3'>
                       <div className='space-y-3 rounded-xl border border-border bg-surface-secondary p-2.5'>
-                        <MetricRows framed={false} title={t('Details')} items={secondaryMetricItems} columns={1} />
+                        {secondaryMetricItems.length > 0 ? (
+                          <MetricRows framed={false} title={t('Details')} items={secondaryMetricItems} columns={1} />
+                        ) : null}
                         <SwarmStatsPanel torrent={torrent} framed={false} columns={1} />
                       </div>
                       <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
@@ -603,11 +624,9 @@ export default function DetailsDialog({
                     </div>
                   ) : (
                     <>
-                      <div className='grid min-h-0 flex-1 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-3 overflow-hidden'>
+                      <div className='grid min-h-[14rem] shrink-0 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-start gap-3'>
                         <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact fill />
-                        <div className='min-h-0 overflow-y-auto overscroll-contain'>
-                          <SwarmStatsPanel torrent={torrent} className='h-full' columns={1} />
-                        </div>
+                        <SwarmStatsPanel torrent={torrent} columns={1} />
                       </div>
                       <div className='shrink-0'>{torrentActions}</div>
                     </>

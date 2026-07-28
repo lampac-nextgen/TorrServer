@@ -40,7 +40,12 @@ function ChartSvg({
   className: string
 }) {
   return (
-    <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className={className} preserveAspectRatio='none' aria-hidden>
+    <svg
+      viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
+      className={`overflow-visible ${className}`}
+      preserveAspectRatio='none'
+      aria-hidden
+    >
       <defs>
         <linearGradient id={gradientId} x1='0' y1='0' x2='0' y2='1'>
           <stop offset='0%' stopColor='currentColor' stopOpacity='0.35' className='text-accent' />
@@ -77,12 +82,12 @@ export default function SpeedCharts({ downloadSpeed, uploadSpeed, compact = fals
 
   return (
     <div
-      className={`w-full min-w-0 rounded-xl border border-border bg-surface-secondary ${
-        fill ? 'flex min-h-0 flex-1 flex-col p-2.5' : compact ? 'p-2.5' : 'p-4'
+      className={`flex w-full min-w-0 flex-col rounded-xl border border-border bg-surface-secondary ${
+        fill ? 'h-full min-h-[14rem] p-2.5' : compact ? 'p-2.5' : 'p-4'
       }`}
     >
       {showInlineLive ? (
-        <div className={`flex flex-wrap items-center gap-x-4 gap-y-1 ${fill || !compact ? 'mb-2 shrink-0' : 'mb-3'}`}>
+        <div className='mb-2 flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1'>
           <div className='flex items-center gap-2'>
             <span className='size-2.5 rounded-full bg-accent' aria-hidden />
             <span className='text-xs text-muted'>{t('DownloadSpeed')}</span>
@@ -96,23 +101,16 @@ export default function SpeedCharts({ downloadSpeed, uploadSpeed, compact = fals
         </div>
       ) : null}
 
-      {fill ? (
-        <div className='relative min-h-[7rem] w-full min-w-0 flex-1'>
-          <ChartSvg
-            gradientId={gradientId}
-            downloadPath={downloadPath}
-            uploadPath={uploadPath}
-            className='absolute inset-0 h-full w-full'
-          />
-        </div>
-      ) : (
-        <ChartSvg
-          gradientId={gradientId}
-          downloadPath={downloadPath}
-          uploadPath={uploadPath}
-          className={`w-full ${compact ? 'h-16' : 'h-[110px]'}`}
-        />
-      )}
+      {/*
+        Avoid absolute + flex-1 height chains inside HeroUI Tabs — they often collapse to ~0
+        and clip the sparkline to a bottom tip. Explicit min-height (fill) is reliable.
+      */}
+      <ChartSvg
+        gradientId={gradientId}
+        downloadPath={downloadPath}
+        uploadPath={uploadPath}
+        className={fill ? 'h-full min-h-[11rem] w-full flex-1' : `w-full ${compact ? 'h-16' : 'h-[110px]'}`}
+      />
     </div>
   )
 }
