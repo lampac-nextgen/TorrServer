@@ -617,19 +617,10 @@ export default function DetailsDialog({
                 >
                   {useCompactDetails ? (
                     <div className='space-y-3'>
-                      <div className='space-y-3 rounded-xl border border-border bg-surface-secondary p-2.5'>
-                        {secondaryMetricItems.length > 0 ? (
-                          <MetricRows framed={false} title={t('Details')} items={secondaryMetricItems} columns={1} />
-                        ) : null}
-                        <SwarmStatsPanel
-                          torrent={torrent}
-                          variant='summary'
-                          framed={false}
-                          columns={1}
-                          cacheFilled={cache.Filled}
-                          cacheCapacity={cache.Capacity}
-                        />
-                      </div>
+                      {secondaryMetricItems.length > 0 ? (
+                        <MetricRows title={t('Details')} items={secondaryMetricItems} columns={1} />
+                      ) : null}
+                      <SwarmStatsPanel torrent={torrent} variant='summary' columns={1} />
                       <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
                       <div className='shrink-0'>{torrentActions}</div>
                     </div>
@@ -637,12 +628,7 @@ export default function DetailsDialog({
                     <>
                       <div className='grid min-h-[14rem] shrink-0 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-stretch gap-3'>
                         <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact fill />
-                        <SwarmStatsPanel
-                          torrent={torrent}
-                          variant='summary'
-                          cacheFilled={cache.Filled}
-                          cacheCapacity={cache.Capacity}
-                        />
+                        <SwarmStatsPanel torrent={torrent} variant='summary' />
                       </div>
                       <div className='shrink-0'>{torrentActions}</div>
                     </>
@@ -654,8 +640,6 @@ export default function DetailsDialog({
                     torrent={torrent}
                     variant='full'
                     className='min-h-0 flex-1 overflow-hidden'
-                    cacheFilled={cache.Filled}
-                    cacheCapacity={cache.Capacity}
                     cacheReaders={cache.Readers?.length ?? 0}
                   />
                 </Tabs.Panel>

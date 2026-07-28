@@ -1,4 +1,4 @@
-import { formatCacheFilledLabel, getPeerString, humanizeSize } from 'shared/lib/format'
+import { humanizeSize } from 'shared/lib/format'
 import type { TorrentStat } from 'shared/api/types'
 import { useTranslation } from 'react-i18next'
 
@@ -11,12 +11,10 @@ export interface SwarmStatsPanelProps {
   /** When false, omit outer frame (parent already provides a panel). */
   framed?: boolean
   /**
-   * `summary` — Stats side card (same height as SpeedCharts; bottom meters fill the hole).
-   * `full` — Swarm tab: complete metrics + visuals, denser so it fits without scroll.
+   * `summary` — Stats side card: transfer IO + Loaded|Preload (hero owns Peers/Cache).
+   * `full` — Swarm tab: PeerMixBar + chunks + Loaded|Preload (no Peers·Seeds / Cache echo).
    */
   variant?: 'summary' | 'full'
-  cacheFilled?: number | null
-  cacheCapacity?: number | null
   cacheReaders?: number | null
 }
 
@@ -111,22 +109,44 @@ function PeerMixBar({
   )
 }
 
-/** Swarm metrics — Stats summary (fills chart-aligned hole) or compact Swarm-tab panel. */
+function LoadedPreloadMeters({
+  loadedLabel,
+  loadedPct,
+  preloadLabel,
+  preloadPct,
+  loadedTitle,
+  preloadTitle,
+  compact = false,
+}: {
+  loadedLabel: string
+  loadedPct: number
+  preloadLabel: string
+  preloadPct: number
+  loadedTitle: string
+  preloadTitle: string
+  compact?: boolean
+}) {
+  return (
+    <div className={`grid grid-cols-2 ${compact ? 'gap-1.5' : 'gap-2'}`}>
+      <ProgressMeter label={loadedTitle} valueLabel={loadedLabel} ratio={loadedPct} compact={compact} />
+      <ProgressMeter label={preloadTitle} valueLabel={preloadLabel} ratio={preloadPct} compact={compact} />
+    </div>
+  )
+}
+
+/** Swarm metrics — Stats transfer teaser or Swarm-tab peer detail (hero owns Peers/Cache). */
 export default function SwarmStatsPanel({
   torrent,
   className = '',
   columns: columnsProp,
   framed = true,
   variant = 'summary',
-  cacheFilled,
-  cacheCapacity,
   cacheReaders,
 }: SwarmStatsPanelProps) {
   const { t } = useTranslation()
   const isFull = variant === 'full'
   const columns = columnsProp ?? 2
 
-  const peersValue = getPeerString(torrent) || '—'
   const pendingValue = torrent.pending_peers != null ? String(torrent.pending_peers) : '—'
 
   const loaded = torrent.loaded_size ?? 0
@@ -134,35 +154,17 @@ export default function SwarmStatsPanel({
   const loadedPct = pct(loaded, totalSize)
   const preloadDone = torrent.preloaded_bytes ?? 0
   const preloadNeed = torrent.preload_size ?? 0
-  const preloadPct = pct(preloadDone, preloadNeed > 0 ? preloadNeed : preloadDone || 1)
-  const cacheCap = cacheCapacity ?? 0
-  const cacheFill = cacheFilled ?? 0
-  const cachePct = pct(cacheFill, cacheCap)
+  const preloadPct = preloadNeed > 0 ? pct(preloadDone, preloadNeed) : 0
   const durationLabel = formatDuration(torrent.duration_seconds)
   const loadedLabel = totalSize > 0 ? `${humanizeSize(loaded)} · ${Math.round(loadedPct)}%` : humanizeSize(loaded)
-  const cacheLabel = formatCacheFilledLabel(cacheFilled, cacheCapacity) ?? '—'
   const preloadLabel =
     preloadNeed > 0 || preloadDone > 0
       ? `${humanizeSize(preloadDone)} / ${humanizeSize(preloadNeed || undefined)}`
       : '—'
 
-  const peerMixLabels = {
-    active: t('ActivePeers'),
-    seeders: t('ConnectedSeeders'),
-    pending: t('PendingPeers'),
-    halfOpen: t('HalfOpenPeers'),
-  }
-
-  /** Stats side: transfer rows only — Loaded/Cache live in bottom meters (fill the hole). */
+  /** Stats: Half-open + transfer IO. Preload is meter-only; Peers/Cache stay in hero. */
   const summaryItems: MetricRowItem[] = [
     { label: t('HalfOpenPeers'), value: torrent.half_open_peers != null ? String(torrent.half_open_peers) : '—' },
-    {
-      label: t('Preloaded'),
-      value:
-        torrent.preloaded_bytes != null || torrent.preload_size != null
-          ? `${humanizeSize(torrent.preloaded_bytes)} / ${humanizeSize(torrent.preload_size)}`
-          : '—',
-    },
     { label: t('BytesRead'), value: torrent.bytes_read != null ? humanizeSize(torrent.bytes_read) : '—' },
     { label: t('BytesWritten'), value: torrent.bytes_written != null ? humanizeSize(torrent.bytes_written) : '—' },
     {
@@ -176,12 +178,10 @@ export default function SwarmStatsPanel({
   ]
 
   /**
-   * Swarm tab: peers/seeders live in PeerMixBar; Loaded/Preload/Cache in meters.
-   * Keep transfer + chunk counters dense so the tab fits without scroll.
+   * Swarm tab: PeerMixBar owns Active/Seeders/Pending/Half-open.
+   * Skip Total peers (hero) and Half-open row (mix bar).
    */
   const fullItems: MetricRowItem[] = [
-    { label: t('HalfOpenPeers'), value: torrent.half_open_peers != null ? String(torrent.half_open_peers) : '—' },
-    { label: t('TotalPeers'), value: torrent.total_peers != null ? String(torrent.total_peers) : '—' },
     { label: t('BytesRead'), value: torrent.bytes_read != null ? humanizeSize(torrent.bytes_read) : '—' },
     { label: t('BytesWritten'), value: torrent.bytes_written != null ? humanizeSize(torrent.bytes_written) : '—' },
     {
@@ -207,82 +207,54 @@ export default function SwarmStatsPanel({
     ...(durationLabel ? [{ label: t('FfpDuration'), value: durationLabel }] : []),
   ]
 
-  const header = (
-    <div className={`flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 ${isFull ? 'mb-1.5' : 'mb-2'}`}>
-      <div className='flex items-center gap-2'>
-        <span className='size-2.5 rounded-full bg-accent' aria-hidden />
-        <span className='text-xs text-muted'>{t('Peers')}</span>
-        <span className='text-sm font-bold tabular-nums text-foreground'>{peersValue}</span>
-      </div>
-      <div className='flex items-center gap-2'>
-        <span className='size-2.5 rounded-full bg-warning' aria-hidden />
-        <span className='text-xs text-muted'>{t('PendingPeers')}</span>
-        <span className='text-sm font-bold tabular-nums text-foreground'>{pendingValue}</span>
-      </div>
+  const pendingHeader = isFull ? (
+    <div className='mb-1.5 flex shrink-0 items-center gap-2'>
+      <span className='size-2.5 rounded-full bg-warning' aria-hidden />
+      <span className='text-xs text-muted'>{t('PendingPeers')}</span>
+      <span className='text-sm font-bold tabular-nums text-foreground'>{pendingValue}</span>
     </div>
+  ) : null
+
+  const progressMeters = (
+    <LoadedPreloadMeters
+      loadedTitle={t('ServerStatusLoaded')}
+      loadedLabel={loadedLabel}
+      loadedPct={loadedPct}
+      preloadTitle={t('Preloaded')}
+      preloadLabel={preloadLabel}
+      preloadPct={preloadPct}
+      compact={isFull}
+    />
   )
 
-  const meters = (
-    <>
+  /** Stats: pin Loaded|Preload to the bottom of the chart-height card. */
+  const summaryVisuals = !isFull ? <div className='mt-auto border-t border-border pt-2.5'>{progressMeters}</div> : null
+
+  const fullVisuals = isFull ? (
+    <div className='mt-2 space-y-1.5 border-t border-border pt-2'>
       <PeerMixBar
         active={torrent.active_peers ?? 0}
         seeders={torrent.connected_seeders ?? 0}
         pending={torrent.pending_peers ?? 0}
         halfOpen={torrent.half_open_peers ?? 0}
-        labels={peerMixLabels}
-        compact={isFull}
+        labels={{
+          active: t('ActivePeers'),
+          seeders: t('ConnectedSeeders'),
+          pending: t('PendingPeers'),
+          halfOpen: t('HalfOpenPeers'),
+        }}
+        compact
       />
-      {isFull ? (
-        <div className='grid grid-cols-1 gap-1.5 sm:grid-cols-3'>
-          <ProgressMeter label={t('ServerStatusLoaded')} valueLabel={loadedLabel} ratio={loadedPct} compact />
-          <ProgressMeter
-            label={t('Preloaded')}
-            valueLabel={preloadLabel}
-            ratio={preloadNeed > 0 ? preloadPct : 0}
-            compact
-          />
-          {cacheCap > 0 ? (
-            <ProgressMeter
-              label={t('CacheFilled')}
-              valueLabel={`${humanizeSize(cacheFill)} / ${humanizeSize(cacheCap)}`}
-              ratio={cachePct}
-              compact
-            />
-          ) : (
-            <ProgressMeter label={t('CacheFilled')} valueLabel={cacheLabel} ratio={0} compact />
-          )}
-        </div>
-      ) : (
-        <div className='space-y-2'>
-          <ProgressMeter label={t('ServerStatusLoaded')} valueLabel={loadedLabel} ratio={loadedPct} />
-          <ProgressMeter label={t('Preloaded')} valueLabel={preloadLabel} ratio={preloadNeed > 0 ? preloadPct : 0} />
-          {cacheCap > 0 ? (
-            <ProgressMeter
-              label={t('CacheFilled')}
-              valueLabel={`${humanizeSize(cacheFill)} / ${humanizeSize(cacheCap)}`}
-              ratio={cachePct}
-            />
-          ) : (
-            <ProgressMeter label={t('CacheFilled')} valueLabel={cacheLabel} ratio={0} />
-          )}
-        </div>
-      )}
-    </>
-  )
-
-  /** Stats: pin meters to the bottom of the chart-height card — fills the empty band. */
-  const summaryVisuals = !isFull ? (
-    <div className='mt-auto space-y-2 border-t border-border pt-2.5'>{meters}</div>
+      {progressMeters}
+    </div>
   ) : null
-
-  const fullVisuals = isFull ? <div className='mt-2 space-y-1.5 border-t border-border pt-2'>{meters}</div> : null
 
   const inner = (
     <>
       {framed && !isFull ? (
         <p className='mb-1.5 shrink-0 text-xs font-semibold tracking-wide text-muted uppercase'>{t('SwarmStats')}</p>
       ) : null}
-      {header}
+      {pendingHeader}
       <MetricRows framed={false} items={isFull ? fullItems : summaryItems} columns={columns} dense={isFull} />
       {summaryVisuals}
       {fullVisuals}
