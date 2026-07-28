@@ -590,5 +590,8 @@
   "ServerStatusLoaded": "Loaded",
   "ServerStatusRaw": "Raw /stat",
   "Refresh": "Refresh",
-  "PwaUpdateFailed": "Офлайн кешът не можа да се обнови. Направете hard-reload или изчистете данните на сайта, ако UI е заседнал."
+  "PwaUpdateFailed": "Офлайн кешът не можа да се обнови. Направете hard-reload или изчистете данните на сайта, ако UI е заседнал.",
+  "UsefulRead": "Полезно четене",
+  "ChunksWasted": "Излишни чанкове",
+  "BitRate": "Битрейт"
 }

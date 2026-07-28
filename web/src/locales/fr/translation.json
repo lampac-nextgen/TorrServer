@@ -590,5 +590,8 @@
   "ServerStatusLoaded": "Loaded",
   "ServerStatusRaw": "Raw /stat",
   "Refresh": "Refresh",
-  "PwaUpdateFailed": "Impossible de mettre à jour le cache hors ligne. Rechargez de force ou effacez les données du site si l’interface est bloquée."
+  "PwaUpdateFailed": "Impossible de mettre à jour le cache hors ligne. Rechargez de force ou effacez les données du site si l’interface est bloquée.",
+  "UsefulRead": "Lecture utile",
+  "ChunksWasted": "Chunks gaspillés",
+  "BitRate": "Débit"
 }

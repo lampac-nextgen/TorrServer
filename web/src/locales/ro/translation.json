@@ -590,5 +590,8 @@
   "ServerStatusLoaded": "Loaded",
   "ServerStatusRaw": "Raw /stat",
   "Refresh": "Refresh",
-  "PwaUpdateFailed": "Nu s-a putut actualiza cache-ul offline. Faceți hard-reload sau ștergeți datele site-ului dacă UI-ul pare blocat."
+  "PwaUpdateFailed": "Nu s-a putut actualiza cache-ul offline. Faceți hard-reload sau ștergeți datele site-ului dacă UI-ul pare blocat.",
+  "UsefulRead": "Citire utilă",
+  "ChunksWasted": "Chunk-uri irosite",
+  "BitRate": "Bitrate"
 }

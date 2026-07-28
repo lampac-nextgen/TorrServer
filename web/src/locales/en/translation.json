@@ -590,5 +590,8 @@
   "ServerStatusLoaded": "Loaded",
   "ServerStatusRaw": "Raw /stat",
   "Refresh": "Refresh",
-  "PwaUpdateFailed": "Could not update the offline cache. Hard-reload or clear site data if the UI looks stuck."
+  "PwaUpdateFailed": "Could not update the offline cache. Hard-reload or clear site data if the UI looks stuck.",
+  "UsefulRead": "Useful read",
+  "ChunksWasted": "Wasted chunks",
+  "BitRate": "Bitrate"
 }

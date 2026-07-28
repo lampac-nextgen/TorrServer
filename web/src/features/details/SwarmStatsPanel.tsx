@@ -11,22 +11,34 @@ export interface SwarmStatsPanelProps {
   columns?: 1 | 2
   /** When false, omit outer frame (parent already provides a panel). */
   framed?: boolean
-  /** Match SpeedCharts fill card: live header strip + equal min-height. */
+  /** Match SpeedCharts fill card: live header strip + equal min-height; 2-col rows. */
   fill?: boolean
+}
+
+function loadedProgressLabel(loaded?: number, total?: number): string | null {
+  if (loaded == null) return null
+  const size = humanizeSize(loaded)
+  if (total != null && total > 0) {
+    const pct = Math.min(100, Math.round((loaded / total) * 100))
+    return `${size} · ${pct}%`
+  }
+  return size
 }
 
 /** Dense transfer / peer counters — SpeedCharts-aligned header + definition rows. */
 export default function SwarmStatsPanel({
   torrent,
   className = '',
-  columns = 1,
+  columns: columnsProp,
   framed = true,
   fill = false,
 }: SwarmStatsPanelProps) {
   const { t } = useTranslation()
+  const columns = columnsProp ?? (fill ? 2 : 1)
 
   const peersValue = getPeerString(torrent) || '—'
   const pendingValue = torrent.pending_peers != null ? String(torrent.pending_peers) : '—'
+  const loadedLabel = loadedProgressLabel(torrent.loaded_size, torrent.torrent_size)
 
   const detailItems = [
     { label: t('HalfOpenPeers'), value: torrent.half_open_peers != null ? String(torrent.half_open_peers) : '—' },
@@ -39,9 +51,16 @@ export default function SwarmStatsPanel({
     },
     { label: t('BytesRead'), value: torrent.bytes_read != null ? humanizeSize(torrent.bytes_read) : '—' },
     { label: t('BytesWritten'), value: torrent.bytes_written != null ? humanizeSize(torrent.bytes_written) : '—' },
-    ...(torrent.loaded_size != null
-      ? [{ label: t('ServerStatusLoaded'), value: humanizeSize(torrent.loaded_size) }]
-      : []),
+    {
+      label: t('UsefulRead'),
+      value: torrent.bytes_read_useful_data != null ? humanizeSize(torrent.bytes_read_useful_data) : '—',
+    },
+    {
+      label: t('ChunksWasted'),
+      value: torrent.chunks_read_wasted != null ? String(torrent.chunks_read_wasted) : '—',
+    },
+    ...(loadedLabel != null ? [{ label: t('ServerStatusLoaded'), value: loadedLabel }] : []),
+    ...(torrent.bit_rate ? [{ label: t('BitRate'), value: torrent.bit_rate }] : []),
   ]
 
   const header = (

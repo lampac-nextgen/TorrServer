@@ -29,7 +29,7 @@ export default function MetricRows({
   children,
 }: MetricRowsProps) {
   const list = (
-    <div className={columns === 2 ? 'grid grid-cols-1 gap-x-4 sm:grid-cols-2' : 'flex flex-col'}>
+    <div className={columns === 2 ? 'grid grid-cols-2 gap-x-4' : 'flex flex-col'}>
       {items.map(item => (
         <div key={item.label} className='flex min-w-0 items-baseline justify-between gap-2 py-1 text-sm'>
           <span className='min-w-0 truncate text-muted' title={item.label}>

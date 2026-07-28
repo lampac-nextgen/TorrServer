@@ -590,5 +590,8 @@
   "ServerStatusLoaded": "Загружено",
   "ServerStatusRaw": "Сырой /stat",
   "Refresh": "Обновить",
-  "PwaUpdateFailed": "Не удалось обновить офлайн-кэш. Сделайте hard-reload или очистите данные сайта, если интерфейс «залип»."
+  "PwaUpdateFailed": "Не удалось обновить офлайн-кэш. Сделайте hard-reload или очистите данные сайта, если интерфейс «залип».",
+  "UsefulRead": "Полезное чтение",
+  "ChunksWasted": "Лишние чанки",
+  "BitRate": "Битрейт"
 }

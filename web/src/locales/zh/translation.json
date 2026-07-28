@@ -590,5 +590,8 @@
   "ServerStatusLoaded": "Loaded",
   "ServerStatusRaw": "Raw /stat",
   "Refresh": "Refresh",
-  "PwaUpdateFailed": "无法更新离线缓存。如果界面卡住，请强制刷新或清除网站数据。"
+  "PwaUpdateFailed": "无法更新离线缓存。如果界面卡住，请强制刷新或清除网站数据。",
+  "UsefulRead": "有效读取",
+  "ChunksWasted": "浪费块",
+  "BitRate": "比特率"
 }

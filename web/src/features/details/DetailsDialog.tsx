@@ -626,7 +626,7 @@ export default function DetailsDialog({
                     <>
                       <div className='grid min-h-[14rem] shrink-0 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-stretch gap-3'>
                         <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact fill />
-                        <SwarmStatsPanel torrent={torrent} columns={1} fill />
+                        <SwarmStatsPanel torrent={torrent} fill />
                       </div>
                       <div className='shrink-0'>{torrentActions}</div>
                     </>

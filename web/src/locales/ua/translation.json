@@ -590,5 +590,8 @@
   "ServerStatusLoaded": "Loaded",
   "ServerStatusRaw": "Raw /stat",
   "Refresh": "Refresh",
-  "PwaUpdateFailed": "Не вдалося оновити офлайн-кеш. Зробіть hard-reload або очистіть дані сайту, якщо інтерфейс «завис»."
+  "PwaUpdateFailed": "Не вдалося оновити офлайн-кеш. Зробіть hard-reload або очистіть дані сайту, якщо інтерфейс «завис».",
+  "UsefulRead": "Корисне читання",
+  "ChunksWasted": "Зайві чанки",
+  "BitRate": "Бітрейт"
 }
