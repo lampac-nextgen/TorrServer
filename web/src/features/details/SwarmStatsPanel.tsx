@@ -10,6 +10,13 @@ export interface SwarmStatsPanelProps {
   columns?: 1 | 2
   /** When false, omit outer frame (parent already provides a panel). */
   framed?: boolean
+  /** Show uppercase Swarm title inside framed summary (desktop). Hide on mobile Stats. */
+  showTitle?: boolean
+  /**
+   * Match SpeedCharts height on desktop Stats (min-h + mt-auto meters).
+   * Never enable on mobile stack — causes an empty void.
+   */
+  stretch?: boolean
   /**
    * `summary` — Stats side card: transfer IO + Loaded|Preload (hero owns Peers/Cache).
    * `full` — Swarm tab: PeerMixBar + chunks + Loaded|Preload (no Peers·Seeds / Cache echo).
@@ -140,12 +147,15 @@ export default function SwarmStatsPanel({
   className = '',
   columns: columnsProp,
   framed = true,
+  showTitle = true,
+  stretch = false,
   variant = 'summary',
   cacheReaders,
 }: SwarmStatsPanelProps) {
   const { t } = useTranslation()
   const isFull = variant === 'full'
   const columns = columnsProp ?? 2
+  const doStretch = stretch && !isFull
 
   const pendingValue = torrent.pending_peers != null ? String(torrent.pending_peers) : '—'
 
@@ -227,8 +237,10 @@ export default function SwarmStatsPanel({
     />
   )
 
-  /** Stats: pin Loaded|Preload to the bottom of the chart-height card. */
-  const summaryVisuals = !isFull ? <div className='mt-auto border-t border-border pt-2.5'>{progressMeters}</div> : null
+  /** Desktop stretch: pin meters to bottom of chart-height card. Mobile: flow under rows. */
+  const summaryVisuals = !isFull ? (
+    <div className={`border-t border-border pt-2.5 ${doStretch ? 'mt-auto' : 'mt-2'}`}>{progressMeters}</div>
+  ) : null
 
   const fullVisuals = isFull ? (
     <div className='mt-2 space-y-1.5 border-t border-border pt-2'>
@@ -251,7 +263,7 @@ export default function SwarmStatsPanel({
 
   const inner = (
     <>
-      {framed && !isFull ? (
+      {framed && !isFull && showTitle ? (
         <p className='mb-1.5 shrink-0 text-xs font-semibold tracking-wide text-muted uppercase'>{t('SwarmStats')}</p>
       ) : null}
       {pendingHeader}
@@ -268,7 +280,7 @@ export default function SwarmStatsPanel({
   return (
     <div
       className={`flex flex-col rounded-xl border border-border bg-surface-secondary p-2.5 ${
-        !isFull ? 'h-full min-h-[14rem]' : ''
+        doStretch ? 'h-full min-h-[14rem]' : ''
       } ${className}`.trim()}
     >
       {inner}

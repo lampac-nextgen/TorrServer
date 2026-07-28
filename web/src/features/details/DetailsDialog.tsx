@@ -620,15 +620,15 @@ export default function DetailsDialog({
                       {secondaryMetricItems.length > 0 ? (
                         <MetricRows title={t('Details')} items={secondaryMetricItems} columns={1} />
                       ) : null}
-                      <SwarmStatsPanel torrent={torrent} variant='summary' columns={1} />
                       <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
+                      <SwarmStatsPanel torrent={torrent} variant='summary' columns={2} showTitle={false} />
                       <div className='shrink-0'>{torrentActions}</div>
                     </div>
                   ) : (
                     <>
                       <div className='grid min-h-[14rem] shrink-0 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-stretch gap-3'>
                         <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact fill />
-                        <SwarmStatsPanel torrent={torrent} variant='summary' />
+                        <SwarmStatsPanel torrent={torrent} variant='summary' stretch />
                       </div>
                       <div className='shrink-0'>{torrentActions}</div>
                     </>
