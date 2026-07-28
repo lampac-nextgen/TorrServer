@@ -42,6 +42,7 @@ import SwarmStatsPanel from './SwarmStatsPanel'
 import SpeedCharts from './SpeedCharts'
 import TorrentActions from './TorrentActions'
 import TorrentCache from './TorrentCache'
+import { usePlayLauncher } from 'features/player/usePlayLauncher'
 
 export interface DetailsDialogProps {
   torrent: TorrentStat
@@ -286,6 +287,16 @@ export default function DetailsDialog({
 
   const cacheFilledValue = formatCacheFilledLabel(cache.Filled, cache.Capacity) ?? '—'
 
+  // Continue Watching must not wait for the Stats tab — Files is the default surface.
+  const { playerModals: autoPlayModals } = usePlayLauncher({
+    hash,
+    displayName: name || title || 'file',
+    knownPlayableFiles: playableFileList,
+    onViewedChange: refreshViewed,
+    autoPlayFileId,
+    autoPlayTimecode,
+  })
+
   /** Compact hero pulse — all live metrics in one dense strip. */
   const heroStats = (
     <>
@@ -506,8 +517,6 @@ export default function DetailsDialog({
                     onDeleted={onClose}
                     onShowFiles={() => setActiveTab('files')}
                     onOpenCache={() => setActiveTab('cache')}
-                    autoPlayFileId={autoPlayFileId}
-                    autoPlayTimecode={autoPlayTimecode}
                     compact={useCompactDetails}
                   />
                 </Tabs.Panel>
@@ -553,6 +562,7 @@ export default function DetailsDialog({
         onSnakeDebugModeChange={setIsSnakeDebugMode}
       />
       <EditPosterDialog torrent={torrent} open={posterEditOpen} onClose={() => setPosterEditOpen(false)} />
+      {autoPlayModals}
     </Modal.Root>
   )
 }
