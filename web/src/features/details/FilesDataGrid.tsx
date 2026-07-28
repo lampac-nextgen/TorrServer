@@ -134,13 +134,13 @@ function EpisodeRow({
       </div>
 
       {showMobilePlayers ? (
-        <div className='flex flex-wrap items-center gap-1.5'>
+        <div className='flex w-full items-center gap-1.5'>
           {externalPlayers!.map(player => (
             <Button
               key={player.label}
               variant='secondary'
               size='sm'
-              className='min-h-11 max-w-[5rem] shrink-0 px-2 text-[11px] font-medium'
+              className='min-h-11 min-w-0 flex-1 px-1.5 text-[11px] font-medium'
               onPress={() => {
                 window.location.href = player.href
               }}
