@@ -251,7 +251,7 @@ export default function FileRowActions({
   return (
     <div className='flex flex-nowrap items-center gap-1.5'>
       {playButton('min-h-11 shrink-0 px-3')}
-      {externalPlayers.length > 1 ? <ButtonGroup className='shrink-0'>{externalButtons}</ButtonGroup> : externalButtons}
+      {externalButtons}
       {secondaryDesktop}
     </div>
   )

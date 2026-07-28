@@ -57,7 +57,7 @@ export interface TorrentActionsProps {
 
 type PendingConfirm = 'drop' | 'delete' | 'clearViews' | null
 
-/** Renders Infuse/VLC/… as a single button or a ButtonGroup when several are enabled. */
+/** Renders Infuse/VLC/… as equal secondary pills (same look as Copy link beside them). */
 function ExternalPlayersGroup({
   players,
   size = 'md',
@@ -69,23 +69,24 @@ function ExternalPlayersGroup({
 }) {
   if (players.length === 0) return null
 
-  const buttons = players.map(player => (
-    <Button
-      key={player.label}
-      variant='secondary'
-      size={compact ? 'sm' : size}
-      className={compact ? 'min-h-11 max-w-[5rem] px-2 text-xs' : 'min-h-11'}
-      onPress={() => {
-        window.location.href = player.href
-      }}
-    >
-      {compact ? null : <SquareArrowOutUpRight {...iconMenu} aria-hidden />}
-      <span className='truncate'>{player.label}</span>
-    </Button>
-  ))
-
-  if (players.length === 1) return buttons[0]
-  return <ButtonGroup>{buttons}</ButtonGroup>
+  return (
+    <>
+      {players.map(player => (
+        <Button
+          key={player.label}
+          variant='secondary'
+          size={compact ? 'sm' : size}
+          className={compact ? 'min-h-11 max-w-[5rem] px-2 text-xs' : 'min-h-11'}
+          onPress={() => {
+            window.location.href = player.href
+          }}
+        >
+          {compact ? null : <SquareArrowOutUpRight {...iconMenu} aria-hidden />}
+          <span className='truncate'>{player.label}</span>
+        </Button>
+      ))}
+    </>
+  )
 }
 
 /**
@@ -442,7 +443,7 @@ function TorrentActions({
         <div className='flex flex-wrap items-center gap-2'>
           <ExternalPlayersGroup players={externalPlayers} />
           {singleFileStream ? (
-            <Button variant='secondary' onPress={() => void copyStreamLink()}>
+            <Button variant='secondary' className='min-h-11' onPress={() => void copyStreamLink()}>
               <Link2 {...iconMenu} aria-hidden />
               {t('CopyLink')}
             </Button>
