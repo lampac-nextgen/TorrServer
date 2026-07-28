@@ -1,6 +1,7 @@
 import { CheckCircle2 } from 'lucide-react'
 import { memo, useCallback, useMemo, useState, type ReactNode } from 'react'
 import ptt from 'parse-torrent-title'
+import { Button, useMediaQuery } from '@heroui/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { streamHost } from 'shared/api/hosts'
@@ -10,6 +11,7 @@ import { remViewedFile, VIEWED_QUERY_KEY } from 'shared/api/viewed'
 import { shouldUseGStreamerPlayer, useGStreamerRuntime } from 'shared/lib/gstreamer'
 import { useExternalPlayers } from 'shared/lib/externalPlayers'
 import { humanizeSize } from 'shared/lib/format'
+import { queryMax } from 'shared/theme/breakpoints'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 import { usePlayLauncher } from 'features/player/usePlayLauncher'
 
@@ -59,8 +61,8 @@ function episodeBadge(episode?: number): string | null {
 
 /**
  * Compact episode/file card used in the details Files list.
- * Mobile: single horizontal row (badge + title | Play + …) — no stacked full-width Play.
- * Desktop (`sm+`): title row and action strip sit side-by-side with roomier padding.
+ * Mobile: badge + title | Play + …; Clear is a separate touch target under the subtitle.
+ * Desktop (`sm+`): denser inline viewed chip beside the title.
  */
 function EpisodeRow({
   row,
@@ -72,6 +74,7 @@ function EpisodeRow({
   onUnmarkViewed?: () => void
 }) {
   const { t } = useTranslation()
+  const isMobile = useMediaQuery(queryMax('mobile'))
   const badge = episodeBadge(row.episode)
   const title = row.episode != null ? row.name.replace(/^E\d+\s*[·.-]\s*/i, '').trim() || row.name : row.name
 
@@ -92,16 +95,22 @@ function EpisodeRow({
             <p className='min-w-0 truncate text-sm font-semibold text-foreground' title={row.path}>
               {title}
             </p>
-            {row.viewed ? (
+            {row.viewed && !isMobile ? (
               <button
                 type='button'
-                className='inline-flex shrink-0 items-center gap-1 rounded-md text-xs text-accent hover-fine:underline'
+                className='inline-flex shrink-0 items-center gap-1 rounded-md text-xs font-medium text-accent hover-fine:underline'
                 onClick={onUnmarkViewed}
               >
                 <CheckCircle2 size={14} strokeWidth={1.75} aria-hidden />
                 {t('Viewed')}
-                <span className='text-muted'>· {t('Clear')}</span>
+                <span className='text-accent'>· {t('Clear')}</span>
               </button>
+            ) : null}
+            {row.viewed && isMobile ? (
+              <span className='inline-flex shrink-0 items-center gap-1 text-xs font-medium text-accent'>
+                <CheckCircle2 size={14} strokeWidth={1.75} aria-hidden />
+                {t('Viewed')}
+              </span>
             ) : null}
           </div>
           <p className='mt-0.5 truncate text-[11px] leading-tight text-muted sm:text-xs'>
@@ -109,9 +118,20 @@ function EpisodeRow({
               .filter(Boolean)
               .join(' · ')}
           </p>
+          {row.viewed && isMobile && onUnmarkViewed ? (
+            <Button
+              variant='secondary'
+              size='sm'
+              className='mt-1.5 min-h-11 gap-1.5 px-3 text-accent'
+              onPress={onUnmarkViewed}
+            >
+              <CheckCircle2 size={16} strokeWidth={1.75} aria-hidden />
+              {t('Clear')}
+            </Button>
+          ) : null}
         </div>
       </div>
-      <div className='shrink-0'>{actions}</div>
+      <div className='shrink-0 self-start sm:self-center'>{actions}</div>
     </div>
   )
 }

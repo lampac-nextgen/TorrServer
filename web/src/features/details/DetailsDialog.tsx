@@ -297,13 +297,18 @@ export default function DetailsDialog({
     autoPlayTimecode,
   })
 
-  /** Compact hero pulse — all live metrics in one dense strip. */
-  const heroStats = (
+  /** Live pulse in the hero — primary on all sizes; secondary only on desktop hero. */
+  const primaryStats = (
     <>
       <StatWidget dense compact={useCompactDetails} label={t('DownloadSpeed')} value={humanizeSpeed(downloadSpeed)} />
       <StatWidget dense compact={useCompactDetails} label={t('UploadSpeed')} value={humanizeSpeed(uploadSpeed)} />
       <StatWidget dense compact={useCompactDetails} label={t('Peers')} value={getPeerString(torrent) || '—'} />
       <StatWidget dense compact={useCompactDetails} label={t('Size')} value={humanizeSize(torrentSize)} />
+    </>
+  )
+
+  const secondaryStats = (
+    <>
       <StatWidget dense compact={useCompactDetails} label={t('CacheFilled')} value={cacheFilledValue} />
       <StatWidget dense compact={useCompactDetails} label={t('Status')} value={statusLabel(stat)} />
       <StatWidget dense compact={useCompactDetails} label={t('Category')} value={category || '—'} />
@@ -319,6 +324,13 @@ export default function DetailsDialog({
         label={t('PiecesLength')}
         value={cache.PiecesLength != null ? humanizeSize(cache.PiecesLength) : '—'}
       />
+    </>
+  )
+
+  const heroStats = (
+    <>
+      {primaryStats}
+      {secondaryStats}
     </>
   )
 
@@ -358,7 +370,7 @@ export default function DetailsDialog({
 
             <Modal.Body className='flex min-h-0 flex-1 flex-col gap-2 overflow-hidden pt-1 sm:gap-3'>
               {useCompactDetails ? (
-                /* Phone: identity row, then full-bleed 3×3 metrics (no dead gap beside a short poster). */
+                /* Phone: identity row, then 2×2 primary metrics (rest live on Stats). */
                 <div className='shrink-0 space-y-2 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2 pr-11'>
                   <div className='flex items-start gap-2'>
                     <button
@@ -383,7 +395,7 @@ export default function DetailsDialog({
                     </button>
                     <TitleRow title={displayTitle} subtitle={subtitle} compact editControl={editControl} />
                   </div>
-                  <div className='grid w-full grid-cols-3 gap-1'>{heroStats}</div>
+                  <div className='grid w-full grid-cols-2 gap-1'>{primaryStats}</div>
                 </div>
               ) : (
                 /*
@@ -500,6 +512,10 @@ export default function DetailsDialog({
                 </Tabs.Panel>
 
                 <Tabs.Panel id='stats' className='min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pt-3'>
+                  {useCompactDetails ? (
+                    <div className='grid w-full grid-cols-2 gap-1 sm:grid-cols-3'>{secondaryStats}</div>
+                  ) : null}
+
                   <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
 
                   <SwarmStatsPanel torrent={torrent} />

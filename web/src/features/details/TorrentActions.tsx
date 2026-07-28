@@ -233,8 +233,11 @@ function TorrentActions({
   const hasPartialProgress = !isSingleFileTorrent && !!viewedFileList?.length
   const playLabel: ReactNode =
     !isSingleFileTorrent && (playableFileList?.length ?? 0) > 1
-      ? `${t('TorrentContent')} (${playableFileList!.length})`
+      ? compact
+        ? `${t('TorrentFiles')} (${playableFileList!.length})`
+        : `${t('TorrentContent')} (${playableFileList!.length})`
       : t('Play')
+  const cacheLabel = compact ? t('Cache') : t('DetailedCacheView.button')
 
   const onPlayPress = () => {
     runConfiguredPlay({
@@ -283,7 +286,7 @@ function TorrentActions({
         <div className='flex items-center gap-1.5'>
           {onOpenCache ? (
             <Button variant='primary' size='md' className='min-h-11 min-w-0 flex-1 gap-2' onPress={onOpenCache}>
-              <span className='truncate'>{t('DetailedCacheView.button')}</span>
+              <span className='truncate text-sm'>{cacheLabel}</span>
               <ChevronRight size={16} strokeWidth={1.75} className='shrink-0' aria-hidden />
             </Button>
           ) : null}
@@ -301,11 +304,10 @@ function TorrentActions({
                 ) : (
                   <Play {...iconMenu} fill='currentColor' aria-hidden />
                 )}
-                <span className='truncate'>{playLabel}</span>
+                <span className='truncate text-sm'>{playLabel}</span>
               </>
             )}
           </Button>
-          <ExternalPlayersGroup players={externalPlayers} compact />
           <Dropdown>
             <Dropdown.Trigger>
               <Button variant='ghost' isIconOnly className={`${iconBtn} shrink-0 text-muted`} aria-label={t('Info')}>
@@ -358,6 +360,12 @@ function TorrentActions({
             </Dropdown.Popover>
           </Dropdown>
         </div>
+
+        {externalPlayers.length > 0 ? (
+          <div className='flex flex-wrap items-center gap-1.5'>
+            <ExternalPlayersGroup players={externalPlayers} compact />
+          </div>
+        ) : null}
 
         {isSingleFileTorrent && !hasAnyExternalPlayer ? (
           <button
