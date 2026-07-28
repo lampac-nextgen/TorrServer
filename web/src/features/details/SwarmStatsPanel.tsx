@@ -2,15 +2,30 @@ import { humanizeSize } from 'shared/lib/format'
 import type { TorrentStat } from 'shared/api/types'
 import { useTranslation } from 'react-i18next'
 
+import MetricRows from './MetricRows'
+
 export interface SwarmStatsPanelProps {
   torrent: TorrentStat
+  /** Side pane on desktop Stats — single column, can stretch. */
+  className?: string
+  columns?: 1 | 2
+  /** When false, omit outer frame (parent already provides a panel). */
+  framed?: boolean
+  /** Hide the Swarm heading when nested under a combined metrics panel. */
+  showTitle?: boolean
 }
 
-/** Compact power-user transfer / peer counters already present on TorrentStat. */
-export default function SwarmStatsPanel({ torrent }: SwarmStatsPanelProps) {
+/** Dense transfer / peer counters from TorrentStat — definition rows, not chips. */
+export default function SwarmStatsPanel({
+  torrent,
+  className,
+  columns = 1,
+  framed = true,
+  showTitle = true,
+}: SwarmStatsPanelProps) {
   const { t } = useTranslation()
 
-  const rows: { label: string; value: string }[] = [
+  const items = [
     { label: t('PendingPeers'), value: torrent.pending_peers != null ? String(torrent.pending_peers) : '—' },
     { label: t('HalfOpenPeers'), value: torrent.half_open_peers != null ? String(torrent.half_open_peers) : '—' },
     {
@@ -25,20 +40,12 @@ export default function SwarmStatsPanel({ torrent }: SwarmStatsPanelProps) {
   ]
 
   return (
-    <div className='rounded-xl border border-border bg-surface-secondary p-2.5'>
-      <p className='mb-2 text-xs font-semibold tracking-wide text-muted uppercase'>{t('SwarmStats')}</p>
-      <div className='grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-5'>
-        {rows.map(row => (
-          <div key={row.label} className='min-w-0 rounded-lg border border-border bg-surface px-2 py-1.5 text-center'>
-            <span className='block truncate text-[10px] text-muted' title={row.label}>
-              {row.label}
-            </span>
-            <span className='mt-0.5 block truncate text-xs font-bold tabular-nums text-foreground' title={row.value}>
-              {row.value}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
+    <MetricRows
+      title={showTitle ? t('SwarmStats') : undefined}
+      items={items}
+      columns={columns}
+      framed={framed}
+      className={className}
+    />
   )
 }

@@ -38,6 +38,7 @@ import { toPlayableFile } from 'shared/torrent/toPlayableFile'
 import FileBrowser from './FileBrowser'
 import CacheMapDialog from './CacheMapDialog'
 import EditPosterDialog from './EditPosterDialog'
+import MetricRows from './MetricRows'
 import SwarmStatsPanel from './SwarmStatsPanel'
 import SpeedCharts from './SpeedCharts'
 import TorrentActions from './TorrentActions'
@@ -376,6 +377,36 @@ export default function DetailsDialog({
     </>
   )
 
+  /** Stats-tab dense rows (mobile) — same fields as secondary hero chips. */
+  const secondaryMetricItems = [
+    { label: t('CacheFilled'), value: cacheFilledValue },
+    { label: t('Status'), value: statusLabel(stat) },
+    { label: t('Category'), value: category || '—' },
+    { label: t('PiecesCount'), value: cache.PiecesCount != null ? String(cache.PiecesCount) : '—' },
+    {
+      label: t('PiecesLength'),
+      value: cache.PiecesLength != null ? humanizeSize(cache.PiecesLength) : '—',
+    },
+  ]
+
+  const torrentActions = (
+    <TorrentActions
+      hash={hash}
+      torrsHash={torrent.torrs_hash}
+      name={name}
+      title={title}
+      playableFileList={playableFileList}
+      viewedFileList={viewedFileList}
+      setViewedFileList={setViewedFileList}
+      onViewedChange={refreshViewed}
+      onDropped={onClose}
+      onDeleted={onClose}
+      onShowFiles={() => setActiveTab('files')}
+      onOpenCache={() => setActiveTab('cache')}
+      compact={useCompactDetails}
+    />
+  )
+
   const heroStats = (
     <>
       {primaryStats}
@@ -560,30 +591,27 @@ export default function DetailsDialog({
                   </div>
                 </Tabs.Panel>
 
-                <Tabs.Panel id='stats' className='min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pt-3'>
+                <Tabs.Panel id='stats' className='flex min-h-0 flex-1 flex-col gap-3 overflow-hidden pt-3'>
                   {useCompactDetails ? (
-                    <div className='grid w-full grid-cols-2 gap-1 sm:grid-cols-3'>{secondaryStats}</div>
-                  ) : null}
-
-                  <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
-
-                  <SwarmStatsPanel torrent={torrent} />
-
-                  <TorrentActions
-                    hash={hash}
-                    torrsHash={torrent.torrs_hash}
-                    name={name}
-                    title={title}
-                    playableFileList={playableFileList}
-                    viewedFileList={viewedFileList}
-                    setViewedFileList={setViewedFileList}
-                    onViewedChange={refreshViewed}
-                    onDropped={onClose}
-                    onDeleted={onClose}
-                    onShowFiles={() => setActiveTab('files')}
-                    onOpenCache={() => setActiveTab('cache')}
-                    compact={useCompactDetails}
-                  />
+                    <div className='min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain'>
+                      <div className='space-y-3 rounded-xl border border-border bg-surface-secondary p-2.5'>
+                        <MetricRows framed={false} title={t('Details')} items={secondaryMetricItems} columns={1} />
+                        <SwarmStatsPanel torrent={torrent} framed={false} columns={1} />
+                      </div>
+                      <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
+                      <div className='shrink-0'>{torrentActions}</div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className='grid min-h-0 flex-1 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-3 overflow-hidden'>
+                        <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact fill />
+                        <div className='min-h-0 overflow-y-auto overscroll-contain'>
+                          <SwarmStatsPanel torrent={torrent} className='h-full' columns={1} />
+                        </div>
+                      </div>
+                      <div className='shrink-0'>{torrentActions}</div>
+                    </>
+                  )}
                 </Tabs.Panel>
 
                 <Tabs.Panel
