@@ -114,11 +114,21 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
   const piecesPerRow = canvasWidth > 0 ? Math.max(1, Math.floor(canvasWidth / cellStride)) : 0
 
   const emptyRowCount = isMiniView ? 4 : 6
-  const canvasHeight =
+  const naturalRowCount =
     piecesPerRow > 0
-      ? Math.max(cells.length > 0 ? Math.ceil(cells.length / piecesPerRow) : emptyRowCount, emptyRowCount) * cellStride
+      ? Math.max(
+          cells.length > 0 ? Math.ceil(cells.length / piecesPerRow) : emptyRowCount,
+          isMiniView ? emptyRowCount : 1,
+        )
       : 0
-  /** Reserve mini shell height before ResizeObserver so Overview actions don't jump when the snake mounts. */
+  // Detailed view: never taller than the sheet pane — no internal scrollbar.
+  const maxFitRows =
+    !isMiniView && containerHeight > 0 && cellStride > 0
+      ? Math.max(1, Math.floor(containerHeight / cellStride))
+      : naturalRowCount
+  const rowCount = !isMiniView && maxFitRows > 0 ? Math.min(naturalRowCount, maxFitRows) : naturalRowCount
+  const canvasHeight = rowCount > 0 ? rowCount * cellStride : 0
+  /** Reserve mini shell height before ResizeObserver so parent layout doesn't jump when the snake mounts. */
   const miniShellMinHeight = isMiniView ? emptyRowCount * cellStride + 16 : undefined
 
   const startingX = piecesPerRow > 0 ? Math.ceil((canvasWidth - cellStride * piecesPerRow) / 2) : 0
@@ -305,17 +315,9 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
       <div
         ref={scrollWrapperRef}
         className={`relative w-full min-w-0 rounded-lg border border-border bg-surface-secondary p-2 ${
-          isMiniView
-            ? 'grid max-h-[420px] justify-center overflow-hidden'
-            : 'min-h-0 min-w-0 flex-1 overflow-auto overscroll-contain'
+          isMiniView ? 'grid max-h-[420px] justify-center overflow-hidden' : 'min-h-0 min-w-0 flex-1 overflow-hidden'
         }`}
-        style={
-          isMiniView
-            ? miniShellMinHeight != null
-              ? { minHeight: miniShellMinHeight }
-              : undefined
-            : { WebkitOverflowScrolling: 'touch' }
-        }
+        style={isMiniView ? (miniShellMinHeight != null ? { minHeight: miniShellMinHeight } : undefined) : undefined}
       >
         {piecesPerRow > 0 && canvasHeight > 0 ? (
           <canvas

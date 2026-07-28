@@ -8,8 +8,8 @@ import {
   useMediaQuery,
   useOverlayState,
 } from '@heroui/react'
-import { ImagePlus, Pencil, ChevronRight, X } from 'lucide-react'
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { ImagePlus, Pencil, X } from 'lucide-react'
+import { useEffect, useMemo, useState, useCallback, type ReactNode } from 'react'
 import ptt from 'parse-torrent-title'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
@@ -38,7 +38,6 @@ import { toPlayableFile } from 'shared/torrent/toPlayableFile'
 import FileBrowser from './FileBrowser'
 import CacheMapDialog from './CacheMapDialog'
 import EditPosterDialog from './EditPosterDialog'
-import CacheHeatSparkline from './CacheHeatSparkline'
 import SwarmStatsPanel from './SwarmStatsPanel'
 import SpeedCharts from './SpeedCharts'
 import TorrentActions from './TorrentActions'
@@ -53,26 +52,43 @@ export interface DetailsDialogProps {
   autoPlayTimecode?: number
 }
 
-type DetailsTab = 'overview' | 'files' | 'cache'
+type DetailsTab = 'files' | 'stats' | 'cache'
 
-function StatWidget({ label, value, dense = false }: { label: string; value: string; dense?: boolean }) {
+function StatWidget({
+  label,
+  value,
+  dense = false,
+  compact = false,
+}: {
+  label: string
+  value: string
+  dense?: boolean
+  /** Phone hero — allow 2-line labels so Russian strings aren't clipped to "Скорость загр..". */
+  compact?: boolean
+}) {
   const shown = value || '—'
   return (
     <div
-      className={`min-w-0 rounded-lg border border-border bg-surface-secondary text-center ${
-        dense ? 'px-2 py-1.5' : 'px-2.5 py-2 sm:min-w-[104px] sm:px-3'
+      className={`min-w-0 rounded-md border border-border bg-surface-secondary text-center ${
+        dense ? 'w-full px-1.5 py-1' : 'px-2.5 py-2 sm:min-w-[104px] sm:px-3'
       }`}
     >
       <span
-        className={`block truncate leading-tight text-muted ${dense ? 'text-[10px]' : 'text-[11px] sm:text-xs'}`}
+        className={`block leading-tight text-muted ${
+          compact
+            ? 'line-clamp-2 min-h-[1.75rem] text-[9px]'
+            : dense
+              ? 'truncate text-[10px]'
+              : 'truncate text-[11px] sm:text-xs'
+        }`}
         title={label}
       >
         {label}
       </span>
-      {/* Single-line value — long CacheFilled must not wrap and grow the hero. */}
+      {/* Single-line value — long labels must not wrap and grow the hero. */}
       <span
-        className={`mt-0.5 block truncate font-bold tabular-nums text-foreground ${
-          dense ? 'h-4 text-xs leading-4' : 'mt-1 h-5 text-sm leading-5 sm:h-6 sm:text-base sm:leading-6'
+        className={`block truncate font-bold tabular-nums text-foreground ${
+          dense ? 'mt-0.5 h-3.5 text-[11px] leading-3.5' : 'mt-1 h-5 text-sm leading-5 sm:h-6 sm:text-base sm:leading-6'
         }`}
         title={shown}
       >
@@ -108,7 +124,40 @@ function buildDisplayTitle(name: string | undefined, title: string | undefined):
   return needsTrailingDot ? `${combined}.` : combined
 }
 
-/** Full-detail sheet for a torrent: hero header, live speed chart, files browser and cache "snake" map. */
+function TitleRow({
+  title,
+  subtitle,
+  compact,
+  editControl,
+}: {
+  title: string
+  subtitle: string | null
+  compact: boolean
+  editControl: ReactNode
+}) {
+  return (
+    <div className='min-w-0 flex-1'>
+      <div className='flex items-start gap-1'>
+        <h2
+          className={`min-w-0 flex-1 font-bold text-foreground ${
+            compact ? 'line-clamp-2 text-sm leading-snug' : 'line-clamp-2 text-lg leading-snug'
+          }`}
+          title={title}
+        >
+          {title}
+        </h2>
+        {editControl}
+      </div>
+      {subtitle ? (
+        <p className={`mt-0.5 truncate text-muted ${compact ? 'text-xs' : 'text-sm'}`} title={subtitle}>
+          {subtitle}
+        </p>
+      ) : null}
+    </div>
+  )
+}
+
+/** Full-detail sheet for a torrent: slim hero, files browser, live stats, and cache "snake" map. */
 export default function DetailsDialog({
   torrent: initialTorrent,
   onClose,
@@ -118,7 +167,7 @@ export default function DetailsDialog({
 }: DetailsDialogProps) {
   const { t } = useTranslation()
   const isFullScreen = useDialogFullScreen()
-  /** Equal-width Overview/Files/Cache segments — only needed below the phone breakpoint. */
+  /** Equal-width Files/Stats/Cache segments — only needed below the phone breakpoint. */
   const isMobile = useMediaQuery(queryMax('mobile'))
   const isShortViewport = useMediaQuery(MEDIA_SHORT_VIEWPORT)
   /** Phone-compact hero/actions — not tied to fullscreen surface (iPad landscape stays wide). */
@@ -136,7 +185,7 @@ export default function DetailsDialog({
   const { data: liveTorrent } = useTorrentDetail(hash, initialTorrent)
   const torrent = liveTorrent ?? initialTorrent
 
-  const [activeTab, setActiveTab] = useState<DetailsTab>('overview')
+  const [activeTab, setActiveTab] = useState<DetailsTab>('files')
   const [viewedFileList, setViewedFileList] = useState<number[] | undefined>()
   const [seasonList, setSeasonList] = useState<number[] | null>(null)
   const [selectedSeason, setSelectedSeason] = useState<number | undefined>()
@@ -162,8 +211,6 @@ export default function DetailsDialog({
     return files.filter(({ path }) => isFilePlayable(path))
   }, [fileStats, data])
 
-  // Stay on Overview until the user (or Play → onShowFiles) switches tabs.
-  // Do not auto-jump to Files when metadata arrives — that felt like the sheet "teleporting".
   const resolvedTab = activeTab
 
   const cache = useUpdateCache(hash, {
@@ -239,28 +286,45 @@ export default function DetailsDialog({
 
   const cacheFilledValue = formatCacheFilledLabel(cache.Filled, cache.Capacity) ?? '—'
 
-  const primaryStats = (
+  /** Compact hero pulse — all live metrics in one dense strip. */
+  const heroStats = (
     <>
-      <StatWidget dense={!useCompactDetails} label={t('DownloadSpeed')} value={humanizeSpeed(downloadSpeed)} />
-      <StatWidget dense={!useCompactDetails} label={t('UploadSpeed')} value={humanizeSpeed(uploadSpeed)} />
-      <StatWidget dense={!useCompactDetails} label={t('Peers')} value={getPeerString(torrent) || '—'} />
-      <StatWidget dense={!useCompactDetails} label={t('Size')} value={humanizeSize(torrentSize)} />
-    </>
-  )
-
-  const secondaryStats = (
-    <>
-      <StatWidget dense label={t('Status')} value={statusLabel(stat)} />
-      <StatWidget dense label={t('Category')} value={category || '—'} />
-      <StatWidget dense label={t('PiecesCount')} value={cache.PiecesCount != null ? String(cache.PiecesCount) : '—'} />
+      <StatWidget dense compact={useCompactDetails} label={t('DownloadSpeed')} value={humanizeSpeed(downloadSpeed)} />
+      <StatWidget dense compact={useCompactDetails} label={t('UploadSpeed')} value={humanizeSpeed(uploadSpeed)} />
+      <StatWidget dense compact={useCompactDetails} label={t('Peers')} value={getPeerString(torrent) || '—'} />
+      <StatWidget dense compact={useCompactDetails} label={t('Size')} value={humanizeSize(torrentSize)} />
+      <StatWidget dense compact={useCompactDetails} label={t('CacheFilled')} value={cacheFilledValue} />
+      <StatWidget dense compact={useCompactDetails} label={t('Status')} value={statusLabel(stat)} />
+      <StatWidget dense compact={useCompactDetails} label={t('Category')} value={category || '—'} />
       <StatWidget
         dense
+        compact={useCompactDetails}
+        label={t('PiecesCount')}
+        value={cache.PiecesCount != null ? String(cache.PiecesCount) : '—'}
+      />
+      <StatWidget
+        dense
+        compact={useCompactDetails}
         label={t('PiecesLength')}
         value={cache.PiecesLength != null ? humanizeSize(cache.PiecesLength) : '—'}
       />
-      <StatWidget dense label={t('CacheFilled')} value={cacheFilledValue} />
     </>
   )
+
+  const editControl =
+    onEdit != null ? (
+      <Button
+        isIconOnly
+        variant='ghost'
+        className={`${iconBtn} shrink-0`}
+        aria-label={t('EditTorrent')}
+        onPress={() => onEdit(torrent)}
+      >
+        <Pencil {...iconChrome} aria-hidden />
+      </Button>
+    ) : null
+
+  const tabClass = isMobile ? 'min-h-11 w-auto flex-1 basis-0' : 'min-h-9 w-auto shrink-0'
 
   return (
     <Modal.Root state={overlayState}>
@@ -271,80 +335,27 @@ export default function DetailsDialog({
           <Modal.Dialog
             className='flex flex-col overflow-hidden'
             style={isFullScreen ? DIALOG_FULLSCREEN : DIALOG_DETAILS}
+            aria-label={t('TorrentDetails')}
           >
-            <Modal.Header className='relative flex shrink-0 flex-nowrap items-center gap-1 pr-12 sm:gap-2'>
-              <Modal.Heading className='min-w-0 flex-1 truncate'>{t('TorrentDetails')}</Modal.Heading>
-              {onEdit ? (
-                <Button
-                  isIconOnly
-                  variant='ghost'
-                  className={`${iconBtn} shrink-0`}
-                  aria-label={t('EditTorrent')}
-                  onPress={() => onEdit(torrent)}
-                >
-                  <Pencil {...iconChrome} aria-hidden />
-                </Button>
-              ) : null}
+            {/* Zero-height chrome: CloseTrigger is absolute; heading is screen-reader only. */}
+            <Modal.Header className='relative h-0 shrink-0 overflow-visible border-0 p-0'>
+              <Modal.Heading className='sr-only'>{t('TorrentDetails')}</Modal.Heading>
               <Modal.CloseTrigger aria-label={t('Close')} className='shrink-0'>
                 <X {...iconChrome} aria-hidden />
               </Modal.CloseTrigger>
             </Modal.Header>
 
-            <Modal.Body className='flex min-h-0 flex-1 flex-col gap-3 overflow-hidden'>
-              {/* Compact hero on phone/short viewport; wide hero on tablet/desktop (incl. fullscreen iPad). */}
-              <div
-                className={`shrink-0 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 ${
-                  useCompactDetails ? 'space-y-3 p-3' : 'flex flex-col gap-3 p-3 sm:flex-row sm:items-start'
-                }`}
-              >
-                {useCompactDetails ? (
-                  <>
-                    <div className='flex items-start gap-3'>
-                      <button
-                        type='button'
-                        onClick={() => setPosterEditOpen(true)}
-                        aria-label={t('AddDialog.AddPosterLinkInput')}
-                        title={t('AddDialog.AddPosterLinkInput')}
-                        className='group relative grid h-16 w-[42px] shrink-0 place-items-center overflow-hidden rounded-md bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
-                      >
-                        {poster ? (
-                          <img
-                            src={poster}
-                            alt=''
-                            className='h-full w-full object-cover'
-                            onError={event => {
-                              event.currentTarget.style.display = 'none'
-                            }}
-                          />
-                        ) : (
-                          <ImagePlus size={18} strokeWidth={1.75} className='text-muted' aria-hidden />
-                        )}
-                        <span className='pointer-events-none absolute inset-0 grid place-items-center bg-black/0 text-[9px] font-medium text-white opacity-0 transition-opacity group-focus-visible:bg-black/45 group-focus-visible:opacity-100'>
-                          {t('AddDialog.AddPosterLinkInput')}
-                        </span>
-                      </button>
-                      <div className='min-w-0 flex-1'>
-                        <h2 className='line-clamp-2 text-base font-bold leading-snug text-foreground'>
-                          {displayTitle}
-                        </h2>
-                        {subtitle ? (
-                          <p className='mt-0.5 line-clamp-1 text-xs text-muted' title={subtitle}>
-                            {subtitle}
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
-                    <div className='grid grid-cols-2 gap-1.5'>{primaryStats}</div>
-                  </>
-                ) : (
-                  <>
-                    {/* Always reserve poster column so late poster URL doesn't reflow the stats grid. */}
+            <Modal.Body className='flex min-h-0 flex-1 flex-col gap-2 overflow-hidden pt-1 sm:gap-3'>
+              {useCompactDetails ? (
+                /* Phone: identity row, then full-bleed 3×3 metrics (no dead gap beside a short poster). */
+                <div className='shrink-0 space-y-2 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2 pr-11'>
+                  <div className='flex items-start gap-2'>
                     <button
                       type='button'
                       onClick={() => setPosterEditOpen(true)}
                       aria-label={t('AddDialog.AddPosterLinkInput')}
                       title={t('AddDialog.AddPosterLinkInput')}
-                      className='group relative mx-auto grid aspect-[2/3] w-full max-w-[96px] shrink-0 place-items-center overflow-hidden rounded-lg bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2 sm:mx-0'
+                      className='group relative grid h-12 w-8 shrink-0 place-items-center overflow-hidden rounded-md bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
                     >
                       {poster ? (
                         <img
@@ -356,32 +367,50 @@ export default function DetailsDialog({
                           }}
                         />
                       ) : (
-                        <ImagePlus {...iconEmpty} className='text-muted' aria-hidden />
+                        <ImagePlus size={16} strokeWidth={1.75} className='text-muted' aria-hidden />
                       )}
-                      <span className='pointer-events-none absolute inset-0 grid place-items-center bg-black/0 px-2 text-center text-xs font-medium text-white opacity-0 transition-opacity group-hover:bg-black/45 group-hover:opacity-100 group-focus-visible:bg-black/45 group-focus-visible:opacity-100'>
-                        {t('AddDialog.AddPosterLinkInput')}
-                      </span>
                     </button>
+                    <TitleRow title={displayTitle} subtitle={subtitle} compact editControl={editControl} />
+                  </div>
+                  <div className='grid w-full grid-cols-3 gap-1'>{heroStats}</div>
+                </div>
+              ) : (
+                /*
+                  Desktop: poster spans both rows; title on top-right; metrics sit under the title
+                  (raised beside the poster) and stretch across the remaining width.
+                */
+                <div className='grid shrink-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-1.5 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2.5 pr-12'>
+                  <button
+                    type='button'
+                    onClick={() => setPosterEditOpen(true)}
+                    aria-label={t('AddDialog.AddPosterLinkInput')}
+                    title={t('AddDialog.AddPosterLinkInput')}
+                    className='group relative col-start-1 row-span-2 row-start-1 grid aspect-[2/3] w-[72px] shrink-0 self-start place-items-center overflow-hidden rounded-lg bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
+                  >
+                    {poster ? (
+                      <img
+                        src={poster}
+                        alt=''
+                        className='h-full w-full object-cover'
+                        onError={event => {
+                          event.currentTarget.style.display = 'none'
+                        }}
+                      />
+                    ) : (
+                      <ImagePlus {...iconEmpty} className='text-muted' aria-hidden />
+                    )}
+                    <span className='pointer-events-none absolute inset-0 grid place-items-center bg-black/0 px-1.5 text-center text-[10px] font-medium text-white opacity-0 transition-opacity group-hover:bg-black/45 group-hover:opacity-100 group-focus-visible:bg-black/45 group-focus-visible:opacity-100'>
+                      {t('AddDialog.AddPosterLinkInput')}
+                    </span>
+                  </button>
 
-                    <div className='min-w-0 flex-1'>
-                      <h2 className='mb-0.5 break-words text-lg font-bold text-foreground'>{displayTitle}</h2>
-                      {/* Reserve subtitle line so title-only torrents don't collapse hero height. */}
-                      <p
-                        className={`mb-1.5 truncate text-sm ${subtitle ? 'text-muted' : 'invisible'}`}
-                        aria-hidden={!subtitle}
-                      >
-                        {subtitle || '\u00a0'}
-                      </p>
+                  <div className='col-start-2 row-start-1 min-w-0'>
+                    <TitleRow title={displayTitle} subtitle={subtitle} compact={false} editControl={editControl} />
+                  </div>
 
-                      {/* 9 slots → 2 rows on xl (5+4). min-h locks row stack so value updates never grow hero. */}
-                      <div className='grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:min-h-[9.5rem] lg:grid-cols-4 lg:min-h-[6.5rem] xl:grid-cols-5 xl:min-h-[6.5rem]'>
-                        {primaryStats}
-                        {secondaryStats}
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
+                  <div className='col-start-2 row-start-2 grid min-w-0 w-full grid-cols-9 gap-1'>{heroStats}</div>
+                </div>
+              )}
 
               {/*
                 HeroUI primary tabs default to `w-full` per tab; without `w-auto` + Indicator,
@@ -396,97 +425,26 @@ export default function DetailsDialog({
               >
                 <Tabs.ListContainer className='w-full max-w-full shrink-0'>
                   <Tabs.List aria-label={t('TorrentDetails')} className={isMobile ? 'w-full min-w-full' : undefined}>
-                    <Tabs.Tab
-                      id='overview'
-                      className={isMobile ? 'min-h-11 w-auto flex-1 basis-0' : 'min-h-9 w-auto shrink-0'}
-                    >
-                      {t('Overview')}
-                      <Tabs.Indicator />
-                    </Tabs.Tab>
-                    <Tabs.Tab
-                      id='files'
-                      className={isMobile ? 'min-h-11 w-auto flex-1 basis-0' : 'min-h-9 w-auto shrink-0'}
-                      aria-label={t('TorrentContent')}
-                    >
+                    <Tabs.Tab id='files' className={tabClass} aria-label={t('TorrentContent')}>
                       {t('TorrentFiles')}
                       <Tabs.Indicator />
                     </Tabs.Tab>
-                    <Tabs.Tab
-                      id='cache'
-                      className={isMobile ? 'min-h-11 w-auto flex-1 basis-0' : 'min-h-9 w-auto shrink-0'}
-                    >
+                    <Tabs.Tab id='stats' className={tabClass}>
+                      {t('Stats')}
+                      <Tabs.Indicator />
+                    </Tabs.Tab>
+                    <Tabs.Tab id='cache' className={tabClass}>
                       {t('Cache')}
                       <Tabs.Indicator />
                     </Tabs.Tab>
                   </Tabs.List>
                 </Tabs.ListContainer>
 
-                <Tabs.Panel id='overview' className='min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pt-3'>
-                  {useCompactDetails ? (
-                    <div className='grid grid-cols-2 gap-1.5 sm:grid-cols-3'>{secondaryStats}</div>
-                  ) : null}
-
-                  <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
-
-                  <SwarmStatsPanel torrent={torrent} />
-
-                  <CacheHeatSparkline filled={cache.Filled} capacity={cache.Capacity} />
-
-                  {useCompactDetails ? (
-                    <div className='flex gap-2'>
-                      <Button
-                        size='sm'
-                        variant='secondary'
-                        className='min-h-11 flex-1 gap-2'
-                        onPress={() => setActiveTab('cache')}
-                      >
-                        {t('Cache')}
-                        <ChevronRight size={16} strokeWidth={1.75} aria-hidden />
-                      </Button>
-                      <Button
-                        size='sm'
-                        variant='ghost'
-                        className='min-h-11 shrink-0'
-                        onPress={() => setCacheMapOpen(true)}
-                        aria-label={t('DetailedCacheView.button')}
-                      >
-                        {t('Cache')}
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className='rounded-xl border border-border bg-surface-secondary p-2.5'>
-                      <div className='mb-2 flex items-center justify-end gap-2'>
-                        <Button size='sm' variant='ghost' onPress={() => setCacheMapOpen(true)}>
-                          {t('DetailedCacheView.button')}
-                        </Button>
-                      </div>
-                      <TorrentCache cache={cache} mode='mini' />
-                    </div>
-                  )}
-
-                  <TorrentActions
-                    hash={hash}
-                    torrsHash={torrent.torrs_hash}
-                    name={name}
-                    title={title}
-                    playableFileList={playableFileList}
-                    viewedFileList={viewedFileList}
-                    setViewedFileList={setViewedFileList}
-                    onViewedChange={refreshViewed}
-                    onDropped={onClose}
-                    onDeleted={onClose}
-                    onShowFiles={() => setActiveTab('files')}
-                    autoPlayFileId={autoPlayFileId}
-                    autoPlayTimecode={autoPlayTimecode}
-                    compact={useCompactDetails}
-                  />
-                </Tabs.Panel>
-
-                <Tabs.Panel id='files' className='min-h-0 flex-1 overflow-y-auto overscroll-contain pt-3 sm:pt-4'>
-                  <div className='sm:rounded-xl sm:bg-surface-secondary sm:p-4'>
+                <Tabs.Panel id='files' className='min-h-0 flex-1 overflow-y-auto overscroll-contain pt-2 sm:pt-3'>
+                  <div>
                     {/* Reserve chip-row height while metadata loads or when multi-season — list won't jump. */}
                     {hasMultipleSeasons || isLoadingMetadata ? (
-                      <div className='mb-3 min-h-11 sm:mb-4'>
+                      <div className='mb-2 min-h-11 sm:mb-3'>
                         {hasMultipleSeasons ? (
                           <ToggleButtonGroup
                             selectionMode='single'
@@ -528,6 +486,30 @@ export default function DetailsDialog({
                       />
                     )}
                   </div>
+                </Tabs.Panel>
+
+                <Tabs.Panel id='stats' className='min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pt-3'>
+                  <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
+
+                  <SwarmStatsPanel torrent={torrent} />
+
+                  <TorrentActions
+                    hash={hash}
+                    torrsHash={torrent.torrs_hash}
+                    name={name}
+                    title={title}
+                    playableFileList={playableFileList}
+                    viewedFileList={viewedFileList}
+                    setViewedFileList={setViewedFileList}
+                    onViewedChange={refreshViewed}
+                    onDropped={onClose}
+                    onDeleted={onClose}
+                    onShowFiles={() => setActiveTab('files')}
+                    onOpenCache={() => setActiveTab('cache')}
+                    autoPlayFileId={autoPlayFileId}
+                    autoPlayTimecode={autoPlayTimecode}
+                    compact={useCompactDetails}
+                  />
                 </Tabs.Panel>
 
                 <Tabs.Panel

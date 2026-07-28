@@ -12,6 +12,7 @@ import {
   Share2,
   SquareArrowOutUpRight,
   Trash2,
+  ChevronRight,
 } from 'lucide-react'
 import ptt from 'parse-torrent-title'
 import { useQueryClient } from '@tanstack/react-query'
@@ -45,6 +46,8 @@ export interface TorrentActionsProps {
   onDeleted?: () => void
   /** Switch details sheet to the Files tab (multi-file "Play" entry point). */
   onShowFiles?: () => void
+  /** Switch details sheet to the Cache tab. */
+  onOpenCache?: () => void
   /** Continue Watching: auto-play this file when the list is ready. */
   autoPlayFileId?: number
   autoPlayTimecode?: number
@@ -86,7 +89,7 @@ function ExternalPlayersGroup({
 }
 
 /**
- * Overview-tab action block: Play / playlist / magnet / hash / drop / clear viewed.
+ * Stats-tab action block: Play / playlist / magnet / hash / drop / clear viewed.
  * Copy helpers go through {@link copyToClipboard} so LAN HTTP phones do not error.
  */
 function TorrentActions({
@@ -101,6 +104,7 @@ function TorrentActions({
   onDropped,
   onDeleted,
   onShowFiles,
+  onOpenCache,
   autoPlayFileId,
   autoPlayTimecode,
   compact: compactProp = false,
@@ -276,6 +280,12 @@ function TorrentActions({
     return (
       <div className='space-y-2.5'>
         <div className='flex items-center gap-1.5'>
+          {onOpenCache ? (
+            <Button variant='primary' size='md' className='min-h-11 min-w-0 flex-1 gap-2' onPress={onOpenCache}>
+              <span className='truncate'>{t('DetailedCacheView.button')}</span>
+              <ChevronRight size={16} strokeWidth={1.75} className='shrink-0' aria-hidden />
+            </Button>
+          ) : null}
           <Button
             variant='primary'
             size='md'
@@ -402,12 +412,17 @@ function TorrentActions({
 
   return (
     <div className='space-y-4'>
-      <div className='flex flex-wrap items-center gap-2'>
+      <div className='flex w-full items-stretch gap-2'>
+        {onOpenCache ? (
+          <Button variant='primary' size='lg' className='min-h-11 min-w-0 flex-1 gap-2' onPress={onOpenCache}>
+            <span className='truncate'>{t('DetailedCacheView.button')}</span>
+            <ChevronRight size={16} strokeWidth={1.75} className='shrink-0' aria-hidden />
+          </Button>
+        ) : null}
         <Button
           variant='primary'
           size='lg'
-          fullWidth
-          className='sm:w-auto'
+          className='min-h-11 min-w-0 flex-1 gap-2'
           isPending={isResolving}
           onPress={onPlayPress}
         >
@@ -418,18 +433,22 @@ function TorrentActions({
               ) : (
                 <Play {...iconMenu} fill='currentColor' aria-hidden />
               )}
-              {playLabel}
+              <span className='truncate'>{playLabel}</span>
             </>
           )}
         </Button>
-        <ExternalPlayersGroup players={externalPlayers} />
-        {singleFileStream ? (
-          <Button variant='secondary' onPress={() => void copyStreamLink()}>
-            <Link2 {...iconMenu} aria-hidden />
-            {t('CopyLink')}
-          </Button>
-        ) : null}
       </div>
+      {externalPlayers.length > 0 || singleFileStream ? (
+        <div className='flex flex-wrap items-center gap-2'>
+          <ExternalPlayersGroup players={externalPlayers} />
+          {singleFileStream ? (
+            <Button variant='secondary' onPress={() => void copyStreamLink()}>
+              <Link2 {...iconMenu} aria-hidden />
+              {t('CopyLink')}
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
 
       {isSingleFileTorrent && !hasAnyExternalPlayer ? (
         <button

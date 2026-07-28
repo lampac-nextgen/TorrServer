@@ -8,7 +8,7 @@ export interface CacheHeatSparklineProps {
   capacity?: number | null
 }
 
-/** Session ring-buffer of cache fill ratio — tiny sparkline under Overview charts. */
+/** Session ring-buffer of cache fill ratio — tiny sparkline for fill history. */
 export default function CacheHeatSparkline({ filled, capacity }: CacheHeatSparklineProps) {
   const { t } = useTranslation()
   const [history, setHistory] = useState<number[]>(() => Array(HISTORY).fill(0))
