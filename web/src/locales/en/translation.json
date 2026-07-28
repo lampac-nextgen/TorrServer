@@ -593,5 +593,13 @@
   "PwaUpdateFailed": "Could not update the offline cache. Hard-reload or clear site data if the UI looks stuck.",
   "UsefulRead": "Useful read",
   "ChunksWasted": "Wasted chunks",
-  "BitRate": "Bitrate"
+  "BitRate": "Bitrate",
+  "ActivePeers": "Active",
+  "ConnectedSeeders": "Seeders",
+  "TotalPeers": "Total peers",
+  "BytesReadData": "Read data",
+  "ChunksRead": "Chunks read",
+  "ChunksWritten": "Chunks written",
+  "ChunksUseful": "Useful chunks",
+  "CacheReaders": "Readers"
 }

@@ -593,5 +593,13 @@
   "PwaUpdateFailed": "Impossible de mettre à jour le cache hors ligne. Rechargez de force ou effacez les données du site si l’interface est bloquée.",
   "UsefulRead": "Lecture utile",
   "ChunksWasted": "Chunks gaspillés",
-  "BitRate": "Débit"
+  "BitRate": "Débit",
+  "ActivePeers": "Actifs",
+  "ConnectedSeeders": "Seeders",
+  "TotalPeers": "Pairs total",
+  "BytesReadData": "Données lues",
+  "ChunksRead": "Chunks lus",
+  "ChunksWritten": "Chunks écrits",
+  "ChunksUseful": "Chunks utiles",
+  "CacheReaders": "Lecteurs"
 }

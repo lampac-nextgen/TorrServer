@@ -593,5 +593,13 @@
   "PwaUpdateFailed": "Nu s-a putut actualiza cache-ul offline. Faceți hard-reload sau ștergeți datele site-ului dacă UI-ul pare blocat.",
   "UsefulRead": "Citire utilă",
   "ChunksWasted": "Chunk-uri irosite",
-  "BitRate": "Bitrate"
+  "BitRate": "Bitrate",
+  "ActivePeers": "Activi",
+  "ConnectedSeeders": "Seeders",
+  "TotalPeers": "Peers total",
+  "BytesReadData": "Date citite",
+  "ChunksRead": "Chunk-uri citite",
+  "ChunksWritten": "Chunk-uri scrise",
+  "ChunksUseful": "Chunk-uri utile",
+  "CacheReaders": "Cititori"
 }

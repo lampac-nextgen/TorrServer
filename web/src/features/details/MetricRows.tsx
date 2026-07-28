@@ -11,6 +11,8 @@ export interface MetricRowsProps {
   title?: string
   /** Dense multi-column definition list (mobile secondary/swarm). */
   columns?: 1 | 2
+  /** Tighter row padding for full Swarm tab. */
+  dense?: boolean
   /** Wrap in a single bordered panel (default true). */
   framed?: boolean
   className?: string
@@ -24,18 +26,25 @@ export default function MetricRows({
   items,
   title,
   columns = 1,
+  dense = false,
   framed = true,
   className = '',
   children,
 }: MetricRowsProps) {
   const list = (
-    <div className={columns === 2 ? 'grid grid-cols-2 gap-x-4' : 'flex flex-col'}>
+    <div className={columns === 2 ? 'grid grid-cols-2 gap-x-3 gap-y-0.5' : 'flex flex-col'}>
       {items.map(item => (
-        <div key={item.label} className='flex min-w-0 items-baseline justify-between gap-2 py-1 text-sm'>
+        <div
+          key={item.label}
+          className={`flex min-w-0 items-baseline justify-between gap-2 text-sm ${dense ? 'py-0.5' : 'py-1'}`}
+        >
           <span className='min-w-0 truncate text-muted' title={item.label}>
             {item.label}
           </span>
-          <span className='shrink-0 truncate font-bold tabular-nums text-foreground' title={item.value}>
+          <span
+            className='max-w-[55%] shrink-0 truncate text-right font-bold tabular-nums text-foreground'
+            title={item.value}
+          >
             {item.value}
           </span>
         </div>
