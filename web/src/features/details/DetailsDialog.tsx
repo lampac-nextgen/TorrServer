@@ -60,27 +60,32 @@ function StatWidget({
   value,
   dense = false,
   compact = false,
+  tight = false,
 }: {
   label: string
   value: string
   dense?: boolean
   /** Phone hero — allow 2-line labels so Russian strings aren't clipped to "Скорость загр..". */
   compact?: boolean
+  /** Phone density pass — single-line labels, no reserved 2-line min-height. */
+  tight?: boolean
 }) {
   const shown = value || '—'
   return (
     <div
       className={`min-w-0 rounded-md border border-border bg-surface-secondary text-center ${
-        dense ? 'w-full px-1.5 py-1' : 'px-2.5 py-2 sm:min-w-[104px] sm:px-3'
+        dense ? (tight ? 'w-full px-1.5 py-0.5' : 'w-full px-1.5 py-1') : 'px-2.5 py-2 sm:min-w-[104px] sm:px-3'
       }`}
     >
       <span
         className={`block leading-tight text-muted ${
-          compact
-            ? 'line-clamp-2 min-h-[1.75rem] text-[9px]'
-            : dense
-              ? 'truncate text-[10px]'
-              : 'truncate text-[11px] sm:text-xs'
+          tight
+            ? 'truncate text-[9px]'
+            : compact
+              ? 'line-clamp-2 min-h-[1.75rem] text-[9px]'
+              : dense
+                ? 'truncate text-[10px]'
+                : 'truncate text-[11px] sm:text-xs'
         }`}
         title={label}
       >
@@ -300,27 +305,71 @@ export default function DetailsDialog({
   /** Live pulse in the hero — primary on all sizes; secondary only on desktop hero. */
   const primaryStats = (
     <>
-      <StatWidget dense compact={useCompactDetails} label={t('DownloadSpeed')} value={humanizeSpeed(downloadSpeed)} />
-      <StatWidget dense compact={useCompactDetails} label={t('UploadSpeed')} value={humanizeSpeed(uploadSpeed)} />
-      <StatWidget dense compact={useCompactDetails} label={t('Peers')} value={getPeerString(torrent) || '—'} />
-      <StatWidget dense compact={useCompactDetails} label={t('Size')} value={humanizeSize(torrentSize)} />
+      <StatWidget
+        dense
+        compact={useCompactDetails}
+        tight={useCompactDetails}
+        label={t('DownloadSpeed')}
+        value={humanizeSpeed(downloadSpeed)}
+      />
+      <StatWidget
+        dense
+        compact={useCompactDetails}
+        tight={useCompactDetails}
+        label={t('UploadSpeed')}
+        value={humanizeSpeed(uploadSpeed)}
+      />
+      <StatWidget
+        dense
+        compact={useCompactDetails}
+        tight={useCompactDetails}
+        label={t('Peers')}
+        value={getPeerString(torrent) || '—'}
+      />
+      <StatWidget
+        dense
+        compact={useCompactDetails}
+        tight={useCompactDetails}
+        label={t('Size')}
+        value={humanizeSize(torrentSize)}
+      />
     </>
   )
 
   const secondaryStats = (
     <>
-      <StatWidget dense compact={useCompactDetails} label={t('CacheFilled')} value={cacheFilledValue} />
-      <StatWidget dense compact={useCompactDetails} label={t('Status')} value={statusLabel(stat)} />
-      <StatWidget dense compact={useCompactDetails} label={t('Category')} value={category || '—'} />
       <StatWidget
         dense
         compact={useCompactDetails}
+        tight={useCompactDetails}
+        label={t('CacheFilled')}
+        value={cacheFilledValue}
+      />
+      <StatWidget
+        dense
+        compact={useCompactDetails}
+        tight={useCompactDetails}
+        label={t('Status')}
+        value={statusLabel(stat)}
+      />
+      <StatWidget
+        dense
+        compact={useCompactDetails}
+        tight={useCompactDetails}
+        label={t('Category')}
+        value={category || '—'}
+      />
+      <StatWidget
+        dense
+        compact={useCompactDetails}
+        tight={useCompactDetails}
         label={t('PiecesCount')}
         value={cache.PiecesCount != null ? String(cache.PiecesCount) : '—'}
       />
       <StatWidget
         dense
         compact={useCompactDetails}
+        tight={useCompactDetails}
         label={t('PiecesLength')}
         value={cache.PiecesLength != null ? humanizeSize(cache.PiecesLength) : '—'}
       />
