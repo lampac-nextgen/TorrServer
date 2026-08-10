@@ -293,7 +293,7 @@ describe('resolveFocusWindow / buildFocusModel', () => {
     expect(scrolled.readerPiece).toBe(rightEdge)
   })
 
-  it('freezes window when readers disappear (idle)', () => {
+  it('resets to piece 0 when every reader is gone', () => {
     const active: TorrentCache = {
       PiecesCount: 100,
       PiecesLength: 1024,
@@ -301,9 +301,25 @@ describe('resolveFocusWindow / buildFocusModel', () => {
       Readers: [{ Reader: 40, Start: 30, End: 50 }],
     }
     const first = resolveFocusWindow(active, 20)!
+    expect(first.start).toBeGreaterThan(0)
     const idle = resolveFocusWindow({ ...active, Readers: [] }, 20, { lastWindowStart: first.start })!
     expect(idle.readerPiece).toBeNull()
-    expect(idle.start).toBe(first.start)
+    expect(idle.start).toBe(0)
+    expect(idle.end).toBe(19)
+  })
+
+  it('keeps an idle frozen head on screen when Active is false', () => {
+    const cache: TorrentCache = {
+      PiecesCount: 200,
+      PiecesLength: 1024,
+      Capacity: 40 * 1024,
+      Readers: [{ Reader: 80, Start: 70, End: 100, Active: false }],
+    }
+    const window = resolveFocusWindow(cache, 40, { lastWindowStart: 0 })!
+    expect(window.readerPiece).toBe(80)
+    expect(window.readerActive).toBe(false)
+    expect(window.start).toBeLessThanOrEqual(80)
+    expect(window.end).toBeGreaterThanOrEqual(80)
   })
 
   it('builds 1:1 cells with priorities including empty Size=0 entries', () => {

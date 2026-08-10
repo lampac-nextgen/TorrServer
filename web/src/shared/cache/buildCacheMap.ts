@@ -245,7 +245,7 @@ export interface FocusWindow {
 }
 
 export interface FocusWindowOptions {
-  /** Previous window start — enables dead-zone camera and idle freeze. */
+  /** Previous window start — enables dead-zone camera while a reader is active. */
   lastWindowStart?: number
   /** Fraction of window kept as edge margin before scrolling (default 0.18). */
   edgeMarginRatio?: number
@@ -310,7 +310,7 @@ export const resolveFocusWindowSize = (cache: TorrentCache, visibleCells: number
 /**
  * Sliding 1:1 window filling the drawable grid, positioned by a dead-zone
  * camera: the head walks across cells and the window scrolls only once it
- * nears an edge. No readers at all: freeze at lastWindowStart.
+ * nears an edge. No readers at all: show from piece 0 (not a stale sticky start).
  */
 export const resolveFocusWindow = (
   cache: TorrentCache,
@@ -342,9 +342,11 @@ export const resolveFocusWindow = (
   const marginRatio = options?.edgeMarginRatio ?? 0.18
   const margin = Math.max(1, Math.floor(windowSize * marginRatio))
 
-  // No reader at all: freeze last camera; first open with no history → start at 0.
+  // No playhead: prefer piece 0. Sticky lastStart alone must not park the camera
+  // at an old stream offset after every reader is gone (preload / idle reopen).
+  // Idle readers with a range still keep the frozen head on screen.
   if (readerPiece == null) {
-    const frozen = range ? range.start - READER_RANGE_MARGIN : (lastStart ?? 0)
+    const frozen = range ? range.start - READER_RANGE_MARGIN : 0
     const { start, end } = clampWindow(frozen, windowSize, piecesCount)
     return { start, end, readerPiece: null, readerActive }
   }

@@ -127,8 +127,8 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode, hash }: Torr
   const cameraReady = isMiniView ? containerWidth > 0 : heightReady
   const focusModel = useCreateFocusMap(cache, visibleCellBudget, cameraReady ? snakeCameraKey(hash, mode) : undefined)
   const cells = focusModel.cells
-  // A reader reported as idle keeps its square on screen but stops moving.
-  const hasActiveReaders = (cache.Readers ?? []).some(isReaderActive)
+  // Idle heads stay on screen but stop moving — only then show "frozen".
+  const hasIdleHead = (cache.Readers ?? []).some(r => r.Reader != null && !isReaderActive(r))
 
   // No PiecesCount yet (Getting Info): fill the drawable pane with empty cells
   // so the Cache tab never shows a half-empty gray box.
@@ -339,7 +339,7 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode, hash }: Torr
         <div className='mt-2 flex shrink-0 flex-col items-center gap-1'>
           <p className='text-xs uppercase tracking-wide text-muted'>
             {t('SnakeFocusRange', { start: footerStart, end: footerEnd })}
-            {!hasActiveReaders ? ` · ${t('SnakeIdleFrozen')}` : null}
+            {hasIdleHead ? ` · ${t('SnakeIdleFrozen')}` : null}
           </p>
           <p className='flex flex-wrap items-center justify-center gap-x-3 gap-y-0.5 text-[10px] text-muted'>
             <span className='inline-flex items-center gap-1'>
