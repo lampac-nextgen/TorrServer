@@ -1,4 +1,10 @@
-import { bufferFillPercent, formatBufferFilledLabel, humanizeSize, resolveBufferTargetBytes } from 'shared/lib/format'
+import {
+  bufferAheadBytes,
+  bufferFillPercent,
+  formatBufferFilledLabel,
+  humanizeSize,
+  resolveBufferTargetBytes,
+} from 'shared/lib/format'
 import type { TorrentCache, TorrentStat } from 'shared/api/types'
 import { useTranslation } from 'react-i18next'
 
@@ -187,7 +193,10 @@ export default function SwarmStatsPanel({
   const totalSize = torrent.torrent_size ?? 0
   const loadedPct = pct(loaded, totalSize)
   const bufferTarget = resolveBufferTargetBytes(cache?.Capacity, preloadCachePercent)
-  const bufferFilled = cache?.Filled ?? 0
+  // Playable bytes ahead of the head while streaming; total Filled otherwise.
+  const bufferAhead = bufferAheadBytes(cache)
+  const bufferFilled = bufferAhead ?? cache?.Filled ?? 0
+  const preloadHint = bufferAhead != null ? t('BufferAheadHint') : t('BufferHint')
   const preloadPct = bufferFillPercent(bufferFilled, bufferTarget)
   const durationLabel = formatDuration(torrent.duration_seconds)
   const loadedLabel = totalSize > 0 ? `${humanizeSize(loaded)} · ${Math.round(loadedPct)}%` : humanizeSize(loaded)
@@ -257,7 +266,7 @@ export default function SwarmStatsPanel({
       preloadTitle={t('Buffer')}
       preloadLabel={preloadLabel}
       preloadPct={preloadPct}
-      preloadHint={t('BufferHint')}
+      preloadHint={preloadHint}
       compact={isFull}
     />
   )

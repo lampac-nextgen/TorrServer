@@ -47,10 +47,9 @@ func (p *DiskPiece) WriteAt(b []byte, off int64) (n int, err error) {
 	defer func() { _ = ff.Close() }()
 	n, err = ff.WriteAt(b, off)
 
-	// High-water mark — overlapping WriteAt must not inflate Size via +=.
-	if end := off + int64(n); end > p.piece.Size {
-		p.piece.Size = end
-	}
+	// Accumulate: chunks arrive out of order, so a high-water mark would count
+	// gaps as filled. MarkNotComplete resets Size on retransmit.
+	p.piece.Size += int64(n)
 	plen := p.piece.cache.pieceByteLength(p.piece.Id)
 	if plen > 0 && p.piece.Size > plen {
 		p.piece.Size = plen

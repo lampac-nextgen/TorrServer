@@ -1,5 +1,6 @@
 import i18n from 'shared/i18n'
-import type { TorrentStat } from 'shared/api/types'
+import type { CachePiece, TorrentCache, TorrentStat } from 'shared/api/types'
+import { forEachPiece, isReaderActive } from 'shared/cache/buildCacheMap'
 
 /** Human file/cache size using binary 1024 steps and localized unit labels. */
 export function humanizeSize(size?: number | null): string {
@@ -84,6 +85,45 @@ export function formatBufferFilledLabel(
 export function bufferFillPercent(filled?: number | null, bufferTarget?: number | null): number {
   if (filled == null || bufferTarget == null || bufferTarget <= 0 || filled < 0) return 0
   return Math.min(100, Math.max(0, (filled / bufferTarget) * 100))
+}
+
+/**
+ * Contiguous ready bytes from the active playhead forward — how much can be
+ * played before the stream stalls. Total `Filled` pins at 100% during playback
+ * and stops being informative; this does not.
+ * Returns null when no active reader exists (preload or idle) so callers can
+ * fall back to `Filled`.
+ */
+export function bufferAheadBytes(cache?: TorrentCache | null): number | null {
+  const piecesCount = cache?.PiecesCount ?? 0
+  if (!cache || piecesCount <= 0) return null
+
+  let head = -1
+  for (const reader of cache.Readers ?? []) {
+    if (!isReaderActive(reader)) continue
+    const piece = reader.Reader
+    if (piece != null && piece >= 0 && piece < piecesCount && piece > head) head = piece
+  }
+  if (head < 0) return null
+
+  const pieceById = new Map<number, CachePiece>()
+  forEachPiece(cache.Pieces, (id, piece) => {
+    if (id >= head) pieceById.set(id, piece)
+  })
+
+  const defaultLength = cache.PiecesLength || 0
+  let total = 0
+  for (let id = head; id < piecesCount; id++) {
+    const piece = pieceById.get(id)
+    if (!piece) break
+    const length = piece.Length || defaultLength || 0
+    if (length <= 0) break
+    const size = Math.min(piece.Size || 0, length)
+    // Stop at the first hole: bytes past it are not continuously playable.
+    if (size < length) break
+    total += size
+  }
+  return total
 }
 
 /**

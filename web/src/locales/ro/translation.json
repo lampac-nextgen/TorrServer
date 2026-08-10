@@ -40,6 +40,7 @@
   "Buffer": "Buffer de preîncărcare / Cache",
   "BufferNote": "Setați Preîncărcare cache înainte de redare > 32 MB în setări pentru a modifica mărimea preîncărcării.",
   "BufferHint": "How full the preload buffer is (Filled toward Preload Cache % of Capacity, min 32 MB). Not torrent download progress.",
+  "BufferAheadHint": "Date pregătite continuu în fața capului de redare — cât se poate reda înainte ca fluxul să se oprească.",
   "CacheHint": "Sliding cache budget: bytes currently held versus Cache Size capacity.",
   "LoadedHint": "Torrent download progress (BytesCompleted / total size), not the cache window.",
   "Cache": "Cache",

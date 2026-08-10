@@ -10,6 +10,7 @@ import { useTorrentDetail } from 'shared/hooks/useTorrentDetail'
 import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
 import {
+  bufferAheadBytes,
   bufferFillPercent,
   formatBufferFilledLabel,
   formatCacheFilledLabel,
@@ -249,8 +250,13 @@ export default function DetailsDialog({
   const { data: btSettings } = useSettingsQuery()
   const preloadCachePercent = btSettings?.PreloadCache ?? 50
   const bufferTarget = resolveBufferTargetBytes(cache.Capacity, preloadCachePercent)
-  const bufferLabel = formatBufferFilledLabel(cache.Filled, bufferTarget, { percent: 'always' }) ?? '—'
-  const bufferPct = bufferFillPercent(cache.Filled, bufferTarget)
+  // While a reader streams, show what is playable ahead of it; total Filled pins
+  // at 100% and says nothing. Preload/idle has no playhead, so fall back to Filled.
+  const bufferAhead = bufferAheadBytes(cache)
+  const bufferValue = bufferAhead ?? cache.Filled
+  const bufferHint = bufferAhead != null ? t('BufferAheadHint') : t('BufferHint')
+  const bufferLabel = formatBufferFilledLabel(bufferValue, bufferTarget, { percent: 'always' }) ?? '—'
+  const bufferPct = bufferFillPercent(bufferValue, bufferTarget)
 
   const seasonsFingerprint = useMemo(() => {
     const seasons: number[] = []
@@ -726,7 +732,7 @@ export default function DetailsDialog({
                   </div>
                 </div>
 
-                <div className='rounded-xl border border-border bg-surface-secondary p-2.5' title={t('BufferHint')}>
+                <div className='rounded-xl border border-border bg-surface-secondary p-2.5' title={bufferHint}>
                   <div className='mb-1 flex items-baseline justify-between gap-2 text-xs'>
                     <span className='truncate text-muted'>{t('Buffer')}</span>
                     <span className='shrink-0 font-bold tabular-nums text-foreground'>{bufferLabel}</span>

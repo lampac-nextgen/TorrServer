@@ -3,7 +3,7 @@ import axios from 'axios'
 import type { TorrentCache } from 'shared/api/types'
 import { cacheHost } from 'shared/api/hosts'
 
-import { buildFocusModel, type CacheDrawModel } from './buildCacheMap'
+import { buildFocusModel, isReaderActive, type CacheDrawModel } from './buildCacheMap'
 import { cacheVisualEqual, cheapPiecesFingerprint, cheapReadersFingerprint } from './cacheFingerprint'
 
 /** Active cadence while pieces/readers change — snake must track piece fill live. */
@@ -66,7 +66,8 @@ export const useUpdateCache = (hash?: string, options?: UseUpdateCacheOptions) =
         .then(({ data }) => {
           if (!componentIsMounted.current || cancelled) return
           const next = (data || {}) as TorrentCache
-          const hasReaders = (next.Readers?.length ?? 0) > 0
+          // Idle readers stay in the payload, so only active ones justify fast polling.
+          const hasReaders = (next.Readers ?? []).some(isReaderActive)
           if (cacheVisualEqual(cacheRef.current, next)) {
             if (fast) {
               const quiet = Date.now() - lastChangeAt.current >= CACHE_IDLE_AFTER_MS

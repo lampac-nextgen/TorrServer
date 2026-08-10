@@ -120,7 +120,7 @@ describe('pieceFillPercentage', () => {
 })
 
 describe('resolveFocusWindow / buildFocusModel', () => {
-  it('sizes the focus window to visibleCells (not Capacity inflation)', () => {
+  it('never exceeds visibleCells and keeps the head in view', () => {
     const cache: TorrentCache = {
       PiecesCount: 500,
       PiecesLength: 1024,
@@ -131,12 +131,106 @@ describe('resolveFocusWindow / buildFocusModel', () => {
     const visible = 24
     const window = resolveFocusWindow(cache, visible)
     expect(window).not.toBeNull()
-    expect(window!.end - window!.start + 1).toBe(visible)
+    expect(window!.end - window!.start + 1).toBeLessThanOrEqual(visible)
+    expect(window!.start).toBeLessThanOrEqual(100)
+    expect(window!.end).toBeGreaterThanOrEqual(100)
 
     const model = buildFocusModel(cache, visible)
-    expect(model.cells).toHaveLength(visible)
+    expect(model.cells).toHaveLength(window!.end - window!.start + 1)
     expect(model.windowStart).toBe(window!.start)
     expect(model.windowEnd).toBe(window!.end)
+  })
+
+  it('shrinks the window to the reader range instead of padding empty cells', () => {
+    const cache: TorrentCache = {
+      PiecesCount: 5000,
+      PiecesLength: 2 * 1024 * 1024,
+      Capacity: 256 * 1024 * 1024,
+      // 128-piece cache window against a ~400-cell grid.
+      Readers: [{ Reader: 1005, Start: 1000, End: 1127 }],
+    }
+    const visible = 396
+    const window = resolveFocusWindow(cache, visible)!
+    const size = window.end - window.start + 1
+    // Range span 128 plus a margin on each side — far below the 396-cell budget.
+    expect(size).toBeLessThan(visible)
+    expect(size).toBe(128 + 16)
+    // The whole reader range stays covered.
+    expect(window.start).toBeLessThanOrEqual(1000)
+    expect(window.end).toBeGreaterThanOrEqual(1127)
+    expect(buildFocusModel(cache, visible).cells).toHaveLength(size)
+  })
+
+  it('keeps the whole reader range visible while the head advances', () => {
+    const visible = 396
+    const cache = (reader: number, start: number, end: number): TorrentCache => ({
+      PiecesCount: 5000,
+      PiecesLength: 2 * 1024 * 1024,
+      Capacity: 256 * 1024 * 1024,
+      Readers: [{ Reader: reader, Start: start, End: end }],
+    })
+
+    let lastStart = resolveFocusWindow(cache(1005, 1000, 1127), visible)!.start
+    const seen = new Set<number>([lastStart])
+    // Walk the head forward the way a stream does; the range moves with it.
+    for (let step = 1; step <= 60; step++) {
+      const window = resolveFocusWindow(cache(1005 + step, 1000 + step, 1127 + step), visible, {
+        lastWindowStart: lastStart,
+      })!
+      // The buffered tail must never fall off the grid.
+      expect(window.start).toBeLessThanOrEqual(1000 + step)
+      expect(window.end).toBeGreaterThanOrEqual(1127 + step)
+      lastStart = window.start
+      seen.add(lastStart)
+    }
+    // The camera follows rather than staying pinned.
+    expect(seen.size).toBeGreaterThan(1)
+  })
+
+  it('reports readerActive false and marks the head idle when the reader is stopped', () => {
+    const cache: TorrentCache = {
+      PiecesCount: 200,
+      PiecesLength: 1024,
+      Capacity: 40 * 1024,
+      Readers: [{ Reader: 80, Start: 70, End: 100, Active: false }],
+    }
+    const window = resolveFocusWindow(cache, 40)!
+    expect(window.readerActive).toBe(false)
+    // The frozen head still positions the camera so it stays on screen.
+    expect(window.readerPiece).toBe(80)
+
+    const head = buildFocusModel(cache, 40).cells.find(c => c.isReader)
+    expect(head?.isReaderIdle).toBe(true)
+  })
+
+  it('ignores idle readers when an active one exists', () => {
+    const cache: TorrentCache = {
+      PiecesCount: 400,
+      PiecesLength: 1024,
+      Capacity: 40 * 1024,
+      Readers: [
+        { Reader: 300, Start: 290, End: 320, Active: false },
+        { Reader: 100, Start: 90, End: 120, Active: true },
+      ],
+    }
+    const window = resolveFocusWindow(cache, 40)!
+    expect(window.readerActive).toBe(true)
+    // Furthest-ahead is picked among active readers only, so the idle 300 loses.
+    expect(window.readerPiece).toBe(100)
+
+    const head = buildFocusModel(cache, 40).cells.find(c => c.isReader)
+    expect(head?.pieceStart).toBe(100)
+    expect(head?.isReaderIdle).toBe(false)
+  })
+
+  it('treats a missing Active flag as active (older servers)', () => {
+    const cache: TorrentCache = {
+      PiecesCount: 200,
+      PiecesLength: 1024,
+      Capacity: 40 * 1024,
+      Readers: [{ Reader: 80, Start: 70, End: 100 }],
+    }
+    expect(resolveFocusWindow(cache, 40)!.readerActive).toBe(true)
   })
 
   it('keeps windowStart when head advances inside dead zone', () => {

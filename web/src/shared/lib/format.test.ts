@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import type { TorrentStat } from 'shared/api/types'
+import type { TorrentCache, TorrentStat } from 'shared/api/types'
 import {
   BUFFER_TARGET_FLOOR_BYTES,
+  bufferAheadBytes,
   bufferFillPercent,
   formatBufferFilledLabel,
   formatCacheFilledLabel,
@@ -82,5 +83,61 @@ describe('formatBufferFilledLabel', () => {
   it('computes capped percent', () => {
     expect(bufferFillPercent(40, 32)).toBe(100)
     expect(bufferFillPercent(16, 32)).toBe(50)
+  })
+})
+
+describe('bufferAheadBytes', () => {
+  const cache = (pieces: TorrentCache['Pieces'], readers: TorrentCache['Readers']): TorrentCache => ({
+    PiecesCount: 10,
+    PiecesLength: 100,
+    Pieces: pieces,
+    Readers: readers,
+  })
+
+  it('sums contiguous ready pieces from the playhead', () => {
+    const model = cache(
+      {
+        3: { Size: 100, Length: 100 },
+        4: { Size: 100, Length: 100 },
+        5: { Size: 100, Length: 100 },
+      },
+      [{ Reader: 3, Start: 3, End: 9, Active: true }],
+    )
+    expect(bufferAheadBytes(model)).toBe(300)
+  })
+
+  it('stops at the first hole rather than counting the whole cache', () => {
+    const model = cache(
+      {
+        3: { Size: 100, Length: 100 },
+        4: { Size: 40, Length: 100 },
+        // Piece 5 is ready but unreachable — a stall happens at 4.
+        5: { Size: 100, Length: 100 },
+      },
+      [{ Reader: 3, Start: 3, End: 9, Active: true }],
+    )
+    expect(bufferAheadBytes(model)).toBe(100)
+  })
+
+  it('stops at a missing piece', () => {
+    const model = cache({ 3: { Size: 100, Length: 100 }, 5: { Size: 100, Length: 100 } }, [
+      { Reader: 3, Start: 3, End: 9, Active: true },
+    ])
+    expect(bufferAheadBytes(model)).toBe(100)
+  })
+
+  it('ignores pieces behind the playhead', () => {
+    const model = cache({ 0: { Size: 100, Length: 100 }, 3: { Size: 100, Length: 100 } }, [
+      { Reader: 3, Start: 0, End: 9, Active: true },
+    ])
+    expect(bufferAheadBytes(model)).toBe(100)
+  })
+
+  it('returns null without an active reader so callers fall back to Filled', () => {
+    expect(bufferAheadBytes(cache({ 3: { Size: 100, Length: 100 } }, []))).toBeNull()
+    expect(
+      bufferAheadBytes(cache({ 3: { Size: 100, Length: 100 } }, [{ Reader: 3, Start: 3, End: 9, Active: false }])),
+    ).toBeNull()
+    expect(bufferAheadBytes(undefined)).toBeNull()
   })
 })

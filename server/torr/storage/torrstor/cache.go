@@ -200,18 +200,24 @@ func (c *Cache) GetState() *state.CacheState {
 	if c.Readers() > 0 {
 		c.muReaders.Lock()
 		for r := range c.readers {
-			// Only active (in-use) readers — idle/ghost readers after player close
-			// must not drive the snake playhead or priority window.
-			if !r.isUse {
+			// Closed readers are gone; a nil file cannot yield a piece range.
+			if r.isClosed || r.file == nil {
 				continue
 			}
+			r.checkReader()
 			rng := r.getPiecesRange()
 			pc := r.getReaderPiece()
+			// Idle readers are still reported so the UI can show a frozen playhead
+			// instead of silently dropping the square.
 			readersState = append(readersState, &state.ReaderState{
 				Start:  rng.Start,
 				End:    rng.End,
 				Reader: pc,
+				Active: r.isUse,
 			})
+			if !r.isUse {
+				continue
+			}
 			// Inclusive End (matches inRanges). Small margin so debug labels appear
 			// on neighbouring queued pieces just outside the strict reader window.
 			const margin = 5
@@ -251,9 +257,9 @@ func (c *Cache) GetState() *state.CacheState {
 		}
 		plen := c.pieceByteLength(p.Id)
 		piecesState[p.Id] = state.ItemState{
-			Id:        p.Id,
-			Size:      p.Size,
-			Length:    plen,
+			Id:     p.Id,
+			Size:   p.Size,
+			Length: plen,
 			// Completed follows bytes present — not MarkComplete alone (avoids green empty cells).
 			Completed: plen > 0 && p.Size >= plen,
 			Priority:  priority,

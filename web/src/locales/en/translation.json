@@ -40,6 +40,7 @@
   "Buffer": "Preload Buffer / Cache",
   "BufferNote": "Set Preload Cache Before Play > 32 MB in settings to change preload size",
   "BufferHint": "How full the preload buffer is (Filled toward Preload Cache % of Capacity, min 32 MB). Not torrent download progress.",
+  "BufferAheadHint": "Contiguous ready data ahead of the playhead — how much can be played before the stream stalls.",
   "CacheHint": "Sliding cache budget: bytes currently held versus Cache Size capacity.",
   "LoadedHint": "Torrent download progress (BytesCompleted / total size), not the cache window.",
   "Cache": "Cache",

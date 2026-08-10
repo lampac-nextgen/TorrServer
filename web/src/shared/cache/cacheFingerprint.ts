@@ -15,6 +15,7 @@ export const cheapReadersFingerprint = (readers: TorrentCache['Readers']): numbe
     h = mix(h, r.Reader ?? -1)
     h = mix(h, r.Start ?? -1)
     h = mix(h, r.End ?? -1)
+    h = mix(h, r.Active === false ? 0 : 1)
   }
   return mix(h, readers.length)
 }

@@ -40,6 +40,7 @@
   "Buffer": "Предварителен буфер / кеш",
   "BufferNote": "Задайте предварително зареден кеш преди възпроизвеждане > 32 MB в настройките, за да промените предварителния буфер",
   "BufferHint": "How full the preload buffer is (Filled toward Preload Cache % of Capacity, min 32 MB). Not torrent download progress.",
+  "BufferAheadHint": "Непрекъснати готови данни пред позицията на възпроизвеждане — колко може да се изпълни, преди потокът да спре.",
   "CacheHint": "Sliding cache budget: bytes currently held versus Cache Size capacity.",
   "LoadedHint": "Torrent download progress (BytesCompleted / total size), not the cache window.",
   "Cache": "Кеш",

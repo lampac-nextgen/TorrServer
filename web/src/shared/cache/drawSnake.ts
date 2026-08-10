@@ -52,7 +52,9 @@ const strokeCell = (ctx: CanvasRenderingContext2D, size: number, color: string, 
 }
 
 /**
- * Hierarchy: reader (black outline) > range (violet/sand) > cached (green) > idle.
+ * Hierarchy: reader (black outline) > cached (green) > range (violet/sand) > empty.
+ * Cached beats range so it stays visible which pieces inside the reader window
+ * actually hold bytes.
  */
 export const drawSnake = ({
   ctx,
@@ -113,13 +115,22 @@ export const drawSnake = ({
     )
 
     if (isReader) {
-      // Master-style square outline: optional light halo + black (or theme) stroke
-      if (readerHaloColor) strokeCell(ctx, pieceSize, readerHaloColor, isMini ? 4 : 3)
-      strokeCell(ctx, pieceSize, readerColor, isMini ? 2.5 : 2)
-    } else if (isReaderRange) {
-      strokeCell(ctx, pieceSize, rangeColor, 2)
+      // Master-style square outline: optional light halo + black (or theme) stroke.
+      // An idle head is drawn faint and hollow so a frozen playhead reads as stopped.
+      if (cell.isReaderIdle) {
+        ctx.globalAlpha = 0.45
+        ctx.setLineDash([3, 2])
+        strokeCell(ctx, pieceSize, readerColor, isMini ? 2 : 1.5)
+        ctx.setLineDash([])
+        ctx.globalAlpha = 1
+      } else {
+        if (readerHaloColor) strokeCell(ctx, pieceSize, readerHaloColor, isMini ? 4 : 3)
+        strokeCell(ctx, pieceSize, readerColor, isMini ? 2.5 : 2)
+      }
     } else if (inProgress || isCompleted) {
       strokeCell(ctx, pieceSize, completeColor, Math.max(borderWidth, 2))
+    } else if (isReaderRange) {
+      strokeCell(ctx, pieceSize, rangeColor, 2)
     } else {
       strokeCell(ctx, pieceSize, borderColor, borderWidth)
     }

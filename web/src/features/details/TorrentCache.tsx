@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { CacheMapItem, TorrentCache as TorrentCacheData } from 'shared/api/types'
 import {
+  isReaderActive,
   priorityDebugLabel,
   resolveFocusVisibleCells,
   SNAKE_FOCUS_TARGET_ROWS,
@@ -102,7 +103,8 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
 
   const focusModel = useCreateFocusMap(cache, visibleCellBudget)
   const cells = focusModel.cells
-  const hasActiveReaders = (cache.Readers?.length ?? 0) > 0
+  // A reader reported as idle keeps its square on screen but stops moving.
+  const hasActiveReaders = (cache.Readers ?? []).some(isReaderActive)
 
   const rowCount =
     piecesPerRow > 0

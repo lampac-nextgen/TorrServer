@@ -121,11 +121,18 @@ export const priorityDebugLabel = (priority: number): string => {
   return ''
 }
 
+/**
+ * Servers before the Active flag omit it entirely; absent means active so the
+ * playhead keeps working against older builds.
+ */
+export const isReaderActive = (reader: CacheReader): boolean => reader.Active !== false
+
 const cellFromPiece = (
   id: number,
   piece: CachePiece | undefined,
   pieceLength: number,
   isReader: boolean,
+  isReaderIdle: boolean,
   isReaderRange: boolean,
   readers: CacheReader[] | undefined,
 ): CacheMapItem => {
@@ -138,6 +145,7 @@ const cellFromPiece = (
     priority: resolveDisplayPriority(id, apiPriority, completed, readers),
     completed,
     isReader,
+    isReaderIdle,
     isReaderRange,
     pieceStart: id,
     pieceEnd: id,
@@ -230,8 +238,10 @@ export const buildCacheDrawModel = (cache: TorrentCache, maxCells: number): Cach
 export interface FocusWindow {
   start: number
   end: number
-  /** Furthest active reader piece, or null when idle (no playhead). */
+  /** Furthest reader piece, or null when there is no reader at all. */
   readerPiece: number | null
+  /** False when every reader is idle — the playhead is frozen. */
+  readerActive: boolean
 }
 
 export interface FocusWindowOptions {
@@ -241,9 +251,45 @@ export interface FocusWindowOptions {
   edgeMarginRatio?: number
 }
 
-const resolveWindowSize = (_cache: TorrentCache, visibleCells: number, piecesCount: number): number => {
-  // Window must match the drawable grid — do not inflate past visibleCells via Capacity.
-  return Math.max(1, Math.min(piecesCount, Math.max(1, visibleCells)))
+/**
+ * Slack cells on each side of the reader range. This doubles as the distance the
+ * head may walk before the camera has to follow, so it keeps the playhead
+ * visibly moving instead of pinning it to a fixed spot.
+ */
+const READER_RANGE_MARGIN = 8
+
+/** Floor for a range-derived window so a tiny range does not collapse the grid. */
+const MIN_RANGE_WINDOW = 24
+
+/**
+ * Widest inclusive span across the given readers, or null when none report a
+ * usable range. This is the server cache window (`getOffsetRange`), so sizing
+ * the grid to it is what keeps empty rows off the canvas.
+ */
+const resolveReaderRangeSpan = (readers: CacheReader[], piecesCount: number): { start: number; end: number } | null => {
+  let start = Number.POSITIVE_INFINITY
+  let end = Number.NEGATIVE_INFINITY
+  for (const reader of readers) {
+    const range = clampReaderRangeInclusive(reader.Start, reader.End, piecesCount)
+    if (!range) continue
+    if (range.start < start) start = range.start
+    if (range.end > end) end = range.end
+  }
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return null
+  return { start, end }
+}
+
+const resolveWindowSize = (
+  range: { start: number; end: number } | null,
+  visibleCells: number,
+  piecesCount: number,
+): number => {
+  const budget = Math.max(1, Math.min(piecesCount, Math.max(1, visibleCells)))
+  if (!range) return budget
+  // A window shorter than the drawable budget is fine — TorrentCache derives its
+  // row count from cells.length, so the canvas shrinks instead of padding blanks.
+  const span = range.end - range.start + 1 + READER_RANGE_MARGIN * 2
+  return Math.max(1, Math.min(budget, Math.max(span, Math.min(budget, MIN_RANGE_WINDOW))))
 }
 
 const clampWindow = (start: number, windowSize: number, piecesCount: number): { start: number; end: number } => {
@@ -258,9 +304,9 @@ const clampWindow = (start: number, windowSize: number, piecesCount: number): { 
 }
 
 /**
- * Sliding 1:1 window with dead-zone camera: head walks across cells;
- * window scrolls only when the playhead nears the left/right margin.
- * Idle (no readers): freeze at lastWindowStart (do not jump to piece 0).
+ * Sliding 1:1 window sized to the reader's cache range and positioned by a
+ * dead-zone camera: the head walks across cells and the window scrolls only
+ * once it nears an edge. No readers at all: freeze at lastWindowStart.
  */
 export const resolveFocusWindow = (
   cache: TorrentCache,
@@ -270,13 +316,18 @@ export const resolveFocusWindow = (
   const piecesCount = cache.PiecesCount ?? 0
   if (piecesCount <= 0) return null
 
-  const readers = cache.Readers || []
+  const allReaders = cache.Readers || []
+  const activeReaders = allReaders.filter(isReaderActive)
+  // Idle readers still position the camera so the frozen head stays on screen.
+  const drivingReaders = activeReaders.length > 0 ? activeReaders : allReaders
+  const readerActive = activeReaders.length > 0
+
   let readerPiece: number | null = null
-  if (readers.length > 0) {
+  if (drivingReaders.length > 0) {
     // Prefer the furthest-ahead reader so preload/stream progress drives the window
     // (min id stuck the view at piece 0 when dual preload readers exist).
     let bestReader = -1
-    for (const r of readers) {
+    for (const r of drivingReaders) {
       if (r.Reader != null && r.Reader >= 0 && r.Reader < piecesCount && r.Reader > bestReader) {
         bestReader = r.Reader
       }
@@ -284,22 +335,24 @@ export const resolveFocusWindow = (
     if (bestReader >= 0) readerPiece = bestReader
   }
 
-  const windowSize = resolveWindowSize(cache, visibleCells, piecesCount)
+  const range = resolveReaderRangeSpan(drivingReaders, piecesCount)
+  const windowSize = resolveWindowSize(range, visibleCells, piecesCount)
   const lastStart = options?.lastWindowStart
   const marginRatio = options?.edgeMarginRatio ?? 0.18
   const margin = Math.max(1, Math.floor(windowSize * marginRatio))
 
-  // Idle: freeze last camera; first open with no history → start at 0.
+  // No reader at all: freeze last camera; first open with no history → start at 0.
   if (readerPiece == null) {
-    const frozen = lastStart != null ? lastStart : 0
+    const frozen = range ? range.start - READER_RANGE_MARGIN : (lastStart ?? 0)
     const { start, end } = clampWindow(frozen, windowSize, piecesCount)
-    return { start, end, readerPiece: null }
+    return { start, end, readerPiece: null, readerActive }
   }
 
   let start: number
   if (lastStart == null) {
-    // First frame with a reader: center once.
-    start = readerPiece - Math.floor(windowSize / 2)
+    // First frame: anchor to the reader range. The head sits near its left edge
+    // because everything behind it is evicted — the buffer extends to the right.
+    start = range ? range.start - READER_RANGE_MARGIN : readerPiece - Math.floor(windowSize / 2)
   } else {
     start = lastStart
     const tentativeEnd = start + windowSize - 1
@@ -312,8 +365,26 @@ export const resolveFocusWindow = (
     }
   }
 
+  // The dead zone alone would drift the window until the buffered tail falls off
+  // the grid, so pin it to a band where the whole reader range stays visible.
+  // The band is 2 × READER_RANGE_MARGIN wide, which is the head's walking room.
+  const rangeLo = range ? range.end - windowSize + 1 : null
+  const rangeHi = range ? range.start : null
+  if (rangeLo != null && rangeHi != null && rangeLo <= rangeHi) {
+    if (start < rangeLo) start = rangeLo
+    if (start > rangeHi) start = rangeHi
+  } else {
+    // Range wider than the grid (or absent): just keep the head on screen,
+    // with an edge margin when there is room for one.
+    const keepIn = windowSize > margin * 2 ? margin : 0
+    const maxStart = readerPiece - keepIn
+    const minStart = readerPiece + keepIn - windowSize + 1
+    if (start > maxStart) start = maxStart
+    if (start < minStart) start = minStart
+  }
+
   const clamped = clampWindow(start, windowSize, piecesCount)
-  return { start: clamped.start, end: clamped.end, readerPiece }
+  return { start: clamped.start, end: clamped.end, readerPiece, readerActive }
 }
 
 /**
@@ -338,19 +409,25 @@ export const buildFocusModel = (
   })
 
   const readerSet = new Set<number>()
+  const activeReaderSet = new Set<number>()
   const rangeSet = new Set<number>()
   for (const reader of readers) {
     if (reader.Reader != null && reader.Reader >= window.start && reader.Reader <= window.end) {
       readerSet.add(reader.Reader)
+      if (isReaderActive(reader)) activeReaderSet.add(reader.Reader)
     }
     forEachPieceInReaderRange(reader.Start, reader.End, piecesCount, id => {
       if (id >= window.start && id <= window.end) rangeSet.add(id)
     })
   }
+  // A piece shared by an active and an idle reader counts as active.
+  const isIdleHead = (id: number) => readerSet.has(id) && !activeReaderSet.has(id)
 
   const cells: CacheMapItem[] = []
   for (let id = window.start; id <= window.end; id++) {
-    cells.push(cellFromPiece(id, pieceById.get(id), pieceLength, readerSet.has(id), rangeSet.has(id), readers))
+    cells.push(
+      cellFromPiece(id, pieceById.get(id), pieceLength, readerSet.has(id), isIdleHead(id), rangeSet.has(id), readers),
+    )
   }
 
   return {
