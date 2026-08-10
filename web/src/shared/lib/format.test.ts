@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 
 import type { TorrentCache, TorrentStat } from 'shared/api/types'
 import {
-  BUFFER_TARGET_FLOOR_BYTES,
   bufferAheadBytes,
   bufferFillPercent,
   formatBufferAheadLabel,
@@ -59,13 +58,24 @@ describe('formatCacheFilledLabel', () => {
 })
 
 describe('resolveBufferTargetBytes', () => {
-  it('floors at 32 MiB', () => {
-    expect(resolveBufferTargetBytes(16 * 1024 * 1024, 50)).toBe(BUFFER_TARGET_FLOOR_BYTES)
+  it('matches server Preload size: Capacity × PreloadCache% with no 32 MiB floor', () => {
+    const capacity = 64 * 1024 * 1024
+    // 64 MB × 25% = 16 MB — what the server actually preloads.
+    expect(resolveBufferTargetBytes(capacity, 25)).toBe(capacity * 0.25)
   })
 
-  it('uses Capacity × PreloadCache% when above floor', () => {
+  it('uses Capacity × PreloadCache%', () => {
     const capacity = 256 * 1024 * 1024
     expect(resolveBufferTargetBytes(capacity, 50)).toBe(capacity * 0.5)
+  })
+
+  it('never exceeds Cache Size', () => {
+    const capacity = 64 * 1024 * 1024
+    expect(resolveBufferTargetBytes(capacity, 100)).toBe(capacity)
+  })
+
+  it('returns null when preload percent is zero', () => {
+    expect(resolveBufferTargetBytes(64 * 1024 * 1024, 0)).toBeNull()
   })
 })
 

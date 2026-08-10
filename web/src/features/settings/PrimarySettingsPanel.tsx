@@ -73,6 +73,8 @@ export default function PrimarySettingsPanel({
   onBoolSwitch,
 }: PrimarySettingsPanelProps) {
   const { t } = useTranslation()
+  const preloadPct = settings.PreloadCache ?? 50
+  const preloadSizeMb = Math.round((cacheSizeMb * Math.max(0, preloadPct)) / 100)
 
   return (
     <div className='space-y-6'>
@@ -120,10 +122,12 @@ export default function PrimarySettingsPanel({
         <div>
           <p className='mb-2 text-sm text-muted'>
             {t('SettingsDialog.PreloadCache')}:{' '}
-            <span className='font-medium text-foreground'>{settings.PreloadCache ?? 50}%</span>
+            <span className='font-medium text-foreground'>
+              {preloadPct}% ({preloadSizeMb} {t('MB')})
+            </span>
           </p>
           <Slider
-            value={settings.PreloadCache ?? 50}
+            value={preloadPct}
             minValue={0}
             maxValue={100}
             onChange={value => onUpdate('PreloadCache', Number(value))}

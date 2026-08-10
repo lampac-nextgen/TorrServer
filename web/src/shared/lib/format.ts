@@ -54,14 +54,14 @@ export function formatCacheFilledLabel(
   return sizes
 }
 
-/** Legacy Buffer target: Capacity × PreloadCache%, floored at 32 MiB. */
-export const BUFFER_TARGET_FLOOR_BYTES = 32 * 1024 * 1024
-
+/** Preload target: CacheSize × PreloadCache% — matches server `Preload()` in apihelper.go. */
 export function resolveBufferTargetBytes(capacity?: number | null, preloadCachePercent?: number | null): number | null {
   if (capacity == null || capacity <= 0) return null
   const pct = preloadCachePercent == null || Number.isNaN(preloadCachePercent) ? 50 : preloadCachePercent
   const preloadSize = (capacity / 100) * Math.max(0, pct)
-  return Math.max(preloadSize, BUFFER_TARGET_FLOOR_BYTES)
+  if (preloadSize <= 0) return null
+  // Never exceed Cache Size — same clamp as the server.
+  return Math.min(preloadSize, capacity)
 }
 
 /**
