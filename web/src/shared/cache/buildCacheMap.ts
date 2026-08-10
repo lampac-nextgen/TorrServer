@@ -282,6 +282,32 @@ const resolveDrivingReaders = (cache: TorrentCache): { readers: CacheReader[]; r
   return { readers: active.length > 0 ? active : all, readerActive: active.length > 0 }
 }
 
+/**
+ * Inclusive span of pieces that still hold bytes. Server memory can keep a mid-file
+ * buffer after every reader is gone — the camera uses this for a cold open.
+ */
+const resolveFilledSpan = (cache: TorrentCache, piecesCount: number): { start: number; end: number } | null => {
+  let start = Number.POSITIVE_INFINITY
+  let end = Number.NEGATIVE_INFINITY
+  forEachPiece(cache.Pieces, (id, piece) => {
+    if (id < 0 || id >= piecesCount) return
+    if ((piece.Size || 0) <= 0) return
+    if (id < start) start = id
+    if (id > end) end = id
+  })
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return null
+  return { start, end }
+}
+
+/** Window start that keeps as much of `span` visible as possible (centered when it fits). */
+const anchorStartForSpan = (span: { start: number; end: number }, windowSize: number): number => {
+  const spanWidth = span.end - span.start + 1
+  if (spanWidth <= windowSize) {
+    return span.start - Math.floor((windowSize - spanWidth) / 2)
+  }
+  return span.start + Math.floor((spanWidth - windowSize) / 2)
+}
+
 /** Full drawable budget — small piece cells fill the pane; do not shrink to the reader range. */
 const resolveWindowSize = (visibleCells: number, piecesCount: number): number =>
   Math.max(1, Math.min(piecesCount, Math.max(1, visibleCells)))
@@ -310,7 +336,8 @@ export const resolveFocusWindowSize = (cache: TorrentCache, visibleCells: number
 /**
  * Sliding 1:1 window filling the drawable grid, positioned by a dead-zone
  * camera: the head walks across cells and the window scrolls only once it
- * nears an edge. No readers at all: show from piece 0 (not a stale sticky start).
+ * nears an edge. No playhead: keep sticky lastStart, else center on remaining
+ * filled pieces (server cache can outlive readers), else piece 0.
  */
 export const resolveFocusWindow = (
   cache: TorrentCache,
@@ -342,12 +369,19 @@ export const resolveFocusWindow = (
   const marginRatio = options?.edgeMarginRatio ?? 0.18
   const margin = Math.max(1, Math.floor(windowSize * marginRatio))
 
-  // No playhead: prefer piece 0. Sticky lastStart alone must not park the camera
-  // at an old stream offset after every reader is gone (preload / idle reopen).
-  // Idle readers with a range still keep the frozen head on screen.
+  // No playhead (player closed): sticky camera first — usually still overlaps the
+  // server-held buffer. Cold open: frame remaining filled pieces, else piece 0.
   if (readerPiece == null) {
-    const frozen = range ? range.start - READER_RANGE_MARGIN : 0
-    const { start, end } = clampWindow(frozen, windowSize, piecesCount)
+    let preferred: number
+    if (lastStart != null) {
+      preferred = lastStart
+    } else {
+      const filled = resolveFilledSpan(cache, piecesCount)
+      if (filled) preferred = anchorStartForSpan(filled, windowSize)
+      else if (range) preferred = range.start - READER_RANGE_MARGIN
+      else preferred = 0
+    }
+    const { start, end } = clampWindow(preferred, windowSize, piecesCount)
     return { start, end, readerPiece: null, readerActive }
   }
 

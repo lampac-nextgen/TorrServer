@@ -293,7 +293,7 @@ describe('resolveFocusWindow / buildFocusModel', () => {
     expect(scrolled.readerPiece).toBe(rightEdge)
   })
 
-  it('resets to piece 0 when every reader is gone', () => {
+  it('keeps sticky lastStart when every reader is gone', () => {
     const active: TorrentCache = {
       PiecesCount: 100,
       PiecesLength: 1024,
@@ -302,10 +302,40 @@ describe('resolveFocusWindow / buildFocusModel', () => {
     }
     const first = resolveFocusWindow(active, 20)!
     expect(first.start).toBeGreaterThan(0)
-    const idle = resolveFocusWindow({ ...active, Readers: [] }, 20, { lastWindowStart: first.start })!
-    expect(idle.readerPiece).toBeNull()
-    expect(idle.start).toBe(0)
-    expect(idle.end).toBe(19)
+    const closed = resolveFocusWindow({ ...active, Readers: [] }, 20, { lastWindowStart: first.start })!
+    expect(closed.readerPiece).toBeNull()
+    expect(closed.start).toBe(first.start)
+    expect(closed.end).toBe(first.start + 19)
+  })
+
+  it('cold-opens on remaining filled pieces when there is no sticky camera', () => {
+    const cache: TorrentCache = {
+      PiecesCount: 200,
+      PiecesLength: 1024,
+      Capacity: 40 * 1024,
+      Readers: [],
+      Pieces: {
+        80: { Size: 1024, Length: 1024 },
+        90: { Size: 512, Length: 1024 },
+        95: { Size: 1024, Length: 1024 },
+      },
+    }
+    const window = resolveFocusWindow(cache, 40)!
+    expect(window.readerPiece).toBeNull()
+    expect(window.start).toBeLessThanOrEqual(80)
+    expect(window.end).toBeGreaterThanOrEqual(95)
+  })
+
+  it('cold-opens at piece 0 when there are no readers and no filled pieces', () => {
+    const cache: TorrentCache = {
+      PiecesCount: 100,
+      PiecesLength: 1024,
+      Capacity: 20 * 1024,
+      Readers: [],
+    }
+    const window = resolveFocusWindow(cache, 20)!
+    expect(window.start).toBe(0)
+    expect(window.end).toBe(19)
   })
 
   it('keeps an idle frozen head on screen when Active is false', () => {
