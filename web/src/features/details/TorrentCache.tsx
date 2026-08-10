@@ -5,18 +5,12 @@ import {
   isReaderActive,
   priorityDebugLabel,
   resolveFocusVisibleCells,
-  resolveFocusWindowSize,
   SNAKE_FOCUS_TARGET_ROWS,
   SNAKE_FOCUS_TARGET_ROWS_MINI,
 } from 'shared/cache/buildCacheMap'
 import { cheapPiecesFingerprint, cheapReadersFingerprint } from 'shared/cache/cacheFingerprint'
 import { drawSnake, hitTestSnakeCell, setupHiDpiCanvas } from 'shared/cache/drawSnake'
-import {
-  fitPieceMetricsToArea,
-  resolvePieceMetrics,
-  resolveSnakeSettings,
-  type SnakeThemeMode,
-} from 'shared/cache/snakeSettings'
+import { resolvePieceMetrics, resolveSnakeSettings, type SnakeThemeMode } from 'shared/cache/snakeSettings'
 import { snakeCameraKey } from 'shared/cache/snakeSession'
 import { useCreateFocusMap } from 'shared/cache/useUpdateCache'
 import { humanizeSize } from 'shared/lib/format'
@@ -46,9 +40,6 @@ const measureContentBox = (el: HTMLElement) => {
   return { width: Math.max(0, width), height: Math.max(0, height) }
 }
 
-/** Cell-count bucket for cell-size fitting — avoids resizing on tiny window drift. */
-const CELL_FIT_STEP = 16
-
 const emptyCell = (): CacheMapItem => ({
   percentage: 0,
   priority: 0,
@@ -69,31 +60,28 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode, hash }: Torr
   const scrollWrapperRef = useRef<HTMLDivElement | null>(null)
   const rootRef = useRef<HTMLDivElement | null>(null)
   const drawFrame = useRef(0)
-  const resizeFrame = useRef(0)
   const lastDrawKey = useRef('')
   const [tooltip, setTooltip] = useState<{ index: number; x: number; y: number; text: string } | null>(null)
 
   // Layout effect: measuring after paint showed an empty pane for one frame on
   // every mount (dialog open, tab switch) before the snake appeared.
+  // ResizeObserver updates are applied synchronously — rAF delayed the second
+  // measure by a paint and flashed a wrong-sized grid.
   useLayoutEffect(() => {
     const el = isMiniView ? rootRef.current : scrollWrapperRef.current
     if (!el || typeof ResizeObserver === 'undefined') return
+    const apply = (width: number, height: number) => {
+      setContainerWidth(width)
+      if (!isMiniView) setContainerHeight(height)
+    }
     const observer = new ResizeObserver(entries => {
       const box = entries[0]?.contentRect
-      cancelAnimationFrame(resizeFrame.current)
-      resizeFrame.current = requestAnimationFrame(() => {
-        setContainerWidth(box?.width ?? 0)
-        if (!isMiniView) setContainerHeight(box?.height ?? 0)
-      })
+      apply(box?.width ?? 0, box?.height ?? 0)
     })
     observer.observe(el)
     const box = measureContentBox(el)
-    setContainerWidth(box.width)
-    if (!isMiniView) setContainerHeight(box.height)
-    return () => {
-      observer.disconnect()
-      cancelAnimationFrame(resizeFrame.current)
-    }
+    apply(box.width, box.height)
+    return () => observer.disconnect()
   }, [isMiniView])
 
   const variant = isMiniView ? 'mini' : 'default'
@@ -102,7 +90,9 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode, hash }: Torr
     return resolveSnakeSettings(theme, variant)
   }, [theme, variant, palette])
 
-  const baseMetrics = useMemo(
+  // Detailed: fixed ~20px piece cells. The pane is filled by showing more pieces
+  // (full cols×rows budget), not by growing individual squares.
+  const { pieceSize, gap } = useMemo(
     () => resolvePieceMetrics(baseSettings, containerWidth, isMiniView, 0),
     [baseSettings, containerWidth, isMiniView],
   )
@@ -113,28 +103,12 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode, hash }: Torr
   const emptyRowCount = isMiniView ? 4 : 6
   const targetRows = isMiniView ? SNAKE_FOCUS_TARGET_ROWS_MINI : SNAKE_FOCUS_TARGET_ROWS
 
-  // Detailed: grow cells so the reader-range window fills the pane instead of
-  // leaving it half empty. Sizing runs at the base cell first to learn how many
-  // cells the window wants, then picks the largest cell that still fits them.
-  const { pieceSize, gap } = useMemo(() => {
-    const baseStride = baseMetrics.pieceSize + baseMetrics.gap
-    if (isMiniView || canvasWidth <= 0 || baseStride <= 0) return baseMetrics
-    if (containerHeight < baseStride * 2) return baseMetrics
-
-    const baseCols = Math.max(1, Math.floor(canvasWidth / baseStride))
-    const baseRows = Math.max(2, Math.floor(containerHeight / baseStride))
-    const budget = baseCols * baseRows
-    const wanted = resolveFocusWindowSize(cache, budget)
-    // Near the file edges the reader range grows piece by piece; rounding to a
-    // coarse step keeps the cells from resizing on every poll.
-    const quantized = Math.min(budget, Math.ceil(wanted / CELL_FIT_STEP) * CELL_FIT_STEP)
-    return fitPieceMetricsToArea(baseMetrics, canvasWidth, containerHeight, quantized)
-  }, [baseMetrics, canvasWidth, containerHeight, isMiniView, cache])
-
   const cellStride = pieceSize + gap
   const piecesPerRow = canvasWidth > 0 ? Math.max(1, Math.floor(canvasWidth / cellStride)) : 0
 
   // Detailed: fit rows to pane once RO reports real height (≥2 footprints).
+  // Until then use targetRows so a Getting-Info placeholder still paints a full
+  // grid instead of a short strip with empty space below.
   const heightReady = !isMiniView && cellStride > 0 && containerHeight >= cellStride * 2
   const maxFitRows = heightReady
     ? Math.max(2, Math.floor(containerHeight / cellStride))
@@ -148,18 +122,23 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode, hash }: Torr
       ? piecesPerRow * maxFitRows
       : resolveFocusVisibleCells(containerWidth, isMiniView, isMiniView ? 0 : containerHeight)
 
-  // Withhold the key until the pane is measured: the first render runs on a
-  // placeholder budget and would otherwise overwrite the saved window with it.
-  const isMeasured = containerWidth > 0 && (isMiniView || containerHeight > 0)
-  const focusModel = useCreateFocusMap(cache, visibleCellBudget, isMeasured ? snakeCameraKey(hash, mode) : undefined)
+  // Persist camera only after the pane height is real — placeholder row counts
+  // must not overwrite the saved window. Still paint as soon as width is known.
+  const cameraReady = isMiniView ? containerWidth > 0 : heightReady
+  const focusModel = useCreateFocusMap(cache, visibleCellBudget, cameraReady ? snakeCameraKey(hash, mode) : undefined)
   const cells = focusModel.cells
   // A reader reported as idle keeps its square on screen but stops moving.
   const hasActiveReaders = (cache.Readers ?? []).some(isReaderActive)
 
+  // No PiecesCount yet (Getting Info): fill the drawable pane with empty cells
+  // so the Cache tab never shows a half-empty gray box.
+  const placeholderRows = isMiniView ? emptyRowCount : maxFitRows
+  const placeholderCount = Math.max(piecesPerRow, 1) * placeholderRows
+
   const rowCount =
     piecesPerRow > 0
       ? Math.max(
-          cells.length > 0 ? Math.ceil(cells.length / piecesPerRow) : emptyRowCount,
+          cells.length > 0 ? Math.ceil(cells.length / piecesPerRow) : placeholderRows,
           isMiniView ? emptyRowCount : 1,
         )
       : 0
@@ -170,8 +149,8 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode, hash }: Torr
 
   const drawCells = useMemo(() => {
     if (cells.length > 0) return cells
-    return Array.from({ length: Math.max(piecesPerRow, 1) * emptyRowCount }, emptyCell)
-  }, [cells, piecesPerRow, emptyRowCount])
+    return Array.from({ length: placeholderCount }, emptyCell)
+  }, [cells, placeholderCount])
 
   const cacheAriaLabel = useMemo(() => {
     const { Filled, Capacity } = cache
@@ -320,6 +299,12 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode, hash }: Torr
     return () => document.removeEventListener('pointerdown', dismissIfOutside)
   }, [tooltip])
 
+  // Paint as soon as width is known — Getting Info still gets a full empty grid.
+  // Footer (piece range) only when the focus model has real piece ids.
+  const showCanvas = containerWidth > 0 && piecesPerRow > 0 && canvasHeight > 0
+  const showFooter =
+    showCanvas && cells.length > 0 && footerStart != null && footerEnd != null && footerEnd >= footerStart
+
   return (
     <div ref={rootRef} className={`relative flex w-full min-w-0 flex-col ${isMiniView ? '' : 'min-h-0 flex-1'}`}>
       <div
@@ -328,7 +313,7 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode, hash }: Torr
           isMiniView ? 'grid max-h-[420px] justify-center overflow-hidden' : 'min-h-0 min-w-0 flex-1 overflow-hidden'
         }`}
       >
-        {piecesPerRow > 0 && canvasHeight > 0 ? (
+        {showCanvas ? (
           <canvas
             ref={canvasRef}
             role='img'
@@ -350,7 +335,7 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode, hash }: Torr
         </div>
       ) : null}
 
-      {footerStart != null && footerEnd != null && footerEnd >= footerStart ? (
+      {showFooter ? (
         <p className='mt-2 shrink-0 self-center text-xs uppercase tracking-wide text-muted'>
           {t('SnakeFocusRange', { start: footerStart, end: footerEnd })}
           {!hasActiveReaders ? ` · ${t('SnakeIdleFrozen')}` : null}

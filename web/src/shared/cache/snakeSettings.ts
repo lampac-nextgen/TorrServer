@@ -172,33 +172,3 @@ export const resolvePieceMetrics = (
 
   return { pieceSize: Math.max(18, basePiece), gap: Math.max(4, baseGap) }
 }
-
-/** Upper bound for grown cells — past this the map reads as blocks, not a piece map. */
-export const SNAKE_MAX_PIECE_SIZE = 48
-
-/** Gap grows with the cell so large squares do not look glued together. */
-const gapForPieceSize = (pieceSize: number, baseGap: number): number =>
-  Math.min(8, Math.max(baseGap, Math.round(pieceSize * 0.18)))
-
-/**
- * Largest cell size that still fits `cellCount` cells into width × height.
- * The reader-range window is far smaller than the drawable grid, so without
- * this the pane is mostly empty; growing the cells fills it without padding
- * the map with pieces that are not in the cache.
- */
-export const fitPieceMetricsToArea = (
-  base: { pieceSize: number; gap: number },
-  width: number,
-  height: number,
-  cellCount: number,
-): { pieceSize: number; gap: number } => {
-  if (cellCount <= 0 || width <= 0 || height <= 0) return base
-  for (let pieceSize = SNAKE_MAX_PIECE_SIZE; pieceSize > base.pieceSize; pieceSize--) {
-    const gap = gapForPieceSize(pieceSize, base.gap)
-    const stride = pieceSize + gap
-    const cols = Math.floor(width / stride)
-    const rows = Math.floor(height / stride)
-    if (cols >= 1 && rows >= 1 && cols * rows >= cellCount) return { pieceSize, gap }
-  }
-  return base
-}

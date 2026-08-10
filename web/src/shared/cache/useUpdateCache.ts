@@ -140,8 +140,10 @@ const restoreCamera = (key: string | undefined, fallbackBudget: number): CameraS
 export const useCreateFocusMap = (cache: TorrentCache, visibleCells: number, cameraKey?: string): CacheDrawModel => {
   const [camera, setCamera] = useState<CameraState>(() => restoreCamera(cameraKey, visibleCells))
   // A key change means a different snake — fall back to its saved window, not this one's.
+  // Budget may change when the pane resizes; keep lastStart so the head keeps walking
+  // instead of re-anchoring to the reader range on every layout tick.
   const active = camera.key === cameraKey ? camera : restoreCamera(cameraKey, visibleCells)
-  const lastStart = active.budget === visibleCells ? active.start : undefined
+  const lastStart = active.start
 
   const model = useMemo(
     () =>
@@ -152,6 +154,7 @@ export const useCreateFocusMap = (cache: TorrentCache, visibleCells: number, cam
   )
 
   useEffect(() => {
+    if (!cameraKey) return
     if (model.windowStart == null || model.windowEnd == null || model.windowEnd < model.windowStart) return
     writeSnakeCamera(cameraKey, { budget: visibleCells, start: model.windowStart })
     // Sticky camera across poll ticks; skip update when unchanged to avoid loops.

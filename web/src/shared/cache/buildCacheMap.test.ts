@@ -142,24 +142,21 @@ describe('resolveFocusWindow / buildFocusModel', () => {
     expect(model.windowEnd).toBe(window!.end)
   })
 
-  it('shrinks the window to the reader range instead of padding empty cells', () => {
+  it('fills the full visibleCells budget with small piece cells', () => {
     const cache: TorrentCache = {
       PiecesCount: 5000,
       PiecesLength: 2 * 1024 * 1024,
       Capacity: 256 * 1024 * 1024,
-      // 128-piece cache window against a ~400-cell grid.
+      // 128-piece cache window against a ~400-cell grid — still draw the whole grid.
       Readers: [{ Reader: 1005, Start: 1000, End: 1127 }],
     }
     const visible = 396
     const window = resolveFocusWindow(cache, visible)!
-    const size = window.end - window.start + 1
-    // Range span 128 plus a margin on each side — far below the 396-cell budget.
-    expect(size).toBeLessThan(visible)
-    expect(size).toBe(128 + 16)
-    // The whole reader range stays covered.
+    expect(window.end - window.start + 1).toBe(visible)
+    // The whole reader range stays covered inside the larger window.
     expect(window.start).toBeLessThanOrEqual(1000)
     expect(window.end).toBeGreaterThanOrEqual(1127)
-    expect(buildFocusModel(cache, visible).cells).toHaveLength(size)
+    expect(buildFocusModel(cache, visible).cells).toHaveLength(visible)
   })
 
   it('keeps the whole reader range visible while the head advances', () => {
@@ -188,6 +185,21 @@ describe('resolveFocusWindow / buildFocusModel', () => {
     expect(seen.size).toBeGreaterThan(1)
   })
 
+  it('keeps sticky lastStart when the drawable budget changes', () => {
+    const cache: TorrentCache = {
+      PiecesCount: 5000,
+      PiecesLength: 1024,
+      Readers: [{ Reader: 1200, Start: 1100, End: 1300 }],
+    }
+    const first = resolveFocusWindow(cache, 200)!
+    const next = resolveFocusWindow(cache, 360, { lastWindowStart: first.start })!
+    // Budget grew; sticky start is kept (clamped) so the head is not re-anchored.
+    expect(next.start).toBe(first.start)
+    expect(next.end - next.start + 1).toBe(360)
+    expect(next.start).toBeLessThanOrEqual(1200)
+    expect(next.end).toBeGreaterThanOrEqual(1200)
+  })
+
   it('reports the window size without resolving its position', () => {
     const cache: TorrentCache = {
       PiecesCount: 5000,
@@ -195,10 +207,9 @@ describe('resolveFocusWindow / buildFocusModel', () => {
       Capacity: 256 * 1024 * 1024,
       Readers: [{ Reader: 1005, Start: 1000, End: 1127 }],
     }
-    // Cell-size fitting reads this before a model exists, so it must agree with
-    // the window the model ends up building.
     const size = resolveFocusWindowSize(cache, 396)
     const window = resolveFocusWindow(cache, 396)!
+    expect(size).toBe(396)
     expect(size).toBe(window.end - window.start + 1)
     expect(resolveFocusWindowSize({ PiecesCount: 0 }, 396)).toBe(0)
   })

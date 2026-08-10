@@ -258,13 +258,9 @@ export interface FocusWindowOptions {
  */
 const READER_RANGE_MARGIN = 8
 
-/** Floor for a range-derived window so a tiny range does not collapse the grid. */
-const MIN_RANGE_WINDOW = 24
-
 /**
  * Widest inclusive span across the given readers, or null when none report a
- * usable range. This is the server cache window (`getOffsetRange`), so sizing
- * the grid to it is what keeps empty rows off the canvas.
+ * usable range. Used to keep the buffered tail on screen while the head walks.
  */
 const resolveReaderRangeSpan = (readers: CacheReader[], piecesCount: number): { start: number; end: number } | null => {
   let start = Number.POSITIVE_INFINITY
@@ -286,18 +282,9 @@ const resolveDrivingReaders = (cache: TorrentCache): { readers: CacheReader[]; r
   return { readers: active.length > 0 ? active : all, readerActive: active.length > 0 }
 }
 
-const resolveWindowSize = (
-  range: { start: number; end: number } | null,
-  visibleCells: number,
-  piecesCount: number,
-): number => {
-  const budget = Math.max(1, Math.min(piecesCount, Math.max(1, visibleCells)))
-  if (!range) return budget
-  // A window shorter than the drawable budget is fine — TorrentCache derives its
-  // row count from cells.length, so the canvas shrinks instead of padding blanks.
-  const span = range.end - range.start + 1 + READER_RANGE_MARGIN * 2
-  return Math.max(1, Math.min(budget, Math.max(span, Math.min(budget, MIN_RANGE_WINDOW))))
-}
+/** Full drawable budget — small piece cells fill the pane; do not shrink to the reader range. */
+const resolveWindowSize = (visibleCells: number, piecesCount: number): number =>
+  Math.max(1, Math.min(piecesCount, Math.max(1, visibleCells)))
 
 const clampWindow = (start: number, windowSize: number, piecesCount: number): { start: number; end: number } => {
   let s = start
@@ -311,22 +298,19 @@ const clampWindow = (start: number, windowSize: number, piecesCount: number): { 
 }
 
 /**
- * How many cells the window will hold, without resolving its position.
- * Lets the canvas pick a cell size that fills the pane before the model is
- * built — the size in turn feeds `visibleCells`, so this must stay position
- * independent to avoid a resize feedback loop.
+ * How many cells the window will hold (full drawable budget), without resolving
+ * its position — useful for layout that needs the count before the model exists.
  */
 export const resolveFocusWindowSize = (cache: TorrentCache, visibleCells: number): number => {
   const piecesCount = cache.PiecesCount ?? 0
   if (piecesCount <= 0) return 0
-  const { readers } = resolveDrivingReaders(cache)
-  return resolveWindowSize(resolveReaderRangeSpan(readers, piecesCount), visibleCells, piecesCount)
+  return resolveWindowSize(visibleCells, piecesCount)
 }
 
 /**
- * Sliding 1:1 window sized to the reader's cache range and positioned by a
- * dead-zone camera: the head walks across cells and the window scrolls only
- * once it nears an edge. No readers at all: freeze at lastWindowStart.
+ * Sliding 1:1 window filling the drawable grid, positioned by a dead-zone
+ * camera: the head walks across cells and the window scrolls only once it
+ * nears an edge. No readers at all: freeze at lastWindowStart.
  */
 export const resolveFocusWindow = (
   cache: TorrentCache,
@@ -353,7 +337,7 @@ export const resolveFocusWindow = (
   }
 
   const range = resolveReaderRangeSpan(drivingReaders, piecesCount)
-  const windowSize = resolveWindowSize(range, visibleCells, piecesCount)
+  const windowSize = resolveWindowSize(visibleCells, piecesCount)
   const lastStart = options?.lastWindowStart
   const marginRatio = options?.edgeMarginRatio ?? 0.18
   const margin = Math.max(1, Math.floor(windowSize * marginRatio))
