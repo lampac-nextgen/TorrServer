@@ -2541,22 +2541,29 @@ body[data-immersive='true'] .ts-bottom-nav {
   --visual-viewport-height: var(--app-height, 100vh);
 }
 
+/*
+ * Force-fullscreen above 960px (Appearance pref / tablet landscape).
+ * HeroUI `.modal__container` uses `sm:w-fit` — beat it with !important so wide
+ * monitors actually go edge-to-edge when `size="full"`.
+ */
 .modal__backdrop:has(.modal__dialog--full),
 .modal__container--full {
-  width: 100%;
-  max-width: 100%;
-  min-width: 100%;
-  height: var(--app-height, 100vh);
-  max-height: var(--app-height, 100vh);
-  min-height: var(--app-height, 100vh);
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  height: var(--app-height, 100vh) !important;
+  max-height: var(--app-height, 100vh) !important;
+  min-height: var(--app-height, 100vh) !important;
+  padding: 0 !important;
+  transform: none !important;
 }
 
 @media (width >= 40rem) {
   .modal__container--full {
-    width: 100%;
-    max-width: 100%;
-    min-width: 100%;
-    padding: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    padding: 0 !important;
   }
 }
 
@@ -2564,13 +2571,17 @@ body[data-immersive='true'] .ts-bottom-nav {
   padding: 0;
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
-  height: 100%;
-  max-height: 100%;
-  min-height: 100%;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 100% !important;
+  border-radius: 0 !important;
   /* HeroUI placement=auto uses mt-auto on small screens — pin full sheets edge-to-edge. */
-  margin-top: 0;
-  margin-bottom: 0;
-  transform: none;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  transform: none !important;
 }
 
 .modal__container--full[data-entering='true'],

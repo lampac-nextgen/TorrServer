@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Button, Input, Modal, TextField } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
+import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import AppDialog from 'shared/ui/AppDialog'
 import { requestOpenSettings, type SettingsDeepLinkTab } from 'shared/lib/settingsEvents'
 
@@ -33,6 +34,7 @@ export default function CommandPalette({
   onToggleTheme,
 }: CommandPaletteProps) {
   const { t } = useTranslation()
+  const isFullScreen = useDialogFullScreen()
   const [query, setQuery] = useState('')
 
   const commands = useMemo<CommandItem[]>(() => {
@@ -101,7 +103,7 @@ export default function CommandPalette({
   }, [commands, query])
 
   return (
-    <AppDialog open={open} onClose={onClose} size='sm'>
+    <AppDialog open={open} onClose={onClose} size='sm' fullScreen={isFullScreen}>
       <Modal.Header>
         <Modal.Heading>{t('CommandPalette')}</Modal.Heading>
         <Modal.CloseTrigger aria-label={t('Close')} />

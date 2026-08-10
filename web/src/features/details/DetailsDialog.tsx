@@ -205,8 +205,8 @@ export default function DetailsDialog({
   const isShortViewport = useMediaQuery(MEDIA_SHORT_VIEWPORT)
   /** Wider phones (≥420px): hero can fit 6 chips including Cache + Status. */
   const isPhoneWide = useMediaQuery(queryMin('phone'))
-  /** Edge-to-edge sheet — dialog breakpoint, or phone chrome (belt-and-suspenders). */
-  const sheetFull = isFullScreen || isMobile
+  /** Edge-to-edge sheet — same policy as other AppDialog surfaces. */
+  const sheetFull = isFullScreen
   /** Compact chrome follows the fullscreen surface (iPad portrait ≤960), not only ≤700. */
   const useCompactDetails = sheetFull || isShortViewport
   const showHeroSix = useCompactDetails && (isMobile ? isPhoneWide : true)

@@ -134,7 +134,13 @@ export default function ImportLibraryDialog({ open, onClose }: ImportLibraryDial
   }
 
   return (
-    <AppDialog open={open} onClose={handleClose} size='md' fullScreen={isFullScreen} dialogStyle={DIALOG_SHEET_M}>
+    <AppDialog
+      open={open}
+      onClose={handleClose}
+      size='md'
+      fullScreen={isFullScreen}
+      dialogStyle={isFullScreen ? undefined : DIALOG_SHEET_M}
+    >
       <Modal.Header>
         <Modal.Heading>{t('ImportLibrary')}</Modal.Heading>
         <Modal.CloseTrigger aria-label={t('Close')} />
