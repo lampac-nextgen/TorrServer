@@ -2349,12 +2349,20 @@ body[data-immersive='true'] .ts-bottom-nav {
 
   /*
    * HeroUI enter uses zoom-in-105 — getBoundingClientRect stays ~5% oversized and
-   * shifts off-screen on iPhone. Fullscreen sheets must not scale.
+   * shifts off-screen on iPhone. Fullscreen sheets and bottom sheets must not scale.
    */
   .modal__container:not(:has(.ts-sheet-modal))[data-entering='true'],
-  .modal__container:not(:has(.ts-sheet-modal))[data-exiting='true'] {
+  .modal__container:not(:has(.ts-sheet-modal))[data-exiting='true'],
+  .modal__container:has(.ts-sheet-modal)[data-entering='true'],
+  .modal__container:has(.ts-sheet-modal)[data-exiting='true'] {
     animation: none !important;
     transform: none !important;
+  }
+
+  /* Drawers share the short visualViewport bug — remap like modals. */
+  .drawer__backdrop,
+  .drawer__content {
+    --visual-viewport-height: var(--app-height, 100vh);
   }
 
   .modal__container:not(:has(.ts-sheet-modal)) {
@@ -2453,8 +2461,33 @@ body[data-immersive='true'] .ts-bottom-nav {
   }
 
   .modal__dialog.ts-details-modal .ts-details-tabs {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0%;
+    min-height: 0;
     padding-right: 0.75rem;
     padding-left: 0.75rem;
+  }
+
+  /*
+   * HeroUI tab panels are not flex columns — without this the Cache snake's
+   * flex-1 / ResizeObserver height chain collapses to ~1 row.
+   */
+  .modal__dialog.ts-details-modal .ts-details-tabs [role='tabpanel'] {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0%;
+    min-height: 0;
+    margin-top: 0;
+    /* Safe-area lives on sticky CTAs / scroll content — not every panel. */
+    padding-bottom: 0;
+  }
+
+  .modal__dialog.ts-details-modal > .modal__body.modal__body--scroll-inside {
+    overflow: hidden !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
   }
 
   /* Cache snake: less inset on phone so the map reads full-bleed. */
@@ -2466,6 +2499,7 @@ body[data-immersive='true'] .ts-bottom-nav {
   .drawer__dialog.ts-sheet-drawer[data-placement='bottom'] {
     width: 100%;
     max-width: 100%;
+    max-height: min(85dvh, var(--app-height, 100vh));
     padding: 0.75rem 0.25rem max(0.75rem, env(safe-area-inset-bottom, 0px));
     border-start-start-radius: 1rem;
     border-start-end-radius: 1rem;
@@ -2473,6 +2507,11 @@ body[data-immersive='true'] .ts-bottom-nav {
 
   .drawer__dialog.ts-sheet-drawer .drawer__header {
     padding-inline: 0.75rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .drawer__dialog.ts-sheet-drawer .drawer__body {
+    /* Dialog already owns bottom safe-area — avoid double inset. */
     padding-bottom: 0.25rem;
   }
 }
@@ -2609,12 +2648,46 @@ body[data-immersive='true'] .ts-bottom-nav {
 }
 
 .modal__dialog--full.ts-details-modal .ts-details-tabs {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0%;
+  min-height: 0;
   padding-right: 0.75rem;
   padding-left: 0.75rem;
 }
 
+.modal__dialog--full.ts-details-modal .ts-details-tabs [role='tabpanel'] {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0%;
+  min-height: 0;
+  margin-top: 0;
+  padding-bottom: 0;
+}
+
+.modal__dialog--full.ts-details-modal > .modal__body.modal__body--scroll-inside {
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .modal__dialog--full.ts-details-modal .ts-details-cache-snake {
   padding: 0.25rem;
+}
+
+/* Cache Details View — same height chain as Details Cache tab. */
+.modal__dialog.ts-cache-map-modal > .modal__body.modal__body--scroll-inside,
+.modal__dialog--full.ts-cache-map-modal > .modal__body.modal__body--scroll-inside {
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.modal__backdrop:has(.modal__dialog.ts-cache-map-modal),
+.modal__backdrop:has(.modal__dialog--full.ts-cache-map-modal) {
+  --visual-viewport-height: var(--app-height, 100vh);
 }
 
 /* Video player owns its own safe-area chrome — kill HeroUI full-dialog padding. */

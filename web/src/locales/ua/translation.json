@@ -442,7 +442,7 @@
   "DLNA": "DLNA-медиасервер",
   "AddFirstTorrent": "Додайте перший торент",
   "CopyMagnet": "Скопіювати Magnet",
-  "SnakeIdleFrozen": "idle · заморожено",
+  "SnakeIdleFrozen": "простій · заморожено",
   "Search": {
     "QueryLabel": "Пошуковий запит",
     "NoResults": "Немає результатів",

@@ -476,7 +476,7 @@
   "FfpColor": "Цвет",
   "FfpSampleRate": "Частота",
   "FfpChannels": "Каналы",
-  "SnakeIdleFrozen": "idle · заморожено",
+  "SnakeIdleFrozen": "простой · заморожено",
   "Search": {
     "QueryLabel": "Поисковый запрос",
     "NoResults": "Нет результатов",

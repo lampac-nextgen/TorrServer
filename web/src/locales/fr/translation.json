@@ -442,7 +442,7 @@
   "DLNA": "Serveur multimédia DLNA",
   "AddFirstTorrent": "Ajoutez votre premier torrent",
   "CopyMagnet": "Copier le Magnet",
-  "SnakeIdleFrozen": "idle · figé",
+  "SnakeIdleFrozen": "inactif · figé",
   "Search": {
     "Tracker": "Tracker",
     "QueryLabel": "Requête de recherche",

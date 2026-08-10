@@ -442,7 +442,7 @@
   "DLNA": "Server media DLNA",
   "AddFirstTorrent": "Adăugați primul torrent",
   "CopyMagnet": "Copiază Magnet",
-  "SnakeIdleFrozen": "idle · înghețat",
+  "SnakeIdleFrozen": "inactiv · înghețat",
   "Search": {
     "Tracker": "Tracker",
     "QueryLabel": "Interogare de căutare",

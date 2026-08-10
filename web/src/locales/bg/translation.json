@@ -442,7 +442,7 @@
   "DLNA": "DLNA медиен сървър",
   "AddFirstTorrent": "Добавете първия си торент",
   "CopyMagnet": "Копиране на Magnet",
-  "SnakeIdleFrozen": "idle · замразено",
+  "SnakeIdleFrozen": "неактивно · замразено",
   "Search": {
     "QueryLabel": "Заявка за търсене",
     "NoResults": "Няма резултати",

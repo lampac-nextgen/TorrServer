@@ -442,7 +442,7 @@
   "DLNA": "DLNA媒体服务器",
   "AddFirstTorrent": "添加您的第一个种子",
   "CopyMagnet": "复制磁力链接",
-  "SnakeIdleFrozen": "idle · 冻结",
+  "SnakeIdleFrozen": "空闲 · 冻结",
   "Search": {
     "Tracker": "Tracker",
     "QueryLabel": "搜索关键词",

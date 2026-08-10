@@ -372,8 +372,10 @@ export const resolveFocusVisibleCells = (containerWidth: number, isMini = false,
   if (!containerWidth || containerWidth <= 0) return 10 * defaultRows
   const cols = Math.max(1, Math.floor(containerWidth / cellFootprint))
   // Detailed cache tab: fit rows to the available height so the map never needs a scrollbar.
-  // Mini keeps a fixed target row count (height is not passed / not used for budget).
+  // Ignore sub-threshold heights (collapsed flex) — fall back to target rows until RO settles.
   const rows =
-    !isMini && containerHeight > cellFootprint ? Math.max(1, Math.floor(containerHeight / cellFootprint)) : defaultRows
+    !isMini && containerHeight >= cellFootprint * 2
+      ? Math.max(2, Math.floor(containerHeight / cellFootprint))
+      : defaultRows
   return cols * rows
 }

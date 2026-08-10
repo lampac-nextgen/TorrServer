@@ -163,7 +163,6 @@ function TitleRow({
             type='button'
             className='min-w-0 flex-1 rounded-sm text-left outline-none ring-accent focus-visible:ring-2'
             aria-expanded={expanded}
-            aria-label={expanded ? t('ShowLess') : t('ShowMore')}
             onClick={() => setExpanded(v => !v)}
           >
             <h2 className={titleClass} title={title}>
@@ -182,9 +181,9 @@ function TitleRow({
           {subtitle}
         </p>
       ) : null}
-      {compact && expanded ? (
-        <button type='button' className='mt-0.5 text-xs font-medium text-accent' onClick={() => setExpanded(false)}>
-          {t('ShowLess')}
+      {compact ? (
+        <button type='button' className='mt-0.5 text-xs font-medium text-accent' onClick={() => setExpanded(v => !v)}>
+          {expanded ? t('ShowLess') : t('ShowMore')}
         </button>
       ) : null}
     </div>
@@ -206,11 +205,11 @@ export default function DetailsDialog({
   const isShortViewport = useMediaQuery(MEDIA_SHORT_VIEWPORT)
   /** Wider phones (≥420px): hero can fit 6 chips including Cache + Status. */
   const isPhoneWide = useMediaQuery(queryMin('phone'))
-  /** Phone-compact hero/actions — not tied to fullscreen surface (iPad landscape stays wide). */
-  const useCompactDetails = isMobile || isShortViewport
-  const showHeroSix = useCompactDetails && isPhoneWide
   /** Edge-to-edge sheet — dialog breakpoint, or phone chrome (belt-and-suspenders). */
   const sheetFull = isFullScreen || isMobile
+  /** Compact chrome follows the fullscreen surface (iPad portrait ≤960), not only ≤700. */
+  const useCompactDetails = sheetFull || isShortViewport
+  const showHeroSix = useCompactDetails && (isMobile ? isPhoneWide : true)
   useSyncModalOpen(true)
 
   const overlayState = useOverlayState({
@@ -611,7 +610,7 @@ export default function DetailsDialog({
                 </Tabs.ListContainer>
 
                 <Tabs.Panel id='files' className='min-h-0 flex-1 overflow-y-auto overscroll-contain pt-2 sm:pt-3'>
-                  <div className={useCompactDetails ? 'pb-2' : undefined}>
+                  <div className='pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
                     {/* Reserve chip-row height while metadata loads or when multi-season — list won't jump. */}
                     {hasMultipleSeasons || isLoadingMetadata ? (
                       <div className='mb-2 min-h-11 sm:mb-3'>
@@ -689,23 +688,22 @@ export default function DetailsDialog({
                   )}
                 </Tabs.Panel>
 
-                <Tabs.Panel
-                  id='swarm'
-                  className={`flex min-h-0 flex-1 flex-col pt-3 ${
-                    useCompactDetails ? 'overflow-y-auto overscroll-contain' : 'overflow-hidden'
-                  }`}
-                >
+                <Tabs.Panel id='swarm' className='flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain pt-3'>
                   <SwarmStatsPanel
                     torrent={torrent}
                     variant='full'
-                    className={useCompactDetails ? 'w-full shrink-0' : 'min-h-0 flex-1 overflow-hidden'}
+                    className={
+                      useCompactDetails
+                        ? 'w-full shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'
+                        : 'min-h-0 w-full flex-1 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'
+                    }
                     cacheReaders={cache.Readers?.length ?? 0}
                   />
                 </Tabs.Panel>
 
                 <Tabs.Panel
                   id='cache'
-                  className='flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain pt-3 sm:gap-4 sm:overflow-hidden sm:pt-4'
+                  className='flex min-h-0 flex-1 flex-col gap-2 overflow-hidden pt-3 sm:gap-4 sm:pt-4'
                 >
                   <div className='flex shrink-0 items-center justify-between gap-2'>
                     {useCompactDetails ? null : <p className='text-sm font-semibold text-muted'>{t('Cache')}</p>}
@@ -726,7 +724,8 @@ export default function DetailsDialog({
                     </div>
                   </div>
 
-                  <div className={`flex min-w-0 flex-col ${useCompactDetails ? 'shrink-0' : 'min-h-0 flex-1'}`}>
+                  {/* flex-1 height chain required: detailed snake sizes rows via ResizeObserver height. */}
+                  <div className='flex min-h-0 min-w-0 flex-1 flex-col'>
                     <TorrentCache cache={cache} mode='detailed' isSnakeDebugMode={isSnakeDebugMode} />
                   </div>
                 </Tabs.Panel>

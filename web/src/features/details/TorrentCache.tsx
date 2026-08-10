@@ -111,12 +111,11 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
           isMiniView ? emptyRowCount : 1,
         )
       : 0
-  // Detailed view: never taller than the sheet pane — no internal scrollbar.
-  const maxFitRows =
-    !isMiniView && containerHeight > 0 && cellStride > 0
-      ? Math.max(1, Math.floor(containerHeight / cellStride))
-      : naturalRowCount
-  const rowCount = !isMiniView && maxFitRows > 0 ? Math.min(naturalRowCount, maxFitRows) : naturalRowCount
+  // Detailed view: fit to pane once ResizeObserver reports a real height.
+  // Sub-threshold heights (collapsed flex chain) must NOT lock to 1 row.
+  const heightReady = !isMiniView && cellStride > 0 && containerHeight >= cellStride * 2
+  const maxFitRows = heightReady ? Math.max(2, Math.floor(containerHeight / cellStride)) : naturalRowCount
+  const rowCount = heightReady ? Math.min(naturalRowCount, maxFitRows) : naturalRowCount
   const canvasHeight = rowCount > 0 ? rowCount * cellStride : 0
   /** Reserve mini shell height before ResizeObserver so parent layout doesn't jump when the snake mounts. */
   const miniShellMinHeight = isMiniView ? emptyRowCount * cellStride + 16 : undefined
@@ -251,13 +250,11 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
   }, [tooltip])
 
   return (
-    <div ref={rootRef} className={`relative flex w-full min-w-0 flex-col ${isMiniView ? '' : 'min-h-0'}`}>
+    <div ref={rootRef} className={`relative flex w-full min-w-0 flex-col ${isMiniView ? '' : 'min-h-0 flex-1'}`}>
       <div
         ref={scrollWrapperRef}
         className={`ts-details-cache-snake relative w-full min-w-0 rounded-lg border border-border bg-surface-secondary p-2 ${
-          isMiniView
-            ? 'grid max-h-[420px] justify-center overflow-hidden'
-            : 'max-h-full min-w-0 self-stretch overflow-auto'
+          isMiniView ? 'grid max-h-[420px] justify-center overflow-hidden' : 'min-h-0 min-w-0 flex-1 overflow-hidden'
         }`}
         style={isMiniView ? (miniShellMinHeight != null ? { minHeight: miniShellMinHeight } : undefined) : undefined}
       >

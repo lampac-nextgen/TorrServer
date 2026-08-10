@@ -195,9 +195,24 @@ async function main() {
     await shot(page, `details-${tabIds[i]}`)
   }
 
+  // Cache snake must fill the panel — regression guard for the 1-row collapse.
+  await page.locator('.ts-details-tabs [role="tab"]').nth(3).click()
+  await page.waitForTimeout(600)
+  const snake = await page.locator('.ts-details-cache-snake').evaluate(el => {
+    const rect = el.getBoundingClientRect()
+    const panel = el.closest('[role="tabpanel"]')?.getBoundingClientRect()
+    return { snakeH: rect.height, panelH: panel?.height ?? 0 }
+  })
+  console.log('cache snake geometry', snake)
+  if (snake.panelH > 120 && snake.snakeH < Math.min(120, snake.panelH * 0.35)) {
+    throw new Error(
+      `Cache snake too short for panel: snakeH=${snake.snakeH.toFixed(1)} panelH=${snake.panelH.toFixed(1)}`,
+    )
+  }
+
   await page.locator('.ts-details-tabs [role="tab"]').nth(1).click()
   await page.waitForTimeout(300)
-  await page.locator('.ts-details-modal').getByRole('button', { name: /^Info$/i }).click()
+  await page.locator('.ts-details-modal').getByRole('button', { name: /^Actions$/i }).click()
   await page.waitForTimeout(500)
   await shot(page, 'details-stats-actions-sheet')
 

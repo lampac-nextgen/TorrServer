@@ -243,7 +243,8 @@ function TorrentActions({
         ? `${t('TorrentFiles')} (${playableFileList!.length})`
         : `${t('TorrentContent')} (${playableFileList!.length})`
       : t('Play')
-  const cacheLabel = compact ? t('Cache') : t('DetailedCacheView.button')
+  /** onOpenCache switches to the Cache tab — keep the label honest. */
+  const cacheLabel = t('Cache')
 
   const onPlayPress = () => {
     runConfiguredPlay({
@@ -334,7 +335,7 @@ function TorrentActions({
             variant='ghost'
             isIconOnly
             className={`${iconBtn} shrink-0 text-muted`}
-            aria-label={t('Info')}
+            aria-label={t('Actions')}
             onPress={moreState.open}
           >
             <MoreHorizontal {...iconMenu} aria-hidden />
@@ -401,7 +402,7 @@ function TorrentActions({
                   <Drawer.Heading>{t('Info')}</Drawer.Heading>
                   <Drawer.CloseTrigger className='min-h-11 min-w-11' aria-label={t('Close')} />
                 </Drawer.Header>
-                <Drawer.Body className='flex flex-col gap-0.5 px-0 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] pt-1'>
+                <Drawer.Body className='flex flex-col gap-0.5 px-0 pt-1'>
                   {singleFileStream
                     ? sheetAction(t('CopyLink'), <Link2 {...iconMenu} aria-hidden />, () => void copyStreamLink())
                     : null}
@@ -448,7 +449,7 @@ function TorrentActions({
       <div className='flex w-full items-stretch gap-2'>
         {onOpenCache ? (
           <Button variant='primary' size='lg' className='min-h-11 min-w-0 flex-1 gap-2' onPress={onOpenCache}>
-            <span className='truncate'>{t('DetailedCacheView.button')}</span>
+            <span className='truncate'>{cacheLabel}</span>
             <ChevronRight size={16} strokeWidth={1.75} className='shrink-0' aria-hidden />
           </Button>
         ) : null}
