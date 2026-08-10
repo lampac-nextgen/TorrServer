@@ -194,11 +194,15 @@ export default function SwarmStatsPanel({
   const totalSize = torrent.torrent_size ?? 0
   const loadedPct = pct(loaded, totalSize)
   const bufferTarget = resolveBufferTargetBytes(cache?.Capacity, preloadCachePercent)
-  // Playable ahead while streaming; Filled/target while idle/preload.
+  // Streaming → playable ahead; idle → preload progress toward Cache Size × Preload %.
   const bufferAhead = bufferAheadBytes(cache)
   const isStreamingBuffer = bufferAhead != null
-  const bufferFilled = bufferAhead ?? cache?.Filled ?? 0
-  const preloadHint = isStreamingBuffer ? t('BufferAheadHint') : t('BufferHint')
+  const bufferFilled = isStreamingBuffer ? bufferAhead : (cache?.Filled ?? 0)
+  const preloadHint = isStreamingBuffer
+    ? bufferAhead === 0
+      ? t('BufferAheadEmptyHint')
+      : t('BufferAheadHint')
+    : t('BufferHint')
   const preloadTitle = isStreamingBuffer ? t('BufferAhead') : t('Buffer')
   const preloadPct = bufferFillPercent(bufferFilled, bufferTarget)
   const durationLabel = formatDuration(torrent.duration_seconds)

@@ -336,10 +336,29 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode, hash }: Torr
       ) : null}
 
       {showFooter ? (
-        <p className='mt-2 shrink-0 self-center text-xs uppercase tracking-wide text-muted'>
-          {t('SnakeFocusRange', { start: footerStart, end: footerEnd })}
-          {!hasActiveReaders ? ` · ${t('SnakeIdleFrozen')}` : null}
-        </p>
+        <div className='mt-2 flex shrink-0 flex-col items-center gap-1'>
+          <p className='text-xs uppercase tracking-wide text-muted'>
+            {t('SnakeFocusRange', { start: footerStart, end: footerEnd })}
+            {!hasActiveReaders ? ` · ${t('SnakeIdleFrozen')}` : null}
+          </p>
+          <p className='flex flex-wrap items-center justify-center gap-x-3 gap-y-0.5 text-[10px] text-muted'>
+            <span className='inline-flex items-center gap-1'>
+              <span className='size-2 rounded-[2px] bg-accent' aria-hidden />
+              {t('SnakeLegendCached')}
+            </span>
+            <span className='inline-flex items-center gap-1'>
+              <span className='size-2 rounded-[2px] border-2 border-foreground bg-transparent' aria-hidden />
+              {t('SnakeLegendHead')}
+            </span>
+            <span className='inline-flex items-center gap-1'>
+              <span
+                className='size-2 rounded-[2px] border border-[#c4a882] bg-[#c4a882]/30 dark:border-[#c4a882]'
+                aria-hidden
+              />
+              {t('SnakeLegendRange')}
+            </span>
+          </p>
+        </div>
       ) : null}
     </div>
   )

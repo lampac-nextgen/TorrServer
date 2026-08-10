@@ -106,6 +106,12 @@ describe('formatBufferAheadLabel', () => {
     expect(label).toMatch(/242/)
   })
 
+  it('uses the empty-ahead label when there is no contiguous reserve', () => {
+    const label = formatBufferAheadLabel(0)
+    expect(label).toBeTruthy()
+    expect(label).not.toMatch(/0 /)
+  })
+
   it('returns null for missing input', () => {
     expect(formatBufferAheadLabel(null)).toBeNull()
     expect(formatBufferAheadLabel(undefined)).toBeNull()
@@ -142,7 +148,18 @@ describe('bufferAheadBytes', () => {
       },
       [{ Reader: 3, Start: 3, End: 9, Active: true }],
     )
-    expect(bufferAheadBytes(model)).toBe(100)
+    // Full head + partial next piece (counted), then stop.
+    expect(bufferAheadBytes(model)).toBe(140)
+  })
+
+  it('counts a partial playhead piece instead of reporting zero', () => {
+    const model = cache({ 3: { Size: 40, Length: 100 } }, [{ Reader: 3, Start: 3, End: 9, Active: true }])
+    expect(bufferAheadBytes(model)).toBe(40)
+  })
+
+  it('returns zero when the playhead piece is missing', () => {
+    const model = cache({ 5: { Size: 100, Length: 100 } }, [{ Reader: 3, Start: 3, End: 9, Active: true }])
+    expect(bufferAheadBytes(model)).toBe(0)
   })
 
   it('stops at a missing piece', () => {

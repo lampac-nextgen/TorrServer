@@ -87,9 +87,11 @@ export function formatBufferFilledLabel(
 /**
  * Playable contiguous bytes ahead of the playhead — never `ahead / target`, which
  * reads as if the preload target were a capacity that overflowed.
+ * Pass `0` for the empty-ahead label (`BufferAheadEmpty`).
  */
 export function formatBufferAheadLabel(aheadBytes?: number | null): string | null {
   if (aheadBytes == null || aheadBytes < 0 || Number.isNaN(aheadBytes)) return null
+  if (aheadBytes === 0) return i18n.t('BufferAheadEmpty')
   return i18n.t('BufferAheadLabel', { size: humanizeSize(aheadBytes) })
 }
 
@@ -130,9 +132,9 @@ export function bufferAheadBytes(cache?: TorrentCache | null): number | null {
     const length = piece.Length || defaultLength || 0
     if (length <= 0) break
     const size = Math.min(piece.Size || 0, length)
-    // Stop at the first hole: bytes past it are not continuously playable.
-    if (size < length) break
+    // Count the partial head/hole piece, then stop — bytes past a hole are not playable.
     total += size
+    if (size < length) break
   }
   return total
 }
