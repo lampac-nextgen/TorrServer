@@ -442,8 +442,6 @@ export default function DetailsDialog({
       onViewedChange={refreshViewed}
       onDropped={onClose}
       onDeleted={onClose}
-      onShowFiles={() => setActiveTab('files')}
-      onOpenCache={() => setActiveTab('cache')}
       compact={useCompactDetails}
     />
   )

@@ -1,5 +1,5 @@
 import { useMemo, memo, useState, type ReactNode } from 'react'
-import { Button, ButtonGroup, Drawer, Modal, Separator, Spinner, useMediaQuery, useOverlayState } from '@heroui/react'
+import { Button, ButtonGroup, Drawer, Modal, Separator, useMediaQuery, useOverlayState } from '@heroui/react'
 import {
   EyeOff,
   Hash,
@@ -7,12 +7,10 @@ import {
   ListMusic,
   Magnet,
   MoreHorizontal,
-  Play,
   Settings,
   Share2,
   SquareArrowOutUpRight,
   Trash2,
-  ChevronRight,
 } from 'lucide-react'
 import ptt from 'parse-torrent-title'
 import { useQueryClient } from '@tanstack/react-query'
@@ -26,10 +24,8 @@ import { useExternalPlayers } from 'shared/lib/externalPlayers'
 import { copyToClipboard } from 'shared/lib/clipboard'
 import { requestOpenSettings } from 'shared/lib/settingsEvents'
 import { queryMax } from 'shared/theme/breakpoints'
-import { iconBtn } from 'shared/ui/controlClasses'
 import { iconMenu } from 'shared/ui/iconProps'
 import { useOptionalAppToast } from 'shared/ui/Toast'
-import { useConfiguredPlayAction } from 'features/player/useConfiguredPlayAction'
 import { usePlayLauncher } from 'features/player/usePlayLauncher'
 
 export interface TorrentActionsProps {
@@ -44,14 +40,10 @@ export interface TorrentActionsProps {
   onDropped?: () => void
   /** After permanent delete — close details. */
   onDeleted?: () => void
-  /** Switch details sheet to the Files tab (multi-file "Play" entry point). */
-  onShowFiles?: () => void
-  /** Switch details sheet to the Cache tab. */
-  onOpenCache?: () => void
   /** Continue Watching: auto-play this file when the list is ready. */
   autoPlayFileId?: number
   autoPlayTimecode?: number
-  /** Phone/fullscreen Details — denser Play row + secondary actions in a menu. */
+  /** Phone/fullscreen Details — secondary actions in a bottom sheet. */
   compact?: boolean
 }
 
@@ -95,8 +87,8 @@ function ExternalPlayersGroup({
 }
 
 /**
- * Stats-tab action block: Play / playlist / magnet / hash / drop / clear viewed.
- * Copy helpers go through {@link copyToClipboard} so LAN HTTP phones do not error.
+ * Stats-tab action block: playlist / magnet / hash / drop / clear viewed.
+ * Play + Cache live on their own tabs; copy helpers use {@link copyToClipboard}.
  */
 function TorrentActions({
   hash,
@@ -109,8 +101,6 @@ function TorrentActions({
   onViewedChange,
   onDropped,
   onDeleted,
-  onShowFiles,
-  onOpenCache,
   autoPlayFileId,
   autoPlayTimecode,
   compact: compactProp = false,
@@ -139,7 +129,8 @@ function TorrentActions({
   const fromLatestPlaylistLink = `${fullPlaylistLink}&fromlast`
   const magnetLink = `magnet:?xt=urn:btih:${hash}&dn=${encodeURIComponent(name || title || '')}`
 
-  const { handlePlay, resolvePlayableFile, isResolving, playerModals } = usePlayLauncher({
+  /** Keep launcher mounted for Continue Watching autoplay + player modals. */
+  const { playerModals } = usePlayLauncher({
     hash,
     displayName,
     knownPlayableFiles: playableFileList || [],
@@ -148,9 +139,7 @@ function TorrentActions({
     autoPlayTimecode,
   })
 
-  const { runConfiguredPlay } = useConfiguredPlayAction()
-
-  /** Only offer app deep links when there's exactly one obvious file to hand off — otherwise Play's file picker covers it. */
+  /** Only offer app deep links when there's exactly one obvious file to hand off. */
   const { buildExternalPlayers, hasAnyExternalPlayer } = useExternalPlayers()
   const singleFileStream = useMemo(() => {
     if (playableFileList?.length !== 1) return null
@@ -237,29 +226,6 @@ function TorrentActions({
   }
 
   const hasPartialProgress = !isSingleFileTorrent && !!viewedFileList?.length
-  const playLabel: ReactNode =
-    !isSingleFileTorrent && (playableFileList?.length ?? 0) > 1
-      ? compact
-        ? `${t('TorrentFiles')} (${playableFileList!.length})`
-        : `${t('TorrentContent')} (${playableFileList!.length})`
-      : t('Play')
-  /** onOpenCache switches to the Cache tab — keep the label honest. */
-  const cacheLabel = t('Cache')
-
-  const onPlayPress = () => {
-    runConfiguredPlay({
-      hash,
-      displayName,
-      knownPlayableFiles: playableFileList || [],
-      handlePlay,
-      resolvePlayableFile,
-      copyText: text =>
-        copyToClipboard(text)
-          .then(() => toast?.showToast({ message: t('Copied'), severity: 'success' }))
-          .catch(() => toast?.showToast({ message: t('Error'), severity: 'error' })),
-      onBuiltinMultiFile: onShowFiles,
-    })
-  }
 
   const confirmModal = (
     <Modal.Root state={confirmState}>
@@ -306,39 +272,10 @@ function TorrentActions({
 
     return (
       <div className='space-y-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
-        <div className='flex items-center gap-2'>
-          {onOpenCache ? (
-            <Button variant='primary' size='md' className='min-h-11 min-w-0 flex-1 gap-2' onPress={onOpenCache}>
-              <span className='truncate text-sm'>{cacheLabel}</span>
-              <ChevronRight size={16} strokeWidth={1.75} className='shrink-0' aria-hidden />
-            </Button>
-          ) : null}
-          <Button
-            variant='primary'
-            size='md'
-            className='min-h-11 min-w-0 flex-1 gap-2'
-            isPending={isResolving}
-            onPress={onPlayPress}
-          >
-            {({ isPending }) => (
-              <>
-                {isPending ? (
-                  <Spinner size='sm' color='current' />
-                ) : (
-                  <Play {...iconMenu} fill='currentColor' aria-hidden />
-                )}
-                <span className='truncate text-sm'>{playLabel}</span>
-              </>
-            )}
-          </Button>
-          <Button
-            variant='ghost'
-            isIconOnly
-            className={`${iconBtn} shrink-0 text-muted`}
-            aria-label={t('Actions')}
-            onPress={moreState.open}
-          >
+        <div className='flex items-center justify-end gap-2'>
+          <Button variant='secondary' size='md' className='min-h-11 min-w-0 flex-1 gap-2' onPress={moreState.open}>
             <MoreHorizontal {...iconMenu} aria-hidden />
+            <span className='truncate text-sm'>{t('Actions')}</span>
           </Button>
         </div>
 
@@ -446,32 +383,6 @@ function TorrentActions({
 
   return (
     <div className='space-y-4'>
-      <div className='flex w-full items-stretch gap-2'>
-        {onOpenCache ? (
-          <Button variant='primary' size='lg' className='min-h-11 min-w-0 flex-1 gap-2' onPress={onOpenCache}>
-            <span className='truncate'>{cacheLabel}</span>
-            <ChevronRight size={16} strokeWidth={1.75} className='shrink-0' aria-hidden />
-          </Button>
-        ) : null}
-        <Button
-          variant='primary'
-          size='lg'
-          className='min-h-11 min-w-0 flex-1 gap-2'
-          isPending={isResolving}
-          onPress={onPlayPress}
-        >
-          {({ isPending }) => (
-            <>
-              {isPending ? (
-                <Spinner size='sm' color='current' />
-              ) : (
-                <Play {...iconMenu} fill='currentColor' aria-hidden />
-              )}
-              <span className='truncate'>{playLabel}</span>
-            </>
-          )}
-        </Button>
-      </div>
       {externalPlayers.length > 0 || singleFileStream ? (
         <div className='flex w-full items-center gap-2'>
           <ExternalPlayersGroup players={externalPlayers} stretch />
