@@ -10,12 +10,16 @@ import { useTorrentDetail } from 'shared/hooks/useTorrentDetail'
 import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
 import {
-  getPeerString,
+  bufferFillPercent,
+  formatBufferFilledLabel,
   formatCacheFilledLabel,
+  getPeerString,
   humanizeSize,
   humanizeSpeed,
   removeRedundantCharacters,
+  resolveBufferTargetBytes,
 } from 'shared/lib/format'
+import { useSettingsQuery } from 'shared/hooks/useSettingsQuery'
 import { filesFromMetadata } from 'shared/torrent/fileMetadata'
 import { isFilePlayable } from 'shared/torrent/playable'
 import { CLOSED, GETTING_INFO, IN_DB, PRELOAD, WORKING } from 'shared/torrent/states'
@@ -53,6 +57,7 @@ function StatWidget({
   dense = false,
   compact = false,
   tight = false,
+  hint,
 }: {
   label: string
   value: string
@@ -61,6 +66,8 @@ function StatWidget({
   compact?: boolean
   /** Phone density pass — single-line labels, no reserved 2-line min-height. */
   tight?: boolean
+  /** Longer semantics tooltip (Cache vs Buffer vs Loaded). */
+  hint?: string
 }) {
   const shown = value || '—'
   return (
@@ -68,6 +75,7 @@ function StatWidget({
       className={`min-w-0 rounded-md border border-border bg-surface-secondary text-center ${
         dense ? (tight ? 'w-full px-1.5 py-0.5' : 'w-full px-1.5 py-1') : 'px-2.5 py-2 sm:min-w-[104px] sm:px-3'
       }`}
+      title={hint || undefined}
     >
       <span
         className={`block leading-tight text-muted ${
@@ -79,7 +87,7 @@ function StatWidget({
                 ? 'truncate text-[11px]'
                 : 'truncate text-[11px] sm:text-xs'
         }`}
-        title={label}
+        title={hint || label}
       >
         {label}
       </span>
@@ -238,6 +246,11 @@ export default function DetailsDialog({
     // Fast snake on Cache tab or while the large map dialog is open.
     fast: resolvedTab === 'cache' || cacheMapOpen,
   })
+  const { data: btSettings } = useSettingsQuery()
+  const preloadCachePercent = btSettings?.PreloadCache ?? 50
+  const bufferTarget = resolveBufferTargetBytes(cache.Capacity, preloadCachePercent)
+  const bufferLabel = formatBufferFilledLabel(cache.Filled, bufferTarget, { percent: 'always' }) ?? '—'
+  const bufferPct = bufferFillPercent(cache.Filled, bufferTarget)
 
   const seasonsFingerprint = useMemo(() => {
     const seasons: number[] = []
@@ -359,6 +372,7 @@ export default function DetailsDialog({
         tight={useCompactDetails && !showHeroSix}
         label={t('CacheFilled')}
         value={cacheFilledValue}
+        hint={t('CacheHint')}
       />
       <StatWidget
         dense
@@ -402,7 +416,7 @@ export default function DetailsDialog({
     ...(showHeroSix
       ? []
       : [
-          { label: t('CacheFilled'), value: cacheFilledValue },
+          { label: t('CacheFilled'), value: cacheFilledValue, hint: t('CacheHint') },
           { label: t('Status'), value: statusLabel(stat) },
         ]),
     { label: t('Category'), value: category || '—' },
@@ -642,7 +656,14 @@ export default function DetailsDialog({
                       <MetricRows title={t('Details')} items={secondaryMetricItems} columns={1} />
                     ) : null}
                     <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
-                    <SwarmStatsPanel torrent={torrent} variant='summary' columns={2} showTitle={false} />
+                    <SwarmStatsPanel
+                      torrent={torrent}
+                      variant='summary'
+                      columns={2}
+                      showTitle={false}
+                      cache={cache}
+                      preloadCachePercent={preloadCachePercent}
+                    />
                   </div>
                   <div className='shrink-0 border-t border-border bg-surface/95 pt-2 backdrop-blur-sm'>
                     {torrentActions}
@@ -652,7 +673,13 @@ export default function DetailsDialog({
                 <>
                   <div className='grid min-h-[14rem] shrink-0 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-stretch gap-3'>
                     <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact fill />
-                    <SwarmStatsPanel torrent={torrent} variant='summary' stretch />
+                    <SwarmStatsPanel
+                      torrent={torrent}
+                      variant='summary'
+                      stretch
+                      cache={cache}
+                      preloadCachePercent={preloadCachePercent}
+                    />
                   </div>
                   <div className='shrink-0'>{torrentActions}</div>
                 </>
@@ -669,26 +696,69 @@ export default function DetailsDialog({
                     : 'min-h-0 w-full flex-1 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'
                 }
                 cacheReaders={cache.Readers?.length ?? 0}
+                cache={cache}
+                preloadCachePercent={preloadCachePercent}
               />
             </Tabs.Panel>
 
             <Tabs.Panel id='cache' className='flex min-h-0 flex-1 flex-col gap-2 overflow-hidden pt-3 sm:gap-4 sm:pt-4'>
-              <div className='flex shrink-0 items-center justify-between gap-2'>
-                {useCompactDetails ? null : <p className='text-sm font-semibold text-muted'>{t('Cache')}</p>}
-                <div
-                  className={`flex flex-wrap items-center gap-2 ${useCompactDetails ? 'w-full justify-between' : ''}`}
-                >
-                  <Checkbox isSelected={isSnakeDebugMode} onChange={setIsSnakeDebugMode}>
-                    <Checkbox.Content>
-                      <Checkbox.Control>
-                        <Checkbox.Indicator />
-                      </Checkbox.Control>
-                      {t('SnakeDebug')}
-                    </Checkbox.Content>
-                  </Checkbox>
-                  <Button size='sm' variant='secondary' className='min-h-11' onPress={() => setCacheMapOpen(true)}>
-                    {t('DetailedCacheView.button')}
-                  </Button>
+              <div className='flex shrink-0 flex-col gap-2'>
+                <div className='flex items-center justify-between gap-2'>
+                  {useCompactDetails ? null : (
+                    <p className='text-sm font-semibold text-muted' title={t('CacheHint')}>
+                      {t('Cache')}
+                    </p>
+                  )}
+                  <div
+                    className={`flex flex-wrap items-center gap-2 ${useCompactDetails ? 'w-full justify-between' : ''}`}
+                  >
+                    <Checkbox isSelected={isSnakeDebugMode} onChange={setIsSnakeDebugMode}>
+                      <Checkbox.Content>
+                        <Checkbox.Control>
+                          <Checkbox.Indicator />
+                        </Checkbox.Control>
+                        {t('SnakeDebug')}
+                      </Checkbox.Content>
+                    </Checkbox>
+                    <Button size='sm' variant='secondary' className='min-h-11' onPress={() => setCacheMapOpen(true)}>
+                      {t('DetailedCacheView.button')}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className='rounded-xl border border-border bg-surface-secondary p-2.5' title={t('BufferHint')}>
+                  <div className='mb-1 flex items-baseline justify-between gap-2 text-xs'>
+                    <span className='truncate text-muted'>{t('Buffer')}</span>
+                    <span className='shrink-0 font-bold tabular-nums text-foreground'>{bufferLabel}</span>
+                  </div>
+                  <div className='mb-2 h-2 overflow-hidden rounded-full bg-surface'>
+                    <div
+                      className='h-full rounded-full bg-accent transition-[width] duration-300'
+                      style={{ width: `${bufferPct}%` }}
+                    />
+                  </div>
+                  <div className='flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted'>
+                    <span title={t('CacheHint')}>
+                      {t('CacheFilled')}:{' '}
+                      <span className='font-semibold tabular-nums text-foreground'>{cacheFilledValue}</span>
+                    </span>
+                    <span>
+                      {t('CacheReaders')}:{' '}
+                      <span className='font-semibold tabular-nums text-foreground'>{cache.Readers?.length ?? 0}</span>
+                    </span>
+                    <span>
+                      {t('PiecesCount')}:{' '}
+                      <span className='font-semibold tabular-nums text-foreground'>
+                        {cache.PiecesCount != null ? String(cache.PiecesCount) : '—'}
+                      </span>
+                    </span>
+                    <span>
+                      {t('PiecesLength')}:{' '}
+                      <span className='font-semibold tabular-nums text-foreground'>
+                        {cache.PiecesLength != null ? humanizeSize(cache.PiecesLength) : '—'}
+                      </span>
+                    </span>
+                  </div>
                 </div>
               </div>
 

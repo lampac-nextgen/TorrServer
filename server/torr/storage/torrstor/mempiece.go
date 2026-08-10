@@ -27,8 +27,9 @@ func (p *MemPiece) WriteAt(b []byte, off int64) (n int, err error) {
 	}
 	n = copy(p.buffer[off:], b[:])
 	p.piece.Size += int64(n)
-	if p.piece.Size > p.piece.cache.pieceLength {
-		p.piece.Size = p.piece.cache.pieceLength
+	plen := p.piece.cache.pieceByteLength(p.piece.Id)
+	if plen > 0 && p.piece.Size > plen {
+		p.piece.Size = plen
 	}
 	if p.piece.Size > 0 {
 		p.piece.cache.notePieceFilled(p.piece.Id)

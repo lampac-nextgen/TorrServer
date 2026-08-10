@@ -36,8 +36,7 @@ export function getPeerString(torrent?: TorrentStat | null): string | null {
 
 /**
  * Cache fill label — same shape as Details «Кеш» widget.
- * `percent: 'whenOver'` → sizes only until filled exceeds capacity, then `· N%` (can exceed 100).
- * `percent: 'always'` → always append `· N%` (card progress).
+ * Shows raw `filled` (may exceed capacity until cleanPieces); appends `· N%` when over or always.
  */
 export function formatCacheFilledLabel(
   filled?: number | null,
@@ -45,13 +44,45 @@ export function formatCacheFilledLabel(
   opts?: { percent?: 'whenOver' | 'always' },
 ): string | null {
   if (filled == null || capacity == null || capacity <= 0 || filled < 0) return null
-  const shown = Math.min(filled, capacity)
   const pct = Math.round((filled / capacity) * 100)
   const over = filled > capacity
-  const sizes = `${humanizeSize(shown)} / ${humanizeSize(capacity)}`
+  const sizes = `${humanizeSize(filled)} / ${humanizeSize(capacity)}`
   const mode = opts?.percent ?? 'whenOver'
   if (mode === 'always' || over) return `${sizes} · ${pct}%`
   return sizes
+}
+
+/** Legacy Buffer target: Capacity × PreloadCache%, floored at 32 MiB. */
+export const BUFFER_TARGET_FLOOR_BYTES = 32 * 1024 * 1024
+
+export function resolveBufferTargetBytes(capacity?: number | null, preloadCachePercent?: number | null): number | null {
+  if (capacity == null || capacity <= 0) return null
+  const pct = preloadCachePercent == null || Number.isNaN(preloadCachePercent) ? 50 : preloadCachePercent
+  const preloadSize = (capacity / 100) * Math.max(0, pct)
+  return Math.max(preloadSize, BUFFER_TARGET_FLOOR_BYTES)
+}
+
+/**
+ * Buffer/Preload progress: live cache Filled toward buffer target (not Capacity).
+ * Label order is `Filled / target`.
+ */
+export function formatBufferFilledLabel(
+  filled?: number | null,
+  bufferTarget?: number | null,
+  opts?: { percent?: 'whenOver' | 'always' },
+): string | null {
+  if (filled == null || bufferTarget == null || bufferTarget <= 0 || filled < 0) return null
+  const pct = Math.round((filled / bufferTarget) * 100)
+  const over = filled > bufferTarget
+  const sizes = `${humanizeSize(filled)} / ${humanizeSize(bufferTarget)}`
+  const mode = opts?.percent ?? 'whenOver'
+  if (mode === 'always' || over) return `${sizes} · ${pct}%`
+  return sizes
+}
+
+export function bufferFillPercent(filled?: number | null, bufferTarget?: number | null): number {
+  if (filled == null || bufferTarget == null || bufferTarget <= 0 || filled < 0) return 0
+  return Math.min(100, Math.max(0, (filled / bufferTarget) * 100))
 }
 
 /**

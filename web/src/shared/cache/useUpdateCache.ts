@@ -4,6 +4,7 @@ import type { TorrentCache } from 'shared/api/types'
 import { cacheHost } from 'shared/api/hosts'
 
 import { buildFocusModel, type CacheDrawModel } from './buildCacheMap'
+import { cacheVisualEqual, cheapPiecesFingerprint, cheapReadersFingerprint } from './cacheFingerprint'
 
 /** Active cadence while pieces/readers change — snake must track piece fill live. */
 const CACHE_POLL_ACTIVE_MS = 100
@@ -11,38 +12,6 @@ const CACHE_POLL_ACTIVE_MS = 100
 const CACHE_POLL_IDLE_MS = 1000
 /** Switch to idle after this many ms without visual changes (and no readers). */
 const CACHE_IDLE_AFTER_MS = 2000
-
-const readersFingerprint = (readers: TorrentCache['Readers']) => {
-  if (!readers?.length) return ''
-  return readers.map(r => `${r.Reader ?? ''}:${r.Start ?? ''}-${r.End ?? ''}`).join('|')
-}
-
-const piecesFingerprint = (pieces: TorrentCache['Pieces']) => {
-  if (!pieces) return ''
-  if (Array.isArray(pieces)) {
-    let acc = ''
-    for (let i = 0; i < pieces.length; i++) {
-      const p = pieces[i]
-      if (!p) continue
-      acc += `${i}:${p.Size ?? 0}:${p.Priority ?? 0}:${p.Completed ? 1 : 0};`
-    }
-    return acc
-  }
-  let acc = ''
-  for (const [key, p] of Object.entries(pieces)) {
-    if (!p) continue
-    acc += `${key}:${p.Size ?? 0}:${p.Priority ?? 0}:${p.Completed ? 1 : 0};`
-  }
-  return acc
-}
-
-const cacheVisualEqual = (a: TorrentCache, b: TorrentCache) =>
-  a.Filled === b.Filled &&
-  a.Capacity === b.Capacity &&
-  a.PiecesCount === b.PiecesCount &&
-  a.PiecesLength === b.PiecesLength &&
-  readersFingerprint(a.Readers) === readersFingerprint(b.Readers) &&
-  piecesFingerprint(a.Pieces) === piecesFingerprint(b.Pieces)
 
 export interface UseUpdateCacheOptions {
   /** When false, polling stops. Defaults to true when hash is set. */
@@ -99,8 +68,6 @@ export const useUpdateCache = (hash?: string, options?: UseUpdateCacheOptions) =
           const next = (data || {}) as TorrentCache
           const hasReaders = (next.Readers?.length ?? 0) > 0
           if (cacheVisualEqual(cacheRef.current, next)) {
-            // Stay near-real-time while readers are active OR fill recently changed.
-            // Drop to 1s only after quiet + no readers.
             if (fast) {
               const quiet = Date.now() - lastChangeAt.current >= CACHE_IDLE_AFTER_MS
               pollMs.current = !hasReaders && quiet ? CACHE_POLL_IDLE_MS : CACHE_POLL_ACTIVE_MS
@@ -113,7 +80,6 @@ export const useUpdateCache = (hash?: string, options?: UseUpdateCacheOptions) =
           setCache(next)
         })
         .catch(() => {
-          // Keep last good snapshot — wiping to {} flickers the snake empty on transient errors.
           if (!componentIsMounted.current || cancelled) return
           pollMs.current = CACHE_POLL_IDLE_MS
         })
@@ -145,17 +111,34 @@ export const useUpdateCache = (hash?: string, options?: UseUpdateCacheOptions) =
   return cache
 }
 
+/**
+ * Sticky 1:1 focus window. Camera is React state so budget changes clear sticky
+ * start immediately and dead-zone re-centers without ref-during-render.
+ */
 export const useCreateFocusMap = (cache: TorrentCache, visibleCells: number): CacheDrawModel => {
-  const lastWindowStartRef = useRef<number | undefined>(undefined)
-  return useMemo(() => {
-    const model = buildFocusModel(cache, visibleCells, {
-      // eslint-disable-next-line react-hooks/refs -- read previous camera window for sticky focus
-      lastWindowStart: lastWindowStartRef.current,
+  const [camera, setCamera] = useState<{ budget: number; start?: number }>({ budget: visibleCells })
+  const lastStart = camera.budget === visibleCells ? camera.start : undefined
+
+  const model = useMemo(
+    () =>
+      buildFocusModel(cache, visibleCells, {
+        lastWindowStart: lastStart,
+      }),
+    [cache, visibleCells, lastStart],
+  )
+
+  useEffect(() => {
+    if (model.windowStart == null || model.windowEnd == null || model.windowEnd < model.windowStart) return
+    // Sticky camera across poll ticks; skip update when unchanged to avoid loops.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- persist focus window between cache polls
+    setCamera(prev => {
+      if (prev.budget === visibleCells && prev.start === model.windowStart) return prev
+      return { budget: visibleCells, start: model.windowStart }
     })
-    if (model.windowStart != null && model.windowEnd != null && model.windowEnd >= model.windowStart) {
-      // eslint-disable-next-line react-hooks/refs -- persist camera window across cache polls
-      lastWindowStartRef.current = model.windowStart
-    }
-    return model
-  }, [cache, visibleCells])
+  }, [model.windowStart, model.windowEnd, visibleCells])
+
+  return model
 }
+
+// Re-export fingerprints for memo consumers that previously inlined them.
+export { cheapPiecesFingerprint, cheapReadersFingerprint }

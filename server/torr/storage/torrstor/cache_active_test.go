@@ -55,3 +55,31 @@ func TestNotePieceActiveTracking(t *testing.T) {
 		t.Fatal("expected piece 7 inactive")
 	}
 }
+
+func TestPieceByteLengthLastPiece(t *testing.T) {
+	c := &Cache{
+		pieces:       make(map[int]*Piece),
+		activePieces: make(map[int]struct{}),
+		pieceCount:   3,
+		pieceLength:  1000,
+		totalLength:  2500, // last piece = 500
+		capacity:     3000,
+	}
+	if got := c.pieceByteLength(0); got != 1000 {
+		t.Fatalf("piece 0: want 1000, got %d", got)
+	}
+	if got := c.pieceByteLength(2); got != 500 {
+		t.Fatalf("last piece: want 500, got %d", got)
+	}
+
+	c.pieces[2] = &Piece{Id: 2, Size: 500, Complete: false, cache: c}
+	c.notePieceFilled(2)
+	st := c.GetState()
+	item := st.Pieces[2]
+	if item.Length != 500 {
+		t.Fatalf("GetState Length: want 500, got %d", item.Length)
+	}
+	if !item.Completed {
+		t.Fatal("expected Completed when Size >= last-piece Length")
+	}
+}

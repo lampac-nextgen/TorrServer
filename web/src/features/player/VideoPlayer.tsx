@@ -325,7 +325,7 @@ export default function VideoPlayer({
           <span className='tabular-nums'>{peersLabel}</span>
           <span className='tabular-nums text-white/70'>{seedersLabel}</span>
         </PlayerStat>
-        <PlayerStat tip={t('CacheFilled')}>
+        <PlayerStat tip={t('CacheHint')}>
           <Database className='size-3 shrink-0' strokeWidth={2} aria-hidden />
           <span className='min-w-0 truncate tabular-nums'>{cacheFilledLabel}</span>
         </PlayerStat>

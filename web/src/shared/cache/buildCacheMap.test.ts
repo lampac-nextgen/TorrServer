@@ -119,22 +119,23 @@ describe('pieceFillPercentage', () => {
 })
 
 describe('resolveFocusWindow / buildFocusModel', () => {
-  it('centers window on reader on first frame and stays in bounds', () => {
+  it('sizes the focus window to visibleCells (not Capacity inflation)', () => {
     const cache: TorrentCache = {
-      PiecesCount: 100,
+      PiecesCount: 500,
       PiecesLength: 1024,
-      Capacity: 10 * 1024,
-      Readers: [{ Reader: 50, Start: 40, End: 60 }],
+      // Huge capacity would previously inflate the window past the drawable grid.
+      Capacity: 256 * 1024 * 1024,
+      Readers: [{ Reader: 100, Start: 90, End: 120 }],
     }
-    const window = resolveFocusWindow(cache, 20)
+    const visible = 24
+    const window = resolveFocusWindow(cache, visible)
     expect(window).not.toBeNull()
-    expect(window!.start).toBeGreaterThanOrEqual(0)
-    expect(window!.end).toBeLessThan(100)
-    expect(window!.readerPiece).toBe(50)
-    expect(window!.end - window!.start + 1).toBeGreaterThanOrEqual(20)
-    // Reader should sit near the middle of the window on first frame
-    const mid = (window!.start + window!.end) / 2
-    expect(Math.abs(mid - 50)).toBeLessThanOrEqual(2)
+    expect(window!.end - window!.start + 1).toBe(visible)
+
+    const model = buildFocusModel(cache, visible)
+    expect(model.cells).toHaveLength(visible)
+    expect(model.windowStart).toBe(window!.start)
+    expect(model.windowEnd).toBe(window!.end)
   })
 
   it('keeps windowStart when head advances inside dead zone', () => {

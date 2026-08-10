@@ -28,6 +28,8 @@ type Cache struct {
 
 	pieceLength int64
 	pieceCount  int
+	/** Total torrent length from metainfo — used for last-piece Length before SetTorrent. */
+	totalLength int64
 
 	pieces map[int]*Piece
 
@@ -65,6 +67,7 @@ func (c *Cache) Init(info *metainfo.Info, hash metainfo.Hash) {
 
 	c.pieceLength = info.PieceLength
 	c.pieceCount = info.NumPieces()
+	c.totalLength = info.TotalLength()
 	c.hash = hash
 
 	if settings.BTsets.UseDisk {
@@ -82,6 +85,31 @@ func (c *Cache) Init(info *metainfo.Info, hash metainfo.Hash) {
 
 func (c *Cache) SetTorrent(torr *torrent.Torrent) {
 	c.torrent = torr
+}
+
+/** Actual byte length of piece id (last piece may be shorter than PiecesLength). */
+func (c *Cache) pieceByteLength(id int) int64 {
+	if id < 0 || id >= c.pieceCount || c.pieceLength <= 0 {
+		return c.pieceLength
+	}
+	total := c.totalLength
+	if c.torrent != nil {
+		if tl := c.torrent.Length(); tl > 0 {
+			total = tl
+		}
+	}
+	if total <= 0 {
+		return c.pieceLength
+	}
+	start := int64(id) * c.pieceLength
+	remain := total - start
+	if remain <= 0 {
+		return c.pieceLength
+	}
+	if remain < c.pieceLength {
+		return remain
+	}
+	return c.pieceLength
 }
 
 func (c *Cache) Piece(m metainfo.Piece) storage.PieceImpl {
@@ -221,11 +249,12 @@ func (c *Cache) GetState() *state.CacheState {
 		if c.torrent != nil {
 			priority = int(c.torrent.PieceState(p.Id).Priority)
 		}
+		plen := c.pieceByteLength(p.Id)
 		piecesState[p.Id] = state.ItemState{
 			Id:        p.Id,
 			Size:      p.Size,
-			Length:    c.pieceLength,
-			Completed: p.Complete,
+			Length:    plen,
+			Completed: p.Complete || (plen > 0 && p.Size >= plen),
 			Priority:  priority,
 		}
 	}
@@ -244,11 +273,12 @@ func (c *Cache) GetState() *state.CacheState {
 			if !ok || p == nil {
 				continue
 			}
+			plen := c.pieceByteLength(id)
 			piecesState[id] = state.ItemState{
 				Id:        id,
 				Size:      p.Size,
-				Length:    c.pieceLength,
-				Completed: p.Complete,
+				Length:    plen,
+				Completed: p.Complete || (plen > 0 && p.Size >= plen),
 				Priority:  int(c.torrent.PieceState(id).Priority),
 			}
 		}

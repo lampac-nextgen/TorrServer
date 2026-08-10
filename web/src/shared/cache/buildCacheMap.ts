@@ -143,9 +143,10 @@ const cellFromPiece = (
 }
 
 /**
- * Full-torrent snake model: always covers 0..PiecesCount-1.
+ * Full-torrent LOD snake model: always covers 0..PiecesCount-1.
  * If there are more pieces than maxCells, adjacent pieces are merged with
- * byte-accurate fill (Size/Length) — global cache picture stays correct.
+ * byte-accurate fill (Size/Length). Kept for tests / possible future overview —
+ * production UI uses {@link buildFocusModel} only.
  */
 export const buildCacheDrawModel = (cache: TorrentCache, maxCells: number): CacheDrawModel => {
   const piecesCount = cache.PiecesCount ?? 0
@@ -242,11 +243,9 @@ export interface FocusWindowOptions {
   edgeMarginRatio?: number
 }
 
-const resolveWindowSize = (cache: TorrentCache, visibleCells: number, piecesCount: number): number => {
-  const pieceLength = cache.PiecesLength || 0
-  const capacityPieces = pieceLength > 0 ? Math.max(1, Math.round((cache.Capacity || 0) / pieceLength)) : visibleCells
-  const maxWindow = Math.max(visibleCells, 64)
-  return Math.max(1, Math.min(piecesCount, Math.max(visibleCells, capacityPieces), maxWindow))
+const resolveWindowSize = (_cache: TorrentCache, visibleCells: number, piecesCount: number): number => {
+  // Window must match the drawable grid — do not inflate past visibleCells via Capacity.
+  return Math.max(1, Math.min(piecesCount, Math.max(1, visibleCells)))
 }
 
 const clampWindow = (start: number, windowSize: number, piecesCount: number): { start: number; end: number } => {
