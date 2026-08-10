@@ -182,6 +182,8 @@ export default function DetailsDialog({
   /** Phone-compact hero/actions — not tied to fullscreen surface (iPad landscape stays wide). */
   const useCompactDetails = isMobile || isShortViewport
   const showHeroSix = useCompactDetails && isPhoneWide
+  /** Edge-to-edge sheet — dialog breakpoint, or phone chrome (belt-and-suspenders). */
+  const sheetFull = isFullScreen || isMobile
   useSyncModalOpen(true)
 
   const overlayState = useOverlayState({
@@ -445,15 +447,18 @@ export default function DetailsDialog({
   return (
     <Modal.Root state={overlayState}>
       <Modal.Backdrop>
-        <Modal.Container size={isFullScreen ? 'full' : 'lg'} scroll='inside'>
+        <Modal.Container size={sheetFull ? 'full' : 'lg'} scroll='inside' placement={sheetFull ? 'center' : 'auto'}>
           {/* Inline style: HeroUI's size ceiling + our collapse-prevention floor (index.css) live in CSS
-              layers, so a plain width utility can lose to them regardless of specificity — see AppDialog. */}
+              layers, so a plain width utility can lose to them regardless of specificity — see AppDialog.
+              `ts-details-modal` is always on so ≤960px CSS can flush the hero even if size stays `lg`. */}
           <Modal.Dialog
-            className='flex flex-col overflow-hidden'
-            style={isFullScreen ? DIALOG_FULLSCREEN : DIALOG_DETAILS}
+            className='ts-details-modal flex flex-col overflow-hidden'
+            style={sheetFull ? DIALOG_FULLSCREEN : DIALOG_DETAILS}
             aria-label={t('TorrentDetails')}
           >
-            {/* Zero-height chrome: CloseTrigger is absolute; heading is screen-reader only. */}
+            {/* Zero-height chrome: CloseTrigger is absolute; heading is screen-reader only.
+                Fullscreen top safe-area lives on `.ts-details-hero` (index.css) — do not pad
+                this header or Tailwind `p-0` would fight the global full-dialog header rule. */}
             <Modal.Header className='relative h-0 shrink-0 overflow-visible border-0 p-0'>
               <Modal.Heading className='sr-only'>{t('TorrentDetails')}</Modal.Heading>
               <Modal.CloseTrigger aria-label={t('Close')} className='shrink-0'>
@@ -461,10 +466,16 @@ export default function DetailsDialog({
               </Modal.CloseTrigger>
             </Modal.Header>
 
-            <Modal.Body className='flex min-h-0 flex-1 flex-col gap-2 overflow-hidden pt-1 sm:gap-3'>
+            <Modal.Body
+              className={`flex min-h-0 flex-1 flex-col gap-2 overflow-hidden sm:gap-3${sheetFull ? ' pt-0' : ' pt-1'}`}
+            >
               {useCompactDetails ? (
-                /* Phone: identity row, then 2×2 (4) or 3×2 (6: +Cache/Status) metrics. */
-                <div className='shrink-0 space-y-2 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2 pr-11'>
+                /* Phone: flush hero on narrow CSS; rounded card only on wide desktop sheet. */
+                <div
+                  className={`ts-details-hero shrink-0 space-y-2 bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2 pr-11 ${
+                    sheetFull ? 'rounded-none' : 'rounded-xl'
+                  }`}
+                >
                   <div className='flex items-start gap-2'>
                     <button
                       type='button'
@@ -497,8 +508,13 @@ export default function DetailsDialog({
                 /*
                   Desktop: poster spans both rows; title on top-right; metrics sit under the title
                   (raised beside the poster) and stretch across the remaining width.
+                  Fullscreen tablet: same flush hero + safe-area as phone (`.ts-details-hero`).
                 */
-                <div className='grid shrink-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-1.5 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2.5 pr-12'>
+                <div
+                  className={`ts-details-hero grid shrink-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-1.5 bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2.5 pr-12 ${
+                    sheetFull ? 'rounded-none' : 'rounded-xl'
+                  }`}
+                >
                   <button
                     type='button'
                     onClick={() => setPosterEditOpen(true)}
@@ -540,7 +556,7 @@ export default function DetailsDialog({
                 variant='secondary'
                 selectedKey={resolvedTab}
                 onSelectionChange={key => setActiveTab(String(key) as DetailsTab)}
-                className='flex min-h-0 flex-1 flex-col overflow-hidden'
+                className='ts-details-tabs flex min-h-0 flex-1 flex-col overflow-hidden'
               >
                 <Tabs.ListContainer className='w-full max-w-full shrink-0'>
                   <Tabs.List aria-label={t('TorrentDetails')} className={isMobile ? 'w-full min-w-full' : undefined}>

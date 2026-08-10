@@ -2329,24 +2329,129 @@ body[data-immersive='true'] .ts-bottom-nav {
 }
 
 /**
+ * Narrow viewports (BP.dialog = 960px): force every modal edge-to-edge.
+ *
+ * Must NOT depend only on `.modal__dialog--full`. If JS `useDialogFullScreen` /
+ * HeroUI `size` stays on `lg`, inline `DIALOG_*` (e.g. Details `80dvh` / `92vw`)
+ * produces a floating rounded card with side gutters — the phone bug in screenshots.
+ * `!important` beats those inline width/height values.
+ */
+@media (max-width: 960px) {
+  .modal__backdrop {
+    --visual-viewport-height: var(--app-height, 100vh);
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
+    height: var(--app-height, 100vh);
+    max-height: var(--app-height, 100vh);
+    min-height: var(--app-height, 100vh);
+  }
+
+  .modal__container {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    height: var(--app-height, 100vh) !important;
+    max-height: var(--app-height, 100vh) !important;
+    min-height: var(--app-height, 100vh) !important;
+    padding: 0 !important;
+  }
+
+  .modal__dialog {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 100% !important;
+    border-radius: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  .modal__dialog > .modal__close-trigger,
+  .modal__dialog > .modal__header .modal__close-trigger {
+    top: max(0.5rem, env(safe-area-inset-top, 0px));
+    right: max(0.5rem, env(safe-area-inset-right, 0px));
+    z-index: 20;
+    display: grid;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    place-items: center;
+  }
+
+  .modal__dialog > .modal__body.modal__body--scroll-inside,
+  .modal__dialog > .modal__body [role='tabpanel'] {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Details: flush hero + safe-area even when size class is still `lg`. */
+  .modal__dialog.ts-details-modal > .modal__header {
+    padding: 0;
+  }
+
+  .modal__dialog.ts-details-modal > .modal__body {
+    padding-top: 0;
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .modal__dialog.ts-details-modal .ts-details-hero {
+    border-radius: 0;
+    padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+    padding-right: max(2.75rem, calc(0.5rem + env(safe-area-inset-right, 0px)));
+    padding-bottom: 0.5rem;
+    padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
+  }
+
+  .modal__dialog.ts-details-modal .ts-details-tabs {
+    padding-right: 0.75rem;
+    padding-left: 0.75rem;
+  }
+}
+
+/**
  * Fullscreen dialogs on iOS PWA (`viewport-fit=cover` + `black-translucent`):
  *
- * 1) HeroUI/RAC sets `--visual-viewport-height` from `window.visualViewport.height`.
- *    On installed iOS PWAs that value is often shorter than the real screen, so the
- *    modal ends above the home-indicator and leaves a dead white strip (looks like
- *    BottomNav padding). Force fullscreen surfaces to `100dvh` instead.
+ * 1) HeroUI/RAC sets `--visual-viewport-height` from `useViewportSize()` on the backdrop.
+ *    On iOS Safari/PWA that value is often short, so backdrop/container (which use
+ *    `height: var(--visual-viewport-height)`) leave a dead strip. Remap the variable to
+ *    measured `--app-height` so dialog `h-full` fills the real screen — do NOT put an
+ *    absolute taller height on the dialog (overflow-clip crops it).
  *
  * 2) HeroUI's `.modal__close-trigger` is `position: absolute; top: 1rem` — dialog
  *    padding does NOT move it. Safe-area must be applied to the close button itself.
  *
  * 3) Keep bottom safe-area as scroll padding inside the body, not as chrome that
  *    permanently shrinks the dialog.
+ *
+ * 4) Base `.modal__container` gets `width: fit-content` at ≥40rem; `container--full`
+ *    only zeros padding — override width in that same breakpoint.
+ *
+ * 5) Also covers tablet-landscape / pref-forced `size="full"` above 960px (narrow
+ *    media query above does not apply there).
  */
+.modal__backdrop:has(.modal__dialog--full) {
+  --visual-viewport-height: var(--app-height, 100vh);
+}
+
 .modal__backdrop:has(.modal__dialog--full),
 .modal__container--full {
-  height: 100dvh;
-  max-height: 100dvh;
-  min-height: 100dvh;
+  width: 100%;
+  max-width: 100%;
+  min-width: 100%;
+  height: var(--app-height, 100vh);
+  max-height: var(--app-height, 100vh);
+  min-height: var(--app-height, 100vh);
+}
+
+@media (width >= 40rem) {
+  .modal__container--full {
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
+    padding: 0;
+  }
 }
 
 .modal__dialog--full {
@@ -2356,6 +2461,9 @@ body[data-immersive='true'] .ts-bottom-nav {
   height: 100%;
   max-height: 100%;
   min-height: 100%;
+  /* HeroUI placement=auto uses mt-auto on small screens — pin full sheets edge-to-edge. */
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .modal__dialog--full > .modal__header {
@@ -2395,6 +2503,32 @@ body[data-immersive='true'] .ts-bottom-nav {
   place-items: center;
 }
 
+/*
+ * Details fullscreen: zero-height header (sr-only title + absolute close) — body owns
+ * top safe-area. Flush hero (no inset card); keep modest side padding on tab content only.
+ */
+.modal__dialog--full.ts-details-modal > .modal__header {
+  padding: 0;
+}
+
+.modal__dialog--full.ts-details-modal > .modal__body {
+  padding-top: 0;
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.modal__dialog--full.ts-details-modal .ts-details-hero {
+  padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+  padding-right: max(2.75rem, calc(0.5rem + env(safe-area-inset-right, 0px)));
+  padding-bottom: 0.5rem;
+  padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
+}
+
+.modal__dialog--full.ts-details-modal .ts-details-tabs {
+  padding-right: 0.75rem;
+  padding-left: 0.75rem;
+}
+
 /* Video player owns its own safe-area chrome — kill HeroUI full-dialog padding. */
 .ts-player-modal-full .modal__dialog--full,
 .modal__dialog--full:has(.ts-player) {
@@ -2414,9 +2548,12 @@ body[data-immersive='true'] .ts-bottom-nav {
 .modal__backdrop:has(.modal__dialog--full:has(.ts-player)),
 .ts-player-modal-full .modal__container--full,
 .modal__container--full:has(.ts-player) {
-  height: 100dvh;
-  max-height: 100dvh;
-  min-height: 100dvh;
+  width: 100%;
+  max-width: 100%;
+  min-width: 100%;
+  height: var(--app-height, 100vh);
+  max-height: var(--app-height, 100vh);
+  min-height: var(--app-height, 100vh);
 }
 
 /* —— TorrServer cinema player (Media Chrome) —— */
@@ -2483,7 +2620,7 @@ body[data-immersive='true'] .ts-bottom-nav {
 
 .ts-player--mobile {
   height: 100%;
-  max-height: 100dvh;
+  max-height: var(--app-height, 100vh);
 }
 
 .ts-player-video {
