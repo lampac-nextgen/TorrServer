@@ -1,5 +1,6 @@
 import { Modal, useOverlayState } from '@heroui/react'
 import { useEffect, type CSSProperties, type ReactNode } from 'react'
+import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import { useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 import { DIALOG_FULLSCREEN } from 'shared/ui/dialogSizes'
 
@@ -8,13 +9,24 @@ export interface AppDialogProps {
   onClose: () => void
   children: ReactNode
   size?: 'sm' | 'md' | 'lg' | 'full'
+  /**
+   * Override fullscreen policy. Omit to follow {@link useDialogFullScreen}
+   * (phone / tablet landscape / Appearance force). Pass `false` only together
+   * with `compact` for short confirms that stay centered cards.
+   */
   fullScreen?: boolean
+  /**
+   * Short confirm / tip sheets — stay a centered card even when the global
+   * fullscreen policy (or ≤960 CSS) would otherwise stretch them edge-to-edge.
+   * Adds `.ts-compact-modal` and forces windowed geometry.
+   */
+  compact?: boolean
   className?: string
   /** Extra classes applied to the dialog surface itself — use to widen a dialog past its `size` ceiling. */
   dialogClassName?: string
   /**
    * Inline min/max-width (and optional fixed height) for the dialog surface.
-   * Ignored when `fullScreen` — then `DIALOG_FULLSCREEN` (`height: 100%` of the
+   * Ignored when fullscreen — then `DIALOG_FULLSCREEN` (`height: 100%` of the
    * remapped fullscreen container) is applied instead.
    * HeroUI's `size` ceilings and our collapse-prevention floor (`index.css`) live in CSS
    * layers, so a plain Tailwind width utility can lose to them regardless of specificity —
@@ -29,12 +41,16 @@ export default function AppDialog({
   onClose,
   children,
   size = 'md',
-  fullScreen = false,
+  fullScreen,
+  compact = false,
   className,
   dialogClassName,
   dialogStyle,
 }: AppDialogProps) {
   useSyncModalOpen(open)
+  const policyFullScreen = useDialogFullScreen()
+  const isFullScreen = compact ? false : (fullScreen ?? policyFullScreen)
+  const dialogClass = [dialogClassName, compact ? 'ts-compact-modal' : null].filter(Boolean).join(' ') || undefined
 
   const state = useOverlayState({
     isOpen: open,
@@ -51,12 +67,12 @@ export default function AppDialog({
     <Modal.Root state={state}>
       <Modal.Backdrop>
         <Modal.Container
-          size={fullScreen ? 'full' : size}
+          size={isFullScreen ? 'full' : size}
           scroll='inside'
-          placement={fullScreen ? 'center' : 'auto'}
+          placement={isFullScreen ? 'center' : 'auto'}
           className={className}
         >
-          <Modal.Dialog className={dialogClassName} style={fullScreen ? DIALOG_FULLSCREEN : dialogStyle}>
+          <Modal.Dialog className={dialogClass} style={isFullScreen ? DIALOG_FULLSCREEN : dialogStyle}>
             {children}
           </Modal.Dialog>
         </Modal.Container>

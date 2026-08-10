@@ -207,8 +207,8 @@ export default function DetailsDialog({
   const isPhoneWide = useMediaQuery(queryMin('phone'))
   /** Edge-to-edge sheet — same policy as other AppDialog surfaces. */
   const sheetFull = isFullScreen
-  /** Compact chrome follows the fullscreen surface (iPad portrait ≤960), not only ≤700. */
-  const useCompactDetails = sheetFull || isShortViewport
+  /** Compact chrome only on phone / short viewports — not force-fullscreen on a wide monitor. */
+  const useCompactDetails = isMobile || isShortViewport
   const showHeroSix = useCompactDetails && (isMobile ? isPhoneWide : true)
   useSyncModalOpen(true)
 

@@ -230,13 +230,13 @@ function TorrentActions({
   const confirmModal = (
     <Modal.Root state={confirmState}>
       <Modal.Backdrop>
-        <Modal.Container size='sm'>
-          <Modal.Dialog>
-            <Modal.Header>
+        <Modal.Container size='sm' placement='center'>
+          <Modal.Dialog className='ts-compact-modal'>
+            <Modal.Header className='shrink-0'>
               <Modal.Heading>{confirmHeading}</Modal.Heading>
             </Modal.Header>
             <Modal.Body>{confirmBody}</Modal.Body>
-            <Modal.Footer>
+            <Modal.Footer className='shrink-0'>
               <Button variant='secondary' onPress={() => setPendingConfirm(null)} autoFocus>
                 {t('Cancel')}
               </Button>

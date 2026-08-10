@@ -139,18 +139,23 @@ export default function ImportLibraryDialog({ open, onClose }: ImportLibraryDial
       onClose={handleClose}
       size='md'
       fullScreen={isFullScreen}
+      dialogClassName='flex flex-col overflow-hidden'
       dialogStyle={isFullScreen ? undefined : DIALOG_SHEET_M}
     >
-      <Modal.Header>
+      <Modal.Header className='shrink-0'>
         <Modal.Heading>{t('ImportLibrary')}</Modal.Heading>
         <Modal.CloseTrigger aria-label={t('Close')} />
       </Modal.Header>
-      <Modal.Body className='space-y-4'>
-        <p className='text-sm text-muted'>{t('ImportLibraryHint')}</p>
-        <TextField value={raw} onChange={setRaw} isDisabled={running}>
-          <TextArea className='min-h-40 font-mono text-xs' rows={10} placeholder={t('ImportLibraryPlaceholder')} />
+      <Modal.Body className='flex min-h-0 flex-1 flex-col gap-4 overflow-hidden'>
+        <p className='shrink-0 text-sm text-muted'>{t('ImportLibraryHint')}</p>
+        <TextField value={raw} onChange={setRaw} isDisabled={running} className='flex min-h-0 flex-1 flex-col'>
+          <TextArea
+            className={isFullScreen ? 'min-h-0 flex-1 font-mono text-xs' : 'min-h-40 font-mono text-xs'}
+            rows={isFullScreen ? undefined : 10}
+            placeholder={t('ImportLibraryPlaceholder')}
+          />
         </TextField>
-        <div className='flex flex-wrap gap-2'>
+        <div className='flex shrink-0 flex-wrap gap-2'>
           <input
             ref={fileInputRef}
             type='file'
@@ -174,8 +179,8 @@ export default function ImportLibraryDialog({ open, onClose }: ImportLibraryDial
             {t('Clear')}
           </Button>
         </div>
-        <p className='text-sm text-muted'>{t('ImportLibraryParsed', { count: parsed.length })}</p>
-        <div className='flex min-h-11 items-start justify-between gap-4'>
+        <p className='shrink-0 text-sm text-muted'>{t('ImportLibraryParsed', { count: parsed.length })}</p>
+        <div className='flex min-h-11 shrink-0 items-start justify-between gap-4'>
           <div className='min-w-0 flex-1'>
             <p className='text-sm font-medium text-foreground'>{t('AddDialog.SaveToDb')}</p>
           </div>
@@ -193,7 +198,7 @@ export default function ImportLibraryDialog({ open, onClose }: ImportLibraryDial
             </Switch.Content>
           </Switch>
         </div>
-        <div className='flex min-h-11 items-start justify-between gap-4'>
+        <div className='flex min-h-11 shrink-0 items-start justify-between gap-4'>
           <div className='min-w-0 flex-1'>
             <p className='text-sm font-medium text-foreground'>{t('ImportLibrarySkipExisting')}</p>
           </div>
@@ -212,13 +217,13 @@ export default function ImportLibraryDialog({ open, onClose }: ImportLibraryDial
           </Switch>
         </div>
         {progress ? (
-          <p className='flex items-center gap-2 text-sm text-muted'>
+          <p className='flex shrink-0 items-center gap-2 text-sm text-muted'>
             {running ? <Spinner size='sm' /> : null}
             {t('ImportLibraryProgress', progress)}
           </p>
         ) : null}
       </Modal.Body>
-      <Modal.Footer className='gap-2'>
+      <Modal.Footer className='shrink-0 gap-2'>
         <Button variant='secondary' onPress={handleClose} isDisabled={running}>
           {t('Close')}
         </Button>

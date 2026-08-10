@@ -1,7 +1,9 @@
 import { useMediaQuery } from '@heroui/react'
+import type { CSSProperties } from 'react'
 
 import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
 import { MEDIA_TABLET_LANDSCAPE, queryMax } from 'shared/theme/breakpoints'
+import { DIALOG_FULLSCREEN } from 'shared/ui/dialogSizes'
 
 /** localStorage key — also used by Appearance settings switch. */
 export const DIALOGS_FULLSCREEN_PREF = 'dialogsFullScreen'
@@ -17,11 +19,25 @@ export function resolveDialogFullScreen(input: { narrow: boolean; tabletLandscap
  * - tablet landscape (touch iPad-class devices), or
  * - Appearance → Dialogs fullscreen is on (forces wide monitors too).
  *
- * VideoPlayer keeps its own media query (cinema frame on desktop).
+ * VideoPlayer and raw HeroUI modals should use the same hook / {@link useDialogFullLayout}.
  */
 export function useDialogFullScreen(): boolean {
   const narrow = useMediaQuery(queryMax('dialog'))
   const tabletLandscape = useMediaQuery(MEDIA_TABLET_LANDSCAPE)
   const [force] = useLocalBoolPref(DIALOGS_FULLSCREEN_PREF, false)
   return resolveDialogFullScreen({ narrow, tabletLandscape, force })
+}
+
+type DialogSize = 'sm' | 'md' | 'lg' | 'full'
+
+/** Size / placement / inline style for HeroUI Modal.Container + Modal.Dialog. */
+export function useDialogFullLayout(base: { size?: Exclude<DialogSize, 'full'>; dialogStyle?: CSSProperties } = {}) {
+  const full = useDialogFullScreen()
+  const size: DialogSize = full ? 'full' : (base.size ?? 'md')
+  return {
+    full,
+    size,
+    placement: (full ? 'center' : 'auto') as 'center' | 'auto',
+    dialogStyle: full ? DIALOG_FULLSCREEN : base.dialogStyle,
+  }
 }

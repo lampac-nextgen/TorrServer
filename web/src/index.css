@@ -2351,10 +2351,12 @@ body[data-immersive='true'] .ts-bottom-nav {
    * HeroUI enter uses zoom-in-105 — getBoundingClientRect stays ~5% oversized and
    * shifts off-screen on iPhone. Fullscreen sheets and bottom sheets must not scale.
    */
-  .modal__container:not(:has(.ts-sheet-modal))[data-entering='true'],
-  .modal__container:not(:has(.ts-sheet-modal))[data-exiting='true'],
+  .modal__container:not(:has(.ts-sheet-modal)):not(:has(.ts-compact-modal))[data-entering='true'],
+  .modal__container:not(:has(.ts-sheet-modal)):not(:has(.ts-compact-modal))[data-exiting='true'],
   .modal__container:has(.ts-sheet-modal)[data-entering='true'],
-  .modal__container:has(.ts-sheet-modal)[data-exiting='true'] {
+  .modal__container:has(.ts-sheet-modal)[data-exiting='true'],
+  .modal__container:has(.ts-compact-modal)[data-entering='true'],
+  .modal__container:has(.ts-compact-modal)[data-exiting='true'] {
     animation: none !important;
     transform: none !important;
   }
@@ -2365,7 +2367,7 @@ body[data-immersive='true'] .ts-bottom-nav {
     --visual-viewport-height: var(--app-height, 100vh);
   }
 
-  .modal__container:not(:has(.ts-sheet-modal)) {
+  .modal__container:not(:has(.ts-sheet-modal)):not(:has(.ts-compact-modal)) {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 100% !important;
@@ -2376,7 +2378,7 @@ body[data-immersive='true'] .ts-bottom-nav {
     transform: none !important;
   }
 
-  .modal__dialog:not(.ts-sheet-modal) {
+  .modal__dialog:not(.ts-sheet-modal):not(.ts-compact-modal) {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 100% !important;
@@ -2414,6 +2416,35 @@ body[data-immersive='true'] .ts-bottom-nav {
     border-radius: 1rem 1rem 0 0 !important;
     margin-top: auto !important;
     margin-bottom: 0 !important;
+  }
+
+  /*
+   * Compact confirms / short sheets — centered cards on phones too (avoid a
+   * one-line message floating above a full-viewport empty body).
+   */
+  .modal__container:has(.ts-compact-modal) {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    height: var(--app-height, 100vh) !important;
+    max-height: var(--app-height, 100vh) !important;
+    padding: max(1rem, env(safe-area-inset-top, 0px)) 1rem
+      max(1rem, env(safe-area-inset-bottom, 0px)) !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .modal__dialog.ts-compact-modal {
+    width: min(100%, 28rem) !important;
+    max-width: min(100%, 28rem) !important;
+    min-width: 0 !important;
+    height: auto !important;
+    max-height: min(85dvh, calc(var(--app-height, 100vh) - 2rem)) !important;
+    min-height: 0 !important;
+    border-radius: 1rem !important;
+    margin: 0 !important;
   }
 
   .modal__dialog > .modal__close-trigger,
@@ -2588,6 +2619,50 @@ body[data-immersive='true'] .ts-bottom-nav {
 .modal__container--full[data-exiting='true'] {
   animation: none !important;
   transform: none !important;
+}
+
+/*
+ * Compact cards under Appearance force-fullscreen / size=full path — keep a
+ * centered dialog instead of stretching one-line confirms across the monitor.
+ */
+.modal__container--full:has(.ts-compact-modal) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: max(1rem, env(safe-area-inset-top, 0px)) 1rem max(1rem, env(safe-area-inset-bottom, 0px)) !important;
+  height: var(--app-height, 100vh) !important;
+  max-height: var(--app-height, 100vh) !important;
+}
+
+.modal__dialog--full.ts-compact-modal,
+.modal__dialog.ts-compact-modal {
+  width: min(100%, 28rem) !important;
+  max-width: min(100%, 28rem) !important;
+  min-width: 0 !important;
+  height: auto !important;
+  max-height: min(85dvh, calc(var(--app-height, 100vh) - 2rem)) !important;
+  min-height: 0 !important;
+  border-radius: 1rem !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.modal__dialog--full.ts-compact-modal > .modal__header,
+.modal__dialog.ts-compact-modal > .modal__header {
+  padding-top: 0.75rem;
+}
+
+.modal__dialog--full.ts-compact-modal > .modal__body,
+.modal__dialog.ts-compact-modal > .modal__body {
+  flex: 0 1 auto;
+}
+
+.modal__dialog--full.ts-compact-modal > .modal__footer,
+.modal__dialog.ts-compact-modal > .modal__footer {
+  padding-bottom: 0.75rem;
 }
 
 .modal__dialog--full > .modal__header {

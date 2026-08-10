@@ -250,16 +250,19 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
 
       <Modal state={confirmState}>
         <Modal.Backdrop isDismissable>
-          <Modal.Container size='sm'>
-            <Modal.Dialog aria-label={confirmKind === 'delete' ? t('DeleteTorrent?') : t('DropTorrent')}>
-              <Modal.Header>
+          <Modal.Container size='sm' placement='center'>
+            <Modal.Dialog
+              className='ts-compact-modal'
+              aria-label={confirmKind === 'delete' ? t('DeleteTorrent?') : t('DropTorrent')}
+            >
+              <Modal.Header className='shrink-0'>
                 <Modal.Icon className='bg-danger/15 text-danger'>
                   <Trash2 {...iconAction} aria-hidden />
                 </Modal.Icon>
                 <Modal.Heading>{confirmKind === 'delete' ? t('DeleteTorrent?') : t('DropTorrent')}</Modal.Heading>
               </Modal.Header>
               <Modal.Body>{confirmKind === 'delete' ? t('ConfirmDeleteTorrent') : t('ConfirmDropTorrent')}</Modal.Body>
-              <Modal.Footer className='flex justify-end gap-2'>
+              <Modal.Footer className='shrink-0 flex justify-end gap-2'>
                 <Button autoFocus variant='secondary' onPress={() => setConfirmKind(null)}>
                   {t('Cancel')}
                 </Button>
