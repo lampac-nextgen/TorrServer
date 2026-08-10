@@ -3,8 +3,44 @@ import type { QueryClient } from '@tanstack/react-query'
 
 import type { TorrentStat } from 'shared/api/types'
 import { torrentUploadHost, torrentsHost } from 'shared/api/hosts'
+import { IN_DB } from 'shared/torrent/states'
 
 export const TORRENTS_QUERY_KEY = ['torrents'] as const
+
+/** Drop keeps the DB row — never remove the card; flip to idle so the grid doesn't vanish→GSAP-reappear. */
+export const markTorrentsDroppedInList = (queryClient: QueryClient, hashes: string | string[]): void => {
+  const list = Array.isArray(hashes) ? hashes : [hashes]
+  const drop = new Set(list.map(hash => hash.toLowerCase()))
+  queryClient.setQueryData<TorrentStat[]>(TORRENTS_QUERY_KEY, prev =>
+    prev?.map(item => {
+      if (!item.hash || !drop.has(item.hash.toLowerCase())) return item
+      return {
+        ...item,
+        stat: IN_DB,
+        download_speed: 0,
+        upload_speed: 0,
+        active_peers: 0,
+        total_peers: 0,
+        connected_seeders: 0,
+        pending_peers: 0,
+        half_open_peers: 0,
+      }
+    }),
+  )
+  for (const hash of list) {
+    queryClient.setQueryData<TorrentStat>(['torrent', hash], prev =>
+      prev
+        ? {
+            ...prev,
+            stat: IN_DB,
+            download_speed: 0,
+            upload_speed: 0,
+            active_peers: 0,
+          }
+        : prev,
+    )
+  }
+}
 
 /** Merge torrent rows into the list cache (new hashes prepended) for instant UI paint. */
 export const upsertTorrentsInList = (queryClient: QueryClient, torrents: TorrentStat | TorrentStat[]): void => {

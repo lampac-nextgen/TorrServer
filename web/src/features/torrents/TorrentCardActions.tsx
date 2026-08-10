@@ -18,7 +18,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
 import { torrsShareUrl } from 'shared/api/extras'
-import { dropTorrent, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
+import { dropTorrent, markTorrentsDroppedInList, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { copyToClipboard } from 'shared/lib/clipboard'
 import { useExternalPlayers } from 'shared/lib/externalPlayers'
 import { magnetFromHash, streamPlayUrl, torrentPlaylistUrl } from 'shared/lib/posterPlay'
@@ -124,12 +124,17 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
     if (!mutate) return
 
     const previous = queryClient.getQueryData<TorrentStat[]>(TORRENTS_QUERY_KEY)
-    queryClient.setQueryData<TorrentStat[]>(TORRENTS_QUERY_KEY, prev => prev?.filter(item => item.hash !== hash))
+    if (action === 'drop') {
+      // Drop only parks the torrent in DB — removing the card causes vanish→reappear + GSAP.
+      markTorrentsDroppedInList(queryClient, hash)
+    } else {
+      queryClient.setQueryData<TorrentStat[]>(TORRENTS_QUERY_KEY, prev => prev?.filter(item => item.hash !== hash))
+    }
 
     void mutate(hash)
-      .then(async () => {
+      .then(() => {
         toast?.showToast({ message: successMessage, severity: 'success' })
-        await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
+        void queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
       })
       .catch(() => {
         if (previous) queryClient.setQueryData(TORRENTS_QUERY_KEY, previous)

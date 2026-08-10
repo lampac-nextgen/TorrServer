@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next'
 import type { PlayableFile, TorrentStat } from 'shared/api/types'
 import { playlistAllUrl, torrsShareUrl } from 'shared/api/extras'
 import { playlistTorrHost, streamHost } from 'shared/api/hosts'
-import { dropTorrent, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
+import { dropTorrent, markTorrentsDroppedInList, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { clearViewedFiles } from 'shared/api/viewed'
 import { useExternalPlayers } from 'shared/lib/externalPlayers'
 import { copyToClipboard } from 'shared/lib/clipboard'
@@ -154,14 +154,18 @@ function TorrentActions({
   const runPendingConfirm = () => {
     if (pendingConfirm === 'drop' || pendingConfirm === 'delete') {
       const previous = queryClient.getQueryData<TorrentStat[]>(TORRENTS_QUERY_KEY)
-      queryClient.setQueryData<TorrentStat[]>(TORRENTS_QUERY_KEY, prev => prev?.filter(item => item.hash !== hash))
+      if (pendingConfirm === 'drop') {
+        markTorrentsDroppedInList(queryClient, hash)
+      } else {
+        queryClient.setQueryData<TorrentStat[]>(TORRENTS_QUERY_KEY, prev => prev?.filter(item => item.hash !== hash))
+      }
       const mutate = pendingConfirm === 'drop' ? dropTorrent : removeTorrent
       const successMessage = pendingConfirm === 'drop' ? t('DropTorrent') : t('Delete')
       const afterSuccess = pendingConfirm === 'drop' ? onDropped : onDeleted
       void mutate(hash)
-        .then(async () => {
+        .then(() => {
           toast?.showToast({ message: successMessage, severity: 'success' })
-          await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
+          void queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
           afterSuccess?.()
         })
         .catch(() => {
