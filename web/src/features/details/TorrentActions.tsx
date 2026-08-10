@@ -1,5 +1,5 @@
 import { useMemo, memo, useState, type ReactNode } from 'react'
-import { Button, ButtonGroup, Dropdown, Modal, Separator, Spinner, useMediaQuery, useOverlayState } from '@heroui/react'
+import { Button, ButtonGroup, Drawer, Modal, Separator, Spinner, useMediaQuery, useOverlayState } from '@heroui/react'
 import {
   EyeOff,
   Hash,
@@ -121,6 +121,7 @@ function TorrentActions({
   const isPhone = useMediaQuery(queryMax('mobile'))
   const compact = compactProp || isPhone
   const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm>(null)
+  const moreState = useOverlayState()
   const confirmState = useOverlayState({
     isOpen: pendingConfirm != null,
     onOpenChange: open => {
@@ -286,6 +287,22 @@ function TorrentActions({
   )
 
   if (compact) {
+    const closeMore = () => moreState.close()
+    const sheetAction = (label: string, icon: ReactNode, onPress: () => void, danger = false) => (
+      <Button
+        key={label}
+        variant='ghost'
+        onPress={() => {
+          closeMore()
+          onPress()
+        }}
+        className={`h-auto w-full justify-start gap-3 px-4 py-3 min-h-11 ${danger ? 'text-danger' : ''}`}
+      >
+        {icon}
+        {label}
+      </Button>
+    )
+
     return (
       <div className='space-y-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
         <div className='flex items-center gap-1.5'>
@@ -313,67 +330,15 @@ function TorrentActions({
               </>
             )}
           </Button>
-          <Dropdown>
-            <Dropdown.Trigger>
-              <Button variant='ghost' isIconOnly className={`${iconBtn} shrink-0 text-muted`} aria-label={t('Info')}>
-                <MoreHorizontal {...iconMenu} aria-hidden />
-              </Button>
-            </Dropdown.Trigger>
-            <Dropdown.Popover
-              placement='bottom end'
-              shouldFlip
-              offset={6}
-              containerPadding={12}
-              UNSTABLE_portalContainer={typeof document !== 'undefined' ? document.body : undefined}
-              className='max-h-[min(70dvh,28rem)] min-w-[14rem] overflow-y-auto'
-            >
-              <Dropdown.Menu aria-label={t('Info')}>
-                {singleFileStream ? (
-                  <Dropdown.Item className='min-h-11' onPress={() => void copyStreamLink()}>
-                    <Link2 {...iconMenu} />
-                    {t('CopyLink')}
-                  </Dropdown.Item>
-                ) : null}
-                {isSingleFileTorrent || !viewedFileList?.length ? (
-                  <Dropdown.Item className='min-h-11' onPress={() => window.open(fullPlaylistLink, '_blank')}>
-                    <ListMusic {...iconMenu} />
-                    {t('DownloadPlaylist')}
-                  </Dropdown.Item>
-                ) : null}
-                <Dropdown.Item className='min-h-11' onPress={() => void copyMagnetLink()}>
-                  <Magnet {...iconMenu} />
-                  {t('CopyMagnet')}
-                </Dropdown.Item>
-                <Dropdown.Item className='min-h-11' onPress={() => void copyInfoHash()}>
-                  <Hash {...iconMenu} />
-                  {t('CopyHash')}
-                </Dropdown.Item>
-                <Dropdown.Item className='min-h-11' onPress={() => void copyTorrsLink()}>
-                  <Share2 {...iconMenu} />
-                  {t('CopyTorrs')}
-                </Dropdown.Item>
-                <Dropdown.Item
-                  className='min-h-11'
-                  onPress={() => window.open(playlistAllUrl({ category: undefined }), '_blank')}
-                >
-                  <ListMusic {...iconMenu} />
-                  {t('DownloadAllPlaylists')}
-                </Dropdown.Item>
-                <Dropdown.Item className='min-h-11' onPress={() => setPendingConfirm('clearViews')}>
-                  <EyeOff {...iconMenu} />
-                  {t('RemoveViews')}
-                </Dropdown.Item>
-                <Dropdown.Item className='min-h-11' onPress={() => setPendingConfirm('drop')}>
-                  <Trash2 {...iconMenu} />
-                  {t('DropTorrent')}
-                </Dropdown.Item>
-                <Dropdown.Item className='min-h-11' onPress={() => setPendingConfirm('delete')}>
-                  <Trash2 {...iconMenu} />
-                  {t('Delete')}
-                </Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown.Popover>
-          </Dropdown>
+          <Button
+            variant='ghost'
+            isIconOnly
+            className={`${iconBtn} shrink-0 text-muted`}
+            aria-label={t('Info')}
+            onPress={moreState.open}
+          >
+            <MoreHorizontal {...iconMenu} aria-hidden />
+          </Button>
         </div>
 
         {externalPlayers.length > 0 ? (
@@ -427,6 +392,50 @@ function TorrentActions({
             </ButtonGroup>
           </div>
         ) : null}
+
+        <Drawer.Root state={moreState}>
+          <Drawer.Backdrop isDismissable>
+            <Drawer.Content placement='bottom'>
+              <Drawer.Dialog className='ts-sheet-drawer' aria-label={t('Info')}>
+                <Drawer.Header>
+                  <Drawer.Heading>{t('Info')}</Drawer.Heading>
+                  <Drawer.CloseTrigger className='min-h-11 min-w-11' aria-label={t('Close')} />
+                </Drawer.Header>
+                <Drawer.Body className='flex flex-col gap-0.5 px-0 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] pt-1'>
+                  {singleFileStream
+                    ? sheetAction(t('CopyLink'), <Link2 {...iconMenu} aria-hidden />, () => void copyStreamLink())
+                    : null}
+                  {isSingleFileTorrent || !viewedFileList?.length
+                    ? sheetAction(t('DownloadPlaylist'), <ListMusic {...iconMenu} aria-hidden />, () =>
+                        window.open(fullPlaylistLink, '_blank'),
+                      )
+                    : null}
+                  {sheetAction(t('CopyMagnet'), <Magnet {...iconMenu} aria-hidden />, () => void copyMagnetLink())}
+                  {sheetAction(t('CopyHash'), <Hash {...iconMenu} aria-hidden />, () => void copyInfoHash())}
+                  {sheetAction(t('CopyTorrs'), <Share2 {...iconMenu} aria-hidden />, () => void copyTorrsLink())}
+                  {sheetAction(t('DownloadAllPlaylists'), <ListMusic {...iconMenu} aria-hidden />, () =>
+                    window.open(playlistAllUrl({ category: undefined }), '_blank'),
+                  )}
+                  {sheetAction(t('RemoveViews'), <EyeOff {...iconMenu} aria-hidden />, () =>
+                    setPendingConfirm('clearViews'),
+                  )}
+                  {sheetAction(
+                    t('DropTorrent'),
+                    <Trash2 {...iconMenu} aria-hidden />,
+                    () => setPendingConfirm('drop'),
+                    true,
+                  )}
+                  {sheetAction(
+                    t('Delete'),
+                    <Trash2 {...iconMenu} aria-hidden />,
+                    () => setPendingConfirm('delete'),
+                    true,
+                  )}
+                </Drawer.Body>
+              </Drawer.Dialog>
+            </Drawer.Content>
+          </Drawer.Backdrop>
+        </Drawer.Root>
 
         {playerModals}
         {confirmModal}

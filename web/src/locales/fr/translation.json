@@ -601,5 +601,8 @@
   "ChunksRead": "Chunks lus",
   "ChunksWritten": "Chunks écrits",
   "ChunksUseful": "Chunks utiles",
-  "CacheReaders": "Lecteurs"
+  "CacheReaders": "Lecteurs",
+  "ShowMore": "Afficher plus",
+  "ShowLess": "Réduire",
+  "NoSpeedData": "Pas encore de données de débit"
 }

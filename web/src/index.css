@@ -2347,7 +2347,7 @@ body[data-immersive='true'] .ts-bottom-nav {
     min-height: var(--app-height, 100vh);
   }
 
-  .modal__container {
+  .modal__container:not(:has(.ts-sheet-modal)) {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 100% !important;
@@ -2357,7 +2357,7 @@ body[data-immersive='true'] .ts-bottom-nav {
     padding: 0 !important;
   }
 
-  .modal__dialog {
+  .modal__dialog:not(.ts-sheet-modal) {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 100% !important;
@@ -2366,6 +2366,33 @@ body[data-immersive='true'] .ts-bottom-nav {
     min-height: 100% !important;
     border-radius: 0 !important;
     margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* BottomNav More stays a bottom-docked modal sheet (not force-fullscreen). */
+  .modal__container:has(.ts-sheet-modal) {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    height: var(--app-height, 100vh) !important;
+    max-height: var(--app-height, 100vh) !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    align-items: stretch !important;
+    justify-content: flex-end !important;
+  }
+
+  .modal__dialog.ts-sheet-modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    height: auto !important;
+    max-height: min(85dvh, var(--app-height, 100vh)) !important;
+    min-height: 0 !important;
+    border-radius: 1rem 1rem 0 0 !important;
+    margin-top: auto !important;
     margin-bottom: 0 !important;
   }
 

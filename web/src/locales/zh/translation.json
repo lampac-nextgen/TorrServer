@@ -601,5 +601,8 @@
   "ChunksRead": "读取块",
   "ChunksWritten": "写入块",
   "ChunksUseful": "有效块",
-  "CacheReaders": "读取器"
+  "CacheReaders": "读取器",
+  "ShowMore": "展开",
+  "ShowLess": "收起",
+  "NoSpeedData": "暂无速度数据"
 }

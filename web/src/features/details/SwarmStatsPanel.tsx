@@ -58,7 +58,7 @@ function ProgressMeter({
         <span className='truncate text-muted'>{label}</span>
         <span className='shrink-0 font-bold tabular-nums text-foreground'>{valueLabel}</span>
       </div>
-      <div className={`overflow-hidden rounded-full bg-surface ${compact ? 'h-1.5' : 'h-2'}`}>
+      <div className={`overflow-hidden rounded-full bg-surface ${compact ? 'h-2' : 'h-2.5'}`}>
         <div className='h-full rounded-full bg-accent transition-[width] duration-300' style={{ width: `${width}%` }} />
       </div>
     </div>

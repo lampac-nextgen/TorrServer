@@ -601,5 +601,8 @@
   "ChunksRead": "Chunks read",
   "ChunksWritten": "Chunks written",
   "ChunksUseful": "Useful chunks",
-  "CacheReaders": "Readers"
+  "CacheReaders": "Readers",
+  "ShowMore": "Show more",
+  "ShowLess": "Show less",
+  "NoSpeedData": "No speed data yet"
 }

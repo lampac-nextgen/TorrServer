@@ -142,23 +142,50 @@ function TitleRow({
   compact: boolean
   editControl?: ReactNode
 }) {
+  const { t } = useTranslation()
+  const [expanded, setExpanded] = useState(false)
+  /** Drop subtitle when it already appears inside the primary title (common after ptt parse). */
+  const showSubtitle = !!subtitle && !title.toLocaleLowerCase().includes(subtitle.toLocaleLowerCase())
+
+  const titleClass = `min-w-0 flex-1 font-bold text-foreground ${
+    compact
+      ? expanded
+        ? 'text-[15px] leading-snug'
+        : 'line-clamp-3 text-[15px] leading-snug'
+      : 'line-clamp-2 text-lg leading-snug'
+  }`
+
   return (
     <div className='min-w-0 flex-1'>
       <div className='flex items-start gap-1'>
-        <h2
-          className={`min-w-0 flex-1 font-bold text-foreground ${
-            compact ? 'line-clamp-3 text-[15px] leading-snug' : 'line-clamp-2 text-lg leading-snug'
-          }`}
-          title={title}
-        >
-          {title}
-        </h2>
+        {compact ? (
+          <button
+            type='button'
+            className='min-w-0 flex-1 rounded-sm text-left outline-none ring-accent focus-visible:ring-2'
+            aria-expanded={expanded}
+            aria-label={expanded ? t('ShowLess') : t('ShowMore')}
+            onClick={() => setExpanded(v => !v)}
+          >
+            <h2 className={titleClass} title={title}>
+              {title}
+            </h2>
+          </button>
+        ) : (
+          <h2 className={titleClass} title={title}>
+            {title}
+          </h2>
+        )}
         {editControl}
       </div>
-      {subtitle ? (
-        <p className={`mt-0.5 truncate text-muted ${compact ? 'text-xs' : 'text-sm'}`} title={subtitle}>
+      {showSubtitle ? (
+        <p className={`mt-0.5 truncate text-muted ${compact ? 'text-xs' : 'text-sm'}`} title={subtitle!}>
           {subtitle}
         </p>
+      ) : null}
+      {compact && expanded ? (
+        <button type='button' className='mt-0.5 text-xs font-medium text-accent' onClick={() => setExpanded(false)}>
+          {t('ShowLess')}
+        </button>
       ) : null}
     </div>
   )
@@ -584,7 +611,7 @@ export default function DetailsDialog({
                 </Tabs.ListContainer>
 
                 <Tabs.Panel id='files' className='min-h-0 flex-1 overflow-y-auto overscroll-contain pt-2 sm:pt-3'>
-                  <div>
+                  <div className={useCompactDetails ? 'pb-2' : undefined}>
                     {/* Reserve chip-row height while metadata loads or when multi-season — list won't jump. */}
                     {hasMultipleSeasons || isLoadingMetadata ? (
                       <div className='mb-2 min-h-11 sm:mb-3'>
@@ -633,17 +660,22 @@ export default function DetailsDialog({
 
                 <Tabs.Panel
                   id='stats'
-                  className='flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain pt-3'
+                  className={`flex min-h-0 flex-1 flex-col pt-3 ${
+                    useCompactDetails ? 'overflow-hidden' : 'gap-3 overflow-y-auto overscroll-contain'
+                  }`}
                 >
                   {useCompactDetails ? (
-                    <div className='space-y-3 pb-2'>
-                      {secondaryMetricItems.length > 0 ? (
-                        <MetricRows title={t('Details')} items={secondaryMetricItems} columns={1} />
-                      ) : null}
-                      <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
-                      <SwarmStatsPanel torrent={torrent} variant='summary' columns={2} showTitle={false} />
-                      <div className='shrink-0'>{torrentActions}</div>
-                    </div>
+                    <>
+                      {/* Content-start: do not flex-stretch a void between cards and CTAs. */}
+                      <div className='min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pb-2'>
+                        {secondaryMetricItems.length > 0 ? (
+                          <MetricRows title={t('Details')} items={secondaryMetricItems} columns={1} />
+                        ) : null}
+                        <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
+                        <SwarmStatsPanel torrent={torrent} variant='summary' columns={2} showTitle={false} />
+                      </div>
+                      <div className='shrink-0 border-t border-border bg-surface pt-2'>{torrentActions}</div>
+                    </>
                   ) : (
                     <>
                       <div className='grid min-h-[14rem] shrink-0 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-stretch gap-3'>
@@ -658,7 +690,7 @@ export default function DetailsDialog({
                 <Tabs.Panel
                   id='swarm'
                   className={`flex min-h-0 flex-1 flex-col pt-3 ${
-                    useCompactDetails ? 'items-stretch overflow-y-auto overscroll-contain' : 'overflow-hidden'
+                    useCompactDetails ? 'items-start overflow-y-auto overscroll-contain' : 'overflow-hidden'
                   }`}
                 >
                   <SwarmStatsPanel

@@ -601,5 +601,8 @@
   "ChunksRead": "Чанки читання",
   "ChunksWritten": "Чанки запису",
   "ChunksUseful": "Корисні чанки",
-  "CacheReaders": "Читачі"
+  "CacheReaders": "Читачі",
+  "ShowMore": "Ще",
+  "ShowLess": "Згорнути",
+  "NoSpeedData": "Немає даних про швидкість"
 }

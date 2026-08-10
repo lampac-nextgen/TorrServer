@@ -601,5 +601,8 @@
   "ChunksRead": "Чанкове четене",
   "ChunksWritten": "Чанкове запис",
   "ChunksUseful": "Полезни чанкове",
-  "CacheReaders": "Четци"
+  "CacheReaders": "Четци",
+  "ShowMore": "Още",
+  "ShowLess": "Свий",
+  "NoSpeedData": "Няма данни за скорост"
 }

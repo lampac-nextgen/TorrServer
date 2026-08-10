@@ -601,5 +601,8 @@
   "ChunksRead": "Chunk-uri citite",
   "ChunksWritten": "Chunk-uri scrise",
   "ChunksUseful": "Chunk-uri utile",
-  "CacheReaders": "Cititori"
+  "CacheReaders": "Cititori",
+  "ShowMore": "Mai mult",
+  "ShowLess": "Restrânge",
+  "NoSpeedData": "Încă nu există date de viteză"
 }
