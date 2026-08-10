@@ -156,7 +156,7 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
     const outcomes = await Promise.allSettled(
       targets.map(({ item, index }) =>
         uploadTorrent(item.file, { title: item.title, category: item.category, poster: item.poster }).then(
-          () => index,
+          status => ({ index, status }),
           err => {
             throw { index, err }
           },
@@ -166,10 +166,12 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
 
     let successCount = 0
     let failureCount = 0
+    const added = [] as Awaited<ReturnType<typeof uploadTorrent>>[]
     for (const outcome of outcomes) {
       if (outcome.status === 'fulfilled') {
         successCount += 1
-        handleUpdate(outcome.value, { status: 'success' })
+        handleUpdate(outcome.value.index, { status: 'success' })
+        added.push(outcome.value.status)
       } else {
         failureCount += 1
         const failedIndex = (outcome.reason as { index?: number })?.index
@@ -178,7 +180,7 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
     }
 
     if (successCount > 0) {
-      await refreshTorrentsList(queryClient)
+      await refreshTorrentsList(queryClient, { torrents: added.flat() })
     }
 
     if (failureCount === 0) {

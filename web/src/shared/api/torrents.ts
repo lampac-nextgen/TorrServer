@@ -6,10 +6,33 @@ import { torrentUploadHost, torrentsHost } from 'shared/api/hosts'
 
 export const TORRENTS_QUERY_KEY = ['torrents'] as const
 
-/** Invalidate + await active refetch so the library updates immediately after add/drop. */
-export const refreshTorrentsList = async (queryClient: QueryClient): Promise<void> => {
-  await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
-  await queryClient.refetchQueries({ queryKey: TORRENTS_QUERY_KEY })
+/** Merge torrent rows into the list cache (new hashes prepended) for instant UI paint. */
+export const upsertTorrentsInList = (queryClient: QueryClient, torrents: TorrentStat | TorrentStat[]): void => {
+  const items = Array.isArray(torrents) ? torrents : [torrents]
+  if (!items.length) return
+  queryClient.setQueryData<TorrentStat[]>(TORRENTS_QUERY_KEY, prev => {
+    const list = prev ? [...prev] : []
+    for (const item of items) {
+      if (!item?.hash) continue
+      const idx = list.findIndex(row => row.hash?.toLowerCase() === item.hash.toLowerCase())
+      if (idx >= 0) list[idx] = { ...list[idx], ...item }
+      else list.unshift(item)
+    }
+    return list
+  })
+}
+
+/**
+ * Paint from known rows (add/upload response), then reconcile in the background.
+ * Does not await the list round-trip — that was the main post-add lag.
+ */
+export const refreshTorrentsList = async (
+  queryClient: QueryClient,
+  options?: { torrents?: TorrentStat | TorrentStat[] },
+): Promise<void> => {
+  if (options?.torrents) upsertTorrentsInList(queryClient, options.torrents)
+  // Fire-and-forget: UI already has upserted rows; don't block dialog close on list GET.
+  void queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
 }
 
 /** List torrents; attaches HTTP `status` on the thrown Error for auth/offline UI. */
@@ -38,8 +61,8 @@ export interface AddTorrentInput {
   save_to_db?: boolean
 }
 
-export const addTorrent = async (input: AddTorrentInput): Promise<void> => {
-  await axios.post(torrentsHost(), {
+export const addTorrent = async (input: AddTorrentInput): Promise<TorrentStat> => {
+  const { data } = await axios.post<TorrentStat>(torrentsHost(), {
     action: 'add',
     link: input.link,
     title: input.title || undefined,
@@ -47,6 +70,7 @@ export const addTorrent = async (input: AddTorrentInput): Promise<void> => {
     poster: input.poster ?? '',
     save_to_db: input.save_to_db ?? true,
   })
+  return data
 }
 
 export interface UpdateTorrentInput {
@@ -88,12 +112,13 @@ export interface UploadTorrentMeta {
 }
 
 /** Multipart `.torrent` upload; form field `save` mirrors server "save to DB" flag. */
-export const uploadTorrent = async (file: File, meta: UploadTorrentMeta = {}): Promise<void> => {
+export const uploadTorrent = async (file: File, meta: UploadTorrentMeta = {}): Promise<TorrentStat | TorrentStat[]> => {
   const data = new FormData()
   data.append('save', meta.save === false ? 'false' : 'true')
   data.append('file', file)
   if (meta.title) data.append('title', meta.title)
   if (meta.category) data.append('category', meta.category)
   if (meta.poster) data.append('poster', meta.poster)
-  await axios.post(torrentUploadHost(), data)
+  const { data: status } = await axios.post<TorrentStat | TorrentStat[]>(torrentUploadHost(), data)
+  return status
 }

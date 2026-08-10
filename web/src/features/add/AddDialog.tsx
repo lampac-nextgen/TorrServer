@@ -204,14 +204,14 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
 
     setSaving(true)
     try {
-      await addTorrent({
+      const added = await addTorrent({
         link: isTorrsLink(trimmed) ? toApiTorrsLink(trimmed) : trimmed,
         title: title || undefined,
         category: category.trim() || undefined,
         poster: poster || '',
         save_to_db: saveToDb,
       })
-      await refreshTorrentsList(queryClient)
+      await refreshTorrentsList(queryClient, { torrents: added })
       toast?.showToast({ message: t('Search.TorrentAdded'), severity: 'success' })
       resetForm()
       onClose()

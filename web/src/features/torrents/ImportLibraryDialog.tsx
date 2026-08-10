@@ -2,7 +2,7 @@ import { Button, Modal, Spinner, Switch, TextArea, TextField } from '@heroui/rea
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { addTorrent, refreshTorrentsList } from 'shared/api/torrents'
+import { addTorrent, refreshTorrentsList, upsertTorrentsInList } from 'shared/api/torrents'
 import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
 import { parseLibraryImportText, type LibraryImportItem } from 'shared/lib/libraryImport'
@@ -98,18 +98,21 @@ export default function ImportLibraryDialog({ open, onClose }: ImportLibraryDial
       return known.has(item.hashHint.toLowerCase())
     }
 
+    const added: Awaited<ReturnType<typeof addTorrent>>[] = []
     await mapPool(items, ADD_CONCURRENCY, async item => {
       if (shouldSkip(item)) {
         stats.skipped += 1
       } else {
         try {
-          await addTorrent({
+          const torrent = await addTorrent({
             link: item.link,
             title: item.title,
             category: item.category,
             poster: item.poster,
             save_to_db: saveToDb,
           })
+          added.push(torrent)
+          upsertTorrentsInList(queryClient, torrent)
           if (item.hashHint) known.add(item.hashHint.toLowerCase())
           stats.ok += 1
         } catch {
@@ -120,7 +123,7 @@ export default function ImportLibraryDialog({ open, onClose }: ImportLibraryDial
       setProgress({ ...stats })
     })
 
-    await refreshTorrentsList(queryClient)
+    await refreshTorrentsList(queryClient, { torrents: added })
     setRunning(false)
 
     toast?.showToast({

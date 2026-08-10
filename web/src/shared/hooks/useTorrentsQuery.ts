@@ -16,10 +16,8 @@ export function useTorrentsQuery(options?: { enabled?: boolean }): UseQueryResul
     enabled: options?.enabled ?? true,
     refetchInterval: query => {
       if (document.hidden) return 10_000
-      // Keep 1s while metadata is resolving so cards leave GETTING_INFO promptly.
-      if (isWarming(query.state.data)) return 1000
-      // Details/settings/etc. open — ease off the list poll to cut server + battery load.
-      if (document.body.dataset.modalOpen === 'true') return 5_000
+      // Metadata resolving — keep cards/details in sync quickly (modals must not slow this).
+      if (isWarming(query.state.data)) return 500
       return 1000
     },
   })

@@ -322,8 +322,8 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
         const urls = await getMoviePosters(posterQuery, i18n.language?.startsWith('ru') ? 'ru' : 'en')
         poster = urls?.[0] || ''
       }
-      await addTorrent({ link, title: item.Title, poster })
-      await refreshTorrentsList(queryClient)
+      const added = await addTorrent({ link, title: item.Title, poster })
+      await refreshTorrentsList(queryClient, { torrents: added })
       toast?.showToast({ message: t('Search.TorrentAdded'), severity: 'success' })
     } catch {
       toast?.showToast({ message: t('Error'), severity: 'error' })
