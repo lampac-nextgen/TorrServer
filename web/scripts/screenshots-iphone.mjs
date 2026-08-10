@@ -160,12 +160,15 @@ async function main() {
 
   const details = page.locator('.ts-details-modal')
   await details.waitFor({ state: 'visible', timeout: 20_000 })
+  // Wait out HeroUI enter animation so geometry asserts are stable.
+  await page.waitForTimeout(400)
 
   const style = await details.evaluate(el => {
     const cs = getComputedStyle(el)
     const rect = el.getBoundingClientRect()
     return {
       borderRadius: cs.borderRadius,
+      transform: cs.transform,
       width: cs.width,
       height: cs.height,
       inset: `${cs.top} ${cs.right} ${cs.bottom} ${cs.left}`,
@@ -176,6 +179,14 @@ async function main() {
   })
   fs.writeFileSync(path.join(outDir, 'details-computed.json'), JSON.stringify(style, null, 2))
   console.log('details computed', style)
+
+  const overflowX = Math.max(0, Math.abs(style.rect.x), style.rect.w - style.viewport.w)
+  const overflowY = Math.max(0, Math.abs(style.rect.y), style.rect.h - style.viewport.h)
+  if (overflowX > 2 || overflowY > 2 || (style.transform && style.transform !== 'none')) {
+    throw new Error(
+      `Details modal geometry not production-ready: overflowX=${overflowX.toFixed(1)} overflowY=${overflowY.toFixed(1)} transform=${style.transform}`,
+    )
+  }
 
   const tabIds = ['files', 'stats', 'swarm', 'cache']
   for (let i = 0; i < tabIds.length; i++) {

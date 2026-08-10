@@ -305,7 +305,7 @@ function TorrentActions({
 
     return (
       <div className='space-y-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
-        <div className='flex items-center gap-1.5'>
+        <div className='flex items-center gap-2'>
           {onOpenCache ? (
             <Button variant='primary' size='md' className='min-h-11 min-w-0 flex-1 gap-2' onPress={onOpenCache}>
               <span className='truncate text-sm'>{cacheLabel}</span>

@@ -251,11 +251,13 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
   }, [tooltip])
 
   return (
-    <div ref={rootRef} className={`relative flex w-full min-w-0 flex-col ${isMiniView ? '' : 'min-h-0 flex-1'}`}>
+    <div ref={rootRef} className={`relative flex w-full min-w-0 flex-col ${isMiniView ? '' : 'min-h-0'}`}>
       <div
         ref={scrollWrapperRef}
         className={`ts-details-cache-snake relative w-full min-w-0 rounded-lg border border-border bg-surface-secondary p-2 ${
-          isMiniView ? 'grid max-h-[420px] justify-center overflow-hidden' : 'min-h-0 min-w-0 flex-1 overflow-hidden'
+          isMiniView
+            ? 'grid max-h-[420px] justify-center overflow-hidden'
+            : 'max-h-full min-w-0 self-stretch overflow-auto'
         }`}
         style={isMiniView ? (miniShellMinHeight != null ? { minHeight: miniShellMinHeight } : undefined) : undefined}
       >

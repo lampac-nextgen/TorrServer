@@ -2347,6 +2347,16 @@ body[data-immersive='true'] .ts-bottom-nav {
     min-height: var(--app-height, 100vh);
   }
 
+  /*
+   * HeroUI enter uses zoom-in-105 — getBoundingClientRect stays ~5% oversized and
+   * shifts off-screen on iPhone. Fullscreen sheets must not scale.
+   */
+  .modal__container:not(:has(.ts-sheet-modal))[data-entering='true'],
+  .modal__container:not(:has(.ts-sheet-modal))[data-exiting='true'] {
+    animation: none !important;
+    transform: none !important;
+  }
+
   .modal__container:not(:has(.ts-sheet-modal)) {
     width: 100% !important;
     max-width: 100% !important;
@@ -2355,6 +2365,7 @@ body[data-immersive='true'] .ts-bottom-nav {
     max-height: var(--app-height, 100vh) !important;
     min-height: var(--app-height, 100vh) !important;
     padding: 0 !important;
+    transform: none !important;
   }
 
   .modal__dialog:not(.ts-sheet-modal) {
@@ -2367,6 +2378,7 @@ body[data-immersive='true'] .ts-bottom-nav {
     border-radius: 0 !important;
     margin-top: 0 !important;
     margin-bottom: 0 !important;
+    transform: none !important;
   }
 
   /* BottomNav More stays a bottom-docked modal sheet (not force-fullscreen). */
@@ -2407,10 +2419,11 @@ body[data-immersive='true'] .ts-bottom-nav {
     place-items: center;
   }
 
-  /* Edit sits left of absolute Close in the Details top action cluster. */
+  /* Edit sits left of absolute Close — clear both 44px targets + gap. */
   .modal__dialog.ts-details-modal .ts-details-edit-trigger {
+    position: absolute;
     top: max(0.5rem, env(safe-area-inset-top, 0px));
-    right: max(3.25rem, calc(2.75rem + env(safe-area-inset-right, 0px)));
+    right: max(3.5rem, calc(3rem + env(safe-area-inset-right, 0px)));
   }
 
   .modal__dialog > .modal__body.modal__body--scroll-inside,
@@ -2433,19 +2446,34 @@ body[data-immersive='true'] .ts-bottom-nav {
     border-radius: 0;
     /* 1rem floor helps Safari-tab (safe-area-inset-top ≈ 0 under the URL bar). */
     padding-top: max(1rem, env(safe-area-inset-top, 0px));
-    padding-right: max(5.5rem, calc(3.25rem + env(safe-area-inset-right, 0px)));
+    /* Close + edit cluster (~44+44+gap) must not sit on the title. */
+    padding-right: max(6.75rem, calc(5.75rem + env(safe-area-inset-right, 0px)));
     padding-bottom: 0.5rem;
     padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
   }
 
   .modal__dialog.ts-details-modal .ts-details-tabs {
-    padding-right: 0.5rem;
-    padding-left: 0.5rem;
+    padding-right: 0.75rem;
+    padding-left: 0.75rem;
   }
 
   /* Cache snake: less inset on phone so the map reads full-bleed. */
   .modal__dialog.ts-details-modal .ts-details-cache-snake {
     padding: 0.25rem;
+  }
+
+  /* Details ⋯ Drawer — flush bottom sheet, denser than default p-6. */
+  .drawer__dialog.ts-sheet-drawer[data-placement='bottom'] {
+    width: 100%;
+    max-width: 100%;
+    padding: 0.75rem 0.25rem max(0.75rem, env(safe-area-inset-bottom, 0px));
+    border-start-start-radius: 1rem;
+    border-start-end-radius: 1rem;
+  }
+
+  .drawer__dialog.ts-sheet-drawer .drawer__header {
+    padding-inline: 0.75rem;
+    padding-bottom: 0.25rem;
   }
 }
 
@@ -2503,6 +2531,13 @@ body[data-immersive='true'] .ts-bottom-nav {
   /* HeroUI placement=auto uses mt-auto on small screens — pin full sheets edge-to-edge. */
   margin-top: 0;
   margin-bottom: 0;
+  transform: none;
+}
+
+.modal__container--full[data-entering='true'],
+.modal__container--full[data-exiting='true'] {
+  animation: none !important;
+  transform: none !important;
 }
 
 .modal__dialog--full > .modal__header {
@@ -2546,6 +2581,10 @@ body[data-immersive='true'] .ts-bottom-nav {
  * Details fullscreen: zero-height header (sr-only title + absolute close) — body owns
  * top safe-area. Flush hero (no inset card); keep modest side padding on tab content only.
  */
+.modal__dialog--full.ts-details-modal {
+  padding: 0;
+}
+
 .modal__dialog--full.ts-details-modal > .modal__header {
   padding: 0;
 }
@@ -2558,19 +2597,20 @@ body[data-immersive='true'] .ts-bottom-nav {
 
 .modal__dialog--full.ts-details-modal .ts-details-hero {
   padding-top: max(1rem, env(safe-area-inset-top, 0px));
-  padding-right: max(5.5rem, calc(3.25rem + env(safe-area-inset-right, 0px)));
+  padding-right: max(6.75rem, calc(5.75rem + env(safe-area-inset-right, 0px)));
   padding-bottom: 0.5rem;
   padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
 }
 
 .modal__dialog--full.ts-details-modal .ts-details-edit-trigger {
+  position: absolute;
   top: max(0.5rem, env(safe-area-inset-top, 0px));
-  right: max(3.25rem, calc(2.75rem + env(safe-area-inset-right, 0px)));
+  right: max(3.5rem, calc(3rem + env(safe-area-inset-right, 0px)));
 }
 
 .modal__dialog--full.ts-details-modal .ts-details-tabs {
-  padding-right: 0.5rem;
-  padding-left: 0.5rem;
+  padding-right: 0.75rem;
+  padding-left: 0.75rem;
 }
 
 .modal__dialog--full.ts-details-modal .ts-details-cache-snake {

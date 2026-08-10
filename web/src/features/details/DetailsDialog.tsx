@@ -81,11 +81,11 @@ function StatWidget({
       <span
         className={`block leading-tight text-muted ${
           tight
-            ? 'truncate text-[10px]'
+            ? 'truncate text-[11px]'
             : compact
               ? 'line-clamp-2 min-h-[1.75rem] text-[10px]'
               : dense
-                ? 'truncate text-[10px]'
+                ? 'truncate text-[11px]'
                 : 'truncate text-[11px] sm:text-xs'
         }`}
         title={label}
@@ -341,28 +341,28 @@ export default function DetailsDialog({
       <StatWidget
         dense
         compact={useCompactDetails}
-        tight={useCompactDetails}
+        tight={useCompactDetails && !showHeroSix}
         label={t('DownloadSpeed')}
         value={humanizeSpeed(downloadSpeed)}
       />
       <StatWidget
         dense
         compact={useCompactDetails}
-        tight={useCompactDetails}
+        tight={useCompactDetails && !showHeroSix}
         label={t('UploadSpeed')}
         value={humanizeSpeed(uploadSpeed)}
       />
       <StatWidget
         dense
         compact={useCompactDetails}
-        tight={useCompactDetails}
+        tight={useCompactDetails && !showHeroSix}
         label={t('Peers')}
         value={getPeerString(torrent) || '—'}
       />
       <StatWidget
         dense
         compact={useCompactDetails}
-        tight={useCompactDetails}
+        tight={useCompactDetails && !showHeroSix}
         label={t('Size')}
         value={humanizeSize(torrentSize)}
       />
@@ -374,14 +374,14 @@ export default function DetailsDialog({
       <StatWidget
         dense
         compact={useCompactDetails}
-        tight={useCompactDetails}
+        tight={useCompactDetails && !showHeroSix}
         label={t('CacheFilled')}
         value={cacheFilledValue}
       />
       <StatWidget
         dense
         compact={useCompactDetails}
-        tight={useCompactDetails}
+        tight={useCompactDetails && !showHeroSix}
         label={t('Status')}
         value={statusLabel(stat)}
       />
@@ -503,7 +503,7 @@ export default function DetailsDialog({
               {useCompactDetails ? (
                 /* Phone: flush hero on narrow CSS; rounded card only on wide desktop sheet. */
                 <div
-                  className={`ts-details-hero shrink-0 space-y-2 bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2 pr-14 ${
+                  className={`ts-details-hero shrink-0 space-y-2 bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2 pr-[6.75rem] ${
                     sheetFull ? 'rounded-none' : 'rounded-xl'
                   }`}
                 >
@@ -674,7 +674,9 @@ export default function DetailsDialog({
                         <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
                         <SwarmStatsPanel torrent={torrent} variant='summary' columns={2} showTitle={false} />
                       </div>
-                      <div className='shrink-0 border-t border-border bg-surface pt-2'>{torrentActions}</div>
+                      <div className='shrink-0 border-t border-border bg-surface/95 pt-2 backdrop-blur-sm'>
+                        {torrentActions}
+                      </div>
                     </>
                   ) : (
                     <>
@@ -690,20 +692,20 @@ export default function DetailsDialog({
                 <Tabs.Panel
                   id='swarm'
                   className={`flex min-h-0 flex-1 flex-col pt-3 ${
-                    useCompactDetails ? 'items-start overflow-y-auto overscroll-contain' : 'overflow-hidden'
+                    useCompactDetails ? 'overflow-y-auto overscroll-contain' : 'overflow-hidden'
                   }`}
                 >
                   <SwarmStatsPanel
                     torrent={torrent}
                     variant='full'
-                    className={useCompactDetails ? 'shrink-0' : 'min-h-0 flex-1 overflow-hidden'}
+                    className={useCompactDetails ? 'w-full shrink-0' : 'min-h-0 flex-1 overflow-hidden'}
                     cacheReaders={cache.Readers?.length ?? 0}
                   />
                 </Tabs.Panel>
 
                 <Tabs.Panel
                   id='cache'
-                  className='flex min-h-0 flex-1 flex-col gap-2 overflow-hidden pt-3 sm:gap-4 sm:pt-4'
+                  className='flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain pt-3 sm:gap-4 sm:overflow-hidden sm:pt-4'
                 >
                   <div className='flex shrink-0 items-center justify-between gap-2'>
                     {useCompactDetails ? null : <p className='text-sm font-semibold text-muted'>{t('Cache')}</p>}
@@ -724,7 +726,7 @@ export default function DetailsDialog({
                     </div>
                   </div>
 
-                  <div className='flex min-h-0 min-w-0 flex-1 flex-col'>
+                  <div className={`flex min-w-0 flex-col ${useCompactDetails ? 'shrink-0' : 'min-h-0 flex-1'}`}>
                     <TorrentCache cache={cache} mode='detailed' isSnakeDebugMode={isSnakeDebugMode} />
                   </div>
                 </Tabs.Panel>
