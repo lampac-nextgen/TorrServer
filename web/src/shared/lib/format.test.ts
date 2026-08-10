@@ -5,6 +5,7 @@ import {
   BUFFER_TARGET_FLOOR_BYTES,
   bufferAheadBytes,
   bufferFillPercent,
+  formatBufferAheadLabel,
   formatBufferFilledLabel,
   formatCacheFilledLabel,
   getPeerString,
@@ -44,10 +45,11 @@ describe('formatCacheFilledLabel', () => {
     expect(label).not.toMatch(/%/)
   })
 
-  it('shows raw filled when over capacity and appends percent', () => {
+  it('shows raw filled when over capacity but caps percent at 100', () => {
     const label = formatCacheFilledLabel(274, 256)
-    expect(label).toMatch(/107%/)
-    expect(label).not.toMatch(/^256 /)
+    expect(label).toMatch(/100%/)
+    expect(label).not.toMatch(/107%/)
+    expect(label).toContain('/')
   })
 
   it('always appends percent when requested', () => {
@@ -83,6 +85,20 @@ describe('formatBufferFilledLabel', () => {
   it('computes capped percent', () => {
     expect(bufferFillPercent(40, 32)).toBe(100)
     expect(bufferFillPercent(16, 32)).toBe(50)
+  })
+})
+
+describe('formatBufferAheadLabel', () => {
+  it('returns a size-ahead label without a / target fraction', () => {
+    const label = formatBufferAheadLabel(242 * 1024 * 1024)
+    expect(label).toBeTruthy()
+    expect(label).not.toContain('/')
+    expect(label).toMatch(/242/)
+  })
+
+  it('returns null for missing input', () => {
+    expect(formatBufferAheadLabel(null)).toBeNull()
+    expect(formatBufferAheadLabel(undefined)).toBeNull()
   })
 })
 

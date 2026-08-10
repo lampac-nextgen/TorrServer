@@ -37,7 +37,8 @@ export function getPeerString(torrent?: TorrentStat | null): string | null {
 
 /**
  * Cache fill label — same shape as Details «Кеш» widget.
- * Shows raw `filled` (may exceed capacity until cleanPieces); appends `· N%` when over or always.
+ * Shows raw `filled` (may exceed capacity until cleanPieces). Percent is capped
+ * at 100 so a brief overfill never reads as "103% capacity".
  */
 export function formatCacheFilledLabel(
   filled?: number | null,
@@ -45,7 +46,7 @@ export function formatCacheFilledLabel(
   opts?: { percent?: 'whenOver' | 'always' },
 ): string | null {
   if (filled == null || capacity == null || capacity <= 0 || filled < 0) return null
-  const pct = Math.round((filled / capacity) * 100)
+  const pct = Math.min(100, Math.round((filled / capacity) * 100))
   const over = filled > capacity
   const sizes = `${humanizeSize(filled)} / ${humanizeSize(capacity)}`
   const mode = opts?.percent ?? 'whenOver'
@@ -66,6 +67,7 @@ export function resolveBufferTargetBytes(capacity?: number | null, preloadCacheP
 /**
  * Buffer/Preload progress: live cache Filled toward buffer target (not Capacity).
  * Label order is `Filled / target`. Percent is capped at 100 (bar is already capped).
+ * Use only for idle/preload — while streaming prefer {@link formatBufferAheadLabel}.
  */
 export function formatBufferFilledLabel(
   filled?: number | null,
@@ -80,6 +82,15 @@ export function formatBufferFilledLabel(
   const mode = opts?.percent ?? 'whenOver'
   if (mode === 'always' || over) return `${sizes} · ${pct}%`
   return sizes
+}
+
+/**
+ * Playable contiguous bytes ahead of the playhead — never `ahead / target`, which
+ * reads as if the preload target were a capacity that overflowed.
+ */
+export function formatBufferAheadLabel(aheadBytes?: number | null): string | null {
+  if (aheadBytes == null || aheadBytes < 0 || Number.isNaN(aheadBytes)) return null
+  return i18n.t('BufferAheadLabel', { size: humanizeSize(aheadBytes) })
 }
 
 export function bufferFillPercent(filled?: number | null, bufferTarget?: number | null): number {

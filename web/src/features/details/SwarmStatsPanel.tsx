@@ -1,6 +1,7 @@
 import {
   bufferAheadBytes,
   bufferFillPercent,
+  formatBufferAheadLabel,
   formatBufferFilledLabel,
   humanizeSize,
   resolveBufferTargetBytes,
@@ -193,16 +194,19 @@ export default function SwarmStatsPanel({
   const totalSize = torrent.torrent_size ?? 0
   const loadedPct = pct(loaded, totalSize)
   const bufferTarget = resolveBufferTargetBytes(cache?.Capacity, preloadCachePercent)
-  // Playable bytes ahead of the head while streaming; total Filled otherwise.
+  // Playable ahead while streaming; Filled/target while idle/preload.
   const bufferAhead = bufferAheadBytes(cache)
+  const isStreamingBuffer = bufferAhead != null
   const bufferFilled = bufferAhead ?? cache?.Filled ?? 0
-  const preloadHint = bufferAhead != null ? t('BufferAheadHint') : t('BufferHint')
+  const preloadHint = isStreamingBuffer ? t('BufferAheadHint') : t('BufferHint')
+  const preloadTitle = isStreamingBuffer ? t('BufferAhead') : t('Buffer')
   const preloadPct = bufferFillPercent(bufferFilled, bufferTarget)
   const durationLabel = formatDuration(torrent.duration_seconds)
   const loadedLabel = totalSize > 0 ? `${humanizeSize(loaded)} · ${Math.round(loadedPct)}%` : humanizeSize(loaded)
-  const preloadLabel =
-    formatBufferFilledLabel(bufferFilled, bufferTarget, { percent: 'always' }) ??
-    (bufferFilled > 0 ? humanizeSize(bufferFilled) : '—')
+  const preloadLabel = isStreamingBuffer
+    ? (formatBufferAheadLabel(bufferAhead) ?? '—')
+    : (formatBufferFilledLabel(bufferFilled, bufferTarget, { percent: 'always' }) ??
+      (bufferFilled > 0 ? humanizeSize(bufferFilled) : '—'))
 
   /** Stats: Half-open + transfer IO. Buffer is meter-only; Peers/Cache stay in hero. */
   const summaryItems: MetricRowItem[] = [
@@ -263,7 +267,7 @@ export default function SwarmStatsPanel({
       loadedLabel={loadedLabel}
       loadedPct={loadedPct}
       loadedHint={t('LoadedHint')}
-      preloadTitle={t('Buffer')}
+      preloadTitle={preloadTitle}
       preloadLabel={preloadLabel}
       preloadPct={preloadPct}
       preloadHint={preloadHint}
