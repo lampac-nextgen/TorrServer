@@ -13,6 +13,7 @@ export interface CacheMapDialogProps {
   cache: TorrentCacheData
   isSnakeDebugMode: boolean
   onSnakeDebugModeChange: (value: boolean) => void
+  hash?: string
 }
 
 /** Large cache-map workspace stacked above torrent Details. */
@@ -22,6 +23,7 @@ export default function CacheMapDialog({
   cache,
   isSnakeDebugMode,
   onSnakeDebugModeChange,
+  hash,
 }: CacheMapDialogProps) {
   const { t } = useTranslation()
   const isFullScreen = useDialogFullScreen()
@@ -50,7 +52,7 @@ export default function CacheMapDialog({
 
       <Modal.Body className='flex min-h-0 flex-1 flex-col overflow-hidden'>
         <div className='flex min-h-0 min-w-0 flex-1 flex-col'>
-          <TorrentCache cache={cache} mode='detailed' isSnakeDebugMode={isSnakeDebugMode} />
+          <TorrentCache cache={cache} mode='detailed' isSnakeDebugMode={isSnakeDebugMode} hash={hash} />
         </div>
       </Modal.Body>
     </AppDialog>

@@ -1,16 +1,23 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { CacheMapItem, TorrentCache as TorrentCacheData } from 'shared/api/types'
 import {
   isReaderActive,
   priorityDebugLabel,
   resolveFocusVisibleCells,
+  resolveFocusWindowSize,
   SNAKE_FOCUS_TARGET_ROWS,
   SNAKE_FOCUS_TARGET_ROWS_MINI,
 } from 'shared/cache/buildCacheMap'
 import { cheapPiecesFingerprint, cheapReadersFingerprint } from 'shared/cache/cacheFingerprint'
 import { drawSnake, hitTestSnakeCell, setupHiDpiCanvas } from 'shared/cache/drawSnake'
-import { resolvePieceMetrics, resolveSnakeSettings, type SnakeThemeMode } from 'shared/cache/snakeSettings'
+import {
+  fitPieceMetricsToArea,
+  resolvePieceMetrics,
+  resolveSnakeSettings,
+  type SnakeThemeMode,
+} from 'shared/cache/snakeSettings'
+import { snakeCameraKey } from 'shared/cache/snakeSession'
 import { useCreateFocusMap } from 'shared/cache/useUpdateCache'
 import { humanizeSize } from 'shared/lib/format'
 import { useThemePreference } from 'shared/theme/useThemePreference'
@@ -22,7 +29,25 @@ export interface TorrentCacheProps {
   /** detailed — 1:1 reader window sized to the drawable grid. */
   mode?: SnakeViewMode
   isSnakeDebugMode?: boolean
+  /** Torrent hash — restores the focus window after the dialog or tab is remounted. */
+  hash?: string
 }
+
+/**
+ * ResizeObserver reports the content box, so the first synchronous read must
+ * subtract padding too — otherwise the grid is laid out for a pane ~18px wider
+ * than reality and reflows right after mount. `clientWidth` is used instead of
+ * `getBoundingClientRect` because the modal enter animation scales the subtree.
+ */
+const measureContentBox = (el: HTMLElement) => {
+  const style = getComputedStyle(el)
+  const width = el.clientWidth - (parseFloat(style.paddingLeft) || 0) - (parseFloat(style.paddingRight) || 0)
+  const height = el.clientHeight - (parseFloat(style.paddingTop) || 0) - (parseFloat(style.paddingBottom) || 0)
+  return { width: Math.max(0, width), height: Math.max(0, height) }
+}
+
+/** Cell-count bucket for cell-size fitting — avoids resizing on tiny window drift. */
+const CELL_FIT_STEP = 16
 
 const emptyCell = (): CacheMapItem => ({
   percentage: 0,
@@ -32,7 +57,7 @@ const emptyCell = (): CacheMapItem => ({
 })
 
 /** Canvas-based piece map ("snake") showing cache fill, playhead and priorities. */
-function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCacheProps) {
+function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode, hash }: TorrentCacheProps) {
   const { t } = useTranslation()
   const { isDark, palette } = useThemePreference()
   const theme: SnakeThemeMode = isDark ? 'dark' : 'light'
@@ -48,7 +73,9 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
   const lastDrawKey = useRef('')
   const [tooltip, setTooltip] = useState<{ index: number; x: number; y: number; text: string } | null>(null)
 
-  useEffect(() => {
+  // Layout effect: measuring after paint showed an empty pane for one frame on
+  // every mount (dialog open, tab switch) before the snake appeared.
+  useLayoutEffect(() => {
     const el = isMiniView ? rootRef.current : scrollWrapperRef.current
     if (!el || typeof ResizeObserver === 'undefined') return
     const observer = new ResizeObserver(entries => {
@@ -60,9 +87,9 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
       })
     })
     observer.observe(el)
-    const rect = el.getBoundingClientRect()
-    setContainerWidth(rect.width)
-    if (!isMiniView) setContainerHeight(rect.height)
+    const box = measureContentBox(el)
+    setContainerWidth(box.width)
+    if (!isMiniView) setContainerHeight(box.height)
     return () => {
       observer.disconnect()
       cancelAnimationFrame(resizeFrame.current)
@@ -75,18 +102,38 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
     return resolveSnakeSettings(theme, variant)
   }, [theme, variant, palette])
 
-  const { pieceSize, gap } = useMemo(
+  const baseMetrics = useMemo(
     () => resolvePieceMetrics(baseSettings, containerWidth, isMiniView, 0),
     [baseSettings, containerWidth, isMiniView],
   )
 
   const canvasWidth =
     containerWidth > 0 ? (isMiniView ? Math.max(containerWidth - 8, containerWidth * 0.96) : containerWidth) : 0
-  const cellStride = pieceSize + gap
-  const piecesPerRow = canvasWidth > 0 ? Math.max(1, Math.floor(canvasWidth / cellStride)) : 0
 
   const emptyRowCount = isMiniView ? 4 : 6
   const targetRows = isMiniView ? SNAKE_FOCUS_TARGET_ROWS_MINI : SNAKE_FOCUS_TARGET_ROWS
+
+  // Detailed: grow cells so the reader-range window fills the pane instead of
+  // leaving it half empty. Sizing runs at the base cell first to learn how many
+  // cells the window wants, then picks the largest cell that still fits them.
+  const { pieceSize, gap } = useMemo(() => {
+    const baseStride = baseMetrics.pieceSize + baseMetrics.gap
+    if (isMiniView || canvasWidth <= 0 || baseStride <= 0) return baseMetrics
+    if (containerHeight < baseStride * 2) return baseMetrics
+
+    const baseCols = Math.max(1, Math.floor(canvasWidth / baseStride))
+    const baseRows = Math.max(2, Math.floor(containerHeight / baseStride))
+    const budget = baseCols * baseRows
+    const wanted = resolveFocusWindowSize(cache, budget)
+    // Near the file edges the reader range grows piece by piece; rounding to a
+    // coarse step keeps the cells from resizing on every poll.
+    const quantized = Math.min(budget, Math.ceil(wanted / CELL_FIT_STEP) * CELL_FIT_STEP)
+    return fitPieceMetricsToArea(baseMetrics, canvasWidth, containerHeight, quantized)
+  }, [baseMetrics, canvasWidth, containerHeight, isMiniView, cache])
+
+  const cellStride = pieceSize + gap
+  const piecesPerRow = canvasWidth > 0 ? Math.max(1, Math.floor(canvasWidth / cellStride)) : 0
+
   // Detailed: fit rows to pane once RO reports real height (≥2 footprints).
   const heightReady = !isMiniView && cellStride > 0 && containerHeight >= cellStride * 2
   const maxFitRows = heightReady
@@ -101,7 +148,10 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
       ? piecesPerRow * maxFitRows
       : resolveFocusVisibleCells(containerWidth, isMiniView, isMiniView ? 0 : containerHeight)
 
-  const focusModel = useCreateFocusMap(cache, visibleCellBudget)
+  // Withhold the key until the pane is measured: the first render runs on a
+  // placeholder budget and would otherwise overwrite the saved window with it.
+  const isMeasured = containerWidth > 0 && (isMiniView || containerHeight > 0)
+  const focusModel = useCreateFocusMap(cache, visibleCellBudget, isMeasured ? snakeCameraKey(hash, mode) : undefined)
   const cells = focusModel.cells
   // A reader reported as idle keeps its square on screen but stops moving.
   const hasActiveReaders = (cache.Readers ?? []).some(isReaderActive)
@@ -313,6 +363,7 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
 export default memo(TorrentCache, (prev, next) => {
   if (prev.mode !== next.mode) return false
   if (prev.isSnakeDebugMode !== next.isSnakeDebugMode) return false
+  if (prev.hash !== next.hash) return false
   const a = prev.cache
   const b = next.cache
   return (

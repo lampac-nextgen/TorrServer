@@ -279,6 +279,13 @@ const resolveReaderRangeSpan = (readers: CacheReader[], piecesCount: number): { 
   return { start, end }
 }
 
+/** Readers that drive the camera: active ones, or every reader when all are idle. */
+const resolveDrivingReaders = (cache: TorrentCache): { readers: CacheReader[]; readerActive: boolean } => {
+  const all = cache.Readers || []
+  const active = all.filter(isReaderActive)
+  return { readers: active.length > 0 ? active : all, readerActive: active.length > 0 }
+}
+
 const resolveWindowSize = (
   range: { start: number; end: number } | null,
   visibleCells: number,
@@ -304,6 +311,19 @@ const clampWindow = (start: number, windowSize: number, piecesCount: number): { 
 }
 
 /**
+ * How many cells the window will hold, without resolving its position.
+ * Lets the canvas pick a cell size that fills the pane before the model is
+ * built — the size in turn feeds `visibleCells`, so this must stay position
+ * independent to avoid a resize feedback loop.
+ */
+export const resolveFocusWindowSize = (cache: TorrentCache, visibleCells: number): number => {
+  const piecesCount = cache.PiecesCount ?? 0
+  if (piecesCount <= 0) return 0
+  const { readers } = resolveDrivingReaders(cache)
+  return resolveWindowSize(resolveReaderRangeSpan(readers, piecesCount), visibleCells, piecesCount)
+}
+
+/**
  * Sliding 1:1 window sized to the reader's cache range and positioned by a
  * dead-zone camera: the head walks across cells and the window scrolls only
  * once it nears an edge. No readers at all: freeze at lastWindowStart.
@@ -316,11 +336,8 @@ export const resolveFocusWindow = (
   const piecesCount = cache.PiecesCount ?? 0
   if (piecesCount <= 0) return null
 
-  const allReaders = cache.Readers || []
-  const activeReaders = allReaders.filter(isReaderActive)
   // Idle readers still position the camera so the frozen head stays on screen.
-  const drivingReaders = activeReaders.length > 0 ? activeReaders : allReaders
-  const readerActive = activeReaders.length > 0
+  const { readers: drivingReaders, readerActive } = resolveDrivingReaders(cache)
 
   let readerPiece: number | null = null
   if (drivingReaders.length > 0) {

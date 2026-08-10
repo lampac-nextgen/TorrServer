@@ -770,7 +770,7 @@ export default function DetailsDialog({
 
               {/* flex-1 height chain required: detailed snake sizes rows via ResizeObserver height. */}
               <div className='flex min-h-0 min-w-0 flex-1 flex-col'>
-                <TorrentCache cache={cache} mode='detailed' isSnakeDebugMode={isSnakeDebugMode} />
+                <TorrentCache cache={cache} mode='detailed' isSnakeDebugMode={isSnakeDebugMode} hash={hash} />
               </div>
             </Tabs.Panel>
           </Tabs.Root>
@@ -783,6 +783,7 @@ export default function DetailsDialog({
         cache={cache}
         isSnakeDebugMode={isSnakeDebugMode}
         onSnakeDebugModeChange={setIsSnakeDebugMode}
+        hash={hash}
       />
       <EditPosterDialog torrent={torrent} open={posterEditOpen} onClose={() => setPosterEditOpen(false)} />
       {autoPlayModals}

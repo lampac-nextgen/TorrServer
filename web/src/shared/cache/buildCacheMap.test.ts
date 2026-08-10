@@ -9,6 +9,7 @@ import {
   pieceFillPercentage,
   priorityDebugLabel,
   resolveFocusWindow,
+  resolveFocusWindowSize,
 } from './buildCacheMap'
 
 describe('clampReaderRangeInclusive', () => {
@@ -185,6 +186,21 @@ describe('resolveFocusWindow / buildFocusModel', () => {
     }
     // The camera follows rather than staying pinned.
     expect(seen.size).toBeGreaterThan(1)
+  })
+
+  it('reports the window size without resolving its position', () => {
+    const cache: TorrentCache = {
+      PiecesCount: 5000,
+      PiecesLength: 2 * 1024 * 1024,
+      Capacity: 256 * 1024 * 1024,
+      Readers: [{ Reader: 1005, Start: 1000, End: 1127 }],
+    }
+    // Cell-size fitting reads this before a model exists, so it must agree with
+    // the window the model ends up building.
+    const size = resolveFocusWindowSize(cache, 396)
+    const window = resolveFocusWindow(cache, 396)!
+    expect(size).toBe(window.end - window.start + 1)
+    expect(resolveFocusWindowSize({ PiecesCount: 0 }, 396)).toBe(0)
   })
 
   it('reports readerActive false and marks the head idle when the reader is stopped', () => {
