@@ -15,7 +15,7 @@ import {
 import ptt from 'parse-torrent-title'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import type { PlayableFile } from 'shared/api/types'
+import type { PlayableFile, TorrentStat } from 'shared/api/types'
 import { playlistAllUrl, torrsShareUrl } from 'shared/api/extras'
 import { playlistTorrHost, streamHost } from 'shared/api/hosts'
 import { dropTorrent, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
@@ -152,22 +152,22 @@ function TorrentActions({
   const externalPlayers = singleFileStream?.externalPlayers ?? []
 
   const runPendingConfirm = () => {
-    if (pendingConfirm === 'drop') {
-      void dropTorrent(hash)
+    if (pendingConfirm === 'drop' || pendingConfirm === 'delete') {
+      const previous = queryClient.getQueryData<TorrentStat[]>(TORRENTS_QUERY_KEY)
+      queryClient.setQueryData<TorrentStat[]>(TORRENTS_QUERY_KEY, prev => prev?.filter(item => item.hash !== hash))
+      const mutate = pendingConfirm === 'drop' ? dropTorrent : removeTorrent
+      const successMessage = pendingConfirm === 'drop' ? t('DropTorrent') : t('Delete')
+      const afterSuccess = pendingConfirm === 'drop' ? onDropped : onDeleted
+      void mutate(hash)
         .then(async () => {
-          toast?.showToast({ message: t('DropTorrent'), severity: 'success' })
+          toast?.showToast({ message: successMessage, severity: 'success' })
           await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
-          onDropped?.()
+          afterSuccess?.()
         })
-        .catch(() => toast?.showToast({ message: t('Error'), severity: 'error' }))
-    } else if (pendingConfirm === 'delete') {
-      void removeTorrent(hash)
-        .then(async () => {
-          toast?.showToast({ message: t('Delete'), severity: 'success' })
-          await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
-          onDeleted?.()
+        .catch(() => {
+          if (previous) queryClient.setQueryData(TORRENTS_QUERY_KEY, previous)
+          toast?.showToast({ message: t('Error'), severity: 'error' })
         })
-        .catch(() => toast?.showToast({ message: t('Error'), severity: 'error' }))
     } else if (pendingConfirm === 'clearViews') {
       void clearViewedFiles(hash)
         .then(() => {

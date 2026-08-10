@@ -50,7 +50,12 @@ export default function AppDialog({
   useSyncModalOpen(open)
   const policyFullScreen = useDialogFullScreen()
   const isFullScreen = compact ? false : (fullScreen ?? policyFullScreen)
-  const dialogClass = [dialogClassName, compact ? 'ts-compact-modal' : null].filter(Boolean).join(' ') || undefined
+  const dialogClass =
+    [dialogClassName, compact ? 'ts-compact-modal' : null, isFullScreen ? 'modal__dialog--full' : null]
+      .filter(Boolean)
+      .join(' ') || undefined
+  const containerClass =
+    [className, isFullScreen ? 'modal__container--full' : null].filter(Boolean).join(' ') || undefined
 
   const state = useOverlayState({
     isOpen: open,
@@ -70,7 +75,7 @@ export default function AppDialog({
           size={isFullScreen ? 'full' : size}
           scroll='inside'
           placement={isFullScreen ? 'center' : 'auto'}
-          className={className}
+          className={containerClass}
         >
           <Modal.Dialog className={dialogClass} style={isFullScreen ? DIALOG_FULLSCREEN : dialogStyle}>
             {children}

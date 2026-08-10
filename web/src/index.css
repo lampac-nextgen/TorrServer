@@ -2721,6 +2721,7 @@ body[data-immersive='true'] .ts-bottom-nav {
 }
 
 .modal__dialog--full.ts-details-modal .ts-details-hero {
+  border-radius: 0;
   padding-top: max(1rem, env(safe-area-inset-top, 0px));
   padding-right: max(6.75rem, calc(5.75rem + env(safe-area-inset-right, 0px)));
   padding-bottom: 0.5rem;
@@ -2760,6 +2761,95 @@ body[data-immersive='true'] .ts-bottom-nav {
 
 .modal__dialog--full.ts-details-modal .ts-details-cache-snake {
   padding: 0.25rem;
+}
+
+/*
+ * Policy fullscreen above 960px (`html[data-dialogs-fullscreen]` from useDialogFullScreen).
+ * Belt-and-suspenders when HeroUI `size="full"` classes are missing — keeps Details
+ * edge-to-edge under Appearance force. Compact confirms + bottom sheets excluded.
+ */
+html[data-dialogs-fullscreen] .modal__backdrop:has(.modal__dialog:not(.ts-sheet-modal):not(.ts-compact-modal)) {
+  --visual-viewport-height: var(--app-height, 100vh);
+}
+
+html[data-dialogs-fullscreen]
+  .modal__backdrop:has(.modal__dialog:not(.ts-sheet-modal):not(.ts-compact-modal)),
+html[data-dialogs-fullscreen]
+  .modal__container:has(.modal__dialog:not(.ts-sheet-modal):not(.ts-compact-modal)) {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  height: var(--app-height, 100vh) !important;
+  max-height: var(--app-height, 100vh) !important;
+  min-height: var(--app-height, 100vh) !important;
+  padding: 0 !important;
+  transform: none !important;
+}
+
+html[data-dialogs-fullscreen] .modal__dialog:not(.ts-sheet-modal):not(.ts-compact-modal) {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 100% !important;
+  border-radius: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  transform: none !important;
+}
+
+html[data-dialogs-fullscreen] .modal__dialog.ts-details-modal {
+  padding: 0;
+}
+
+html[data-dialogs-fullscreen] .modal__dialog.ts-details-modal > .modal__header {
+  padding: 0;
+}
+
+html[data-dialogs-fullscreen] .modal__dialog.ts-details-modal > .modal__body {
+  padding-top: 0;
+  padding-right: 0;
+  padding-left: 0;
+}
+
+html[data-dialogs-fullscreen] .modal__dialog.ts-details-modal .ts-details-hero {
+  border-radius: 0;
+  padding-top: max(1rem, env(safe-area-inset-top, 0px));
+  padding-right: max(6.75rem, calc(5.75rem + env(safe-area-inset-right, 0px)));
+  padding-bottom: 0.5rem;
+  padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
+}
+
+html[data-dialogs-fullscreen] .modal__dialog.ts-details-modal .ts-details-edit-trigger {
+  position: absolute;
+  top: max(0.5rem, env(safe-area-inset-top, 0px));
+  right: max(3.5rem, calc(3rem + env(safe-area-inset-right, 0px)));
+}
+
+html[data-dialogs-fullscreen] .modal__dialog.ts-details-modal .ts-details-tabs {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0%;
+  min-height: 0;
+  padding-right: 0.75rem;
+  padding-left: 0.75rem;
+}
+
+html[data-dialogs-fullscreen] .modal__dialog.ts-details-modal .ts-details-tabs [role='tabpanel'] {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0%;
+  min-height: 0;
+  margin-top: 0;
+  padding-bottom: 0;
+}
+
+html[data-dialogs-fullscreen] .modal__dialog.ts-details-modal > .modal__body.modal__body--scroll-inside {
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 /* Cache Details View — same height chain as Details Cache tab. */

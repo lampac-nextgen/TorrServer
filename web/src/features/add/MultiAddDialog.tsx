@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import type { MultiAddFileState } from 'shared/api/types'
-import { TORRENTS_QUERY_KEY, uploadTorrent } from 'shared/api/torrents'
+import { refreshTorrentsList, uploadTorrent } from 'shared/api/torrents'
 import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
 import {
@@ -178,7 +178,7 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
     }
 
     if (successCount > 0) {
-      await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
+      await refreshTorrentsList(queryClient)
     }
 
     if (failureCount === 0) {

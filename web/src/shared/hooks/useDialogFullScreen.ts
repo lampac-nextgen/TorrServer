@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useMediaQuery } from '@heroui/react'
 import type { CSSProperties } from 'react'
 
@@ -19,13 +20,22 @@ export function resolveDialogFullScreen(input: { narrow: boolean; tabletLandscap
  * - tablet landscape (touch iPad-class devices), or
  * - Appearance → Dialogs fullscreen is on (forces wide monitors too).
  *
+ * Mirrors policy onto `html[data-dialogs-fullscreen]` for CSS above 960px.
  * VideoPlayer and raw HeroUI modals should use the same hook / {@link useDialogFullLayout}.
  */
 export function useDialogFullScreen(): boolean {
   const narrow = useMediaQuery(queryMax('dialog'))
   const tabletLandscape = useMediaQuery(MEDIA_TABLET_LANDSCAPE)
   const [force] = useLocalBoolPref(DIALOGS_FULLSCREEN_PREF, false)
-  return resolveDialogFullScreen({ narrow, tabletLandscape, force })
+  const full = resolveDialogFullScreen({ narrow, tabletLandscape, force })
+
+  useEffect(() => {
+    const root = document.documentElement
+    if (full) root.dataset.dialogsFullscreen = '1'
+    else delete root.dataset.dialogsFullscreen
+  }, [full])
+
+  return full
 }
 
 type DialogSize = 'sm' | 'md' | 'lg' | 'full'

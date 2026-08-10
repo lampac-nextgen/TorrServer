@@ -2,7 +2,7 @@ import { Button, Modal, Spinner, Switch, TextArea, TextField } from '@heroui/rea
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { addTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
+import { addTorrent, refreshTorrentsList } from 'shared/api/torrents'
 import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
 import { parseLibraryImportText, type LibraryImportItem } from 'shared/lib/libraryImport'
@@ -120,7 +120,7 @@ export default function ImportLibraryDialog({ open, onClose }: ImportLibraryDial
       setProgress({ ...stats })
     })
 
-    await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
+    await refreshTorrentsList(queryClient)
     setRunning(false)
 
     toast?.showToast({

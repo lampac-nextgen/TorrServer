@@ -1,9 +1,16 @@
 import axios from 'axios'
+import type { QueryClient } from '@tanstack/react-query'
 
 import type { TorrentStat } from 'shared/api/types'
 import { torrentUploadHost, torrentsHost } from 'shared/api/hosts'
 
 export const TORRENTS_QUERY_KEY = ['torrents'] as const
+
+/** Invalidate + await active refetch so the library updates immediately after add/drop. */
+export const refreshTorrentsList = async (queryClient: QueryClient): Promise<void> => {
+  await queryClient.invalidateQueries({ queryKey: TORRENTS_QUERY_KEY })
+  await queryClient.refetchQueries({ queryKey: TORRENTS_QUERY_KEY })
+}
 
 /** List torrents; attaches HTTP `status` on the thrown Error for auth/offline UI. */
 export const getTorrents = async (): Promise<TorrentStat[]> => {
