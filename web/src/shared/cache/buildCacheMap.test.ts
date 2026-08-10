@@ -103,8 +103,8 @@ describe('buildCacheDrawModel', () => {
 })
 
 describe('pieceFillPercentage', () => {
-  it('returns 100 for Completed regardless of Size', () => {
-    expect(pieceFillPercentage({ Completed: true, Size: 0, Length: 100 }, 100)).toBe(100)
+  it('ignores Completed when Size is empty (avoids false-green vs Filled)', () => {
+    expect(pieceFillPercentage({ Completed: true, Size: 0, Length: 100 }, 100)).toBe(0)
   })
 
   it('returns 0 when Length is missing/zero (cannot compute partial)', () => {
@@ -115,6 +115,7 @@ describe('pieceFillPercentage', () => {
   it('computes partial fill from Size/Length', () => {
     expect(pieceFillPercentage({ Size: 25, Length: 100 }, 100)).toBe(25)
     expect(pieceFillPercentage({ Size: 200, Length: 100 }, 100)).toBe(100)
+    expect(pieceFillPercentage({ Completed: true, Size: 100, Length: 100 }, 100)).toBe(100)
   })
 })
 
@@ -205,7 +206,7 @@ describe('resolveFocusWindow / buildFocusModel', () => {
     expect(readerCell!.percentage).toBe(0)
   })
 
-  it('marks Completed piece as 100% fill in focus model', () => {
+  it('uses Size/Length for fill even when Completed is set with partial Size', () => {
     const cache: TorrentCache = {
       PiecesCount: 20,
       PiecesLength: 100,
@@ -217,8 +218,8 @@ describe('resolveFocusWindow / buildFocusModel', () => {
     }
     const model = buildFocusModel(cache, 12)
     const cell = model.cells.find(c => c.pieceStart === 5)
-    expect(cell?.percentage).toBe(100)
-    expect(cell?.completed).toBe(true)
+    expect(cell?.percentage).toBe(10)
+    expect(cell?.completed).toBe(false)
   })
 
   it('infers H/R/N/A when API priority is missing on incomplete range pieces', () => {

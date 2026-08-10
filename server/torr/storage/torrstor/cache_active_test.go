@@ -82,4 +82,16 @@ func TestPieceByteLengthLastPiece(t *testing.T) {
 	if !item.Completed {
 		t.Fatal("expected Completed when Size >= last-piece Length")
 	}
+
+	// MarkComplete alone must not report Completed without full Size (snake green vs Filled).
+	c.pieces[1] = &Piece{Id: 1, Size: 100, Complete: true, cache: c}
+	c.notePieceFilled(1)
+	st = c.GetState()
+	partial := st.Pieces[1]
+	if partial.Completed {
+		t.Fatal("partial Size must not be Completed even if MarkComplete was set")
+	}
+	if partial.Size != 100 {
+		t.Fatalf("want Size 100, got %d", partial.Size)
+	}
 }

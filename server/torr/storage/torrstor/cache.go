@@ -254,7 +254,8 @@ func (c *Cache) GetState() *state.CacheState {
 			Id:        p.Id,
 			Size:      p.Size,
 			Length:    plen,
-			Completed: p.Complete || (plen > 0 && p.Size >= plen),
+			// Completed follows bytes present — not MarkComplete alone (avoids green empty cells).
+			Completed: plen > 0 && p.Size >= plen,
 			Priority:  priority,
 		}
 	}
@@ -278,7 +279,7 @@ func (c *Cache) GetState() *state.CacheState {
 				Id:        id,
 				Size:      p.Size,
 				Length:    plen,
-				Completed: p.Complete || (plen > 0 && p.Size >= plen),
+				Completed: plen > 0 && p.Size >= plen,
 				Priority:  int(c.torrent.PieceState(id).Priority),
 			}
 		}

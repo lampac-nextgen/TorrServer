@@ -61,12 +61,13 @@ export const forEachPiece = (pieces: TorrentCache['Pieces'], fn: (id: number, pi
   }
 }
 
-/** Byte-accurate fill 0–100. Completed pieces are always full. */
+/** Byte-accurate fill 0–100 from Size/Length (matches Filled Σ Size). */
 export const pieceFillPercentage = (piece: CachePiece | undefined, pieceLength: number): number => {
   if (!piece) return 0
-  if (piece.Completed) return 100
   const length = piece.Length || pieceLength || 0
   const rawSize = piece.Size || 0
+  // Do not trust Completed alone — API can mark complete while Size is 0/partial,
+  // which painted full-green cells that were not counted in Filled.
   if (length <= 0) return 0
   const size = Math.min(rawSize, length)
   return Math.min(100, (size / length) * 100)
@@ -129,10 +130,11 @@ const cellFromPiece = (
   readers: CacheReader[] | undefined,
 ): CacheMapItem => {
   const percentage = pieceFillPercentage(piece, pieceLength)
-  const completed = Boolean(piece?.Completed) || percentage >= 100
+  // Visual "complete" follows bytes, not the API Complete flag alone.
+  const completed = percentage >= 100
   const apiPriority = piece?.Priority || 0
   return {
-    percentage: completed ? 100 : percentage,
+    percentage,
     priority: resolveDisplayPriority(id, apiPriority, completed, readers),
     completed,
     isReader,
@@ -177,13 +179,9 @@ export const buildCacheDrawModel = (cache: TorrentCache, maxCells: number): Cach
     if (id < 0 || id >= piecesCount) return
     const bucket = Math.floor(id / bucketSize)
     const length = piece.Length || pieceLength || 0
-    if (piece.Completed && length > 0) {
-      filled[bucket] += length
-    } else {
-      const rawSize = piece.Size || 0
-      const size = length > 0 ? Math.min(rawSize, length) : rawSize
-      filled[bucket] += size
-    }
+    const rawSize = piece.Size || 0
+    const size = length > 0 ? Math.min(rawSize, length) : rawSize
+    filled[bucket] += size
 
     if (pieceLength <= 0 && length > 0) capacity[bucket] += length
 

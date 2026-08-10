@@ -73,6 +73,12 @@ describe('formatBufferFilledLabel', () => {
     expect(label).toContain('/')
   })
 
+  it('caps percent at 100 when filled exceeds target', () => {
+    const label = formatBufferFilledLabel(267 * 1024 * 1024, 64 * 1024 * 1024, { percent: 'always' })
+    expect(label).toMatch(/100%/)
+    expect(label).not.toMatch(/418%/)
+  })
+
   it('computes capped percent', () => {
     expect(bufferFillPercent(40, 32)).toBe(100)
     expect(bufferFillPercent(16, 32)).toBe(50)

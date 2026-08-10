@@ -26,7 +26,10 @@ func (p *MemPiece) WriteAt(b []byte, off int64) (n int, err error) {
 		p.buffer = make([]byte, p.piece.cache.pieceLength)
 	}
 	n = copy(p.buffer[off:], b[:])
-	p.piece.Size += int64(n)
+	// High-water mark — overlapping WriteAt must not inflate Size via +=.
+	if end := off + int64(n); end > p.piece.Size {
+		p.piece.Size = end
+	}
 	plen := p.piece.cache.pieceByteLength(p.piece.Id)
 	if plen > 0 && p.piece.Size > plen {
 		p.piece.Size = plen

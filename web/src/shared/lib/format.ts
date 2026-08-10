@@ -64,7 +64,7 @@ export function resolveBufferTargetBytes(capacity?: number | null, preloadCacheP
 
 /**
  * Buffer/Preload progress: live cache Filled toward buffer target (not Capacity).
- * Label order is `Filled / target`.
+ * Label order is `Filled / target`. Percent is capped at 100 (bar is already capped).
  */
 export function formatBufferFilledLabel(
   filled?: number | null,
@@ -72,7 +72,8 @@ export function formatBufferFilledLabel(
   opts?: { percent?: 'whenOver' | 'always' },
 ): string | null {
   if (filled == null || bufferTarget == null || bufferTarget <= 0 || filled < 0) return null
-  const pct = Math.round((filled / bufferTarget) * 100)
+  const rawPct = Math.round((filled / bufferTarget) * 100)
+  const pct = Math.min(100, rawPct)
   const over = filled > bufferTarget
   const sizes = `${humanizeSize(filled)} / ${humanizeSize(bufferTarget)}`
   const mode = opts?.percent ?? 'whenOver'
