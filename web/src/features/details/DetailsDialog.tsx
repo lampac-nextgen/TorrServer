@@ -81,9 +81,9 @@ function StatWidget({
       <span
         className={`block leading-tight text-muted ${
           tight
-            ? 'truncate text-[9px]'
+            ? 'truncate text-[10px]'
             : compact
-              ? 'line-clamp-2 min-h-[1.75rem] text-[9px]'
+              ? 'line-clamp-2 min-h-[1.75rem] text-[10px]'
               : dense
                 ? 'truncate text-[10px]'
                 : 'truncate text-[11px] sm:text-xs'
@@ -140,14 +140,14 @@ function TitleRow({
   title: string
   subtitle: string | null
   compact: boolean
-  editControl: ReactNode
+  editControl?: ReactNode
 }) {
   return (
     <div className='min-w-0 flex-1'>
       <div className='flex items-start gap-1'>
         <h2
           className={`min-w-0 flex-1 font-bold text-foreground ${
-            compact ? 'line-clamp-2 text-sm leading-snug' : 'line-clamp-2 text-lg leading-snug'
+            compact ? 'line-clamp-3 text-[15px] leading-snug' : 'line-clamp-2 text-lg leading-snug'
           }`}
           title={title}
         >
@@ -458,9 +458,13 @@ export default function DetailsDialog({
           >
             {/* Zero-height chrome: CloseTrigger is absolute; heading is screen-reader only.
                 Fullscreen top safe-area lives on `.ts-details-hero` (index.css) — do not pad
-                this header or Tailwind `p-0` would fight the global full-dialog header rule. */}
+                this header or Tailwind `p-0` would fight the global full-dialog header rule.
+                On compact, edit sits in the top-right action cluster beside Close. */}
             <Modal.Header className='relative h-0 shrink-0 overflow-visible border-0 p-0'>
               <Modal.Heading className='sr-only'>{t('TorrentDetails')}</Modal.Heading>
+              {useCompactDetails && editControl ? (
+                <div className='ts-details-edit-trigger absolute z-20'>{editControl}</div>
+              ) : null}
               <Modal.CloseTrigger aria-label={t('Close')} className='shrink-0'>
                 <X {...iconChrome} aria-hidden />
               </Modal.CloseTrigger>
@@ -472,7 +476,7 @@ export default function DetailsDialog({
               {useCompactDetails ? (
                 /* Phone: flush hero on narrow CSS; rounded card only on wide desktop sheet. */
                 <div
-                  className={`ts-details-hero shrink-0 space-y-2 bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2 pr-11 ${
+                  className={`ts-details-hero shrink-0 space-y-2 bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2 pr-14 ${
                     sheetFull ? 'rounded-none' : 'rounded-xl'
                   }`}
                 >
@@ -482,7 +486,7 @@ export default function DetailsDialog({
                       onClick={() => setPosterEditOpen(true)}
                       aria-label={t('AddDialog.AddPosterLinkInput')}
                       title={t('AddDialog.AddPosterLinkInput')}
-                      className='group relative grid h-12 w-8 shrink-0 place-items-center overflow-hidden rounded-md bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
+                      className='group relative grid h-12 min-h-11 w-11 min-w-11 shrink-0 place-items-center overflow-hidden rounded-md bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
                     >
                       {poster ? (
                         <img
@@ -497,7 +501,7 @@ export default function DetailsDialog({
                         <ImagePlus size={16} strokeWidth={1.75} className='text-muted' aria-hidden />
                       )}
                     </button>
-                    <TitleRow title={displayTitle} subtitle={subtitle} compact editControl={editControl} />
+                    <TitleRow title={displayTitle} subtitle={subtitle} compact />
                   </div>
                   <div className={`grid w-full gap-1 ${showHeroSix ? 'grid-cols-3' : 'grid-cols-2'}`}>
                     {primaryStats}
@@ -632,7 +636,7 @@ export default function DetailsDialog({
                   className='flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain pt-3'
                 >
                   {useCompactDetails ? (
-                    <div className='space-y-3'>
+                    <div className='space-y-3 pb-2'>
                       {secondaryMetricItems.length > 0 ? (
                         <MetricRows title={t('Details')} items={secondaryMetricItems} columns={1} />
                       ) : null}
@@ -651,11 +655,16 @@ export default function DetailsDialog({
                   )}
                 </Tabs.Panel>
 
-                <Tabs.Panel id='swarm' className='flex min-h-0 flex-1 flex-col overflow-hidden pt-3'>
+                <Tabs.Panel
+                  id='swarm'
+                  className={`flex min-h-0 flex-1 flex-col pt-3 ${
+                    useCompactDetails ? 'items-stretch overflow-y-auto overscroll-contain' : 'overflow-hidden'
+                  }`}
+                >
                   <SwarmStatsPanel
                     torrent={torrent}
                     variant='full'
-                    className='min-h-0 flex-1 overflow-hidden'
+                    className={useCompactDetails ? 'shrink-0' : 'min-h-0 flex-1 overflow-hidden'}
                     cacheReaders={cache.Readers?.length ?? 0}
                   />
                 </Tabs.Panel>

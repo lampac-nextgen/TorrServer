@@ -254,7 +254,7 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode }: TorrentCac
     <div ref={rootRef} className={`relative flex w-full min-w-0 flex-col ${isMiniView ? '' : 'min-h-0 flex-1'}`}>
       <div
         ref={scrollWrapperRef}
-        className={`relative w-full min-w-0 rounded-lg border border-border bg-surface-secondary p-2 ${
+        className={`ts-details-cache-snake relative w-full min-w-0 rounded-lg border border-border bg-surface-secondary p-2 ${
           isMiniView ? 'grid max-h-[420px] justify-center overflow-hidden' : 'min-h-0 min-w-0 flex-1 overflow-hidden'
         }`}
         style={isMiniView ? (miniShellMinHeight != null ? { minHeight: miniShellMinHeight } : undefined) : undefined}

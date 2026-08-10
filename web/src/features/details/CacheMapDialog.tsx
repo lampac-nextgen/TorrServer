@@ -32,10 +32,10 @@ export default function CacheMapDialog({
       onClose={onClose}
       size='lg'
       fullScreen={isFullScreen}
-      dialogClassName='flex flex-col overflow-hidden'
+      dialogClassName='ts-cache-map-modal flex flex-col overflow-hidden'
       dialogStyle={isFullScreen ? undefined : DIALOG_CACHE}
     >
-      <Modal.Header className='flex shrink-0 items-center gap-2'>
+      <Modal.Header className='flex shrink-0 items-center gap-2 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-0 sm:pt-0'>
         <Modal.Heading className='min-w-0 flex-1 truncate'>{t('DetailedCacheView.header')}</Modal.Heading>
         <Checkbox isSelected={isSnakeDebugMode} onChange={onSnakeDebugModeChange}>
           <Checkbox.Content>

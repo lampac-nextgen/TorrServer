@@ -2380,6 +2380,12 @@ body[data-immersive='true'] .ts-bottom-nav {
     place-items: center;
   }
 
+  /* Edit sits left of absolute Close in the Details top action cluster. */
+  .modal__dialog.ts-details-modal .ts-details-edit-trigger {
+    top: max(0.5rem, env(safe-area-inset-top, 0px));
+    right: max(3.25rem, calc(2.75rem + env(safe-area-inset-right, 0px)));
+  }
+
   .modal__dialog > .modal__body.modal__body--scroll-inside,
   .modal__dialog > .modal__body [role='tabpanel'] {
     padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
@@ -2398,15 +2404,21 @@ body[data-immersive='true'] .ts-bottom-nav {
 
   .modal__dialog.ts-details-modal .ts-details-hero {
     border-radius: 0;
-    padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
-    padding-right: max(2.75rem, calc(0.5rem + env(safe-area-inset-right, 0px)));
+    /* 1rem floor helps Safari-tab (safe-area-inset-top ≈ 0 under the URL bar). */
+    padding-top: max(1rem, env(safe-area-inset-top, 0px));
+    padding-right: max(5.5rem, calc(3.25rem + env(safe-area-inset-right, 0px)));
     padding-bottom: 0.5rem;
     padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
   }
 
   .modal__dialog.ts-details-modal .ts-details-tabs {
-    padding-right: 0.75rem;
-    padding-left: 0.75rem;
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+  }
+
+  /* Cache snake: less inset on phone so the map reads full-bleed. */
+  .modal__dialog.ts-details-modal .ts-details-cache-snake {
+    padding: 0.25rem;
   }
 }
 
@@ -2518,15 +2530,24 @@ body[data-immersive='true'] .ts-bottom-nav {
 }
 
 .modal__dialog--full.ts-details-modal .ts-details-hero {
-  padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
-  padding-right: max(2.75rem, calc(0.5rem + env(safe-area-inset-right, 0px)));
+  padding-top: max(1rem, env(safe-area-inset-top, 0px));
+  padding-right: max(5.5rem, calc(3.25rem + env(safe-area-inset-right, 0px)));
   padding-bottom: 0.5rem;
   padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
 }
 
+.modal__dialog--full.ts-details-modal .ts-details-edit-trigger {
+  top: max(0.5rem, env(safe-area-inset-top, 0px));
+  right: max(3.25rem, calc(2.75rem + env(safe-area-inset-right, 0px)));
+}
+
 .modal__dialog--full.ts-details-modal .ts-details-tabs {
-  padding-right: 0.75rem;
-  padding-left: 0.75rem;
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
+}
+
+.modal__dialog--full.ts-details-modal .ts-details-cache-snake {
+  padding: 0.25rem;
 }
 
 /* Video player owns its own safe-area chrome — kill HeroUI full-dialog padding. */

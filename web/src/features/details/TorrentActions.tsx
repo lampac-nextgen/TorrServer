@@ -287,7 +287,7 @@ function TorrentActions({
 
   if (compact) {
     return (
-      <div className='space-y-2.5'>
+      <div className='space-y-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
         <div className='flex items-center gap-1.5'>
           {onOpenCache ? (
             <Button variant='primary' size='md' className='min-h-11 min-w-0 flex-1 gap-2' onPress={onOpenCache}>
@@ -319,45 +319,55 @@ function TorrentActions({
                 <MoreHorizontal {...iconMenu} aria-hidden />
               </Button>
             </Dropdown.Trigger>
-            <Dropdown.Popover placement='bottom end' className='min-w-[14rem]'>
+            <Dropdown.Popover
+              placement='bottom end'
+              shouldFlip
+              offset={6}
+              containerPadding={12}
+              UNSTABLE_portalContainer={typeof document !== 'undefined' ? document.body : undefined}
+              className='max-h-[min(70dvh,28rem)] min-w-[14rem] overflow-y-auto'
+            >
               <Dropdown.Menu aria-label={t('Info')}>
                 {singleFileStream ? (
-                  <Dropdown.Item onPress={() => void copyStreamLink()}>
+                  <Dropdown.Item className='min-h-11' onPress={() => void copyStreamLink()}>
                     <Link2 {...iconMenu} />
                     {t('CopyLink')}
                   </Dropdown.Item>
                 ) : null}
                 {isSingleFileTorrent || !viewedFileList?.length ? (
-                  <Dropdown.Item onPress={() => window.open(fullPlaylistLink, '_blank')}>
+                  <Dropdown.Item className='min-h-11' onPress={() => window.open(fullPlaylistLink, '_blank')}>
                     <ListMusic {...iconMenu} />
                     {t('DownloadPlaylist')}
                   </Dropdown.Item>
                 ) : null}
-                <Dropdown.Item onPress={() => void copyMagnetLink()}>
+                <Dropdown.Item className='min-h-11' onPress={() => void copyMagnetLink()}>
                   <Magnet {...iconMenu} />
                   {t('CopyMagnet')}
                 </Dropdown.Item>
-                <Dropdown.Item onPress={() => void copyInfoHash()}>
+                <Dropdown.Item className='min-h-11' onPress={() => void copyInfoHash()}>
                   <Hash {...iconMenu} />
                   {t('CopyHash')}
                 </Dropdown.Item>
-                <Dropdown.Item onPress={() => void copyTorrsLink()}>
+                <Dropdown.Item className='min-h-11' onPress={() => void copyTorrsLink()}>
                   <Share2 {...iconMenu} />
                   {t('CopyTorrs')}
                 </Dropdown.Item>
-                <Dropdown.Item onPress={() => window.open(playlistAllUrl({ category: undefined }), '_blank')}>
+                <Dropdown.Item
+                  className='min-h-11'
+                  onPress={() => window.open(playlistAllUrl({ category: undefined }), '_blank')}
+                >
                   <ListMusic {...iconMenu} />
                   {t('DownloadAllPlaylists')}
                 </Dropdown.Item>
-                <Dropdown.Item onPress={() => setPendingConfirm('clearViews')}>
+                <Dropdown.Item className='min-h-11' onPress={() => setPendingConfirm('clearViews')}>
                   <EyeOff {...iconMenu} />
                   {t('RemoveViews')}
                 </Dropdown.Item>
-                <Dropdown.Item onPress={() => setPendingConfirm('drop')}>
+                <Dropdown.Item className='min-h-11' onPress={() => setPendingConfirm('drop')}>
                   <Trash2 {...iconMenu} />
                   {t('DropTorrent')}
                 </Dropdown.Item>
-                <Dropdown.Item onPress={() => setPendingConfirm('delete')}>
+                <Dropdown.Item className='min-h-11' onPress={() => setPendingConfirm('delete')}>
                   <Trash2 {...iconMenu} />
                   {t('Delete')}
                 </Dropdown.Item>
