@@ -5,10 +5,10 @@ import { cacheHost } from 'shared/api/hosts'
 
 import { buildFocusModel, type CacheDrawModel } from './buildCacheMap'
 
-/** Active fill cadence while pieces/readers change (near-real-time snake). */
+/** Active cadence while pieces/readers change — snake must track piece fill live. */
 const CACHE_POLL_ACTIVE_MS = 100
-/** Idle cadence when cache snapshot is unchanged and no readers. */
-const CACHE_POLL_IDLE_MS = 400
+/** Quiet cadence after no visual changes and no readers. */
+const CACHE_POLL_IDLE_MS = 1000
 /** Switch to idle after this many ms without visual changes (and no readers). */
 const CACHE_IDLE_AFTER_MS = 2000
 
@@ -53,7 +53,7 @@ export interface UseUpdateCacheOptions {
 
 /**
  * Poll `/cache` for the snake visualization.
- * Active (~100ms) while pieces/readers change; idle (~400ms) after quiet + no readers.
+ * Active (~100ms) while pieces/readers change; idle (~1s) after quiet + no readers.
  * Keeps the last good snapshot on error; pauses timers while `document.hidden`.
  */
 export const useUpdateCache = (hash?: string, options?: UseUpdateCacheOptions) => {
@@ -100,7 +100,7 @@ export const useUpdateCache = (hash?: string, options?: UseUpdateCacheOptions) =
           const hasReaders = (next.Readers?.length ?? 0) > 0
           if (cacheVisualEqual(cacheRef.current, next)) {
             // Stay near-real-time while readers are active OR fill recently changed.
-            // Idle 400ms only after quiet + no readers (peers can still fill without a player).
+            // Drop to 1s only after quiet + no readers.
             if (fast) {
               const quiet = Date.now() - lastChangeAt.current >= CACHE_IDLE_AFTER_MS
               pollMs.current = !hasReaders && quiet ? CACHE_POLL_IDLE_MS : CACHE_POLL_ACTIVE_MS

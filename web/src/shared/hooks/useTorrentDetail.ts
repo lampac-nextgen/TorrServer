@@ -6,8 +6,8 @@ import { GETTING_INFO, PRELOAD } from 'shared/torrent/states'
 
 /**
  * Live torrent detail poll for the details sheet.
- * Uses list-row `initial` for instant paint; while GETTING_INFO / PRELOAD polls ~400ms
- * and mirrors rows into the library cache so cards update without waiting on the list poll.
+ * Uses list-row `initial` for instant paint; GETTING_INFO polls at 500ms and mirrors
+ * into the library cache. PRELOAD / idle use a steadier cadence.
  */
 export function useTorrentDetail(hash: string | undefined, initial?: TorrentStat): UseQueryResult<TorrentStat, Error> {
   const queryClient = useQueryClient()
@@ -26,9 +26,10 @@ export function useTorrentDetail(hash: string | undefined, initial?: TorrentStat
     initialData: initial,
     refetchInterval: query => {
       if (document.hidden) return 5000
-      const torrent = query.state.data
-      if (torrent?.stat === GETTING_INFO || torrent?.stat === PRELOAD) return 400
-      return 1500
+      const stat = query.state.data?.stat
+      if (stat === GETTING_INFO) return 500
+      if (stat === PRELOAD) return 1000
+      return 2000
     },
     retry: 1,
   })
