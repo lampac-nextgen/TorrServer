@@ -30,7 +30,7 @@ export interface SwarmStatsPanelProps {
    */
   variant?: 'summary' | 'full'
   cacheReaders?: number | null
-  /** Live `/cache` snapshot — Buffer meter uses Filled + Capacity (not torrent.preloaded_bytes). */
+  /** Live `/cache` snapshot — Preload meter uses Filled vs Preload target; Cache line uses Filled vs Capacity. */
   cache?: TorrentCache | null
   /** Settings PreloadCache % for buffer target. Defaults to 50. */
   preloadCachePercent?: number | null

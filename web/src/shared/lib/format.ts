@@ -65,8 +65,8 @@ export function resolveBufferTargetBytes(capacity?: number | null, preloadCacheP
 }
 
 /**
- * Buffer/Preload progress: live cache Filled toward buffer target (not Capacity).
- * Label order is `Filled / target`. Percent is capped at 100 (bar is already capped).
+ * Preload progress: live Filled toward the Preload target (not Cache Size capacity).
+ * Label order is `Filled / preloadTarget`. Percent is capped at 100.
  * Use only for idle/preload — while streaming prefer {@link formatBufferAheadLabel}.
  */
 export function formatBufferFilledLabel(
