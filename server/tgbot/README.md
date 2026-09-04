@@ -9,9 +9,11 @@ Telegram bot for managing [TorrServer](https://github.com/YouROK/TorrServer) —
 
 ## Features
 
-- Torrent management — add, remove, drop, list via magnet, hash, or `torrs://`
+- Torrent management — add, remove, drop, list via magnet, hash, or `torrs://` (title/category/poster preserved)
+- Categories — movie / tv / music / other on add, `/setcat`, `/list [category]`
+- Streaming — short `/play` and long `/stream` URLs, M3U (optional category filter)
+- Next unwatched — `/next` picks the next TV episode from filenames and viewed marks
 - Export & import — magnets list; import multiple from text
-- Streaming — playback links, M3U playlists, preload
 - Search — RuTor and Torznab with one-click add
 - Inline mode — `@botname` in any chat: list torrents or search
 - Status & snake — real-time status, cache visualization
@@ -83,7 +85,7 @@ Slash menu (`/`) shows **primary** commands only: `/start`, `/help`, `/list`, `/
 ### Reply keyboard
 
 | Button | Action |
-|--------|--------|
+| -------- | -------- |
 | Library | `/list` hub (one message) |
 | Search | Ask for query (next message), or `/search <query>` |
 | Status | `/stat` |
@@ -93,11 +95,11 @@ Slash menu (`/`) shows **primary** commands only: `/start`, `/help`, `/list`, `/
 ### Core
 
 | Command | Description |
-|---------|-------------|
+| --------- | ------------- |
 | `/help`, `/start`, `/id` | Help and user ID |
 | `/more` | Extra actions hub |
-| `/list` | Library hub |
-| `/add <link>` | Add torrent (magnet, hash, torrs://) |
+| `/list [category]` | Library hub (filter: movie, tv, music, other) |
+| `/add <link>` | Add torrent (magnet, hash, torrs://); asks for category if unset |
 | `/clear` | Remove all (with confirmation) |
 | `/hash [N]` | Show info hashes |
 | `/cancel` | Cancel pending settings/preset/search input |
@@ -106,10 +108,11 @@ Slash menu (`/`) shows **primary** commands only: `/start`, `/help`, `/list`, `/
 ### Management
 
 | Command | Description |
-|---------|-------------|
+| --------- | ------------- |
 | `/remove <hash\|N>` | Remove torrent |
 | `/drop <hash\|N>` | Disconnect (keep in DB) |
-| `/set <hash\|N> <title>` | Set title |
+| `/set <hash\|N> <title>` | Set title (keeps category and poster) |
+| `/setcat <hash\|N> <movie\|tv\|music\|other\|->` | Set or clear category |
 | `/status [hash\|N]` | Status with refresh/stop |
 | `/cache <hash\|N>` | Cache stats |
 | `/preload <hash\|N> <index>` | Preload file |
@@ -117,14 +120,15 @@ Slash menu (`/`) shows **primary** commands only: `/start`, `/help`, `/list`, `/
 ### Links & Playback
 
 | Command | Description |
-|---------|-------------|
-| `/link`, `/play` | Stream URL |
-| `/m3u`, `/m3uall` | M3U playlist |
+| --------- | ------------- |
+| `/link`, `/play` | Short `/play/{hash}/{id}` and long `/stream` URLs |
+| `/m3u`, `/m3uall [category]` | M3U playlist |
+| `/next [query\|hash] [category]` | Next unwatched TV episode (default category `tv`) |
 
 ### Search
 
 | Command | Description |
-|---------|-------------|
+| --------- | ------------- |
 | `/search <query>` | RuTor + Torznab (all sources) |
 | `/rutor <query>` | RuTor only |
 | `/torznab <query> [index]` | Torznab indexers |
@@ -132,9 +136,9 @@ Slash menu (`/`) shows **primary** commands only: `/start`, `/help`, `/list`, `/
 ### Other
 
 | Command | Description |
-|---------|-------------|
+| --------- | ------------- |
 | `/export`, `/import` | Export/import magnets |
-| `/categories` | List categories |
+| `/categories` | Category counts + filter buttons |
 | `/server`, `/stats`, `/stat` | Server info |
 | `/viewed` | Viewed files |
 | `/ffp <hash\|N> <id> [json]` | FFprobe metadata |
@@ -147,13 +151,14 @@ Slash menu (`/`) shows **primary** commands only: `/start`, `/help`, `/list`, `/
 ### Admin Only
 
 | Command | Description |
-|---------|-------------|
+| --------- | ------------- |
 | `/shutdown` | Shut down server |
-| `/settings` | Interactive settings menu (sub-pages: Search, Network, Other, Cache, Paths, Storage) |
+| `/settings` | Interactive settings (Search, Network, Other including TrackTimecode/LPD, Cache, Paths, Storage) |
 | `/preset <name>` | Apply named preset: `performance`, `storage`, `streaming`, `low`, `default` |
 | `/preset <key> <value> ...` | Apply key-value pairs: `cache 256`, `preload 50`, `conn 100`, etc. |
 
 **Preset examples:**
+
 - `/preset performance` — max cache, high preload, no limits
 - `/preset cache 256 preload 50` — set cache 256 MB and preload 50%
 - `/preset cache 512 conn 100 down 0 up 0` — multiple values

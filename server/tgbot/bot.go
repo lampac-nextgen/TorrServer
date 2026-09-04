@@ -145,6 +145,8 @@ func Start(token string) error {
 	b.Handle("/preload", cmdPreload)
 	b.Handle("/queue", up.ShowQueue)
 	b.Handle("/set", cmdSet)
+	b.Handle("/setcat", cmdSetCat)
+	b.Handle("/next", cmdNext)
 	b.Handle("/hash", cmdHash)
 	b.Handle("/export", cmdExport)
 	b.Handle("/import", cmdImport)
@@ -174,11 +176,11 @@ func Start(token string) error {
 		isTorrent := strings.HasSuffix(lowerName, ".torrent") ||
 			strings.Contains(strings.ToLower(doc.MIME), "bittorrent")
 		if isTorrent {
-			err := addTorrentFromDocument(c, doc)
+			tor, err := addTorrentFromDocument(c, doc)
 			if err != nil {
 				return err
 			}
-			return sendListHub(c, 0, false)
+			return afterAdd(c, tor)
 		}
 		return nil
 	})
@@ -201,11 +203,11 @@ func Start(token string) error {
 		}
 		if isLink {
 			clearPendingSearch(uid)
-			err := addTorrent(c, txt)
+			tor, err := addTorrent(c, txt)
 			if err != nil {
 				return err
 			}
-			return sendListHub(c, 0, false)
+			return afterAdd(c, tor)
 		} else if c.Message().ReplyTo != nil && c.Message().ReplyTo.ReplyMarkup != nil && len(c.Message().ReplyTo.ReplyMarkup.InlineKeyboard) > 0 {
 			var hash string
 			for _, row := range c.Message().ReplyTo.ReplyMarkup.InlineKeyboard {
@@ -341,6 +343,7 @@ func help(c tele.Context) error {
 	msg += "• " + tr(uid, "help_export") + "\n"
 	msg += "• " + tr(uid, "help_import") + "\n"
 	msg += "• " + tr(uid, "help_categories") + "\n"
+	msg += "• " + tr(uid, "help_next") + "\n"
 	msg += "• " + tr(uid, "help_other_cmd") + "\n"
 	msg += "• " + tr(uid, "help_echo") + "\n"
 	msg += "• " + tr(uid, "help_db") + "\n"

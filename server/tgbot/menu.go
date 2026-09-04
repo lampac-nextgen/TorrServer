@@ -82,7 +82,7 @@ func handleMenuButton(c tele.Context, text string) error {
 	clearPendingSearch(uid)
 	switch strings.TrimSpace(text) {
 	case tr(uid, "menu_library"):
-		return sendListHub(c, 0, false)
+		return sendListHub(c, 0, "", false)
 	case tr(uid, "menu_search"):
 		setPendingSearch(uid)
 		return sendWithMenu(c, tr(uid, "menu_search_pending"))
@@ -139,15 +139,16 @@ func moreHubContent(uid int64, section string) (string, *tele.ReplyMarkup) {
 		rows = []tele.Row{
 			m.Row(m.Data(tr(uid, "menu_act_snake"), "fmenu", "act", "snake"),
 				m.Data(tr(uid, "menu_act_preload"), "fmenu", "act", "preload")),
-			m.Row(m.Data(tr(uid, "menu_act_queue"), "fmenu", "act", "queue"),
-				m.Data(tr(uid, "menu_act_ffp"), "fmenu", "act", "ffp")),
-			m.Row(m.Data(tr(uid, "menu_act_speedtest"), "fmenu", "act", "speedtest"),
-				m.Data(tr(uid, "menu_act_echo"), "fmenu", "act", "echo")),
+			m.Row(m.Data(tr(uid, "menu_act_next"), "fmenu", "act", "next"),
+				m.Data(tr(uid, "menu_act_queue"), "fmenu", "act", "queue")),
+			m.Row(m.Data(tr(uid, "menu_act_ffp"), "fmenu", "act", "ffp"),
+				m.Data(tr(uid, "menu_act_speedtest"), "fmenu", "act", "speedtest")),
 			m.Row(m.Data(tr(uid, "menu_act_db"), "fmenu", "act", "db"),
 				m.Data(tr(uid, "menu_act_viewed"), "fmenu", "act", "viewed")),
 			m.Row(m.Data(tr(uid, "menu_act_server"), "fmenu", "act", "server"),
 				m.Data(tr(uid, "menu_act_stats"), "fmenu", "act", "stats")),
-			m.Row(m.Data(tr(uid, "menu_act_stat"), "fmenu", "act", "stat")),
+			m.Row(m.Data(tr(uid, "menu_act_stat"), "fmenu", "act", "stat"),
+				m.Data(tr(uid, "menu_act_echo"), "fmenu", "act", "echo")),
 			m.Row(m.Data(tr(uid, "menu_back"), "fmenu", "root")),
 		}
 	case "links":
@@ -267,6 +268,8 @@ func callbackMenuAct(c tele.Context, act string) error {
 		return sendWithMenu(c, tr(uid, "snake_usage")+"\n\n"+tr(uid, "menu_pick_torrent"))
 	case "preload":
 		return sendWithMenu(c, tr(uid, "preload_usage")+"\n\n"+tr(uid, "menu_pick_torrent"))
+	case "next":
+		return cmdNext(c)
 	case "queue":
 		return up.ShowQueue(c)
 	case "ffp":

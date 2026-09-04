@@ -1,15 +1,13 @@
 package mcp
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
-	"path/filepath"
-	"strconv"
 	"strings"
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 
+	"server/library"
 	"server/settings"
 	"server/torr/state"
 )
@@ -97,41 +95,21 @@ func baseURL(req *mcpsdk.CallToolRequest) string {
 }
 
 func playURL(base, hash, path string, fileID int) string {
-	name := filepath.Base(path)
-	if name == "" || name == "." {
-		name = "file"
-	}
-	return strings.TrimRight(base, "/") + "/stream/" + url.PathEscape(name) +
-		"?link=" + url.QueryEscape(hash) + "&index=" + strconv.Itoa(fileID) + "&play"
+	return library.PlayURL(base, hash, path, fileID)
 }
 
 func shortPlayURL(base, hash string, fileID int) string {
-	return strings.TrimRight(base, "/") + "/play/" + url.PathEscape(hash) + "/" + strconv.Itoa(fileID)
+	return library.ShortPlayURL(base, hash, fileID)
 }
 
 func playlistURL(base, hash string) string {
-	if hash == "" {
-		return strings.TrimRight(base, "/") + "/playlistall/all.m3u"
-	}
-	return strings.TrimRight(base, "/") + "/playlist?hash=" + url.QueryEscape(hash)
+	return library.PlaylistURL(base, hash)
 }
 
 func formatEpisodeCode(season, episode int) string {
-	if season <= 0 && episode <= 0 {
-		return ""
-	}
-	if season <= 0 {
-		return fmt.Sprintf("E%02d", episode)
-	}
-	if episode <= 0 {
-		return fmt.Sprintf("S%02d", season)
-	}
-	return fmt.Sprintf("S%02dE%02d", season, episode)
+	return library.FormatEpisodeCode(season, episode)
 }
 
 func filePlayURLs(base string, st *state.TorrentStatus, f *state.TorrentFileStat) (play, short string) {
-	if st == nil || f == nil {
-		return "", ""
-	}
-	return playURL(base, st.Hash, f.Path, f.Id), shortPlayURL(base, st.Hash, f.Id)
+	return library.FilePlayURLs(base, st, f)
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"server/library"
 	"server/torr"
 
 	tele "gopkg.in/telebot.v4"
@@ -46,7 +47,14 @@ func cmdM3u(c tele.Context) error {
 }
 
 func cmdM3uAll(c tele.Context) error {
+	cat := ""
+	if args := c.Args(); len(args) > 0 {
+		cat = library.NormalizeCategory(args[0])
+		if cat == "all" {
+			cat = ""
+		}
+	}
 	host := getHost()
-	url := host + "/playlistall/all.m3u"
+	url := library.PlaylistAllURL(host, cat)
 	return c.Send(fmt.Sprintf(tr(c.Sender().ID, "m3u_all"), url))
 }

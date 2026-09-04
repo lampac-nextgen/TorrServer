@@ -5,10 +5,34 @@ import (
 	"strconv"
 	"strings"
 
+	"server/library"
 	"server/torr"
 
 	tele "gopkg.in/telebot.v4"
 )
+
+func sendPlayURLs(c tele.Context, hash string, index int, path string) error {
+	host := getHost()
+	short := library.ShortPlayURL(host, hash, index)
+	long := library.PlayURL(host, hash, path, index)
+	return c.Send(fmt.Sprintf(tr(c.Sender().ID, "link_play_dual"), short, long))
+}
+
+func filePathForIndex(t *torr.Torrent, index int) string {
+	st := t.Status()
+	if st == nil {
+		return ""
+	}
+	for _, f := range st.FileStats {
+		if f != nil && f.Id == index {
+			return f.Path
+		}
+	}
+	if len(st.FileStats) == 1 {
+		return st.FileStats[0].Path
+	}
+	return ""
+}
 
 func callbackLink(c tele.Context, data string) error {
 	uid := c.Sender().ID
@@ -45,10 +69,8 @@ func callbackLink(c tele.Context, data string) error {
 			return c.Send("🔗 "+tr(uid, "btn_link")+":", kbd)
 		}
 	}
-	host := getHost()
-	url := fmt.Sprintf("%s/play/%s/%d", host, hash, index)
 	_ = c.Respond(&tele.CallbackResponse{})
-	return c.Send(fmt.Sprintf(tr(uid, "link_play"), url))
+	return sendPlayURLs(c, hash, index, filePathForIndex(t, index))
 }
 
 func cmdLink(c tele.Context) error {
@@ -73,8 +95,5 @@ func cmdLink(c tele.Context) error {
 	if t == nil {
 		return c.Send(tr(c.Sender().ID, "torrent_not_found") + ":\n<code>" + hash + "</code>")
 	}
-
-	host := getHost()
-	url := fmt.Sprintf("%s/play/%s/%d", host, hash, index)
-	return c.Send(fmt.Sprintf(tr(c.Sender().ID, "link_play"), url))
+	return sendPlayURLs(c, hash, index, filePathForIndex(t, index))
 }

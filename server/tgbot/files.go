@@ -10,6 +10,7 @@ import (
 	"github.com/dustin/go-humanize"
 	tele "gopkg.in/telebot.v4"
 
+	"server/library"
 	"server/log"
 	sets "server/settings"
 	"server/torr"
@@ -137,7 +138,7 @@ func buildFilesListView(t *torr.Torrent, host string, uid int64, page int) (stri
 		mline := viewedMark + "#" + strconv.Itoa(f.Id) + ": " + humanize.IBytes(uint64(f.Length)) + " — " + baseName
 		fileLabel := truncateBtnText(mline)
 		idStr := strconv.Itoa(f.Id)
-		streamURL := host + "/stream/" + filepath.Base(f.Path) + "?link=" + hex + "&index=" + idStr + "&play"
+		streamURL := library.PlayURL(host, hex, f.Path, f.Id)
 		rows = append(rows, m.Row(
 			m.Data(fileLabel, "upload", ti.Hash, idStr),
 			m.URL(tr(uid, "files_link"), streamURL),
