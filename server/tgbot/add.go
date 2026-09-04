@@ -16,6 +16,7 @@ import (
 )
 
 func addTorrentFromSpec(c tele.Context, torrSpec *torrent.TorrentSpec, displayLabel, title, poster, category string) (*torr.Torrent, error) {
+	notifyTyping(c)
 	msg, err := c.Bot().Send(c.Sender(), tr(c.Sender().ID, "connecting"))
 	if err != nil {
 		return nil, err
@@ -132,7 +133,7 @@ func cmdAdd(c tele.Context) error {
 	uid := c.Sender().ID
 	args := c.Args()
 	if len(args) == 0 {
-		return c.Send(tr(uid, "add_usage"))
+		return sendAddPrompt(c)
 	}
 	link := strings.TrimSpace(strings.Join(args, " "))
 	if link == "" {

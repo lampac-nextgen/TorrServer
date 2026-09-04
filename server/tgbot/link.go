@@ -12,10 +12,26 @@ import (
 )
 
 func sendPlayURLs(c tele.Context, hash string, index int, path string) error {
+	uid := c.Sender().ID
 	host := getHost()
 	short := library.ShortPlayURL(host, hash, index)
 	long := library.PlayURL(host, hash, path, index)
-	return c.Send(fmt.Sprintf(tr(c.Sender().ID, "link_play_dual"), short, long))
+	m := &tele.ReplyMarkup{}
+	rows := appendCopyRow(m, uid, hash, short, magnetForHash(hash))
+	if long != short {
+		if b, ok := copyTextBtn(m, tr(uid, "btn_copy_stream"), long); ok {
+			if len(rows) > 0 {
+				rows[0] = append(rows[0], b)
+			} else {
+				rows = []tele.Row{m.Row(b)}
+			}
+		}
+	}
+	if len(rows) > 0 {
+		m.Inline(rows...)
+		return c.Send(fmt.Sprintf(tr(uid, "link_play_dual"), short, long), m, tele.NoPreview)
+	}
+	return c.Send(fmt.Sprintf(tr(uid, "link_play_dual"), short, long), tele.NoPreview)
 }
 
 func filePathForIndex(t *torr.Torrent, index int) string {

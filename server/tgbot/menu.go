@@ -84,12 +84,11 @@ func handleMenuButton(c tele.Context, text string) error {
 	case tr(uid, "menu_library"):
 		return sendListHub(c, 0, "", false)
 	case tr(uid, "menu_search"):
-		setPendingSearch(uid)
-		return sendWithMenu(c, tr(uid, "menu_search_pending"))
+		return sendSearchPrompt(c)
 	case tr(uid, "menu_status"):
 		return cmdStat(c)
 	case tr(uid, "menu_add"):
-		return sendWithMenu(c, tr(uid, "add_magnet"))
+		return sendAddPrompt(c)
 	case tr(uid, "menu_more"):
 		return sendMoreHub(c)
 	default:
@@ -212,12 +211,6 @@ func setupMenuButton(b *tele.Bot) {
 	if err := b.SetMenuButton(nil, mb); err != nil {
 		log.TLogln("tg SetMenuButton", err)
 	}
-}
-
-func cmdStart(c tele.Context) error {
-	uid := c.Sender().ID
-	msg := "🤖 <b>" + tr(uid, "help") + "</b>\n\n" + tr(uid, "menu_welcome")
-	return sendWithMenu(c, msg)
 }
 
 func callbackMenu(c tele.Context, parts []string) error {

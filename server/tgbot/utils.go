@@ -13,6 +13,8 @@ import (
 	"server/web"
 )
 
+var botUsername string
+
 func chatMsgKey(chatID int64, msgID int) string {
 	return fmt.Sprintf("%d_%d", chatID, msgID)
 }
@@ -138,4 +140,90 @@ func getHost() string {
 		}
 	}
 	return host
+}
+
+func notifyTyping(c tele.Context) {
+	if c == nil || c.Bot() == nil {
+		return
+	}
+	if ch := c.Chat(); ch != nil {
+		_ = c.Bot().Notify(ch, tele.Typing)
+		return
+	}
+	if c.Sender() != nil {
+		_ = c.Bot().Notify(c.Sender(), tele.Typing)
+	}
+}
+
+func sendForceReply(c tele.Context, text, placeholder string) error {
+	m := &tele.ReplyMarkup{
+		ForceReply:  true,
+		Selective:   true,
+		Placeholder: placeholder,
+	}
+	return c.Send(text, m, tele.ModeHTML)
+}
+
+func sendAddPrompt(c tele.Context) error {
+	uid := c.Sender().ID
+	return sendForceReply(c, tr(uid, "add_magnet"), tr(uid, "add_reply_placeholder"))
+}
+
+func sendSearchPrompt(c tele.Context) error {
+	uid := c.Sender().ID
+	setPendingSearch(uid)
+	m := &tele.ReplyMarkup{
+		ForceReply:  true,
+		Selective:   true,
+		Placeholder: tr(uid, "search_reply_placeholder"),
+	}
+	if botUsername != "" {
+		// ForceReply cannot mix with inline; send prompt then a switch-inline row.
+		if err := c.Send(tr(uid, "menu_search_pending"), m, tele.ModeHTML); err != nil {
+			return err
+		}
+		inline := &tele.ReplyMarkup{}
+		inline.Inline(inline.Row(inline.QueryChat(tr(uid, "menu_search_inline"), "")))
+		return c.Send(tr(uid, "menu_search_inline_hint"), inline, tele.ModeHTML)
+	}
+	return c.Send(tr(uid, "menu_search_pending"), m, tele.ModeHTML)
+}
+
+func isPosterURL(s string) bool {
+	s = strings.TrimSpace(s)
+	return strings.HasPrefix(strings.ToLower(s), "https://") || strings.HasPrefix(strings.ToLower(s), "http://")
+}
+
+func magnetForHash(hash string) string {
+	if hash == "" {
+		return ""
+	}
+	return "magnet:?xt=urn:btih:" + hash
+}
+
+func copyTextBtn(m *tele.ReplyMarkup, label, text string) (tele.Btn, bool) {
+	if m == nil || text == "" || label == "" {
+		return tele.Btn{}, false
+	}
+	if len([]rune(text)) > 256 {
+		return tele.Btn{}, false
+	}
+	return m.CopyText(label, text), true
+}
+
+func appendCopyRow(m *tele.ReplyMarkup, uid int64, hash, playURL, magnet string) []tele.Row {
+	var btns []tele.Btn
+	if b, ok := copyTextBtn(m, tr(uid, "btn_copy_hash"), hash); ok {
+		btns = append(btns, b)
+	}
+	if b, ok := copyTextBtn(m, tr(uid, "btn_copy_play"), playURL); ok {
+		btns = append(btns, b)
+	}
+	if b, ok := copyTextBtn(m, tr(uid, "btn_copy_magnet"), magnet); ok {
+		btns = append(btns, b)
+	}
+	if len(btns) == 0 {
+		return nil
+	}
+	return []tele.Row{m.Row(btns...)}
 }

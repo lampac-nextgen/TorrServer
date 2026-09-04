@@ -145,6 +145,9 @@ func sendListHub(c tele.Context, page int, cat string, edit bool) error {
 	}
 	nav = append(nav, m.Data("🔄", "frefresh", navTok))
 	rows = append(rows, m.Row(nav...))
+	if botUsername != "" {
+		rows = append(rows, m.Row(m.QueryChat(tr(uid, "menu_search_inline"), "")))
+	}
 	m.Inline(rows...)
 
 	txt := b.String()
@@ -234,6 +237,8 @@ func showTorrentCard(c tele.Context, hash string, nav string, edit bool) error {
 		),
 	}
 	rows = append(rows, categoryButtonRows(m, uid, hash)...)
+	playURL := library.ShortPlayURL(getHost(), hash, 1)
+	rows = append(rows, appendCopyRow(m, uid, hash, playURL, magnetForHash(hash))...)
 	if nav == "" {
 		nav = "0"
 	}
@@ -242,8 +247,21 @@ func showTorrentCard(c tele.Context, hash string, nav string, edit bool) error {
 
 	if edit && c.Callback() != nil && c.Callback().Message != nil {
 		_ = c.Respond(&tele.CallbackResponse{})
-		_, err := c.Bot().Edit(c.Callback().Message, msg, m, tele.ModeHTML)
+		cbMsg := c.Callback().Message
+		if cbMsg.Photo != nil {
+			_, err := c.Bot().EditCaption(cbMsg, msg, m, tele.ModeHTML)
+			return err
+		}
+		_, err := c.Bot().Edit(cbMsg, msg, m, tele.ModeHTML)
 		return err
+	}
+	if !edit && isPosterURL(t.Poster) {
+		photo := &tele.Photo{File: tele.FromURL(t.Poster), Caption: msg}
+		if err := c.Send(photo, m, tele.ModeHTML); err != nil {
+			log.TLogln("tg poster send err", err)
+		} else {
+			return nil
+		}
 	}
 	return c.Send(msg, m, tele.ModeHTML)
 }

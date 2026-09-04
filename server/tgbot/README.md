@@ -20,6 +20,9 @@ Telegram bot for managing [TorrServer](https://github.com/YouROK/TorrServer) —
 - File operations — browse files, download to Telegram
 - FFprobe — media metadata via `/ffp`
 - Localization — Russian and English
+- Deep links — `t.me/<bot>?start=list`, `list_tv`, `next`, `t_<hash8>`, `add`, `search_<query>`
+- Copy buttons — hash, play URL, and magnet on torrent cards and `/link`
+- Posters — torrent cards send the poster photo when the torrent has an HTTP(S) poster
 - Admin — shutdown, settings, presets (whitelist users only)
 
 ## Getting Started
@@ -46,7 +49,7 @@ Config file `tg.cfg` (JSON) in the TorrServer data directory:
 
 | Field      | Description |
 |------------|-------------|
-| `HostTG`   | Telegram API URL (default: `https://api.telegram.org`) |
+| `HostTG`   | Telegram API URL (default: `https://api.telegram.org`). Point this at a local [telegram-bot-api](https://github.com/tdlib/telegram-bot-api) to upload files up to 2 GB; the official API allows 50 MB. |
 | `HostWeb`  | Base URL for stream links (auto-detected if empty) |
 | `Socks5`   | Optional SOCKS5 for reaching Telegram (e.g. `127.0.0.1:1080`, `socks5://user:pass@host:port`) if direct access to `api.telegram.org` is blocked or times out |
 | `WhiteIds` | Allowed Telegram user IDs. Empty = allow everyone for normal commands, but **no admins** (`/settings`, `/shutdown`, `/preset` require an ID in this list). |
@@ -77,6 +80,21 @@ Example:
 ```
 
 If your network cannot connect to Telegram’s API directly, run a local SOCKS5 proxy (for example [sing-box](https://github.com/SagerNet/sing-box), v2ray, or `ssh -D`) and set `Socks5` to its address.
+
+### Deep links
+
+`https://t.me/<YourBot>?start=<payload>` (payload max 64 characters: `A–Z a–z 0–9 _ -`):
+
+| Payload | Action |
+| ------- | ------ |
+| `list` | Library hub |
+| `list_tv` / `list_movie` / `list_music` / `list_other` | Filtered library |
+| `next` | Next unwatched TV episode |
+| `t_<8hex>` | Open torrent whose info hash starts with those hex digits |
+| `add` | Prompt to paste a magnet |
+| `search_<query>` | Search (`_` becomes a space) |
+
+With HTTPS `HostWeb`, the chat menu button opens the Mini App (`/?tg=1`).
 
 ## Commands
 
@@ -169,8 +187,11 @@ Slash menu (`/`) shows **primary** commands only: `/start`, `/help`, `/list`, `/
 
 Type `@YourBotName` in any chat:
 
-- **Empty, "list", or "play"** — torrents with play links
-- **2+ characters** — search RuTor + Torznab
+- **Empty, "list", or "play"** — torrents with play links (paginated; posters as thumbnails when set)
+- **2+ characters** — search RuTor + Torznab (paginated)
+- In a **private chat with the bot**, choosing a search result adds the torrent to the library. In other chats it pastes the magnet.
+
+The library hub has an **Inline search** button (`switch_inline_query_current_chat`).
 
 ## Text Input
 

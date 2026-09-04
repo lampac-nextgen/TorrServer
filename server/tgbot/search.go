@@ -17,7 +17,7 @@ import (
 func cmdSearch(c tele.Context) error {
 	args := c.Args()
 	if len(args) == 0 {
-		return c.Send(tr(c.Sender().ID, "search_usage"))
+		return sendSearchPrompt(c)
 	}
 	return runSearchQuery(c, strings.Join(args, " "))
 }
@@ -31,6 +31,7 @@ func runSearchQuery(c tele.Context, query string) error {
 		return c.Send(tr(c.Sender().ID, "search_disabled_rutor"))
 	}
 	uid := c.Sender().ID
+	notifyTyping(c)
 	statusMsg, err := c.Bot().Send(c.Sender(), tr(uid, "searching"))
 	if err != nil {
 		return err
@@ -60,6 +61,7 @@ func cmdSearchRutor(c tele.Context) error {
 	}
 	query := strings.Join(args, " ")
 	uid := c.Sender().ID
+	notifyTyping(c)
 	statusMsg, err := c.Bot().Send(c.Sender(), tr(uid, "searching"))
 	if err != nil {
 		return err
@@ -89,6 +91,7 @@ func cmdTorznab(c tele.Context) error {
 		}
 	}
 	uid := c.Sender().ID
+	notifyTyping(c)
 	statusMsg, err := c.Bot().Send(c.Sender(), tr(uid, "searching"))
 	if err != nil {
 		return err

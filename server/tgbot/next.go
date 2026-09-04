@@ -12,8 +12,12 @@ import (
 )
 
 func cmdNext(c tele.Context) error {
-	uid := c.Sender().ID
 	query, category, hash := parseNextArgs(c)
+	return runNextUnwatched(c, query, category, hash)
+}
+
+func runNextUnwatched(c tele.Context, query, category, hash string) error {
+	uid := c.Sender().ID
 	res := library.SelectNextUnwatched(library.ListSnapshots(), library.ViewedMapFor(hash), query, category, hash)
 	host := getHost()
 	if res.Hash != "" && res.FileIndex > 0 {
@@ -89,7 +93,7 @@ func sendNextResult(c tele.Context, uid int64, res library.NextUnwatched) error 
 		),
 		m.Row(m.Data(tr(uid, "btn_m3u"), "fm3u", res.Hash)),
 	)
-	return c.Send(sb.String(), m, tele.ModeHTML)
+	return c.Send(sb.String(), m, tele.ModeHTML, tele.NoPreview)
 }
 
 func callbackNextMark(c tele.Context, hash, indexStr string) error {

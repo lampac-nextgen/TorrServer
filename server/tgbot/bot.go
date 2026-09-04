@@ -3,6 +3,7 @@ package tgbot
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"net/url"
@@ -70,9 +71,17 @@ func Start(token string) error {
 	loadUserLangs()
 
 	pref := tele.Settings{
-		URL:       config.Cfg.HostTG,
-		Token:     token,
-		Poller:    &tele.LongPoller{Timeout: 5 * time.Minute},
+		URL:   config.Cfg.HostTG,
+		Token: token,
+		Poller: &tele.LongPoller{
+			Timeout: 5 * time.Minute,
+			AllowedUpdates: []string{
+				"message",
+				"callback_query",
+				"inline_query",
+				"chosen_inline_result",
+			},
+		},
 		ParseMode: tele.ModeHTML,
 		Client:    newTelegramHTTPClient(),
 	}
@@ -85,12 +94,21 @@ func Start(token string) error {
 		return err
 	}
 
+	if b.Me != nil {
+		botUsername = b.Me.Username
+	}
+
+	if err := b.RemoveWebhook(); err != nil {
+		log.TLogln("tg deleteWebhook", err)
+	}
+
 	up.TrFunc = tr
 	up.EscapeFunc = escapeHtml
 
 	if err := setBotCommands(b); err != nil {
 		log.TLogln("tg setcmd err", err)
 	}
+	setBotProfile(b)
 
 	setupMenuButton(b)
 
@@ -248,6 +266,7 @@ func Start(token string) error {
 	})
 
 	b.Handle(tele.OnQuery, handleInlineQuery)
+	b.Handle(tele.OnInlineResult, handleInlineChosen)
 
 	b.Handle(tele.OnCallback, func(c tele.Context) error {
 		args := c.Args()
@@ -288,15 +307,39 @@ func setBotCommands(b *tele.Bot) error {
 			{Text: "shutdown", Description: trLang(lang, "cmd_desc_shutdown")},
 		}
 	}
+	scope := tele.CommandScope{Type: tele.CommandScopeAllPrivateChats}
 	if err := b.SetCommands(makeCmds(LangEN)); err != nil {
+		return err
+	}
+	if err := b.SetCommands(makeCmds(LangEN), scope); err != nil {
 		return err
 	}
 	for _, lang := range []string{LangEN, LangRU} {
 		if err := b.SetCommands(makeCmds(lang), lang); err != nil {
 			return err
 		}
+		if err := b.SetCommands(makeCmds(lang), lang, scope); err != nil {
+			return err
+		}
 	}
 	return nil
+}
+
+func setBotProfile(b *tele.Bot) {
+	for _, lang := range []string{"", LangEN, LangRU} {
+		short := trLang(lang, "bot_short")
+		desc := trLang(lang, "bot_desc")
+		if lang == "" {
+			short = trLang(LangEN, "bot_short")
+			desc = trLang(LangEN, "bot_desc")
+		}
+		if err := b.SetMyShortDescription(short, lang); err != nil {
+			log.TLogln("tg SetMyShortDescription", lang, err)
+		}
+		if err := b.SetMyDescription(desc, lang); err != nil {
+			log.TLogln("tg SetMyDescription", lang, err)
+		}
+	}
 }
 
 func help(c tele.Context) error {
@@ -351,6 +394,13 @@ func help(c tele.Context) error {
 	if isAdmin(uid) {
 		msg += "\n<b>" + tr(uid, "help_server") + "</b>\n"
 		msg += "• " + tr(uid, "help_admin") + "\n"
+	}
+
+	if u := botUsername; u != "" {
+		msg += "\n" + fmt.Sprintf(tr(uid, "help_deeplink"), "https://t.me/"+u+"?start=list")
+		if isHTTPSURL(getHost()) {
+			msg += "\n" + tr(uid, "help_miniapp")
+		}
 	}
 
 	msg += "\n👤 " + tr(uid, "help_id") + ": <code>" + id + "</code>"
