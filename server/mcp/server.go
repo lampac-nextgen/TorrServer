@@ -37,6 +37,11 @@ func newHTTPHandler(server *mcpsdk.Server) http.Handler {
 		return server
 	}, &mcpsdk.StreamableHTTPOptions{
 		Stateless: true,
+		// Cloudflare Tunnel / nginx / Caddy typically connect to 127.0.0.1
+		// while sending the public Host header. The SDK's DNS-rebinding
+		// check would 403 those requests. HTTP Basic auth (when enabled)
+		// still covers the MCP endpoint.
+		DisableLocalhostProtection: true,
 	})
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Host") == "" && r.Host != "" {

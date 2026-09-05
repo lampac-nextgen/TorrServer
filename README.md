@@ -444,7 +444,7 @@ TorrServer exposes a native [Model Context Protocol](https://modelcontextprotoco
 
 Endpoint: `http://<host>:8090/mcp` (or `https://` when `--ssl` is enabled).
 
-When HTTP auth is on (`-a` / `TS_HTTPAUTH=1`), MCP uses the same Basic credentials as the rest of the API (`accs.db`). Play links returned by tools are ordinary HTTP URLs for VLC, mpv, or a browser.
+When HTTP auth is on (`-a` / `TS_HTTPAUTH=1`), MCP uses the same Basic credentials as the rest of the API (`accs.db`). Play links returned by tools are ordinary HTTP URLs for VLC, mpv, or a browser. Reverse proxies that connect to `127.0.0.1` with a public `Host` header (Cloudflare Tunnel, nginx, Caddy) are supported.
 
 **OpenClaw** (`openclaw.json`):
 

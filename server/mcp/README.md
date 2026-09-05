@@ -25,6 +25,8 @@ MCP Streamable HTTP endpoint /mcp
 
 When HTTP Basic auth is enabled (`-a` / `--httpauth`, or Docker `TS_HTTPAUTH=1`), MCP uses the same `accs.db` credentials as `POST /torrents`. Send `Authorization: Basic …`.
 
+Reverse proxies (Cloudflare Tunnel, nginx, Caddy) that connect to `127.0.0.1` while sending a public `Host` header are supported. The MCP SDK's localhost DNS-rebinding check is disabled so those requests are not rejected with `403 Forbidden: invalid Host header`.
+
 Play URLs returned by tools are ordinary HTTP links for VLC, mpv, or a browser.
 
 ## Connect an agent
@@ -84,7 +86,7 @@ Reload MCP in the active session after editing config (`/reload-mcp`).
 ## Tools
 
 | Tool | Purpose |
-|------|---------|
+| ------ | --------- |
 | `get_server_info` | Version, base URL, categories, search/auth flags |
 | `list_torrents` | Library list; optional `category` and `search` |
 | `get_torrent` | One torrent: files, viewed flags, season/episode, play URLs |
