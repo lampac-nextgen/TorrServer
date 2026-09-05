@@ -136,10 +136,7 @@ func Start(token string) error {
 		}
 	})
 
-	b.Handle("help", help)
-	b.Handle("Help", help)
 	b.Handle("/help", help)
-	b.Handle("/Help", help)
 	b.Handle("/start", cmdStart)
 	b.Handle("/id", help)
 	b.Handle("/cancel", cmdCancel)
@@ -221,6 +218,7 @@ func Start(token string) error {
 		}
 		if isLink {
 			clearPendingSearch(uid)
+			clearPendingTool(uid)
 			tor, err := addTorrent(c, txt)
 			if err != nil {
 				return err
@@ -291,40 +289,6 @@ func Start(token string) error {
 	return nil
 }
 
-func setBotCommands(b *tele.Bot) error {
-	makeCmds := func(lang string) []tele.Command {
-		return []tele.Command{
-			{Text: "start", Description: trLang(lang, "cmd_desc_start")},
-			{Text: "help", Description: trLang(lang, "cmd_desc_help")},
-			{Text: "list", Description: trLang(lang, "cmd_desc_list")},
-			{Text: "add", Description: trLang(lang, "cmd_desc_add")},
-			{Text: "search", Description: trLang(lang, "cmd_desc_search")},
-			{Text: "more", Description: trLang(lang, "cmd_desc_more")},
-			{Text: "cancel", Description: trLang(lang, "cmd_desc_cancel")},
-			{Text: "lang", Description: trLang(lang, "cmd_desc_lang")},
-			{Text: "settings", Description: trLang(lang, "cmd_desc_settings")},
-			{Text: "preset", Description: trLang(lang, "cmd_desc_preset")},
-			{Text: "shutdown", Description: trLang(lang, "cmd_desc_shutdown")},
-		}
-	}
-	scope := tele.CommandScope{Type: tele.CommandScopeAllPrivateChats}
-	if err := b.SetCommands(makeCmds(LangEN)); err != nil {
-		return err
-	}
-	if err := b.SetCommands(makeCmds(LangEN), scope); err != nil {
-		return err
-	}
-	for _, lang := range []string{LangEN, LangRU} {
-		if err := b.SetCommands(makeCmds(lang), lang); err != nil {
-			return err
-		}
-		if err := b.SetCommands(makeCmds(lang), lang, scope); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func setBotProfile(b *tele.Bot) {
 	for _, lang := range []string{"", LangEN, LangRU} {
 		short := trLang(lang, "bot_short")
@@ -343,11 +307,13 @@ func setBotProfile(b *tele.Bot) {
 }
 
 func help(c tele.Context) error {
-	uid := c.Sender().ID
+	return sendWithMenu(c, helpCompactText(c.Sender().ID), tele.ModeHTML)
+}
+
+func helpCompactText(uid int64) string {
 	id := strconv.FormatInt(uid, 10)
 	msg := "🤖 <b>" + tr(uid, "help") + "</b>\n\n"
 	msg += tr(uid, "help_short") + "\n\n"
-
 	msg += "<b>" + tr(uid, "help_menu_section") + "</b>\n"
 	msg += "• " + tr(uid, "menu_library") + " — /list\n"
 	msg += "• " + tr(uid, "menu_search") + " — /search\n"
@@ -355,8 +321,20 @@ func help(c tele.Context) error {
 	msg += "• " + tr(uid, "menu_add") + " — /add\n"
 	msg += "• " + tr(uid, "menu_more") + " — /more\n"
 	msg += "• /cancel — " + tr(uid, "help_cancel") + "\n\n"
+	msg += tr(uid, "help_slash_hint") + "\n"
+	msg += tr(uid, "help_copy_play") + "\n"
+	if isHTTPSURL(getHost()) {
+		msg += tr(uid, "help_miniapp") + "\n"
+	}
+	if u := botUsername; u != "" {
+		msg += "\n" + fmt.Sprintf(tr(uid, "help_deeplink"), "https://t.me/"+u+"?start=list")
+	}
+	msg += "\n👤 " + tr(uid, "help_id") + ": <code>" + id + "</code>"
+	return msg
+}
 
-	msg += "<b>" + tr(uid, "help_all_commands") + "</b>\n"
+func helpAllText(uid int64) string {
+	msg := "🤖 <b>" + tr(uid, "help_all_commands") + "</b>\n\n"
 	msg += "<b>" + tr(uid, "help_main") + "</b>\n"
 	msg += "• /help, /start, /id — " + tr(uid, "help_help") + "\n"
 	msg += "• " + tr(uid, "help_list") + "\n"
@@ -366,12 +344,10 @@ func help(c tele.Context) error {
 	msg += "• /more — " + tr(uid, "cmd_desc_more") + "\n"
 	msg += "• /cancel — " + tr(uid, "help_cancel") + "\n"
 	msg += "• " + tr(uid, "help_lang") + "\n\n"
-
 	msg += "<b>" + tr(uid, "help_manage") + "</b> " + tr(uid, "help_manage_desc") + "\n"
 	msg += "• " + tr(uid, "help_remove") + "\n"
 	msg += "• " + tr(uid, "help_use_index") + "\n"
 	msg += "• " + tr(uid, "help_reply") + "\n\n"
-
 	msg += "<b>" + tr(uid, "help_status") + "</b>\n"
 	msg += "• " + tr(uid, "help_links") + "\n"
 	msg += "• " + tr(uid, "help_copy_play") + "\n"
@@ -379,10 +355,8 @@ func help(c tele.Context) error {
 	msg += "• " + tr(uid, "help_stat") + "\n"
 	msg += "• " + tr(uid, "help_stats") + "\n"
 	msg += "• " + tr(uid, "help_server_cmd") + "\n\n"
-
 	msg += "<b>" + tr(uid, "help_search") + "</b> " + tr(uid, "help_search_desc") + "\n"
 	msg += "• " + tr(uid, "help_search_cmd") + "\n\n"
-
 	msg += "<b>" + tr(uid, "help_other") + "</b>\n"
 	msg += "• " + tr(uid, "help_export") + "\n"
 	msg += "• " + tr(uid, "help_import") + "\n"
@@ -391,21 +365,11 @@ func help(c tele.Context) error {
 	msg += "• " + tr(uid, "help_other_cmd") + "\n"
 	msg += "• " + tr(uid, "help_echo") + "\n"
 	msg += "• " + tr(uid, "help_db") + "\n"
-
 	if isAdmin(uid) {
 		msg += "\n<b>" + tr(uid, "help_server") + "</b>\n"
 		msg += "• " + tr(uid, "help_admin") + "\n"
 	}
-
-	if u := botUsername; u != "" {
-		msg += "\n" + fmt.Sprintf(tr(uid, "help_deeplink"), "https://t.me/"+u+"?start=list")
-		if isHTTPSURL(getHost()) {
-			msg += "\n" + tr(uid, "help_miniapp")
-		}
-	}
-
-	msg += "\n👤 " + tr(uid, "help_id") + ": <code>" + id + "</code>"
-	return sendWithMenu(c, msg)
+	return msg
 }
 
 func isHash(txt string) bool {

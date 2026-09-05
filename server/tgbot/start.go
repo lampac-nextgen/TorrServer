@@ -85,6 +85,8 @@ func cmdStart(c tele.Context) error {
 }
 
 func handleStart(c tele.Context, payload string) error {
+	ensureUserLang(c)
+	setUserSlashCommands(c)
 	uid := c.Sender().ID
 	act := parseStartPayload(payload)
 	switch act.kind {
@@ -133,5 +135,5 @@ func sendWelcome(c tele.Context) error {
 	if u := botUsername; u != "" {
 		msg += "\n\n" + fmt.Sprintf(tr(uid, "help_deeplink"), "https://t.me/"+u+"?start=list")
 	}
-	return sendWithMenu(c, msg)
+	return sendWithMenu(c, msg, tele.ModeHTML)
 }

@@ -102,6 +102,9 @@ func sendListHub(c tele.Context, page int, cat string, edit bool) error {
 		fmt.Fprintf(&b, " · %s", escapeHtml(categoryLabel(uid, cat)))
 	}
 	fmt.Fprintf(&b, " — %s %d/%d\n\n", tr(uid, "page"), page+1, totalPages)
+	if peekPendingTool(uid) != "" {
+		b.WriteString("<i>" + tr(uid, "menu_pick_torrent") + "</i>\n\n")
+	}
 	for i, t := range pageTorrents {
 		n := start + i + 1
 		title := t.Title
@@ -290,6 +293,10 @@ func callbackListCat(c tele.Context, cat string) error {
 func callbackTorrentPick(c tele.Context, hash, pageStr string) error {
 	if !isHash(hash) {
 		return c.Respond(&tele.CallbackResponse{Text: tr(c.Sender().ID, "callback_unknown")})
+	}
+	if kind := takePendingTool(c.Sender().ID); kind != "" {
+		_ = c.Respond(&tele.CallbackResponse{})
+		return runPendingTool(c, kind, hash)
 	}
 	return showTorrentCard(c, hash, pageStr, true)
 }

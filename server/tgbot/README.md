@@ -99,9 +99,20 @@ With HTTPS `HostWeb`, the chat menu button opens the Mini App (`/?tg=1`).
 
 ## Commands
 
-Slash menu (`/`) shows **primary** commands only: `/start`, `/help`, `/list`, `/add`, `/search`, `/more`, `/cancel`, `/lang`, plus admin `/settings`, `/preset`, `/shutdown`. Everything else still works if typed; use **⋯ More** / `/more` for the hub.
+Slash menu (`/`) shows **user** commands: `/start`, `/help`, `/list`, `/add`, `/search`, `/more`, `/cancel`, `/lang`. Admin commands (`/settings`, `/preset`, `/shutdown`) are registered only for `WhiteIds` (Telegram `chat_member` scope in the private chat). Everyone else does not see them in `/`. Typed admin commands still hit the handler and return `admin_only` when the user is not on the whitelist.
+
+Group chats get a minimal list (`/start`, `/help`). Everything else still works if typed; use **⋯ More** / `/more` for the hub.
+
+On first `/start` with no saved language, the bot uses Telegram `language_code` (`en*` → English, otherwise Russian) and stores it in `tg_langs.json`. `/lang` refreshes the reply keyboard **and** that user’s slash list.
+
+### Chat menu button
+
+- HTTPS `HostWeb`: the button next to the text field is the **Mini App** (same web UI). Slash commands remain available by typing `/`.
+- Otherwise the button is the **commands** list (`MenuButtonCommands`).
 
 ### Reply keyboard
+
+Persistent (`is_persistent`) with an input placeholder. Same five buttons; Mini App is not duplicated on the keyboard.
 
 | Button | Action |
 | -------- | -------- |
@@ -109,7 +120,9 @@ Slash menu (`/`) shows **primary** commands only: `/start`, `/help`, `/list`, `/
 | Search | Ask for query (next message), or `/search <query>` |
 | Status | `/stat` |
 | Add | Hint to paste magnet/hash |
-| More | Inline hub: Library / Tools / Links / Admin / Help / Open Web |
+| More | Inline hub: Library / Tools / Help / Language / Open Web (Admin if you are on `WhiteIds`) |
+
+Tools that need a torrent (snake, preload, cache, ffprobe) set a short-lived pick: the library opens and choosing an item runs that tool. `/cancel` clears it.
 
 ### Core
 
@@ -121,7 +134,7 @@ Slash menu (`/`) shows **primary** commands only: `/start`, `/help`, `/list`, `/
 | `/add <link>` | Add torrent (magnet, hash, torrs://); asks for category if unset |
 | `/clear` | Remove all (with confirmation) |
 | `/hash [N]` | Show info hashes |
-| `/cancel` | Cancel pending settings/preset/search input |
+| `/cancel` | Cancel pending settings, preset, search, or tool pick |
 | `/lang [RU\|EN]` | Language |
 
 ### Management

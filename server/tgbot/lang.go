@@ -36,6 +36,23 @@ func getUserLang(userID int64) string {
 	return LangRU
 }
 
+func hasUserLang(userID int64) bool {
+	userLangMu.RLock()
+	defer userLangMu.RUnlock()
+	_, ok := userLang[userID]
+	return ok
+}
+
+func ensureUserLang(c tele.Context) {
+	if c == nil || c.Sender() == nil {
+		return
+	}
+	if hasUserLang(c.Sender().ID) {
+		return
+	}
+	setUserLang(c.Sender().ID, langFromTelegram(c.Sender().LanguageCode))
+}
+
 func setUserLang(userID int64, lang string) {
 	if lang != LangRU && lang != LangEN {
 		return
@@ -102,18 +119,20 @@ func cmdLang(c tele.Context) error {
 	if len(args) == 0 {
 		lang := getUserLang(uid)
 		if lang == LangEN {
-			return c.Send(tr(uid, "lang_current_en") + "\n/lang RU — " + tr(uid, "lang_switch_ru"))
+			return sendWithMenu(c, tr(uid, "lang_current_en")+"\n/lang RU — "+tr(uid, "lang_switch_ru"))
 		}
-		return c.Send(tr(uid, "lang_current_ru") + "\n/lang EN — " + tr(uid, "lang_switch_en"))
+		return sendWithMenu(c, tr(uid, "lang_current_ru")+"\n/lang EN — "+tr(uid, "lang_switch_en"))
 	}
 	lang := strings.ToUpper(strings.TrimSpace(args[0]))
 	if lang == "EN" {
 		setUserLang(uid, LangEN)
-		return c.Send(tr(uid, "lang_set_en"))
+		setUserSlashCommands(c)
+		return sendWithMenu(c, tr(uid, "lang_set_en"))
 	}
 	if lang == "RU" || lang == "РУ" {
 		setUserLang(uid, LangRU)
-		return c.Send(tr(uid, "lang_set"))
+		setUserSlashCommands(c)
+		return sendWithMenu(c, tr(uid, "lang_set"))
 	}
-	return c.Send(tr(uid, "lang_usage"))
+	return sendWithMenu(c, tr(uid, "lang_usage"))
 }

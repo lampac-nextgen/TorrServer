@@ -97,7 +97,7 @@ func TestMCPAcceptsPublicHostHeader(t *testing.T) {
 	if err != nil {
 		t.Fatalf("post: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	got, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode == http.StatusForbidden {
 		t.Fatalf("public Host header rejected: %s", got)

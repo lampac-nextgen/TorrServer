@@ -53,7 +53,14 @@ func cmdSnake(c tele.Context) error {
 	if hash == "" {
 		return c.Send(tr(c.Sender().ID, "snake_usage"))
 	}
+	return startSnake(c, hash, cols, rows)
+}
 
+func startSnakeForHash(c tele.Context, hash string) error {
+	return startSnake(c, hash, 20, 3)
+}
+
+func startSnake(c tele.Context, hash string, cols, rows int) error {
 	t := torr.GetTorrent(hash)
 	if t == nil {
 		return c.Send(tr(c.Sender().ID, "torrent_not_found") + ":\n<code>" + hash + "</code>")

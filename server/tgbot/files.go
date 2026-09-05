@@ -38,9 +38,15 @@ func files(c tele.Context) error {
 	if len(args) < 2 {
 		return c.Respond(&tele.CallbackResponse{Text: tr(c.Sender().ID, "callback_unknown")})
 	}
-	hash := args[1]
+	return startFilesList(c, args[1])
+}
+
+func startFilesList(c tele.Context, hash string) error {
 	if !isHash(hash) {
-		return c.Respond(&tele.CallbackResponse{Text: tr(c.Sender().ID, "callback_unknown")})
+		if c.Callback() != nil {
+			return c.Respond(&tele.CallbackResponse{Text: tr(c.Sender().ID, "callback_unknown")})
+		}
+		return c.Send(tr(c.Sender().ID, "callback_unknown"))
 	}
 	msg, err := c.Bot().Send(c.Sender(), tr(c.Sender().ID, "connecting"))
 	t := torr.GetTorrent(hash)

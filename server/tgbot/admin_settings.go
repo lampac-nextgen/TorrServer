@@ -20,17 +20,23 @@ func cmdSettings(c tele.Context) error {
 	if settings.BTsets == nil {
 		return c.Send(tr(uid, "settings_not_loaded"))
 	}
-	return sendSettingsMenu(c, uid)
-}
-
-func sendSettingsMenu(c tele.Context, uid int64) error {
-	return sendSettingsMenuPage(c, uid, "1")
+	return showSettings(c, uid, "1", c.Callback() != nil)
 }
 
 func sendSettingsMenuPage(c tele.Context, uid int64, page string) error {
+	return showSettings(c, uid, page, false)
+}
+
+func showSettings(c tele.Context, uid int64, page string, edit bool) error {
 	msg := sendSettingsMenuText(c, uid, page)
 	kbd := sendSettingsMenuKbd(uid, page)
-	return c.Send(msg, kbd)
+	if edit && c.Callback() != nil && c.Callback().Message != nil {
+		_, err := c.Bot().Edit(c.Callback().Message, msg, kbd, tele.ModeHTML)
+		if err == nil {
+			return nil
+		}
+	}
+	return c.Send(msg, kbd, tele.ModeHTML)
 }
 
 func sendSettingsMenuText(c tele.Context, uid int64, page string) string {
@@ -158,6 +164,9 @@ func sendSettingsMenuKbd(uid int64, page string) *tele.ReplyMarkup {
 				{Text: "📊 " + tr(uid, "settings_nav_cache"), Unique: "fset", Data: "page|2"},
 				{Text: "✏️ " + tr(uid, "settings_nav_paths"), Unique: "fset", Data: "page|3"},
 				{Text: "💾 " + tr(uid, "settings_nav_storage"), Unique: "fset", Data: "page|4"},
+			},
+			{
+				{Text: "◀️ " + tr(uid, "settings_back_more"), Unique: "fset", Data: "more"},
 			},
 		}
 	case "1a":
@@ -390,6 +399,11 @@ func settingsCallback(c tele.Context, action string) error {
 
 	if action == "input_cancel" {
 		return cancelSettingsInput(c)
+	}
+
+	if action == "more" {
+		_ = c.Respond(&tele.CallbackResponse{})
+		return showMoreHub(c, "admin", true)
 	}
 
 	if action == "reset_confirm" {

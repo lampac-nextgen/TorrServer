@@ -113,7 +113,10 @@ func logHashOrTruncate(link string) string {
 
 // getHost returns the base URL for stream/play links (e.g. http://192.168.1.1:8090)
 func getHost() string {
-	host := config.Cfg.HostWeb
+	host := ""
+	if config.Cfg != nil {
+		host = config.Cfg.HostWeb
+	}
 	if host == "" {
 		host = settings.PubIPv4
 		if host == "" {

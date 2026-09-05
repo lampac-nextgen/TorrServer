@@ -18,7 +18,10 @@ func cmdCache(c tele.Context) error {
 	if hash == "" {
 		return c.Send(tr(c.Sender().ID, "cache_usage"))
 	}
+	return sendCacheForHash(c, hash)
+}
 
+func sendCacheForHash(c tele.Context, hash string) error {
 	t := torr.GetTorrent(hash)
 	if t == nil {
 		return c.Send(tr(c.Sender().ID, "torrent_not_found") + ":\n<code>" + hash + "</code>")
@@ -36,5 +39,5 @@ func cmdCache(c tele.Context) error {
 	txt += fmt.Sprintf("%s: %d\n", tr(uid, "cache_pieces"), st.PiecesCount)
 	txt += fmt.Sprintf("%s: %d\n", tr(uid, "cache_readers"), len(st.Readers))
 	txt += fmt.Sprintf("<code>%s</code>", hash)
-	return c.Send(txt)
+	return c.Send(txt, tele.ModeHTML)
 }
