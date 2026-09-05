@@ -47,7 +47,7 @@ export function useDialogFullLayout(base: { size?: Exclude<DialogSize, 'full'>; 
   return {
     full,
     size,
-    placement: (full ? 'center' : 'auto') as 'center' | 'auto',
+    placement: 'center' as const,
     dialogStyle: full ? DIALOG_FULLSCREEN : base.dialogStyle,
   }
 }

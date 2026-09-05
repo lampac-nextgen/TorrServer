@@ -5,12 +5,15 @@ import {
   CreditCard,
   Ellipsis,
   FolderPlus,
+  Import,
   Info,
   Layers,
+  ListMusic,
   LogOut,
   Power,
   Search,
   Settings,
+  Share2,
   Trash2,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -34,6 +37,9 @@ export default function BottomNav({
   onServerStatus,
   onCloseServer,
   onRemoveAll,
+  onImportLibrary,
+  onExportLibrary,
+  onDownloadAllPlaylists,
   onLogout,
 }: ShellNavProps) {
   const { t } = useTranslation()
@@ -51,7 +57,7 @@ export default function BottomNav({
       onPress={onPress}
       aria-label={label}
       aria-current={active ? 'true' : undefined}
-      className={`flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-0.5 rounded-none px-1 pb-1 pt-1.5 text-xs font-medium ${
+      className={`flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-none px-1 py-1 text-xs font-medium ${
         active ? 'text-accent' : ''
       }`}
     >
@@ -79,10 +85,10 @@ export default function BottomNav({
   return (
     <>
       <div
-        className='ts-bottom-nav shrink-0 border-t border-border pb-[env(safe-area-inset-bottom,0px)]'
+        className='ts-bottom-nav min-w-0 w-full shrink-0 border-t border-border pb-[env(safe-area-inset-bottom,0px)]'
         style={{ backgroundColor: 'var(--surface)' }}
       >
-        <div className='mx-auto flex max-w-lg items-stretch' style={{ height: BOTTOM_NAV_CONTENT_PX }}>
+        <div className='mx-auto flex min-w-0 w-full max-w-lg items-stretch' style={{ height: BOTTOM_NAV_CONTENT_PX }}>
           {tab(t('Add'), <FolderPlus {...iconNavMobile} />, onAdd, disabled)}
           {tab(t('nav.Search'), <Search {...iconNavMobile} />, onSearch, disabled)}
           {tab(t('Category'), <Layers {...iconNavMobile} />, onCategories, false, isCategoryFilterActive)}
@@ -95,6 +101,9 @@ export default function BottomNav({
           <Modal.Container placement='bottom' size='md'>
             <Modal.Dialog className='ts-sheet-modal' aria-label={t('nav.More')}>
               <Modal.Body className='flex flex-col gap-1 pb-[env(safe-area-inset-bottom,0px)] pt-2'>
+                {sheetAction(t('ImportLibrary'), <Import {...iconNav} />, onImportLibrary, disabled)}
+                {sheetAction(t('ExportLibrary'), <Share2 {...iconNav} />, onExportLibrary, disabled)}
+                {sheetAction(t('DownloadAllPlaylists'), <ListMusic {...iconNav} />, onDownloadAllPlaylists, disabled)}
                 {sheetAction(t('RemoveAll'), <Trash2 {...iconNav} />, onRemoveAll, disabled)}
                 {sheetAction(t('ServerStatus'), <Activity {...iconNav} />, onServerStatus, disabled)}
                 {sheetAction(t('nav.Settings'), <Settings {...iconNav} />, onSettings, disabled)}

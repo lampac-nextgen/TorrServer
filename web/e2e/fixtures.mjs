@@ -14,6 +14,17 @@ export const fixtureTorrent = {
   file_stats: [{ id: 1, path: 'e2e.mock.mkv', length: 1024 * 1024 * 100 }],
 }
 
+/** Extra library rows so phone poster-grid column counts are testable. */
+export const fixtureLibrary = [
+  fixtureTorrent,
+  ...[2, 3, 4, 5, 6].map(i => ({
+    ...fixtureTorrent,
+    hash: `${HASH.slice(0, 38)}${String(i).padStart(2, '0')}`,
+    title: `E2E Mock Torrent ${i}`,
+    name: `e2e.mock.${i}.mkv`,
+  })),
+]
+
 export const fixtureSettings = {
   CacheSize: 64 * 1024 * 1024,
   ReaderReadAHead: 95,
@@ -118,7 +129,7 @@ export async function installMocks(page, { requireAuth = false } = {}) {
       /* ignore */
     }
     if (action === 'list') {
-      await route.fulfill(json([fixtureTorrent]))
+      await route.fulfill(json(fixtureLibrary))
       return
     }
     await route.fulfill(json(fixtureTorrent))

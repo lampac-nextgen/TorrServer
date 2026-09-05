@@ -44,7 +44,8 @@
     "preview": "vite preview",
     "lint": "eslint src --color",
     "fix": "eslint src --fix --color",
-    "screenshots:iphone": "node scripts/screenshots-iphone.mjs"
+    "screenshots:iphone": "node scripts/screenshots-iphone.mjs",
+    "screenshots:viewports": "node scripts/screenshots-viewports.mjs"
   },
   "browserslist": {
     "production": [

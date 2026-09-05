@@ -2609,7 +2609,7 @@ body[data-immersive='true'] .ts-bottom-nav {
   max-height: 100% !important;
   min-height: 100% !important;
   border-radius: 0 !important;
-  /* HeroUI placement=auto uses mt-auto on small screens — pin full sheets edge-to-edge. */
+  /* HeroUI placement=center — pin full sheets edge-to-edge. */
   margin-top: 0 !important;
   margin-bottom: 0 !important;
   transform: none !important;
@@ -2619,6 +2619,25 @@ body[data-immersive='true'] .ts-bottom-nav {
 .modal__container--full[data-exiting='true'] {
   animation: none !important;
   transform: none !important;
+}
+
+/*
+ * Windowed dialogs (desktop Settings / compact confirms): fill the backdrop and
+ * flex-center the card so placement=center is not undone by HeroUI mt-auto or
+ * sm:w-fit. Fullscreen (.modal__container--full) and bottom sheets keep their
+ * own rules.
+ */
+.modal__container:not(.modal__container--full):not(:has(.ts-sheet-modal)) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: var(--app-height, 100vh) !important;
+  max-height: var(--app-height, 100vh) !important;
+  min-height: var(--app-height, 100vh) !important;
 }
 
 /*
@@ -3017,18 +3036,22 @@ html[data-dialogs-fullscreen] .modal__dialog.ts-details-modal > .modal__body.mod
 
 /* Poster library density: ~2 cols on phone (~360+), denser on tablet+, roomier on desktop. */
 .torrent-poster-grid {
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr));
+}
+
+.torrent-poster-grid > .torrent-card {
+  min-width: 0;
 }
 
 @media (min-width: 700px) {
   .torrent-poster-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(160px, 100%), 1fr));
   }
 }
 
 @media (min-width: 1100px) {
   .torrent-poster-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr));
   }
 }
 
