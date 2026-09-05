@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"server/library"
 	"server/rutor"
 	"server/rutor/models"
 	sets "server/settings"
@@ -131,11 +130,9 @@ func inlineLibrary(offset int) (tele.Results, string) {
 	if end > len(torrents) {
 		end = len(torrents)
 	}
-	host := getHost()
 	var results tele.Results
 	for i, t := range torrents[offset:end] {
 		hash := t.Hash().HexString()
-		url := library.ShortPlayURL(host, hash, 1)
 		title := t.Title
 		if title == "" {
 			title = hash[:8]
@@ -144,16 +141,7 @@ func inlineLibrary(offset int) (tele.Results, string) {
 			title = string([]rune(title)[:57]) + "..."
 		}
 		id := fmt.Sprintf("l%d", offset+i)
-		item := &tele.ArticleResult{
-			ResultBase:  tele.ResultBase{ID: id},
-			Title:       "▶ " + title,
-			Description: hash[:8] + "…",
-			URL:         url,
-			Text:        url,
-		}
-		if isPosterURL(t.Poster) {
-			item.ThumbURL = t.Poster
-		}
+		item := inlineLibraryArticle(id, hash, title, t.Poster)
 		results = append(results, item)
 	}
 	next := ""
@@ -161,6 +149,29 @@ func inlineLibrary(offset int) (tele.Results, string) {
 		next = strconv.Itoa(end)
 	}
 	return results, next
+}
+
+func inlineLibraryArticle(id, hash, title, poster string) *tele.ArticleResult {
+	startURL := torrentStartURL(hash)
+	text := title
+	if startURL != "" {
+		text = title + "\n" + startURL
+	}
+	desc := hash
+	if len(hash) >= 8 {
+		desc = hash[:8] + "…"
+	}
+	item := &tele.ArticleResult{
+		ResultBase:  tele.ResultBase{ID: id},
+		Title:       "▶ " + title,
+		Description: desc,
+		Text:        text,
+		URL:         startURL,
+	}
+	if isPosterURL(poster) {
+		item.ThumbURL = poster
+	}
+	return item
 }
 
 func inlineSearch(uid int64, query string, offset int, private bool) (tele.Results, string) {

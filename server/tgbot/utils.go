@@ -201,6 +201,30 @@ func magnetForHash(hash string) string {
 	return "magnet:?xt=urn:btih:" + hash
 }
 
+const torrentStartHashLen = 8
+
+func torrentStartPrefix(hash string) string {
+	h := strings.ToLower(strings.TrimSpace(hash))
+	if h == "" {
+		return ""
+	}
+	if len(h) <= torrentStartHashLen {
+		return h
+	}
+	return h[:torrentStartHashLen]
+}
+
+func torrentStartURL(hash string) string {
+	if botUsername == "" {
+		return ""
+	}
+	p := torrentStartPrefix(hash)
+	if p == "" {
+		return ""
+	}
+	return "https://t.me/" + botUsername + "?start=t_" + p
+}
+
 func copyTextBtn(m *tele.ReplyMarkup, label, text string) (tele.Btn, bool) {
 	if m == nil || text == "" || label == "" {
 		return tele.Btn{}, false

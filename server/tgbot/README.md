@@ -11,17 +11,18 @@ Telegram bot for managing [TorrServer](https://github.com/YouROK/TorrServer) —
 
 - Torrent management — add, remove, drop, list via magnet, hash, or `torrs://` (title/category/poster preserved)
 - Categories — movie / tv / music / other on add, `/setcat`, `/list [category]`
-- Streaming — short `/play` and long `/stream` URLs, M3U (optional category filter)
+- Streaming — short `/play` and long `/stream` URLs, M3U (optional category filter). File list, `/next`, and `/m3u` copy the short play/playlist URL (Telegram URL buttons would open the in-app browser, which cannot play a stream)
 - Next unwatched — `/next` picks the next TV episode from filenames and viewed marks
 - Export & import — magnets list; import multiple from text
 - Search — RuTor and Torznab with one-click add
-- Inline mode — `@botname` in any chat: list torrents or search
+- Inline mode — `@botname` in any chat: library results open the torrent card (`t.me/<bot>?start=t_<hash8>`); search adds or pastes a magnet
 - Status & snake — real-time status, cache visualization
 - File operations — browse files, download to Telegram
 - FFprobe — media metadata via `/ffp`
 - Localization — Russian and English
 - Deep links — `t.me/<bot>?start=list`, `list_tv`, `next`, `t_<hash8>`, `add`, `search_<query>`
-- Copy buttons — hash, play URL, and magnet on torrent cards and `/link`
+- Copy buttons — hash, play URL, and magnet on torrent cards and `/link`; Copy play on file rows and `/next`; Copy M3U on playlist messages
+- Players — paste the copied `/play` URL into VLC, Infuse, or another player. iOS Infuse/VLC/SenPlayer buttons live in the Mini App (HTTPS `HostWeb`), not as Telegram URL buttons (custom schemes are rejected)
 - Posters — torrent cards send the poster photo when the torrent has an HTTP(S) poster
 - Admin — shutdown, settings, presets (whitelist users only)
 
@@ -139,9 +140,9 @@ Slash menu (`/`) shows **primary** commands only: `/start`, `/help`, `/list`, `/
 
 | Command | Description |
 | --------- | ------------- |
-| `/link`, `/play` | Short `/play/{hash}/{id}` and long `/stream` URLs |
-| `/m3u`, `/m3uall [category]` | M3U playlist |
-| `/next [query\|hash] [category]` | Next unwatched TV episode (default category `tv`) |
+| `/link`, `/play` | Short `/play/{hash}/{id}` and long `/stream` URLs (copy buttons) |
+| `/m3u`, `/m3uall [category]` | M3U playlist (copy button) |
+| `/next [query\|hash] [category]` | Next unwatched TV episode (default category `tv`; copy short play URL) |
 
 ### Search
 
@@ -187,7 +188,7 @@ Slash menu (`/`) shows **primary** commands only: `/start`, `/help`, `/list`, `/
 
 Type `@YourBotName` in any chat:
 
-- **Empty, "list", or "play"** — torrents with play links (paginated; posters as thumbnails when set)
+- **Empty, "list", or "play"** — torrents with a deep link to the torrent card (`t.me/<bot>?start=t_<hash8>`, paginated; posters as thumbnails when set)
 - **2+ characters** — search RuTor + Torznab (paginated)
 - In a **private chat with the bot**, choosing a search result adds the torrent to the library. In other chats it pastes the magnet.
 

@@ -81,7 +81,7 @@ func sendFilesList(api tele.API, recipient tele.Recipient, statusMsg *tele.Messa
 	if kbd == nil {
 		return
 	}
-	if _, err := api.Send(recipient, txt, kbd, tele.ModeHTML); err != nil {
+	if _, err := api.Send(recipient, txt, kbd, tele.ModeHTML, tele.NoPreview); err != nil {
 		log.TLogln("tg files send err", err)
 	}
 }
@@ -122,12 +122,10 @@ func buildFilesListView(t *torr.Torrent, host string, uid int64, page int) (stri
 	if totalPages > 1 {
 		txt += "\n\n" + tr(uid, "page") + " " + strconv.Itoa(page+1) + "/" + strconv.Itoa(totalPages)
 	}
-	if n > 1 {
-		txt += "\n\n" + fmt.Sprintf(tr(uid, "files_range_hint"), n)
-	}
 
 	m := &tele.ReplyMarkup{}
 	var rows []tele.Row
+	var playLines []string
 
 	for _, f := range pageFiles {
 		viewedMark := ""
@@ -138,12 +136,15 @@ func buildFilesListView(t *torr.Torrent, host string, uid int64, page int) (stri
 		mline := viewedMark + "#" + strconv.Itoa(f.Id) + ": " + humanize.IBytes(uint64(f.Length)) + " — " + baseName
 		fileLabel := truncateBtnText(mline)
 		idStr := strconv.Itoa(f.Id)
-		streamURL := library.PlayURL(host, hex, f.Path, f.Id)
-		rows = append(rows, m.Row(
-			m.Data(fileLabel, "upload", ti.Hash, idStr),
-			m.URL(tr(uid, "files_link"), streamURL),
-			m.Data("⏳", "fpreload", ti.Hash, idStr),
-		))
+		short := library.ShortPlayURL(host, hex, f.Id)
+		playLines = append(playLines, fileListPlayLine(f.Id, baseName, short))
+		rows = append(rows, fileListActionRow(m, uid, ti.Hash, idStr, fileLabel, short))
+	}
+	if len(playLines) > 0 {
+		txt += "\n\n" + strings.Join(playLines, "\n")
+	}
+	if n > 1 {
+		txt += "\n\n" + fmt.Sprintf(tr(uid, "files_range_hint"), n)
 	}
 
 	if totalPages > 1 {
@@ -166,6 +167,19 @@ func buildFilesListView(t *torr.Torrent, host string, uid int64, page int) (stri
 	rows = append(rows, m.Row(m.Data(tr(uid, "btn_back_torrent"), "ftpick", ti.Hash, "0")))
 	m.Inline(rows...)
 	return txt, m
+}
+
+func fileListPlayLine(id int, name, short string) string {
+	return fmt.Sprintf("#%d — %s\n<code>%s</code>", id, escapeHtml(name), escapeHtml(short))
+}
+
+func fileListActionRow(m *tele.ReplyMarkup, uid int64, hash, idStr, fileLabel, shortURL string) tele.Row {
+	btns := []tele.Btn{m.Data(fileLabel, "upload", hash, idStr)}
+	if b, ok := copyTextBtn(m, tr(uid, "btn_copy_play"), shortURL); ok {
+		btns = append(btns, b)
+	}
+	btns = append(btns, m.Data("⏳", "fpreload", hash, idStr))
+	return m.Row(btns...)
 }
 
 func callbackFileListPage(c tele.Context, pageStr, hash string) error {
@@ -215,10 +229,10 @@ func editFilesListMessage(c tele.Context, hash string, uid int64, page int) erro
 		return nil
 	}
 	if c.Callback() == nil || c.Callback().Message == nil {
-		_, err := c.Bot().Send(c.Sender(), txt, kbd, tele.ModeHTML)
+		_, err := c.Bot().Send(c.Sender(), txt, kbd, tele.ModeHTML, tele.NoPreview)
 		return err
 	}
-	_, err := c.Bot().Edit(c.Callback().Message, txt, kbd, tele.ModeHTML)
+	_, err := c.Bot().Edit(c.Callback().Message, txt, kbd, tele.ModeHTML, tele.NoPreview)
 	if err != nil {
 		if strings.Contains(err.Error(), "message is not modified") {
 			return nil

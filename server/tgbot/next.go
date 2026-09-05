@@ -84,16 +84,23 @@ func sendNextResult(c tele.Context, uid int64, res library.NextUnwatched) error 
 		fmt.Fprintf(&sb, "\n%s\n<code>%s</code>", tr(uid, "next_m3u"), res.PlaylistURL)
 	}
 
-	m := &tele.ReplyMarkup{}
-	idx := strconv.Itoa(res.FileIndex)
-	m.Inline(
-		m.Row(
-			m.URL(tr(uid, "files_link"), res.PlayURL),
-			m.Data(tr(uid, "next_mark"), "fnextmark", res.Hash, idx),
-		),
-		m.Row(m.Data(tr(uid, "btn_m3u"), "fm3u", res.Hash)),
-	)
+	m := nextResultMarkup(uid, res.Hash, res.ShortPlayURL, res.FileIndex)
 	return c.Send(sb.String(), m, tele.ModeHTML, tele.NoPreview)
+}
+
+func nextResultMarkup(uid int64, hash, shortPlayURL string, fileIndex int) *tele.ReplyMarkup {
+	m := &tele.ReplyMarkup{}
+	idx := strconv.Itoa(fileIndex)
+	var first []tele.Btn
+	if b, ok := copyTextBtn(m, tr(uid, "btn_copy_play"), shortPlayURL); ok {
+		first = append(first, b)
+	}
+	first = append(first, m.Data(tr(uid, "next_mark"), "fnextmark", hash, idx))
+	m.Inline(
+		m.Row(first...),
+		m.Row(m.Data(tr(uid, "btn_m3u"), "fm3u", hash)),
+	)
+	return m
 }
 
 func callbackNextMark(c tele.Context, hash, indexStr string) error {

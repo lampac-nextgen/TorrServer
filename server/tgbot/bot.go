@@ -374,6 +374,7 @@ func help(c tele.Context) error {
 
 	msg += "<b>" + tr(uid, "help_status") + "</b>\n"
 	msg += "• " + tr(uid, "help_links") + "\n"
+	msg += "• " + tr(uid, "help_copy_play") + "\n"
 	msg += "• " + tr(uid, "help_m3uall") + "\n"
 	msg += "• " + tr(uid, "help_stat") + "\n"
 	msg += "• " + tr(uid, "help_stats") + "\n"
