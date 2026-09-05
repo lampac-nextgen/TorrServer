@@ -3,6 +3,11 @@ import { Button, Input, Modal, TextField } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
 import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import AppDialog from 'shared/ui/AppDialog'
+import {
+  requestDownloadAllPlaylists,
+  requestOpenExportLibrary,
+  requestOpenImportLibrary,
+} from 'shared/lib/libraryEvents'
 import { requestOpenSettings, type SettingsDeepLinkTab } from 'shared/lib/settingsEvents'
 
 export interface CommandPaletteProps {
@@ -74,6 +79,30 @@ export default function CommandPalette({
         label: t('Theme'),
         run: () => {
           onToggleTheme()
+          onClose()
+        },
+      },
+      {
+        id: 'import',
+        label: t('ImportLibrary'),
+        run: () => {
+          requestOpenImportLibrary()
+          onClose()
+        },
+      },
+      {
+        id: 'export',
+        label: t('ExportLibrary'),
+        run: () => {
+          requestOpenExportLibrary()
+          onClose()
+        },
+      },
+      {
+        id: 'playlists',
+        label: t('DownloadAllPlaylists'),
+        run: () => {
+          requestDownloadAllPlaylists()
           onClose()
         },
       },

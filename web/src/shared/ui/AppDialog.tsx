@@ -74,7 +74,7 @@ export default function AppDialog({
         <Modal.Container
           size={isFullScreen ? 'full' : size}
           scroll='inside'
-          placement={isFullScreen ? 'center' : 'auto'}
+          placement='center'
           className={containerClass}
         >
           <Modal.Dialog className={dialogClass} style={isFullScreen ? DIALOG_FULLSCREEN : dialogStyle}>

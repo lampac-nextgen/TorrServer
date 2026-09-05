@@ -1,8 +1,14 @@
-import { HardDrive } from 'lucide-react'
-import { Alert, Label, ListBox, Select } from '@heroui/react'
+import { HardDrive, Import, Library, ListMusic, Share2 } from 'lucide-react'
+import { Alert, Button, Label, ListBox, Select } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
 
 import type { StorageBackend, StorageSettings } from 'shared/api/storage'
+import {
+  requestDownloadAllPlaylists,
+  requestOpenExportLibrary,
+  requestOpenImportLibrary,
+} from 'shared/lib/libraryEvents'
+import { iconMenu } from 'shared/ui/iconProps'
 
 import SettingsSection from './SettingsSection'
 
@@ -70,6 +76,23 @@ export default function StorageSettingsPanel({ backends, onBackendsChange }: Sto
       <Alert status='accent'>
         <Alert.Description>{t('StorageRestartHint')}</Alert.Description>
       </Alert>
+
+      <SettingsSection icon={<Library />} title={t('LibraryTools')}>
+        <div className='flex flex-wrap gap-2'>
+          <Button size='sm' variant='secondary' className='min-h-11' onPress={requestOpenImportLibrary}>
+            <Import {...iconMenu} aria-hidden />
+            {t('ImportLibrary')}
+          </Button>
+          <Button size='sm' variant='secondary' className='min-h-11' onPress={requestOpenExportLibrary}>
+            <Share2 {...iconMenu} aria-hidden />
+            {t('ExportLibrary')}
+          </Button>
+          <Button size='sm' variant='secondary' className='min-h-11' onPress={requestDownloadAllPlaylists}>
+            <ListMusic {...iconMenu} aria-hidden />
+            {t('DownloadAllPlaylists')}
+          </Button>
+        </div>
+      </SettingsSection>
     </div>
   )
 }
