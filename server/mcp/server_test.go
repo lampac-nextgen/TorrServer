@@ -2,7 +2,10 @@ package mcp
 
 import (
 	"context"
+	"io"
+	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -70,5 +73,36 @@ func TestMCPListTools(t *testing.T) {
 	}
 	if info.IsError {
 		t.Fatalf("get_server_info is error: %+v", info)
+	}
+}
+
+func TestMCPAcceptsPublicHostHeader(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	Mount(r)
+
+	ts := httptest.NewServer(r)
+	defer ts.Close()
+
+	body := `{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"torrserver-test","version":"1.0"}}}`
+	req, err := http.NewRequest(http.MethodPost, ts.URL+"/mcp", strings.NewReader(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Host = "ts.example.com"
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json, text/event-stream")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("post: %v", err)
+	}
+	defer resp.Body.Close()
+	got, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode == http.StatusForbidden {
+		t.Fatalf("public Host header rejected: %s", got)
+	}
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status %d body %s", resp.StatusCode, got)
 	}
 }

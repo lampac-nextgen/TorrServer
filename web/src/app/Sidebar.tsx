@@ -1,6 +1,20 @@
 import type { ReactNode } from 'react'
 import { Button, Tooltip } from '@heroui/react'
-import { Activity, CreditCard, FolderPlus, Info, Layers, LogOut, Power, Search, Settings, Trash2 } from 'lucide-react'
+import {
+  Activity,
+  CreditCard,
+  FolderPlus,
+  Import,
+  Info,
+  Layers,
+  ListMusic,
+  LogOut,
+  Power,
+  Search,
+  Settings,
+  Share2,
+  Trash2,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { iconNav } from 'shared/ui/iconProps'
@@ -34,6 +48,9 @@ export default function Sidebar({
   onServerStatus,
   onCloseServer,
   onRemoveAll,
+  onImportLibrary,
+  onExportLibrary,
+  onDownloadAllPlaylists,
   onLogout,
   collapsed = false,
 }: SidebarProps) {
@@ -51,6 +68,18 @@ export default function Sidebar({
       active: isCategoryFilterActive,
     },
     { key: 'removeAll', label: t('RemoveAll'), icon: <Trash2 {...iconNav} />, onClick: onRemoveAll, disabled },
+  ]
+
+  const libraryItems: NavItem[] = [
+    { key: 'import', label: t('ImportLibrary'), icon: <Import {...iconNav} />, onClick: onImportLibrary, disabled },
+    { key: 'export', label: t('ExportLibrary'), icon: <Share2 {...iconNav} />, onClick: onExportLibrary, disabled },
+    {
+      key: 'playlists',
+      label: t('DownloadAllPlaylists'),
+      icon: <ListMusic {...iconNav} />,
+      onClick: onDownloadAllPlaylists,
+      disabled,
+    },
   ]
 
   const footerItems: NavItem[] = [
@@ -103,6 +132,12 @@ export default function Sidebar({
     <nav className='flex h-full min-h-0 flex-col gap-1 overflow-y-auto overscroll-contain bg-app-rail p-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]'>
       {primaryItems.map(renderItem)}
       <div className='my-1 h-px shrink-0 bg-white/12' />
+      {!collapsed ? (
+        <p className='px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-app-rail-foreground/50'>
+          {t('LibraryTools')}
+        </p>
+      ) : null}
+      {libraryItems.map(renderItem)}
       <div className='mt-auto flex shrink-0 flex-col gap-1'>{footerItems.map(renderItem)}</div>
     </nav>
   )
