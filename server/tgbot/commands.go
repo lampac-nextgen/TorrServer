@@ -69,9 +69,8 @@ func groupCommandList(lang string) []tele.Command {
 
 func memberCommandScope(userID int64) tele.CommandScope {
 	return tele.CommandScope{
-		Type:   tele.CommandScopeChatMember,
+		Type:   tele.CommandScopeChat,
 		ChatID: userID,
-		UserID: userID,
 	}
 }
 

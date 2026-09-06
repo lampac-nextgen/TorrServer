@@ -362,7 +362,7 @@ func snakeRefreshLoop(api tele.API, msg *tele.Message, hash string, uid int64, c
 			txt := formatSnake(uid, st, hash, cols, rows)
 			if _, err := api.Edit(msg, txt, snakeKeyboard(uid, hash, cols, rows, true), tele.ModeHTML); err != nil {
 				errStr := err.Error()
-				if strings.Contains(errStr, "message is not modified") {
+				if isMessageNotModified(err) {
 					continue
 				}
 				if strings.Contains(errStr, "message to edit not found") {

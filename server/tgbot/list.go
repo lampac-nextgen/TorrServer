@@ -73,6 +73,9 @@ func sendListHub(c tele.Context, page int, cat string, edit bool) error {
 		}
 		if edit && c.Callback() != nil && c.Callback().Message != nil {
 			_, err := c.Bot().Edit(c.Callback().Message, msg, listFilterKeyboard(uid, cat), tele.ModeHTML)
+			if isMessageNotModified(err) {
+				return nil
+			}
 			return err
 		}
 		if cat != "" {
@@ -156,6 +159,9 @@ func sendListHub(c tele.Context, page int, cat string, edit bool) error {
 	txt := b.String()
 	if edit && c.Callback() != nil && c.Callback().Message != nil {
 		_, err := c.Bot().Edit(c.Callback().Message, txt, m, tele.ModeHTML)
+		if isMessageNotModified(err) {
+			return nil
+		}
 		if err != nil {
 			log.TLogln("tg list hub edit err", err)
 		}

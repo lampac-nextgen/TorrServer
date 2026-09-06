@@ -1,6 +1,7 @@
 package tgbot
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
@@ -280,5 +281,17 @@ func TestFileListPlayLine(t *testing.T) {
 	got := fileListPlayLine(2, "Show.mkv", "http://h/play/ab/2")
 	if !strings.Contains(got, "#2 — Show.mkv") || !strings.Contains(got, "<code>http://h/play/ab/2</code>") {
 		t.Fatalf("got %q", got)
+	}
+}
+
+func TestIsMessageNotModified(t *testing.T) {
+	if isMessageNotModified(nil) {
+		t.Fatal("nil")
+	}
+	if !isMessageNotModified(errors.New("telegram: Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message (400)")) {
+		t.Fatal("expected telegram 400")
+	}
+	if isMessageNotModified(errors.New("telegram: Bad Request: message to edit not found (400)")) {
+		t.Fatal("other 400 must not match")
 	}
 }

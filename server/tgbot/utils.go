@@ -15,6 +15,10 @@ import (
 
 var botUsername string
 
+func isMessageNotModified(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "message is not modified")
+}
+
 func chatMsgKey(chatID int64, msgID int) string {
 	return fmt.Sprintf("%d_%d", chatID, msgID)
 }

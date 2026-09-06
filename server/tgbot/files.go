@@ -240,7 +240,7 @@ func editFilesListMessage(c tele.Context, hash string, uid int64, page int) erro
 	}
 	_, err := c.Bot().Edit(c.Callback().Message, txt, kbd, tele.ModeHTML, tele.NoPreview)
 	if err != nil {
-		if strings.Contains(err.Error(), "message is not modified") {
+		if isMessageNotModified(err) {
 			return nil
 		}
 		log.TLogln("tg files edit err", err)

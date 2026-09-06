@@ -99,7 +99,7 @@ With HTTPS `HostWeb`, the chat menu button opens the Mini App (`/?tg=1`).
 
 ## Commands
 
-Slash menu (`/`) shows **all ordinary commands** (library, search, playback, tools, …). Admin commands (`/settings`, `/preset`, `/shutdown`) are registered only for `WhiteIds` (Telegram `chat_member` scope in the private chat). Everyone else does not see them in `/`. Typed admin commands still hit the handler and return `admin_only` when the user is not on the whitelist.
+Slash menu (`/`) shows **all ordinary commands** (library, search, playback, tools, …). Admin commands (`/settings`, `/preset`, `/shutdown`) are registered only for `WhiteIds` (Telegram `chat` scope in the private chat). Everyone else does not see them in `/`. Typed admin commands still hit the handler and return `admin_only` when the user is not on the whitelist.
 
 Group chats get a minimal list (`/start`, `/help`). Everything else still works if typed; use **⋯ More** / `/more` for the hub.
 

@@ -78,11 +78,14 @@ func TestGroupCommandListMinimal(t *testing.T) {
 func TestMemberCommandScopePrivateChat(t *testing.T) {
 	const id int64 = 123456789
 	s := memberCommandScope(id)
-	if s.Type != tele.CommandScopeChatMember {
+	if s.Type != tele.CommandScopeChat {
 		t.Fatalf("type %q", s.Type)
 	}
-	if s.ChatID != id || s.UserID != id {
-		t.Fatalf("chat/user %d/%d want %d", s.ChatID, s.UserID, id)
+	if s.ChatID != id {
+		t.Fatalf("chat %d want %d", s.ChatID, id)
+	}
+	if s.UserID != 0 {
+		t.Fatalf("UserID must be unset for private chat scope, got %d", s.UserID)
 	}
 }
 
