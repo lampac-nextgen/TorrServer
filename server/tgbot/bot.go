@@ -23,9 +23,12 @@ import (
 
 func newTelegramHTTPClient() *http.Client {
 	const timeout = 5 * time.Minute
+	client := func(tr http.RoundTripper) *http.Client {
+		return wrapTelegramClient(&http.Client{Timeout: timeout, Transport: tr})
+	}
 	trimmed := strings.TrimSpace(config.Cfg.Socks5)
 	if trimmed == "" {
-		return &http.Client{Timeout: timeout}
+		return client(nil)
 	}
 	raw := trimmed
 	if !strings.Contains(raw, "://") {
@@ -34,16 +37,16 @@ func newTelegramHTTPClient() *http.Client {
 	u, err := url.Parse(raw)
 	if err != nil {
 		log.TLogln("tg cfg Socks5 parse err, using direct", err)
-		return &http.Client{Timeout: timeout}
+		return client(nil)
 	}
 	if u.Scheme != "socks5" {
 		log.TLogln("tg cfg Socks5: only socks5 is supported, got", u.Scheme)
-		return &http.Client{Timeout: timeout}
+		return client(nil)
 	}
 	proxyHost := u.Host
 	if proxyHost == "" {
 		log.TLogln("tg cfg Socks5: empty host, using direct")
-		return &http.Client{Timeout: timeout}
+		return client(nil)
 	}
 	var auth *proxy.Auth
 	if u.User != nil {
@@ -53,7 +56,7 @@ func newTelegramHTTPClient() *http.Client {
 	socksDial, err := proxy.SOCKS5("tcp", proxyHost, auth, proxy.Direct)
 	if err != nil {
 		log.TLogln("tg socks5 dialer err, using direct", err)
-		return &http.Client{Timeout: timeout}
+		return client(nil)
 	}
 	log.TLogln("tg using SOCKS5 proxy", proxyHost)
 	transport := &http.Transport{
@@ -63,7 +66,7 @@ func newTelegramHTTPClient() *http.Client {
 			return socksDial.Dial(network, address)
 		},
 	}
-	return &http.Client{Transport: version.WithUserAgent(transport), Timeout: timeout}
+	return client(version.WithUserAgent(transport))
 }
 
 func Start(token string) error {
