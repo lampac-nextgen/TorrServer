@@ -6,6 +6,7 @@ import (
 
 	"server/dlna"
 	gstreamer "server/gstreamer/bridge"
+	"server/library"
 	"server/log"
 	set "server/settings"
 	"server/torr"
@@ -70,46 +71,12 @@ func loadTorrent(hash string) (*torr.Torrent, error) {
 	return tor, nil
 }
 
-func listSnapshots() []TorrentSnapshot {
-	var snaps []TorrentSnapshot
-	for _, t := range torr.ListTorrent() {
-		st := t.Status()
-		if st == nil {
-			continue
-		}
-		files := st.FileStats
-		if len(files) == 0 && t.Stat == state.TorrentInDB {
-			if loaded := torr.LoadTorrent(t); loaded != nil {
-				st = loaded.Status()
-				if st != nil {
-					files = st.FileStats
-				}
-			}
-		}
-		snaps = append(snaps, TorrentSnapshot{
-			Title:    st.Title,
-			Category: st.Category,
-			Hash:     st.Hash,
-			Files:    files,
-		})
-	}
-	return snaps
+func listSnapshots() []library.TorrentSnapshot {
+	return library.ListSnapshots()
 }
 
-func viewedMap(hash string) ViewedMap {
-	out := ViewedMap{}
-	for _, v := range set.ListViewed(hash) {
-		if v == nil {
-			continue
-		}
-		m := out[v.Hash]
-		if m == nil {
-			m = map[int]float64{}
-			out[v.Hash] = m
-		}
-		m[v.FileIndex] = v.TimeCode
-	}
-	return out
+func viewedMap(hash string) library.ViewedMap {
+	return library.ViewedMapFor(hash)
 }
 
 func viewedSet(hash string) map[int]set.Viewed {
@@ -172,7 +139,7 @@ func fileInfos(base string, st *state.TorrentStatus) []fileInfo {
 			info.Viewed = true
 			info.TimeCode = v.TimeCode
 		}
-		if s, e, ok := ParseEpisode(f.Path); ok {
+		if s, e, ok := library.ParseEpisode(f.Path); ok {
 			info.Season = s
 			info.Episode = e
 			info.Code = formatEpisodeCode(s, e)

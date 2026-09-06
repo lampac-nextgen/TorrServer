@@ -214,21 +214,36 @@ func ListTorrent() []*Torrent {
 			btlist[hash] = t
 		}
 	}
-	var ret []*Torrent
-
+	ret := make([]*Torrent, 0, len(btlist))
 	for _, t := range btlist {
-		ret = append(ret, t)
-	}
-
-	sort.Slice(ret, func(i, j int) bool {
-		if ret[i].Timestamp != ret[j].Timestamp {
-			return ret[i].Timestamp > ret[j].Timestamp
-		} else {
-			return ret[i].Title > ret[j].Title
+		if t != nil {
+			ret = append(ret, t)
 		}
-	})
-
+	}
+	sortTorrentsByAdded(ret, dblist)
 	return ret
+}
+
+func torrentAddedAt(t *Torrent, db map[metainfo.Hash]*Torrent) int64 {
+	if t == nil {
+		return 0
+	}
+	if db != nil {
+		if dbt, ok := db[t.Hash()]; ok && dbt != nil && dbt.Timestamp != 0 {
+			return dbt.Timestamp
+		}
+	}
+	return t.Timestamp
+}
+
+func sortTorrentsByAdded(ret []*Torrent, db map[metainfo.Hash]*Torrent) {
+	sort.Slice(ret, func(i, j int) bool {
+		ti, tj := torrentAddedAt(ret[i], db), torrentAddedAt(ret[j], db)
+		if ti != tj {
+			return ti > tj
+		}
+		return ret[i].Hash().HexString() < ret[j].Hash().HexString()
+	})
 }
 
 func DropTorrent(hashHex string) {

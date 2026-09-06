@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -49,4 +50,19 @@ func LoadConfig() {
 	if Cfg.BlackIds == nil {
 		Cfg.BlackIds = []int64{}
 	}
+}
+
+// OfficialBotAPI reports whether host is Telegram's cloud Bot API (50 MB upload
+// limit) versus a local telegram-bot-api server (up to 2 GB).
+func OfficialBotAPI(host string) bool {
+	host = strings.TrimSpace(host)
+	if host == "" {
+		return true
+	}
+	u, err := url.Parse(host)
+	if err != nil {
+		return strings.Contains(strings.ToLower(host), "api.telegram.org")
+	}
+	h := strings.ToLower(u.Hostname())
+	return h == "api.telegram.org" || strings.HasSuffix(h, ".telegram.org")
 }

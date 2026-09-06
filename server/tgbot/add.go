@@ -15,21 +15,22 @@ import (
 	tele "gopkg.in/telebot.v4"
 )
 
-func addTorrentFromSpec(c tele.Context, torrSpec *torrent.TorrentSpec, displayLabel string) error {
+func addTorrentFromSpec(c tele.Context, torrSpec *torrent.TorrentSpec, displayLabel, title, poster, category string) (*torr.Torrent, error) {
+	notifyTyping(c)
 	msg, err := c.Bot().Send(c.Sender(), tr(c.Sender().ID, "connecting"))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	tor, err := torr.AddTorrent(torrSpec, "", "", "", "")
+	tor, err := torr.AddTorrent(torrSpec, title, poster, "", category)
 	if err != nil {
 		log.TLogln("tg add err", err)
 		_, _ = c.Bot().Edit(msg, fmt.Sprintf(tr(c.Sender().ID, "add_error"), err.Error()))
-		return err
+		return nil, err
 	}
 	if tor == nil {
 		_, _ = c.Bot().Edit(msg, tr(c.Sender().ID, "add_not_created"))
-		return errors.New("torrent not created")
+		return nil, errors.New("torrent not created")
 	}
 
 	if set.BTsets != nil && set.BTsets.EnableDebug {
@@ -45,7 +46,7 @@ func addTorrentFromSpec(c tele.Context, torrSpec *torrent.TorrentSpec, displayLa
 	if !tor.GotInfo() {
 		log.TLogln("tg add err", "timeout get torrent info")
 		_, _ = c.Bot().Edit(msg, tr(c.Sender().ID, "add_timeout"))
-		return errors.New("timeout connection get torrent info")
+		return nil, errors.New("timeout connection get torrent info")
 	}
 
 	if tor.Title == "" {
@@ -64,67 +65,83 @@ func addTorrentFromSpec(c tele.Context, torrSpec *torrent.TorrentSpec, displayLa
 		displayLabel = displayLabel[:77] + "..."
 	}
 	_, _ = c.Bot().Edit(msg, fmt.Sprintf(tr(c.Sender().ID, "add_success"), displayLabel))
-
-	return nil
+	return tor, nil
 }
 
-func addTorrent(c tele.Context, link string) error {
+func addTorrent(c tele.Context, link string) (*torr.Torrent, error) {
 	log.TLogln("tg add torrent", logHashOrTruncate(link))
 	link = strings.ReplaceAll(link, "&amp;", "&")
 	var torrSpec *torrent.TorrentSpec
+	var title, poster, category string
 	var err error
 	if strings.HasPrefix(strings.ToLower(link), "torrs://") {
-		torrSpec, _, err = utils.ParseTorrsHash(link)
+		spec, parsed, perr := utils.ParseTorrsHash(link)
+		err = perr
+		torrSpec = spec
+		if parsed != nil {
+			title, poster, category = parsed.Title(), parsed.Poster(), parsed.Category()
+		}
 	} else {
 		torrSpec, err = utils.ParseLink(link)
 	}
 	if err != nil {
 		log.TLogln("tg add parse err", err)
-		return err
+		return nil, err
 	}
-	return addTorrentFromSpec(c, torrSpec, link)
+	return addTorrentFromSpec(c, torrSpec, link, title, poster, category)
 }
 
-func addTorrentFromDocument(c tele.Context, doc *tele.Document) error {
+func addTorrentFromDocument(c tele.Context, doc *tele.Document) (*torr.Torrent, error) {
 	if doc == nil || doc.FileID == "" {
-		return errors.New("no document")
+		return nil, errors.New("no document")
 	}
 	reader, err := c.Bot().File(&doc.File)
 	if err != nil {
 		log.TLogln("tg add document getfile err", err)
-		return err
+		return nil, err
 	}
 	defer func() { _ = reader.Close() }()
 	data, err := io.ReadAll(reader)
 	if err != nil {
 		log.TLogln("tg add document read err", err)
-		return err
+		return nil, err
 	}
 	torrSpec, err := utils.ParseFromBytes(data)
 	if err != nil {
 		log.TLogln("tg add document parse err", err)
-		return err
+		return nil, err
 	}
 	displayLabel := doc.FileName
 	if displayLabel == "" {
 		displayLabel = ".torrent"
 	}
-	return addTorrentFromSpec(c, torrSpec, displayLabel)
+	return addTorrentFromSpec(c, torrSpec, displayLabel, "", "", "")
+}
+
+func afterAdd(c tele.Context, tor *torr.Torrent) error {
+	if tor == nil {
+		return nil
+	}
+	hash := tor.Hash().HexString()
+	if strings.TrimSpace(tor.Category) == "" {
+		return sendCategoryPicker(c, hash)
+	}
+	return showTorrentCard(c, hash, "0", false)
 }
 
 func cmdAdd(c tele.Context) error {
 	uid := c.Sender().ID
 	args := c.Args()
 	if len(args) == 0 {
-		return c.Send(tr(uid, "add_usage"))
+		return sendAddPrompt(c)
 	}
 	link := strings.TrimSpace(strings.Join(args, " "))
 	if link == "" {
 		return c.Send(tr(uid, "add_no_link"))
 	}
-	err := addTorrent(c, link)
+	tor, err := addTorrent(c, link)
 	if err != nil {
 		return err
 	}
-	return list(c)
+	return afterAdd(c, tor)
 }

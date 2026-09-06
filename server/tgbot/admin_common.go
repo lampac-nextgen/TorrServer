@@ -5,7 +5,7 @@ import (
 )
 
 func isAdmin(userID int64) bool {
-	if len(config.Cfg.WhiteIds) == 0 {
+	if config.Cfg == nil || len(config.Cfg.WhiteIds) == 0 {
 		return false
 	}
 	for _, id := range config.Cfg.WhiteIds {

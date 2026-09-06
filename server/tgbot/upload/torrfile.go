@@ -32,11 +32,14 @@ func NewTorrFile(wrk *Worker, stFile *state.TorrentFileStat) (*TorrFile, error) 
 	if wrk.c != nil && wrk.c.Sender() != nil {
 		uid = wrk.c.Sender().ID
 	}
-	if config.Cfg != nil && config.Cfg.HostTG != "" && stFile.Length > 2*1024*1024*1024 {
-		return nil, errors.New(tr(uid, "upload_file_too_large_2gb"))
-	}
-	if (config.Cfg == nil || config.Cfg.HostTG == "") && stFile.Length > 50*1024*1024 {
+	const limitCloud = int64(50 * 1024 * 1024)
+	const limitLocal = int64(2 * 1024 * 1024 * 1024)
+	official := config.Cfg == nil || config.OfficialBotAPI(config.Cfg.HostTG)
+	if official && stFile.Length > limitCloud {
 		return nil, errors.New(tr(uid, "upload_file_too_large_50mb"))
+	}
+	if !official && stFile.Length > limitLocal {
+		return nil, errors.New(tr(uid, "upload_file_too_large_2gb"))
 	}
 
 	tf := new(TorrFile)

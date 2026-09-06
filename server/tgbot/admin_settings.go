@@ -20,71 +20,123 @@ func cmdSettings(c tele.Context) error {
 	if settings.BTsets == nil {
 		return c.Send(tr(uid, "settings_not_loaded"))
 	}
-	return sendSettingsMenu(c, uid)
-}
-
-func sendSettingsMenu(c tele.Context, uid int64) error {
-	return sendSettingsMenuPage(c, uid, "1")
+	return showSettings(c, uid, "1", c.Callback() != nil)
 }
 
 func sendSettingsMenuPage(c tele.Context, uid int64, page string) error {
+	return showSettings(c, uid, page, false)
+}
+
+func showSettings(c tele.Context, uid int64, page string, edit bool) error {
 	msg := sendSettingsMenuText(c, uid, page)
 	kbd := sendSettingsMenuKbd(uid, page)
-	return c.Send(msg, kbd)
+	if edit && c.Callback() != nil && c.Callback().Message != nil {
+		_, err := c.Bot().Edit(c.Callback().Message, msg, kbd, tele.ModeHTML)
+		if err == nil {
+			return nil
+		}
+	}
+	return c.Send(msg, kbd, tele.ModeHTML)
 }
 
 func sendSettingsMenuText(c tele.Context, uid int64, page string) string {
 	s := settings.BTsets
-	msg := "⚙️ <b>" + tr(uid, "settings_title") + "</b>"
+	if s == nil {
+		s = &settings.BTSets{}
+	}
+	var b strings.Builder
+	b.WriteString("⚙️ <b>" + tr(uid, "settings_title") + "</b>")
 	switch page {
 	case "1":
-		msg += "\n\n"
-		msg += fmt.Sprintf("🔍 %s: RuTor %s · Torznab %s\n", tr(uid, "settings_section_search"), boolIcon(s.EnableRutorSearch), boolIcon(s.EnableTorznabSearch))
-		msg += fmt.Sprintf("📺 %s: DLNA %s · Bonjour %s · IPv6 %s · DHT %s · PEX %s · TCP %s · UTP %s\n", tr(uid, "settings_section_network"), boolIcon(s.EnableDLNA), boolIcon(s.EnableBonjour), boolIcon(s.EnableIPv6), boolIcon(!s.DisableDHT), boolIcon(!s.DisablePEX), boolIcon(!s.DisableTCP), boolIcon(!s.DisableUTP))
-		msg += fmt.Sprintf("📦 %s: CacheDrop %s · UseDisk %s\n", tr(uid, "settings_section_other"), boolIcon(s.RemoveCacheOnDrop), boolIcon(s.UseDisk))
+		b.WriteString(sectionHead(tr(uid, "settings_section_search")))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_rutor"), s.EnableRutorSearch))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_torznab"), s.EnableTorznabSearch))
+		b.WriteString(sectionHead(tr(uid, "settings_section_network")))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_dlna"), s.EnableDLNA))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_dht"), !s.DisableDHT))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_ipv6"), s.EnableIPv6))
+		b.WriteString(sectionHead(tr(uid, "settings_limits_cache")))
+		fmt.Fprintf(&b, "%s: <b>%d MB</b>\n", tr(uid, "settings_tgl_cache"), s.CacheSize/(1024*1024))
+		fmt.Fprintf(&b, "%s: <b>%d%%</b>\n", tr(uid, "settings_tgl_preload"), s.PreloadCache)
 	case "1a":
-		msg += " — " + tr(uid, "settings_section_search")
-		msg += "\n\n"
-		msg += fmt.Sprintf("RuTor %s · Torznab %s", boolIcon(s.EnableRutorSearch), boolIcon(s.EnableTorznabSearch))
+		b.WriteString(" — " + tr(uid, "settings_section_search") + "\n\n")
+		b.WriteString(boolKV(tr(uid, "settings_tgl_rutor"), s.EnableRutorSearch))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_torznab"), s.EnableTorznabSearch))
 	case "1b":
-		msg += " — " + tr(uid, "settings_section_network")
-		msg += "\n\n"
-		msg += fmt.Sprintf("DLNA %s · Bonjour %s · IPv6 %s · Upload %s · DHT %s · PEX %s\n", boolIcon(s.EnableDLNA), boolIcon(s.EnableBonjour), boolIcon(s.EnableIPv6), boolIcon(!s.DisableUpload), boolIcon(!s.DisableDHT), boolIcon(!s.DisablePEX))
-		msg += fmt.Sprintf("TCP %s · UTP %s · UPNP %s · Encrypt %s · Debug %s", boolIcon(!s.DisableTCP), boolIcon(!s.DisableUTP), boolIcon(!s.DisableUPNP), boolIcon(s.ForceEncrypt), boolIcon(s.EnableDebug))
+		b.WriteString(" — " + tr(uid, "settings_section_network") + "\n\n")
+		b.WriteString(boolKV(tr(uid, "settings_tgl_dlna"), s.EnableDLNA))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_bonjour"), s.EnableBonjour))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_ipv6"), s.EnableIPv6))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_upload"), !s.DisableUpload))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_dht"), !s.DisableDHT))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_pex"), !s.DisablePEX))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_tcp"), !s.DisableTCP))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_utp"), !s.DisableUTP))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_upnp"), !s.DisableUPNP))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_encrypt"), s.ForceEncrypt))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_debug"), s.EnableDebug))
 	case "1c":
-		msg += " — " + tr(uid, "settings_section_other")
-		msg += "\n\n"
-		msg += fmt.Sprintf("CacheDrop %s · Responsive %s · UseDisk %s · FSActive %s", boolIcon(s.RemoveCacheOnDrop), boolIcon(s.ResponsiveMode), boolIcon(s.UseDisk), boolIcon(s.ShowFSActiveTorr))
+		b.WriteString(" — " + tr(uid, "settings_section_other") + "\n\n")
+		b.WriteString(boolKV(tr(uid, "settings_tgl_cachedrop"), s.RemoveCacheOnDrop))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_responsive"), s.ResponsiveMode))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_usedisk"), s.UseDisk))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_fsactive"), s.ShowFSActiveTorr))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_timecode"), s.TrackTimecode))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_lpd"), s.EnableLPD))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_lpdv6"), s.LPDIPv6))
 	case "2":
-		msg += " — " + tr(uid, "settings_page2")
-		msg += "\n\n"
-		msg += fmt.Sprintf("💾 %s: %d MB · Preload %d%% · ReadAhead %d%%\n", tr(uid, "settings_limits_cache"), s.CacheSize/(1024*1024), s.PreloadCache, s.ReaderReadAHead)
-		msg += fmt.Sprintf("🔌 %s: %d · Port %s · Timeout %ds\n", tr(uid, "settings_limits_connections"), s.ConnectionsLimit, portStr(s.PeersListenPort), s.TorrentDisconnectTimeout)
-		msg += fmt.Sprintf("⬇️ %s: Down %s · Up %s · Retr %s\n", tr(uid, "settings_limits_speed"), rateStr(s.DownloadRateLimit), rateStr(s.UploadRateLimit), retrackersStr(s.RetrackersMode))
+		b.WriteString(" — " + tr(uid, "settings_page2") + "\n\n")
+		fmt.Fprintf(&b, "%s: <b>%d MB</b>\n", tr(uid, "settings_tgl_cache"), s.CacheSize/(1024*1024))
+		fmt.Fprintf(&b, "%s: <b>%d%%</b>\n", tr(uid, "settings_tgl_preload"), s.PreloadCache)
+		fmt.Fprintf(&b, "%s: <b>%d%%</b>\n", tr(uid, "settings_tgl_readahead"), s.ReaderReadAHead)
+		fmt.Fprintf(&b, "%s: <b>%d</b>\n", tr(uid, "settings_tgl_conn"), s.ConnectionsLimit)
+		fmt.Fprintf(&b, "%s: <b>%s</b>\n", tr(uid, "settings_tgl_port"), portStr(s.PeersListenPort))
+		fmt.Fprintf(&b, "%s: <b>%ds</b>\n", tr(uid, "settings_tgl_timeout"), s.TorrentDisconnectTimeout)
+		fmt.Fprintf(&b, "%s: <b>%s</b>\n", tr(uid, "settings_tgl_down"), rateStr(s.DownloadRateLimit))
+		fmt.Fprintf(&b, "%s: <b>%s</b>\n", tr(uid, "settings_tgl_up"), rateStr(s.UploadRateLimit))
+		fmt.Fprintf(&b, "%s: <b>%s</b>\n", tr(uid, "settings_tgl_retr"), retrackersStr(s.RetrackersMode))
 	case "2a":
-		msg += " — " + tr(uid, "settings_page2") + " · " + tr(uid, "settings_limits_cache")
-		msg += "\n\n"
-		msg += fmt.Sprintf("Cache %d MB · Preload %d%% · ReadAhead %d%%", s.CacheSize/(1024*1024), s.PreloadCache, s.ReaderReadAHead)
+		b.WriteString(" — " + tr(uid, "settings_limits_cache") + "\n\n")
+		fmt.Fprintf(&b, "%s: <b>%d MB</b>\n", tr(uid, "settings_tgl_cache"), s.CacheSize/(1024*1024))
+		fmt.Fprintf(&b, "%s: <b>%d%%</b>\n", tr(uid, "settings_tgl_preload"), s.PreloadCache)
+		fmt.Fprintf(&b, "%s: <b>%d%%</b>\n", tr(uid, "settings_tgl_readahead"), s.ReaderReadAHead)
 	case "2b":
-		msg += " — " + tr(uid, "settings_page2") + " · " + tr(uid, "settings_limits_connections")
-		msg += "\n\n"
-		msg += fmt.Sprintf("Connections %d · Port %s · Timeout %ds", s.ConnectionsLimit, portStr(s.PeersListenPort), s.TorrentDisconnectTimeout)
+		b.WriteString(" — " + tr(uid, "settings_limits_connections") + "\n\n")
+		fmt.Fprintf(&b, "%s: <b>%d</b>\n", tr(uid, "settings_tgl_conn"), s.ConnectionsLimit)
+		fmt.Fprintf(&b, "%s: <b>%s</b>\n", tr(uid, "settings_tgl_port"), portStr(s.PeersListenPort))
+		fmt.Fprintf(&b, "%s: <b>%ds</b>\n", tr(uid, "settings_tgl_timeout"), s.TorrentDisconnectTimeout)
 	case "2c":
-		msg += " — " + tr(uid, "settings_page2") + " · " + tr(uid, "settings_limits_speed")
-		msg += "\n\n"
-		msg += fmt.Sprintf("Down %s · Up %s · Retrackers %s", rateStr(s.DownloadRateLimit), rateStr(s.UploadRateLimit), retrackersStr(s.RetrackersMode))
+		b.WriteString(" — " + tr(uid, "settings_limits_speed") + "\n\n")
+		fmt.Fprintf(&b, "%s: <b>%s</b>\n", tr(uid, "settings_tgl_down"), rateStr(s.DownloadRateLimit))
+		fmt.Fprintf(&b, "%s: <b>%s</b>\n", tr(uid, "settings_tgl_up"), rateStr(s.UploadRateLimit))
+		fmt.Fprintf(&b, "%s: <b>%s</b>\n", tr(uid, "settings_tgl_retr"), retrackersStr(s.RetrackersMode))
 	case "3":
-		msg += " — " + tr(uid, "settings_page3")
-		msg += "\n\n"
-		msg += fmt.Sprintf("📺 DLNA: %s · 💾 Path: %s\n", maskStr(s.FriendlyName, 25), maskVal(s.TorrentsSavePath))
-		msg += fmt.Sprintf("🔐 SSL: %s · 🔑 TMDB: %s · Torznab: %d\n", maskVal(s.SslCert), maskVal(s.TMDBSettings.APIKey), len(s.TorznabUrls))
+		b.WriteString(" — " + tr(uid, "settings_page3") + "\n\n")
+		b.WriteString(kvLine(tr(uid, "settings_set_friendlyname"), maskStr(s.FriendlyName, 25)))
+		b.WriteString(kvLine(tr(uid, "settings_set_path"), maskVal(s.TorrentsSavePath)))
+		b.WriteString(kvLine(tr(uid, "settings_set_sslcert"), maskVal(s.SslCert)))
+		b.WriteString(kvLine("TMDB", maskVal(s.TMDBSettings.APIKey)))
+		fmt.Fprintf(&b, "Torznab: <b>%d</b>\n", len(s.TorznabUrls))
 	case "4":
-		msg += " — " + tr(uid, "settings_page4")
-		msg += "\n\n"
-		msg += fmt.Sprintf("📄 %s: %s · 📺 %s: %s\n", tr(uid, "settings_storage_settings"), storageType(s.StoreSettingsInJson), tr(uid, "settings_storage_viewed"), storageType(s.StoreViewedInJson))
-		msg += fmt.Sprintf("🔑 TMDB: %s · 🖼 URL: %s", maskVal(s.TMDBSettings.APIKey), maskStr(s.TMDBSettings.ImageURL, 20))
+		b.WriteString(" — " + tr(uid, "settings_page4") + "\n\n")
+		b.WriteString(kvLine(tr(uid, "settings_storage_settings"), storageType(s.StoreSettingsInJson)))
+		b.WriteString(kvLine(tr(uid, "settings_storage_viewed"), storageType(s.StoreViewedInJson)))
+		b.WriteString(kvLine("TMDB", maskVal(s.TMDBSettings.APIKey)))
+		b.WriteString(kvLine(tr(uid, "settings_tmdb_image"), maskStr(s.TMDBSettings.ImageURL, 20)))
 	}
-	return msg
+	return b.String()
+}
+
+func sectionHead(title string) string {
+	return "\n\n<b>" + title + "</b>\n"
+}
+
+func kvLine(label, val string) string {
+	return label + ": <b>" + val + "</b>\n"
+}
+
+func boolKV(label string, v bool) string {
+	return kvLine(label, boolIcon(v))
 }
 
 func storageType(useJSON bool) string {
@@ -140,205 +192,6 @@ func retrackersStr(mode int) string {
 	}
 }
 
-func sendSettingsMenuKbd(uid int64, page string) *tele.ReplyMarkup {
-	s := settings.BTsets
-	var btns [][]tele.InlineButton
-
-	switch page {
-	case "1":
-		btns = [][]tele.InlineButton{
-			{
-				{Text: "🔍 " + tr(uid, "settings_section_search"), Unique: "fset", Data: "page|1a"},
-				{Text: "📺 " + tr(uid, "settings_section_network"), Unique: "fset", Data: "page|1b"},
-				{Text: "📦 " + tr(uid, "settings_section_other"), Unique: "fset", Data: "page|1c"},
-			},
-			{
-				{Text: "📥 " + tr(uid, "settings_export"), Unique: "fset", Data: "export"},
-				{Text: "📊 " + tr(uid, "settings_nav_cache"), Unique: "fset", Data: "page|2"},
-				{Text: "✏️ " + tr(uid, "settings_nav_paths"), Unique: "fset", Data: "page|3"},
-				{Text: "💾 " + tr(uid, "settings_nav_storage"), Unique: "fset", Data: "page|4"},
-			},
-		}
-	case "1a":
-		btns = [][]tele.InlineButton{
-			{
-				{Text: "◀️ " + tr(uid, "settings_back"), Unique: "fset", Data: "page|1"},
-			},
-			{
-				{Text: toggleBtn("RuTor", s.EnableRutorSearch), Unique: "fset", Data: "rutor|1a"},
-				{Text: toggleBtn("Torznab", s.EnableTorznabSearch), Unique: "fset", Data: "torznab|1a"},
-			},
-		}
-	case "1b":
-		btns = [][]tele.InlineButton{
-			{
-				{Text: "◀️ " + tr(uid, "settings_back"), Unique: "fset", Data: "page|1"},
-			},
-			{
-				{Text: toggleBtn("DLNA", s.EnableDLNA), Unique: "fset", Data: "dlna|1b"},
-				{Text: toggleBtn("Bonjour", s.EnableBonjour), Unique: "fset", Data: "bonjour|1b"},
-				{Text: toggleBtn("IPv6", s.EnableIPv6), Unique: "fset", Data: "ipv6|1b"},
-				{Text: toggleBtn("Upload", !s.DisableUpload), Unique: "fset", Data: "upload|1b"},
-			},
-			{
-				{Text: toggleBtn("DHT", !s.DisableDHT), Unique: "fset", Data: "dht|1b"},
-				{Text: toggleBtn("PEX", !s.DisablePEX), Unique: "fset", Data: "pex|1b"},
-				{Text: toggleBtn("TCP", !s.DisableTCP), Unique: "fset", Data: "tcp|1b"},
-				{Text: toggleBtn("UTP", !s.DisableUTP), Unique: "fset", Data: "utp|1b"},
-			},
-			{
-				{Text: toggleBtn("UPNP", !s.DisableUPNP), Unique: "fset", Data: "upnp|1b"},
-				{Text: toggleBtn("Encrypt", s.ForceEncrypt), Unique: "fset", Data: "encrypt|1b"},
-				{Text: toggleBtn("Debug", s.EnableDebug), Unique: "fset", Data: "debug|1b"},
-			},
-		}
-	case "1c":
-		btns = [][]tele.InlineButton{
-			{
-				{Text: "◀️ " + tr(uid, "settings_back"), Unique: "fset", Data: "page|1"},
-			},
-			{
-				{Text: toggleBtn("CacheDrop", s.RemoveCacheOnDrop), Unique: "fset", Data: "cachedrop|1c"},
-				{Text: toggleBtn("Responsive", s.ResponsiveMode), Unique: "fset", Data: "responsive|1c"},
-			},
-			{
-				{Text: toggleBtn("UseDisk", s.UseDisk), Unique: "fset", Data: "usedisk|1c"},
-				{Text: toggleBtn("FSActive", s.ShowFSActiveTorr), Unique: "fset", Data: "fsactive|1c"},
-			},
-		}
-	case "2":
-		btns = [][]tele.InlineButton{
-			{
-				{Text: "💾 " + tr(uid, "settings_limits_cache"), Unique: "fset", Data: "page|2a"},
-				{Text: "🔌 " + tr(uid, "settings_limits_connections"), Unique: "fset", Data: "page|2b"},
-				{Text: "⬇️ " + tr(uid, "settings_limits_speed"), Unique: "fset", Data: "page|2c"},
-			},
-			{
-				{Text: "◀️ " + tr(uid, "settings_back"), Unique: "fset", Data: "page|1"},
-				{Text: "✏️ " + tr(uid, "settings_nav_paths"), Unique: "fset", Data: "page|3"},
-				{Text: "💾 " + tr(uid, "settings_nav_storage"), Unique: "fset", Data: "page|4"},
-			},
-		}
-	case "2a":
-		cacheMB := int(s.CacheSize / (1024 * 1024))
-		btns = [][]tele.InlineButton{
-			{
-				{Text: "◀️ " + tr(uid, "settings_back"), Unique: "fset", Data: "page|2"},
-			},
-			{
-				{Text: "💾 " + optBtn("64", cacheMB == 64), Unique: "fset", Data: "cache|64|2a"},
-				{Text: optBtn("128", cacheMB == 128), Unique: "fset", Data: "cache|128|2a"},
-				{Text: optBtn("256", cacheMB == 256), Unique: "fset", Data: "cache|256|2a"},
-				{Text: optBtn("512", cacheMB == 512), Unique: "fset", Data: "cache|512|2a"},
-			},
-			{
-				{Text: "📥 " + optBtn("25%", s.PreloadCache == 25), Unique: "fset", Data: "preload|25|2a"},
-				{Text: optBtn("50%", s.PreloadCache == 50), Unique: "fset", Data: "preload|50|2a"},
-				{Text: optBtn("75%", s.PreloadCache == 75), Unique: "fset", Data: "preload|75|2a"},
-				{Text: optBtn("95%", s.PreloadCache == 95), Unique: "fset", Data: "preload|95|2a"},
-			},
-			{
-				{Text: "📖 " + optBtn("50%", s.ReaderReadAHead == 50), Unique: "fset", Data: "readahead|50|2a"},
-				{Text: optBtn("75%", s.ReaderReadAHead == 75), Unique: "fset", Data: "readahead|75|2a"},
-				{Text: optBtn("95%", s.ReaderReadAHead == 95), Unique: "fset", Data: "readahead|95|2a"},
-				{Text: optBtn("100%", s.ReaderReadAHead == 100), Unique: "fset", Data: "readahead|100|2a"},
-			},
-		}
-	case "2b":
-		btns = [][]tele.InlineButton{
-			{
-				{Text: "◀️ " + tr(uid, "settings_back"), Unique: "fset", Data: "page|2"},
-			},
-			{
-				{Text: "🔌 " + optBtn("25", s.ConnectionsLimit == 25), Unique: "fset", Data: "conn|25|2b"},
-				{Text: optBtn("50", s.ConnectionsLimit == 50), Unique: "fset", Data: "conn|50|2b"},
-				{Text: optBtn("100", s.ConnectionsLimit == 100), Unique: "fset", Data: "conn|100|2b"},
-			},
-			{
-				{Text: "⏱ " + optBtn("15s", s.TorrentDisconnectTimeout == 15), Unique: "fset", Data: "timeout|15|2b"},
-				{Text: optBtn("30s", s.TorrentDisconnectTimeout == 30), Unique: "fset", Data: "timeout|30|2b"},
-				{Text: optBtn("60s", s.TorrentDisconnectTimeout == 60), Unique: "fset", Data: "timeout|60|2b"},
-				{Text: optBtn("120s", s.TorrentDisconnectTimeout == 120), Unique: "fset", Data: "timeout|120|2b"},
-			},
-			{
-				{Text: "🔌 " + optBtn("auto", s.PeersListenPort == 0), Unique: "fset", Data: "port|0|2b"},
-				{Text: optBtn("6881", s.PeersListenPort == 6881), Unique: "fset", Data: "port|6881|2b"},
-				{Text: optBtn("51413", s.PeersListenPort == 51413), Unique: "fset", Data: "port|51413|2b"},
-			},
-		}
-	case "2c":
-		btns = [][]tele.InlineButton{
-			{
-				{Text: "◀️ " + tr(uid, "settings_back"), Unique: "fset", Data: "page|2"},
-			},
-			{
-				{Text: "⬇️ " + optBtn("∞", s.DownloadRateLimit == 0), Unique: "fset", Data: "down|0|2c"},
-				{Text: optBtn("1M", s.DownloadRateLimit == 1024), Unique: "fset", Data: "down|1024|2c"},
-				{Text: optBtn("5M", s.DownloadRateLimit == 5120), Unique: "fset", Data: "down|5120|2c"},
-				{Text: optBtn("10M", s.DownloadRateLimit == 10240), Unique: "fset", Data: "down|10240|2c"},
-			},
-			{
-				{Text: "⬆️ " + optBtn("∞", s.UploadRateLimit == 0), Unique: "fset", Data: "up|0|2c"},
-				{Text: optBtn("1M", s.UploadRateLimit == 1024), Unique: "fset", Data: "up|1024|2c"},
-				{Text: optBtn("5M", s.UploadRateLimit == 5120), Unique: "fset", Data: "up|5120|2c"},
-				{Text: optBtn("10M", s.UploadRateLimit == 10240), Unique: "fset", Data: "up|10240|2c"},
-			},
-			{
-				{Text: "🔄 " + optBtn("off", s.RetrackersMode == 0), Unique: "fset", Data: "retr|0|2c"},
-				{Text: optBtn("add", s.RetrackersMode == 1), Unique: "fset", Data: "retr|1|2c"},
-				{Text: optBtn("rem", s.RetrackersMode == 2), Unique: "fset", Data: "retr|2|2c"},
-				{Text: optBtn("repl", s.RetrackersMode == 3), Unique: "fset", Data: "retr|3|2c"},
-			},
-		}
-	case "3":
-		btns = [][]tele.InlineButton{
-			{
-				{Text: "◀️ " + tr(uid, "settings_back"), Unique: "fset", Data: "page|1"},
-				{Text: "📊 " + tr(uid, "settings_nav_cache"), Unique: "fset", Data: "page|2"},
-				{Text: "💾 " + tr(uid, "settings_nav_storage"), Unique: "fset", Data: "page|4"},
-			},
-			{
-				{Text: "✏️ " + tr(uid, "settings_set_friendlyname"), Unique: "fset", Data: "ask|friendlyname"},
-			},
-			{
-				{Text: "✏️ " + tr(uid, "settings_set_path"), Unique: "fset", Data: "ask|torrentssavepath"},
-			},
-			{
-				{Text: "🔐 " + tr(uid, "settings_set_sslcert"), Unique: "fset", Data: "ask|sslcert"},
-				{Text: "🔑 " + tr(uid, "settings_set_sslkey"), Unique: "fset", Data: "ask|sslkey"},
-			},
-			{
-				{Text: "🎬 " + tr(uid, "settings_set_tmdbkey"), Unique: "fset", Data: "ask|tmdbkey"},
-			},
-			{
-				{Text: "🔍 " + tr(uid, "settings_torznab_test"), Unique: "fset", Data: "ask|torznab_test"},
-				{Text: "➕ " + tr(uid, "settings_add_torznab"), Unique: "fset", Data: "ask|torznab_add"},
-				{Text: "🗑 " + tr(uid, "settings_clear_torznab"), Unique: "fset", Data: "torznab_clear"},
-			},
-		}
-	case "4":
-		btns = [][]tele.InlineButton{
-			{
-				{Text: "◀️ " + tr(uid, "settings_back"), Unique: "fset", Data: "page|1"},
-				{Text: "📊 " + tr(uid, "settings_nav_cache"), Unique: "fset", Data: "page|2"},
-				{Text: "✏️ " + tr(uid, "settings_nav_paths"), Unique: "fset", Data: "page|3"},
-			},
-			{
-				{Text: "📄 " + optBtn("json", s.StoreSettingsInJson), Unique: "fset", Data: "storage_set|json"},
-				{Text: optBtn("bbolt", !s.StoreSettingsInJson), Unique: "fset", Data: "storage_set|bbolt"},
-			},
-			{
-				{Text: "📺 " + optBtn("json", s.StoreViewedInJson), Unique: "fset", Data: "storage_view|json"},
-				{Text: optBtn("bbolt", !s.StoreViewedInJson), Unique: "fset", Data: "storage_view|bbolt"},
-			},
-			{
-				{Text: "🔄 " + tr(uid, "settings_reset"), Unique: "fset", Data: "reset_confirm"},
-			},
-		}
-	}
-	return &tele.ReplyMarkup{InlineKeyboard: btns}
-}
-
 func boolIcon(v bool) string {
 	if v {
 		return "✅"
@@ -384,6 +237,11 @@ func settingsCallback(c tele.Context, action string) error {
 
 	if action == "input_cancel" {
 		return cancelSettingsInput(c)
+	}
+
+	if action == "more" {
+		_ = c.Respond(&tele.CallbackResponse{})
+		return showMoreHub(c, "admin", true)
 	}
 
 	if action == "reset_confirm" {
@@ -543,6 +401,12 @@ func settingsCallback(c tele.Context, action string) error {
 		sets.UseDisk = !sets.UseDisk
 	case "fsactive":
 		sets.ShowFSActiveTorr = !sets.ShowFSActiveTorr
+	case "timecode":
+		sets.TrackTimecode = !sets.TrackTimecode
+	case "lpd":
+		sets.EnableLPD = !sets.EnableLPD
+	case "lpdv6":
+		sets.LPDIPv6 = !sets.LPDIPv6
 	case "storejson":
 		sets.StoreSettingsInJson = !sets.StoreSettingsInJson
 	case "viewedjson":

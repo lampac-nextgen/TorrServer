@@ -1,4 +1,4 @@
-package mcp
+package library
 
 import (
 	"path/filepath"
@@ -27,7 +27,7 @@ type EpisodeRef struct {
 	Parsed  bool `json:"parsed"`
 }
 
-// TorrentSnapshot is the data get_next_unwatched needs, without the BT client.
+// TorrentSnapshot is the data SelectNextUnwatched needs, without the BT client.
 type TorrentSnapshot struct {
 	Title    string
 	Category string
@@ -234,7 +234,7 @@ func SelectNextUnwatched(all []TorrentSnapshot, viewed ViewedMap, query, categor
 			res.Hash = last.snap.Hash
 			res.Season = last.season
 			res.Episode = last.episode
-			res.Code = formatEpisodeCode(last.season, last.episode)
+			res.Code = FormatEpisodeCode(last.season, last.episode)
 			res.FileIndex = last.file.Id
 			res.FilePath = last.file.Path
 			res.Message = "all matching episodes are marked viewed"
@@ -249,7 +249,7 @@ func SelectNextUnwatched(all []TorrentSnapshot, viewed ViewedMap, query, categor
 	res.Hash = next.snap.Hash
 	res.Season = next.season
 	res.Episode = next.episode
-	res.Code = formatEpisodeCode(next.season, next.episode)
+	res.Code = FormatEpisodeCode(next.season, next.episode)
 	res.FileIndex = next.file.Id
 	res.FilePath = next.file.Path
 	if next.parsed && next.season > 0 {

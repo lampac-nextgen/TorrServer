@@ -14,9 +14,27 @@ import (
 var (
 	pendingSearchMu sync.Mutex
 	pendingSearch   = make(map[int64]time.Time)
+
+	pendingToolMu sync.Mutex
+	pendingTool   = make(map[int64]pendingToolEntry)
 )
 
 const pendingSearchTTL = 30 * time.Minute
+const pendingToolTTL = 30 * time.Minute
+
+type pendingToolKind string
+
+const (
+	pendingToolSnake   pendingToolKind = "snake"
+	pendingToolCache   pendingToolKind = "cache"
+	pendingToolPreload pendingToolKind = "preload"
+	pendingToolFfp     pendingToolKind = "ffp"
+)
+
+type pendingToolEntry struct {
+	kind pendingToolKind
+	at   time.Time
+}
 
 func setPendingSearch(uid int64) {
 	pendingSearchMu.Lock()
@@ -45,9 +63,51 @@ func clearPendingSearch(uid int64) bool {
 	return false
 }
 
+func setPendingTool(uid int64, kind pendingToolKind) {
+	pendingToolMu.Lock()
+	pendingTool[uid] = pendingToolEntry{kind: kind, at: time.Now()}
+	pendingToolMu.Unlock()
+}
+
+func peekPendingTool(uid int64) pendingToolKind {
+	pendingToolMu.Lock()
+	defer pendingToolMu.Unlock()
+	e, ok := pendingTool[uid]
+	if !ok || time.Since(e.at) > pendingToolTTL {
+		delete(pendingTool, uid)
+		return ""
+	}
+	return e.kind
+}
+
+func takePendingTool(uid int64) pendingToolKind {
+	pendingToolMu.Lock()
+	defer pendingToolMu.Unlock()
+	e, ok := pendingTool[uid]
+	delete(pendingTool, uid)
+	if !ok || time.Since(e.at) > pendingToolTTL {
+		return ""
+	}
+	return e.kind
+}
+
+func clearPendingTool(uid int64) bool {
+	pendingToolMu.Lock()
+	defer pendingToolMu.Unlock()
+	if _, ok := pendingTool[uid]; ok {
+		delete(pendingTool, uid)
+		return true
+	}
+	return false
+}
+
 // Reply-keyboard labels must match exactly what we send (localized).
 func mainMenuKeyboard(uid int64) *tele.ReplyMarkup {
-	m := &tele.ReplyMarkup{ResizeKeyboard: true}
+	m := &tele.ReplyMarkup{
+		ResizeKeyboard: true,
+		IsPersistent:   true,
+		Placeholder:    tr(uid, "menu_kb_placeholder"),
+	}
 	m.Reply(
 		m.Row(m.Text(tr(uid, "menu_library")), m.Text(tr(uid, "menu_search"))),
 		m.Row(m.Text(tr(uid, "menu_status")), m.Text(tr(uid, "menu_add"))),
@@ -80,16 +140,16 @@ func isMenuButton(uid int64, text string) bool {
 func handleMenuButton(c tele.Context, text string) error {
 	uid := c.Sender().ID
 	clearPendingSearch(uid)
+	clearPendingTool(uid)
 	switch strings.TrimSpace(text) {
 	case tr(uid, "menu_library"):
-		return sendListHub(c, 0, false)
+		return sendListHub(c, 0, "", false)
 	case tr(uid, "menu_search"):
-		setPendingSearch(uid)
-		return sendWithMenu(c, tr(uid, "menu_search_pending"))
+		return sendSearchPrompt(c)
 	case tr(uid, "menu_status"):
 		return cmdStat(c)
 	case tr(uid, "menu_add"):
-		return sendWithMenu(c, tr(uid, "add_magnet"))
+		return sendAddPrompt(c)
 	case tr(uid, "menu_more"):
 		return sendMoreHub(c)
 	default:
@@ -129,7 +189,8 @@ func moreHubContent(uid int64, section string) (string, *tele.ReplyMarkup) {
 		rows = []tele.Row{
 			m.Row(m.Data(tr(uid, "menu_act_clear"), "fmenu", "act", "clear"),
 				m.Data(tr(uid, "menu_act_hash"), "fmenu", "act", "hash")),
-			m.Row(m.Data(tr(uid, "menu_act_categories"), "fmenu", "act", "categories")),
+			m.Row(m.Data(tr(uid, "menu_act_categories"), "fmenu", "act", "categories"),
+				m.Data(tr(uid, "menu_act_m3uall"), "fmenu", "act", "m3uall")),
 			m.Row(m.Data(tr(uid, "menu_export"), "fmenu", "act", "export"),
 				m.Data(tr(uid, "menu_import"), "fmenu", "act", "import")),
 			m.Row(m.Data(tr(uid, "menu_back"), "fmenu", "root")),
@@ -139,23 +200,29 @@ func moreHubContent(uid int64, section string) (string, *tele.ReplyMarkup) {
 		rows = []tele.Row{
 			m.Row(m.Data(tr(uid, "menu_act_snake"), "fmenu", "act", "snake"),
 				m.Data(tr(uid, "menu_act_preload"), "fmenu", "act", "preload")),
-			m.Row(m.Data(tr(uid, "menu_act_queue"), "fmenu", "act", "queue"),
-				m.Data(tr(uid, "menu_act_ffp"), "fmenu", "act", "ffp")),
+			m.Row(m.Data(tr(uid, "menu_act_next"), "fmenu", "act", "next"),
+				m.Data(tr(uid, "menu_act_queue"), "fmenu", "act", "queue")),
+			m.Row(m.Data(tr(uid, "menu_act_ffp"), "fmenu", "act", "ffp"),
+				m.Data(tr(uid, "menu_act_cache"), "fmenu", "act", "cache")),
 			m.Row(m.Data(tr(uid, "menu_act_speedtest"), "fmenu", "act", "speedtest"),
-				m.Data(tr(uid, "menu_act_echo"), "fmenu", "act", "echo")),
-			m.Row(m.Data(tr(uid, "menu_act_db"), "fmenu", "act", "db"),
 				m.Data(tr(uid, "menu_act_viewed"), "fmenu", "act", "viewed")),
 			m.Row(m.Data(tr(uid, "menu_act_server"), "fmenu", "act", "server"),
 				m.Data(tr(uid, "menu_act_stats"), "fmenu", "act", "stats")),
-			m.Row(m.Data(tr(uid, "menu_act_stat"), "fmenu", "act", "stat")),
+			m.Row(m.Data(tr(uid, "menu_act_stat"), "fmenu", "act", "stat"),
+				m.Data(tr(uid, "menu_act_echo"), "fmenu", "act", "echo")),
+			m.Row(m.Data(tr(uid, "menu_act_db"), "fmenu", "act", "db")),
 			m.Row(m.Data(tr(uid, "menu_back"), "fmenu", "root")),
 		}
-	case "links":
-		title += "\n" + tr(uid, "menu_section_links")
+	case "help":
+		title = helpCompactText(uid)
 		rows = []tele.Row{
-			m.Row(m.Data(tr(uid, "menu_act_m3uall"), "fmenu", "act", "m3uall"),
-				m.Data(tr(uid, "menu_act_cache"), "fmenu", "act", "cache")),
+			m.Row(m.Data(tr(uid, "help_all_commands"), "fmenu", "hub", "helpall")),
 			m.Row(m.Data(tr(uid, "menu_back"), "fmenu", "root")),
+		}
+	case "helpall":
+		title = helpAllText(uid)
+		rows = []tele.Row{
+			m.Row(m.Data(tr(uid, "menu_back"), "fmenu", "hub", "help")),
 		}
 	case "admin":
 		title += "\n" + tr(uid, "menu_section_admin")
@@ -169,12 +236,20 @@ func moreHubContent(uid int64, section string) (string, *tele.ReplyMarkup) {
 		rows = []tele.Row{
 			m.Row(m.Data(tr(uid, "menu_section_lib"), "fmenu", "hub", "lib"),
 				m.Data(tr(uid, "menu_section_tools"), "fmenu", "hub", "tools")),
-			m.Row(m.Data(tr(uid, "menu_section_links"), "fmenu", "hub", "links")),
 		}
 		if isAdmin(uid) {
 			rows = append(rows, m.Row(m.Data(tr(uid, "menu_section_admin"), "fmenu", "hub", "admin")))
 		}
-		rows = append(rows, m.Row(m.Data(tr(uid, "menu_help"), "fmenu", "act", "help")))
+		langLabel := tr(uid, "menu_act_lang")
+		if getUserLang(uid) == LangEN {
+			langLabel += " → RU"
+		} else {
+			langLabel += " → EN"
+		}
+		rows = append(rows, m.Row(
+			m.Data(tr(uid, "menu_help"), "fmenu", "hub", "help"),
+			m.Data(langLabel, "fmenu", "act", "lang"),
+		))
 		rows = append(rows, openWebButtonRow(m, uid)...)
 	}
 
@@ -200,28 +275,21 @@ func miniAppURL() string {
 }
 
 func setupMenuButton(b *tele.Bot) {
-	if !isHTTPSURL(getHost()) {
-		return
-	}
-	mb := &tele.MenuButton{
-		Type:   tele.MenuButtonWebApp,
-		Text:   "TorrServer",
-		WebApp: &tele.WebApp{URL: miniAppURL()},
-	}
-	if err := b.SetMenuButton(nil, mb); err != nil {
+	if err := b.SetMenuButton(nil, chatMenuButton()); err != nil {
 		log.TLogln("tg SetMenuButton", err)
 	}
 }
 
-func cmdStart(c tele.Context) error {
-	uid := c.Sender().ID
-	msg := "🤖 <b>" + tr(uid, "help") + "</b>\n\n" + tr(uid, "menu_welcome")
-	return sendWithMenu(c, msg)
-}
-
 func callbackMenu(c tele.Context, parts []string) error {
 	uid := c.Sender().ID
-	_ = c.Respond(&tele.CallbackResponse{})
+	toast := ""
+	if len(parts) >= 2 && parts[0] == "act" {
+		switch parts[1] {
+		case "snake", "preload", "ffp", "cache":
+			toast = tr(uid, "menu_pick_torrent")
+		}
+	}
+	_ = c.Respond(&tele.CallbackResponse{Text: toast})
 	if len(parts) == 0 {
 		return showMoreHub(c, "root", true)
 	}
@@ -232,6 +300,9 @@ func callbackMenu(c tele.Context, parts []string) error {
 		sec := "root"
 		if len(parts) >= 2 {
 			sec = parts[1]
+		}
+		if sec == "links" {
+			sec = "lib"
 		}
 		if sec == "admin" && !isAdmin(uid) {
 			return sendWithMenu(c, tr(uid, "admin_only"))
@@ -264,13 +335,15 @@ func callbackMenuAct(c tele.Context, act string) error {
 	case "import":
 		return sendWithMenu(c, tr(uid, "menu_import_hint"))
 	case "snake":
-		return sendWithMenu(c, tr(uid, "snake_usage")+"\n\n"+tr(uid, "menu_pick_torrent"))
+		return startPendingToolPick(c, pendingToolSnake)
 	case "preload":
-		return sendWithMenu(c, tr(uid, "preload_usage")+"\n\n"+tr(uid, "menu_pick_torrent"))
+		return startPendingToolPick(c, pendingToolPreload)
+	case "next":
+		return cmdNext(c)
 	case "queue":
 		return up.ShowQueue(c)
 	case "ffp":
-		return sendWithMenu(c, tr(uid, "ffp_usage")+"\n\n"+tr(uid, "menu_pick_torrent"))
+		return startPendingToolPick(c, pendingToolFfp)
 	case "speedtest":
 		return cmdSpeedtest(c)
 	case "echo":
@@ -288,9 +361,11 @@ func callbackMenuAct(c tele.Context, act string) error {
 	case "m3uall":
 		return cmdM3uAll(c)
 	case "cache":
-		return sendWithMenu(c, tr(uid, "cache_usage")+"\n\n"+tr(uid, "menu_pick_torrent"))
+		return startPendingToolPick(c, pendingToolCache)
 	case "help":
-		return help(c)
+		return showMoreHub(c, "help", c.Callback() != nil)
+	case "lang":
+		return toggleMoreLang(c)
 	case "settings":
 		if !isAdmin(uid) {
 			return sendWithMenu(c, tr(uid, "admin_only"))
@@ -308,5 +383,41 @@ func callbackMenuAct(c tele.Context, act string) error {
 		return cmdShutdown(c)
 	default:
 		return nil
+	}
+}
+
+func startPendingToolPick(c tele.Context, kind pendingToolKind) error {
+	uid := c.Sender().ID
+	setPendingTool(uid, kind)
+	return sendListHub(c, 0, "", c.Callback() != nil)
+}
+
+func toggleMoreLang(c tele.Context) error {
+	uid := c.Sender().ID
+	next := LangEN
+	if getUserLang(uid) == LangEN {
+		next = LangRU
+	}
+	setUserLang(uid, next)
+	setUserSlashCommands(c)
+	if err := showMoreHub(c, "root", c.Callback() != nil); err != nil {
+		return err
+	}
+	if next == LangEN {
+		return sendWithMenu(c, tr(uid, "lang_set_en"))
+	}
+	return sendWithMenu(c, tr(uid, "lang_set"))
+}
+
+func runPendingTool(c tele.Context, kind pendingToolKind, hash string) error {
+	switch kind {
+	case pendingToolSnake:
+		return startSnakeForHash(c, hash)
+	case pendingToolCache:
+		return sendCacheForHash(c, hash)
+	case pendingToolPreload, pendingToolFfp:
+		return startFilesList(c, hash)
+	default:
+		return showTorrentCard(c, hash, "0", true)
 	}
 }

@@ -3,11 +3,11 @@ package mcp
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"strings"
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 
+	"server/library"
 	"server/rutor"
 	"server/rutor/models"
 	set "server/settings"
@@ -264,7 +264,7 @@ func getServerInfo(ctx context.Context, req *mcpsdk.CallToolRequest, _ emptyInpu
 		Version:       version.Version,
 		MCPEndpoint:   strings.TrimRight(base, "/") + "/mcp",
 		BaseURL:       base,
-		Categories:    []string{"movie", "tv", "music", "other"},
+		Categories:    append([]string{}, library.StandardCategories...),
 		AuthRequired:  set.HttpAuth,
 		ReadOnly:      set.ReadOnly,
 		RutorSearch:   rutorOn,
@@ -486,7 +486,7 @@ func getPlaylistURL(ctx context.Context, req *mcpsdk.CallToolRequest, in playlis
 	base := baseURL(req)
 	u := playlistURL(base, in.Hash)
 	if in.Hash == "" && in.Category != "" {
-		u = strings.TrimRight(base, "/") + "/playlistall/all.m3u?category=" + url.QueryEscape(in.Category)
+		u = library.PlaylistAllURL(base, in.Category)
 	}
 	return nil, playlistURLOut{PlaylistURL: u}, nil
 }
@@ -543,13 +543,13 @@ func unmarkViewed(ctx context.Context, req *mcpsdk.CallToolRequest, in unmarkVie
 	return nil, okOut{OK: true, Hash: in.Hash, Message: "viewed status cleared"}, nil
 }
 
-func getNextUnwatched(ctx context.Context, req *mcpsdk.CallToolRequest, in nextUnwatchedIn) (*mcpsdk.CallToolResult, NextUnwatched, error) {
+func getNextUnwatched(ctx context.Context, req *mcpsdk.CallToolRequest, in nextUnwatchedIn) (*mcpsdk.CallToolResult, library.NextUnwatched, error) {
 	_ = ctx
 	category := strings.TrimSpace(in.Category)
 	if category == "" {
 		category = "tv"
 	}
-	res := SelectNextUnwatched(listSnapshots(), viewedMap(in.Hash), in.Query, category, in.Hash)
+	res := library.SelectNextUnwatched(listSnapshots(), viewedMap(in.Hash), in.Query, category, in.Hash)
 	base := baseURL(req)
 	if res.Hash != "" && res.FileIndex > 0 {
 		res.PlayURL = playURL(base, res.Hash, res.FilePath, res.FileIndex)

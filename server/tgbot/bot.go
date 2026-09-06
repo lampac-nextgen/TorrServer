@@ -3,6 +3,7 @@ package tgbot
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"net/url"
@@ -22,9 +23,12 @@ import (
 
 func newTelegramHTTPClient() *http.Client {
 	const timeout = 5 * time.Minute
+	client := func(tr http.RoundTripper) *http.Client {
+		return wrapTelegramClient(&http.Client{Timeout: timeout, Transport: tr})
+	}
 	trimmed := strings.TrimSpace(config.Cfg.Socks5)
 	if trimmed == "" {
-		return &http.Client{Timeout: timeout}
+		return client(nil)
 	}
 	raw := trimmed
 	if !strings.Contains(raw, "://") {
@@ -33,16 +37,16 @@ func newTelegramHTTPClient() *http.Client {
 	u, err := url.Parse(raw)
 	if err != nil {
 		log.TLogln("tg cfg Socks5 parse err, using direct", err)
-		return &http.Client{Timeout: timeout}
+		return client(nil)
 	}
 	if u.Scheme != "socks5" {
 		log.TLogln("tg cfg Socks5: only socks5 is supported, got", u.Scheme)
-		return &http.Client{Timeout: timeout}
+		return client(nil)
 	}
 	proxyHost := u.Host
 	if proxyHost == "" {
 		log.TLogln("tg cfg Socks5: empty host, using direct")
-		return &http.Client{Timeout: timeout}
+		return client(nil)
 	}
 	var auth *proxy.Auth
 	if u.User != nil {
@@ -52,7 +56,7 @@ func newTelegramHTTPClient() *http.Client {
 	socksDial, err := proxy.SOCKS5("tcp", proxyHost, auth, proxy.Direct)
 	if err != nil {
 		log.TLogln("tg socks5 dialer err, using direct", err)
-		return &http.Client{Timeout: timeout}
+		return client(nil)
 	}
 	log.TLogln("tg using SOCKS5 proxy", proxyHost)
 	transport := &http.Transport{
@@ -62,7 +66,7 @@ func newTelegramHTTPClient() *http.Client {
 			return socksDial.Dial(network, address)
 		},
 	}
-	return &http.Client{Transport: version.WithUserAgent(transport), Timeout: timeout}
+	return client(version.WithUserAgent(transport))
 }
 
 func Start(token string) error {
@@ -70,9 +74,17 @@ func Start(token string) error {
 	loadUserLangs()
 
 	pref := tele.Settings{
-		URL:       config.Cfg.HostTG,
-		Token:     token,
-		Poller:    &tele.LongPoller{Timeout: 5 * time.Minute},
+		URL:   config.Cfg.HostTG,
+		Token: token,
+		Poller: &tele.LongPoller{
+			Timeout: 5 * time.Minute,
+			AllowedUpdates: []string{
+				"message",
+				"callback_query",
+				"inline_query",
+				"chosen_inline_result",
+			},
+		},
 		ParseMode: tele.ModeHTML,
 		Client:    newTelegramHTTPClient(),
 	}
@@ -85,12 +97,21 @@ func Start(token string) error {
 		return err
 	}
 
+	if b.Me != nil {
+		botUsername = b.Me.Username
+	}
+
+	if err := b.RemoveWebhook(); err != nil {
+		log.TLogln("tg deleteWebhook", err)
+	}
+
 	up.TrFunc = tr
 	up.EscapeFunc = escapeHtml
 
 	if err := setBotCommands(b); err != nil {
 		log.TLogln("tg setcmd err", err)
 	}
+	setBotProfile(b)
 
 	setupMenuButton(b)
 
@@ -118,10 +139,7 @@ func Start(token string) error {
 		}
 	})
 
-	b.Handle("help", help)
-	b.Handle("Help", help)
 	b.Handle("/help", help)
-	b.Handle("/Help", help)
 	b.Handle("/start", cmdStart)
 	b.Handle("/id", help)
 	b.Handle("/cancel", cmdCancel)
@@ -145,6 +163,8 @@ func Start(token string) error {
 	b.Handle("/preload", cmdPreload)
 	b.Handle("/queue", up.ShowQueue)
 	b.Handle("/set", cmdSet)
+	b.Handle("/setcat", cmdSetCat)
+	b.Handle("/next", cmdNext)
 	b.Handle("/hash", cmdHash)
 	b.Handle("/export", cmdExport)
 	b.Handle("/import", cmdImport)
@@ -174,11 +194,11 @@ func Start(token string) error {
 		isTorrent := strings.HasSuffix(lowerName, ".torrent") ||
 			strings.Contains(strings.ToLower(doc.MIME), "bittorrent")
 		if isTorrent {
-			err := addTorrentFromDocument(c, doc)
+			tor, err := addTorrentFromDocument(c, doc)
 			if err != nil {
 				return err
 			}
-			return sendListHub(c, 0, false)
+			return afterAdd(c, tor)
 		}
 		return nil
 	})
@@ -192,6 +212,14 @@ func Start(token string) error {
 		if isMenuButton(uid, txt) {
 			return handleMenuButton(c, txt)
 		}
+		if q, ok := stripBotInlineQuery(txt); ok {
+			if q == "" {
+				_ = takePendingSearch(uid)
+				return sendWithMenu(c, tr(uid, "inline_pick_hint"))
+			}
+			_ = takePendingSearch(uid)
+			return runSearchQuery(c, q)
+		}
 		lower := strings.ToLower(txt)
 		isLink := strings.HasPrefix(lower, "magnet:") || strings.HasPrefix(lower, "torrs://") ||
 			strings.HasPrefix(lower, "http://") || strings.HasPrefix(lower, "https://") ||
@@ -201,11 +229,12 @@ func Start(token string) error {
 		}
 		if isLink {
 			clearPendingSearch(uid)
-			err := addTorrent(c, txt)
+			clearPendingTool(uid)
+			tor, err := addTorrent(c, txt)
 			if err != nil {
 				return err
 			}
-			return sendListHub(c, 0, false)
+			return afterAdd(c, tor)
 		} else if c.Message().ReplyTo != nil && c.Message().ReplyTo.ReplyMarkup != nil && len(c.Message().ReplyTo.ReplyMarkup.InlineKeyboard) > 0 {
 			var hash string
 			for _, row := range c.Message().ReplyTo.ReplyMarkup.InlineKeyboard {
@@ -246,6 +275,7 @@ func Start(token string) error {
 	})
 
 	b.Handle(tele.OnQuery, handleInlineQuery)
+	b.Handle(tele.OnInlineResult, handleInlineChosen)
 
 	b.Handle(tele.OnCallback, func(c tele.Context) error {
 		args := c.Args()
@@ -270,39 +300,31 @@ func Start(token string) error {
 	return nil
 }
 
-func setBotCommands(b *tele.Bot) error {
-	makeCmds := func(lang string) []tele.Command {
-		return []tele.Command{
-			{Text: "start", Description: trLang(lang, "cmd_desc_start")},
-			{Text: "help", Description: trLang(lang, "cmd_desc_help")},
-			{Text: "list", Description: trLang(lang, "cmd_desc_list")},
-			{Text: "add", Description: trLang(lang, "cmd_desc_add")},
-			{Text: "search", Description: trLang(lang, "cmd_desc_search")},
-			{Text: "more", Description: trLang(lang, "cmd_desc_more")},
-			{Text: "cancel", Description: trLang(lang, "cmd_desc_cancel")},
-			{Text: "lang", Description: trLang(lang, "cmd_desc_lang")},
-			{Text: "settings", Description: trLang(lang, "cmd_desc_settings")},
-			{Text: "preset", Description: trLang(lang, "cmd_desc_preset")},
-			{Text: "shutdown", Description: trLang(lang, "cmd_desc_shutdown")},
+func setBotProfile(b *tele.Bot) {
+	for _, lang := range []string{"", LangEN, LangRU} {
+		short := trLang(lang, "bot_short")
+		desc := trLang(lang, "bot_desc")
+		if lang == "" {
+			short = trLang(LangEN, "bot_short")
+			desc = trLang(LangEN, "bot_desc")
+		}
+		if err := b.SetMyShortDescription(short, lang); err != nil {
+			log.TLogln("tg SetMyShortDescription", lang, err)
+		}
+		if err := b.SetMyDescription(desc, lang); err != nil {
+			log.TLogln("tg SetMyDescription", lang, err)
 		}
 	}
-	if err := b.SetCommands(makeCmds(LangEN)); err != nil {
-		return err
-	}
-	for _, lang := range []string{LangEN, LangRU} {
-		if err := b.SetCommands(makeCmds(lang), lang); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func help(c tele.Context) error {
-	uid := c.Sender().ID
+	return sendWithMenu(c, helpCompactText(c.Sender().ID), tele.ModeHTML)
+}
+
+func helpCompactText(uid int64) string {
 	id := strconv.FormatInt(uid, 10)
 	msg := "🤖 <b>" + tr(uid, "help") + "</b>\n\n"
 	msg += tr(uid, "help_short") + "\n\n"
-
 	msg += "<b>" + tr(uid, "help_menu_section") + "</b>\n"
 	msg += "• " + tr(uid, "menu_library") + " — /list\n"
 	msg += "• " + tr(uid, "menu_search") + " — /search\n"
@@ -310,8 +332,20 @@ func help(c tele.Context) error {
 	msg += "• " + tr(uid, "menu_add") + " — /add\n"
 	msg += "• " + tr(uid, "menu_more") + " — /more\n"
 	msg += "• /cancel — " + tr(uid, "help_cancel") + "\n\n"
+	msg += tr(uid, "help_slash_hint") + "\n"
+	msg += tr(uid, "help_copy_play") + "\n"
+	if isHTTPSURL(getHost()) {
+		msg += tr(uid, "help_miniapp") + "\n"
+	}
+	if u := botUsername; u != "" {
+		msg += "\n" + fmt.Sprintf(tr(uid, "help_deeplink"), "https://t.me/"+u+"?start=list")
+	}
+	msg += "\n👤 " + tr(uid, "help_id") + ": <code>" + id + "</code>"
+	return msg
+}
 
-	msg += "<b>" + tr(uid, "help_all_commands") + "</b>\n"
+func helpAllText(uid int64) string {
+	msg := "🤖 <b>" + tr(uid, "help_all_commands") + "</b>\n\n"
 	msg += "<b>" + tr(uid, "help_main") + "</b>\n"
 	msg += "• /help, /start, /id — " + tr(uid, "help_help") + "\n"
 	msg += "• " + tr(uid, "help_list") + "\n"
@@ -321,37 +355,32 @@ func help(c tele.Context) error {
 	msg += "• /more — " + tr(uid, "cmd_desc_more") + "\n"
 	msg += "• /cancel — " + tr(uid, "help_cancel") + "\n"
 	msg += "• " + tr(uid, "help_lang") + "\n\n"
-
 	msg += "<b>" + tr(uid, "help_manage") + "</b> " + tr(uid, "help_manage_desc") + "\n"
 	msg += "• " + tr(uid, "help_remove") + "\n"
 	msg += "• " + tr(uid, "help_use_index") + "\n"
 	msg += "• " + tr(uid, "help_reply") + "\n\n"
-
 	msg += "<b>" + tr(uid, "help_status") + "</b>\n"
 	msg += "• " + tr(uid, "help_links") + "\n"
+	msg += "• " + tr(uid, "help_copy_play") + "\n"
 	msg += "• " + tr(uid, "help_m3uall") + "\n"
 	msg += "• " + tr(uid, "help_stat") + "\n"
 	msg += "• " + tr(uid, "help_stats") + "\n"
 	msg += "• " + tr(uid, "help_server_cmd") + "\n\n"
-
 	msg += "<b>" + tr(uid, "help_search") + "</b> " + tr(uid, "help_search_desc") + "\n"
 	msg += "• " + tr(uid, "help_search_cmd") + "\n\n"
-
 	msg += "<b>" + tr(uid, "help_other") + "</b>\n"
 	msg += "• " + tr(uid, "help_export") + "\n"
 	msg += "• " + tr(uid, "help_import") + "\n"
 	msg += "• " + tr(uid, "help_categories") + "\n"
+	msg += "• " + tr(uid, "help_next") + "\n"
 	msg += "• " + tr(uid, "help_other_cmd") + "\n"
 	msg += "• " + tr(uid, "help_echo") + "\n"
 	msg += "• " + tr(uid, "help_db") + "\n"
-
 	if isAdmin(uid) {
 		msg += "\n<b>" + tr(uid, "help_server") + "</b>\n"
 		msg += "• " + tr(uid, "help_admin") + "\n"
 	}
-
-	msg += "\n👤 " + tr(uid, "help_id") + ": <code>" + id + "</code>"
-	return sendWithMenu(c, msg)
+	return msg
 }
 
 func isHash(txt string) bool {

@@ -52,7 +52,7 @@ func cmdImport(c tele.Context) error {
 	uid := c.Sender().ID
 	added := 0
 	for _, link := range links {
-		if err := addTorrent(c, link); err != nil {
+		if _, err := addTorrent(c, link); err != nil {
 			_ = c.Send(fmt.Sprintf(tr(uid, "add_error"), err.Error()))
 			continue
 		}

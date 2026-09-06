@@ -13,6 +13,12 @@ import (
 	"server/web"
 )
 
+var botUsername string
+
+func isMessageNotModified(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "message is not modified")
+}
+
 func chatMsgKey(chatID int64, msgID int) string {
 	return fmt.Sprintf("%d_%d", chatID, msgID)
 }
@@ -111,7 +117,10 @@ func logHashOrTruncate(link string) string {
 
 // getHost returns the base URL for stream/play links (e.g. http://192.168.1.1:8090)
 func getHost() string {
-	host := config.Cfg.HostWeb
+	host := ""
+	if config.Cfg != nil {
+		host = config.Cfg.HostWeb
+	}
 	if host == "" {
 		host = settings.PubIPv4
 		if host == "" {
@@ -138,4 +147,127 @@ func getHost() string {
 		}
 	}
 	return host
+}
+
+func notifyTyping(c tele.Context) {
+	if c == nil || c.Bot() == nil {
+		return
+	}
+	if ch := c.Chat(); ch != nil {
+		_ = c.Bot().Notify(ch, tele.Typing)
+		return
+	}
+	if c.Sender() != nil {
+		_ = c.Bot().Notify(c.Sender(), tele.Typing)
+	}
+}
+
+func sendForceReply(c tele.Context, text, placeholder string) error {
+	m := &tele.ReplyMarkup{
+		ForceReply:  true,
+		Selective:   true,
+		Placeholder: placeholder,
+	}
+	return c.Send(text, m, tele.ModeHTML)
+}
+
+func sendAddPrompt(c tele.Context) error {
+	uid := c.Sender().ID
+	return sendForceReply(c, tr(uid, "add_magnet"), tr(uid, "add_reply_placeholder"))
+}
+
+func sendSearchPrompt(c tele.Context) error {
+	uid := c.Sender().ID
+	setPendingSearch(uid)
+	if botUsername != "" {
+		msg := tr(uid, "menu_search_pending") + "\n" + tr(uid, "menu_search_inline_hint")
+		m := &tele.ReplyMarkup{}
+		m.Inline(m.Row(m.QueryChat(tr(uid, "menu_search_inline"), inlineSwitchQuery)))
+		return c.Send(msg, m, tele.ModeHTML)
+	}
+	return sendForceReply(c, tr(uid, "menu_search_pending"), tr(uid, "search_reply_placeholder"))
+}
+
+func isPosterURL(s string) bool {
+	s = strings.TrimSpace(s)
+	return strings.HasPrefix(strings.ToLower(s), "https://") || strings.HasPrefix(strings.ToLower(s), "http://")
+}
+
+func isInlineThumbURL(s string) bool {
+	if !isPosterURL(s) {
+		return false
+	}
+	path := strings.ToLower(strings.TrimSpace(s))
+	if i := strings.IndexAny(path, "?#"); i >= 0 {
+		path = path[:i]
+	}
+	for _, ext := range []string{".jpg", ".jpeg", ".png", ".webp"} {
+		if strings.HasSuffix(path, ext) {
+			return true
+		}
+	}
+	return false
+}
+
+func magnetForHash(hash string) string {
+	if hash == "" {
+		return ""
+	}
+	return "magnet:?xt=urn:btih:" + hash
+}
+
+const torrentStartHashLen = 8
+
+func torrentStartPrefix(hash string) string {
+	h := strings.ToLower(strings.TrimSpace(hash))
+	if h == "" {
+		return ""
+	}
+	if len(h) <= torrentStartHashLen {
+		return h
+	}
+	return h[:torrentStartHashLen]
+}
+
+func torrentStartURL(hash string) string {
+	if botUsername == "" {
+		return ""
+	}
+	p := torrentStartPrefix(hash)
+	if p == "" {
+		return ""
+	}
+	return "https://t.me/" + botUsername + "?start=t_" + p
+}
+
+func copyTextFits(text string) bool {
+	return text != "" && len([]rune(text)) <= 256
+}
+
+func copyTextBtn(m *tele.ReplyMarkup, label, text string) (tele.Btn, bool) {
+	if m == nil || label == "" || !copyTextFits(text) {
+		return tele.Btn{}, false
+	}
+	return m.CopyText(label, text), true
+}
+
+func copyURLBtn(m *tele.ReplyMarkup, label, url string) (tele.Btn, bool) {
+	return copyTextBtn(m, label, url)
+}
+
+func appendCopyRow(m *tele.ReplyMarkup, uid int64, hash, playURL, magnet string) []tele.Row {
+	var btns []tele.Btn
+	if b, ok := copyTextBtn(m, tr(uid, "btn_copy_hash"), hash); ok {
+		btns = append(btns, b)
+	}
+	if b, ok := copyTextBtn(m, tr(uid, "btn_copy_play"), playURL); ok {
+		btns = append(btns, b)
+	}
+	if b, ok := copyTextBtn(m, tr(uid, "btn_copy_magnet"), magnet); ok {
+		btns = append(btns, b)
+	}
+	if len(btns) == 0 {
+		return nil
+	}
+	return []tele.Row{m.Row(btns...)}
 }

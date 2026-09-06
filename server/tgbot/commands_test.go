@@ -1,0 +1,121 @@
+package tgbot
+
+import (
+	"testing"
+
+	tele "gopkg.in/telebot.v4"
+)
+
+func commandTexts(cmds []tele.Command) []string {
+	out := make([]string, len(cmds))
+	for i, c := range cmds {
+		out[i] = c.Text
+	}
+	return out
+}
+
+func hasCommand(cmds []tele.Command, name string) bool {
+	for _, c := range cmds {
+		if c.Text == name {
+			return true
+		}
+	}
+	return false
+}
+
+func TestUserCommandListOmitsAdmin(t *testing.T) {
+	user := userCommandList(LangEN)
+	got := commandTexts(user)
+	prefix := []string{"start", "help", "list", "add", "search", "more", "cancel", "lang"}
+	if len(got) < len(prefix)+5 {
+		t.Fatalf("user commands too short: %v", got)
+	}
+	for i, name := range prefix {
+		if got[i] != name {
+			t.Fatalf("user[%d]=%q want %q", i, got[i], name)
+		}
+	}
+	for _, name := range []string{"echo", "db", "next", "id", "play", "stat"} {
+		if !hasCommand(user, name) {
+			t.Fatalf("user list missing /%s", name)
+		}
+	}
+	for _, admin := range []string{"settings", "preset", "shutdown"} {
+		if hasCommand(user, admin) {
+			t.Fatalf("user list must not include /%s", admin)
+		}
+	}
+}
+
+func TestAdminCommandListExtendsUser(t *testing.T) {
+	user := userCommandList(LangRU)
+	admin := adminCommandList(LangRU)
+	if len(admin) != len(user)+3 {
+		t.Fatalf("admin len %d user %d", len(admin), len(user))
+	}
+	for i, c := range user {
+		if admin[i].Text != c.Text {
+			t.Fatalf("admin prefix mismatch at %d: %q vs %q", i, admin[i].Text, c.Text)
+		}
+	}
+	for _, name := range []string{"settings", "preset", "shutdown"} {
+		if !hasCommand(admin, name) {
+			t.Fatalf("admin list missing /%s", name)
+		}
+	}
+}
+
+func TestGroupCommandListMinimal(t *testing.T) {
+	got := commandTexts(groupCommandList(LangEN))
+	if len(got) != 2 || got[0] != "start" || got[1] != "help" {
+		t.Fatalf("group commands %v", got)
+	}
+	if hasCommand(groupCommandList(LangEN), "settings") {
+		t.Fatal("groups must not list admin commands")
+	}
+}
+
+func TestMemberCommandScopePrivateChat(t *testing.T) {
+	const id int64 = 123456789
+	s := memberCommandScope(id)
+	if s.Type != tele.CommandScopeChat {
+		t.Fatalf("type %q", s.Type)
+	}
+	if s.ChatID != id {
+		t.Fatalf("chat %d want %d", s.ChatID, id)
+	}
+	if s.UserID != 0 {
+		t.Fatalf("UserID must be unset for private chat scope, got %d", s.UserID)
+	}
+}
+
+func TestLangFromTelegram(t *testing.T) {
+	cases := []struct {
+		code string
+		want string
+	}{
+		{"en", LangEN},
+		{"en-US", LangEN},
+		{"en_GB", LangEN},
+		{"EN", LangEN},
+		{"ru", LangRU},
+		{"ru-RU", LangRU},
+		{"", LangRU},
+		{"de", LangRU},
+		{"  en-au  ", LangEN},
+	}
+	for _, tc := range cases {
+		if got := langFromTelegram(tc.code); got != tc.want {
+			t.Errorf("langFromTelegram(%q)=%q want %q", tc.code, got, tc.want)
+		}
+	}
+}
+
+func TestChatMenuButtonType(t *testing.T) {
+	if got := chatMenuButtonType(true); got != tele.MenuButtonWebApp {
+		t.Fatalf("https: %q", got)
+	}
+	if got := chatMenuButtonType(false); got != tele.MenuButtonCommands {
+		t.Fatalf("http: %q", got)
+	}
+}
