@@ -149,7 +149,7 @@ func sendListHub(c tele.Context, page int, cat string, edit bool) error {
 	nav = append(nav, m.Data("🔄", "frefresh", navTok))
 	rows = append(rows, m.Row(nav...))
 	if botUsername != "" {
-		rows = append(rows, m.Row(m.QueryChat(tr(uid, "menu_search_inline"), "")))
+		rows = append(rows, m.Row(m.QueryChat(tr(uid, "menu_search_inline"), inlineSwitchQuery)))
 	}
 	m.Inline(rows...)
 

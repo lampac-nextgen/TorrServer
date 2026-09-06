@@ -209,6 +209,14 @@ func Start(token string) error {
 		if isMenuButton(uid, txt) {
 			return handleMenuButton(c, txt)
 		}
+		if q, ok := stripBotInlineQuery(txt); ok {
+			if q == "" {
+				_ = takePendingSearch(uid)
+				return sendWithMenu(c, tr(uid, "inline_pick_hint"))
+			}
+			_ = takePendingSearch(uid)
+			return runSearchQuery(c, q)
+		}
 		lower := strings.ToLower(txt)
 		isLink := strings.HasPrefix(lower, "magnet:") || strings.HasPrefix(lower, "torrs://") ||
 			strings.HasPrefix(lower, "http://") || strings.HasPrefix(lower, "https://") ||

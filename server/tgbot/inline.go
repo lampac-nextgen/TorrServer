@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"server/log"
 	"server/rutor"
 	"server/rutor/models"
 	sets "server/settings"
@@ -18,6 +19,11 @@ import (
 )
 
 const inlinePageSize = 20
+
+// inlineSwitchQuery is passed to switch_inline_query_current_chat.
+// A single space opens the panel more reliably on iOS than an empty string;
+// handleInlineQuery trims it to a library listing.
+const inlineSwitchQuery = " "
 
 type inlinePick struct {
 	private bool
@@ -72,6 +78,22 @@ func takeInlinePick(uid int64, resultID string) *inlinePick {
 	return p
 }
 
+// stripBotInlineQuery reports whether text is "@bot" or "@bot query" for this bot.
+func stripBotInlineQuery(text string) (query string, ok bool) {
+	uname := strings.TrimSpace(botUsername)
+	if uname == "" {
+		return "", false
+	}
+	fields := strings.Fields(strings.TrimSpace(text))
+	if len(fields) == 0 {
+		return "", false
+	}
+	if !strings.EqualFold(fields[0], "@"+uname) {
+		return "", false
+	}
+	return strings.Join(fields[1:], " "), true
+}
+
 func handleInlineQuery(c tele.Context) error {
 	q := c.Query()
 	if q == nil {
@@ -94,13 +116,22 @@ func handleInlineQuery(c tele.Context) error {
 
 	var results tele.Results
 	next := ""
+	kind := "library"
 
 	switch {
 	case query == "" || lower == "list" || lower == "play":
 		results, next = inlineLibrary(offset)
-	case len(query) >= 2:
-		results, next = inlineSearch(uid, query, offset, private)
+	default:
+		if sets.BTsets == nil || (!sets.BTsets.EnableRutorSearch && !sets.BTsets.EnableTorznabSearch) {
+			kind = "disabled"
+		} else {
+			kind = "search"
+			results, next = inlineSearch(uid, query, offset, private)
+		}
 	}
+
+	n := len(results)
+	log.TLogln("tg inline", logUser(q.Sender), "q="+logSafeStr(query, 60), "chat="+q.ChatType, "n="+strconv.Itoa(n), kind)
 
 	resp := &tele.QueryResponse{
 		Results:    results,
@@ -108,17 +139,37 @@ func handleInlineQuery(c tele.Context) error {
 		IsPersonal: true,
 		NextOffset: next,
 	}
-	if len(results) == 0 {
+	if n == 0 {
+		title, desc, text := inlineEmptyCopy(uid, query, kind)
 		resp.Results = tele.Results{&tele.ArticleResult{
 			ResultBase:  tele.ResultBase{ID: "empty"},
-			Title:       tr(uid, "no_torrents"),
-			Description: tr(uid, "add_magnet"),
-			Text:        tr(uid, "add_magnet"),
+			Title:       title,
+			Description: desc,
+			Text:        text,
 		}}
-		resp.SwitchPMText = tr(uid, "inline_open_bot")
-		resp.SwitchPMParameter = "add"
+		if kind == "library" {
+			resp.SwitchPMText = tr(uid, "inline_open_bot")
+			resp.SwitchPMParameter = "add"
+		}
 	}
-	return c.Answer(resp)
+	if err := c.Answer(resp); err != nil {
+		log.TLogln("tg inline answer err", logUser(q.Sender), err)
+		return err
+	}
+	return nil
+}
+
+func inlineEmptyCopy(uid int64, query, kind string) (title, desc, text string) {
+	switch kind {
+	case "disabled":
+		msg := tr(uid, "inline_empty_disabled")
+		return msg, msg, msg
+	case "search":
+		msg := fmt.Sprintf(tr(uid, "inline_empty_search"), query)
+		return msg, msg, msg
+	default:
+		return tr(uid, "no_torrents"), tr(uid, "add_magnet"), tr(uid, "add_magnet")
+	}
 }
 
 func inlineLibrary(offset int) (tele.Results, string) {
@@ -168,7 +219,7 @@ func inlineLibraryArticle(id, hash, title, poster string) *tele.ArticleResult {
 		Text:        text,
 		URL:         startURL,
 	}
-	if isPosterURL(poster) {
+	if isInlineThumbURL(poster) {
 		item.ThumbURL = poster
 	}
 	return item

@@ -175,26 +175,34 @@ func sendAddPrompt(c tele.Context) error {
 func sendSearchPrompt(c tele.Context) error {
 	uid := c.Sender().ID
 	setPendingSearch(uid)
-	m := &tele.ReplyMarkup{
-		ForceReply:  true,
-		Selective:   true,
-		Placeholder: tr(uid, "search_reply_placeholder"),
-	}
 	if botUsername != "" {
-		// ForceReply cannot mix with inline; send prompt then a switch-inline row.
-		if err := c.Send(tr(uid, "menu_search_pending"), m, tele.ModeHTML); err != nil {
-			return err
-		}
-		inline := &tele.ReplyMarkup{}
-		inline.Inline(inline.Row(inline.QueryChat(tr(uid, "menu_search_inline"), "")))
-		return c.Send(tr(uid, "menu_search_inline_hint"), inline, tele.ModeHTML)
+		msg := tr(uid, "menu_search_pending") + "\n" + tr(uid, "menu_search_inline_hint")
+		m := &tele.ReplyMarkup{}
+		m.Inline(m.Row(m.QueryChat(tr(uid, "menu_search_inline"), inlineSwitchQuery)))
+		return c.Send(msg, m, tele.ModeHTML)
 	}
-	return c.Send(tr(uid, "menu_search_pending"), m, tele.ModeHTML)
+	return sendForceReply(c, tr(uid, "menu_search_pending"), tr(uid, "search_reply_placeholder"))
 }
 
 func isPosterURL(s string) bool {
 	s = strings.TrimSpace(s)
 	return strings.HasPrefix(strings.ToLower(s), "https://") || strings.HasPrefix(strings.ToLower(s), "http://")
+}
+
+func isInlineThumbURL(s string) bool {
+	if !isPosterURL(s) {
+		return false
+	}
+	path := strings.ToLower(strings.TrimSpace(s))
+	if i := strings.IndexAny(path, "?#"); i >= 0 {
+		path = path[:i]
+	}
+	for _, ext := range []string{".jpg", ".jpeg", ".png", ".webp"} {
+		if strings.HasSuffix(path, ext) {
+			return true
+		}
+	}
+	return false
 }
 
 func magnetForHash(hash string) string {

@@ -99,7 +99,7 @@ With HTTPS `HostWeb`, the chat menu button opens the Mini App (`/?tg=1`).
 
 ## Commands
 
-Slash menu (`/`) shows **user** commands: `/start`, `/help`, `/list`, `/add`, `/search`, `/more`, `/cancel`, `/lang`. Admin commands (`/settings`, `/preset`, `/shutdown`) are registered only for `WhiteIds` (Telegram `chat_member` scope in the private chat). Everyone else does not see them in `/`. Typed admin commands still hit the handler and return `admin_only` when the user is not on the whitelist.
+Slash menu (`/`) shows **all ordinary commands** (library, search, playback, tools, …). Admin commands (`/settings`, `/preset`, `/shutdown`) are registered only for `WhiteIds` (Telegram `chat_member` scope in the private chat). Everyone else does not see them in `/`. Typed admin commands still hit the handler and return `admin_only` when the user is not on the whitelist.
 
 Group chats get a minimal list (`/start`, `/help`). Everything else still works if typed; use **⋯ More** / `/more` for the hub.
 
@@ -199,13 +199,13 @@ Tools that need a torrent (snake, preload, cache, ffprobe) set a short-lived pic
 
 ## Inline Mode
 
-Type `@YourBotName` in any chat:
+In **other chats**, type `@YourBotName` to open the result panel. In a **private chat with the bot** (especially iOS), use the **Inline search** button (`switch_inline_query_current_chat`) instead of typing `@bot` as a normal message. If that text is sent anyway, the bot strips `@username` and searches the rest (`аватар`, not `@bot аватар`).
 
-- **Empty, "list", or "play"** — torrents with a deep link to the torrent card (`t.me/<bot>?start=t_<hash8>`, paginated; posters as thumbnails when set)
-- **2+ characters** — search RuTor + Torznab (paginated)
+- **Empty, "list", or "play"** — torrents with a deep link to the torrent card (`t.me/<bot>?start=t_<hash8>`, paginated; JPEG/PNG/WebP posters as thumbnails when set)
+- **1+ characters** — search RuTor + Torznab (paginated)
 - In a **private chat with the bot**, choosing a search result adds the torrent to the library. In other chats it pastes the magnet.
 
-The library hub has an **Inline search** button (`switch_inline_query_current_chat`).
+The library hub and the Search prompt include the **Inline search** button.
 
 ## Text Input
 

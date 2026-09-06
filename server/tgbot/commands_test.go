@@ -25,14 +25,19 @@ func hasCommand(cmds []tele.Command, name string) bool {
 
 func TestUserCommandListOmitsAdmin(t *testing.T) {
 	user := userCommandList(LangEN)
-	want := []string{"start", "help", "list", "add", "search", "more", "cancel", "lang"}
 	got := commandTexts(user)
-	if len(got) != len(want) {
-		t.Fatalf("user commands %v", got)
+	prefix := []string{"start", "help", "list", "add", "search", "more", "cancel", "lang"}
+	if len(got) < len(prefix)+5 {
+		t.Fatalf("user commands too short: %v", got)
 	}
-	for i, name := range want {
+	for i, name := range prefix {
 		if got[i] != name {
 			t.Fatalf("user[%d]=%q want %q", i, got[i], name)
+		}
+	}
+	for _, name := range []string{"echo", "db", "next", "id", "play", "stat"} {
+		if !hasCommand(user, name) {
+			t.Fatalf("user list missing /%s", name)
 		}
 	}
 	for _, admin := range []string{"settings", "preset", "shutdown"} {

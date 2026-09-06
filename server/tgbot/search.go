@@ -24,6 +24,10 @@ func cmdSearch(c tele.Context) error {
 
 func runSearchQuery(c tele.Context, query string) error {
 	query = strings.TrimSpace(query)
+	if q, ok := stripBotInlineQuery(query); ok {
+		query = q
+	}
+	query = strings.TrimSpace(query)
 	if query == "" {
 		return c.Send(tr(c.Sender().ID, "search_usage"))
 	}

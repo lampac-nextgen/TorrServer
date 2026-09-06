@@ -189,6 +189,58 @@ func TestInlineLibraryArticleNoUsername(t *testing.T) {
 	}
 }
 
+func TestStripBotInlineQuery(t *testing.T) {
+	prev := botUsername
+	botUsername = "TorrServer_Pro_Bot"
+	t.Cleanup(func() { botUsername = prev })
+
+	q, ok := stripBotInlineQuery("@torrserver_pro_bot аватар")
+	if !ok || q != "аватар" {
+		t.Fatalf("got %q ok=%v", q, ok)
+	}
+	q, ok = stripBotInlineQuery("@TorrServer_Pro_Bot")
+	if !ok || q != "" {
+		t.Fatalf("bare mention got %q ok=%v", q, ok)
+	}
+	q, ok = stripBotInlineQuery("@other аватар")
+	if ok || q != "" {
+		t.Fatalf("other bot got %q ok=%v", q, ok)
+	}
+	q, ok = stripBotInlineQuery("аватар")
+	if ok {
+		t.Fatalf("plain text ok query=%q", q)
+	}
+
+	botUsername = ""
+	if _, ok := stripBotInlineQuery("@torrserver_pro_bot q"); ok {
+		t.Fatal("empty username must not match")
+	}
+}
+
+func TestIsInlineThumbURL(t *testing.T) {
+	if !isInlineThumbURL("https://cdn.example/p.jpg") || !isInlineThumbURL("http://x/a.PNG?w=1") {
+		t.Fatal("expected image thumbs")
+	}
+	if isInlineThumbURL("https://cdn.example/p") || isInlineThumbURL("/local.jpg") || isInlineThumbURL("") {
+		t.Fatal("expected reject")
+	}
+}
+
+func TestInlineEmptyCopy(t *testing.T) {
+	title, _, text := inlineEmptyCopy(1, "аватар", "search")
+	if !strings.Contains(title, "аватар") || text == tr(1, "add_magnet") {
+		t.Fatalf("search empty copy title=%q text=%q", title, text)
+	}
+	title, _, _ = inlineEmptyCopy(1, "", "library")
+	if title != tr(1, "no_torrents") {
+		t.Fatalf("library empty title=%q", title)
+	}
+	title, _, _ = inlineEmptyCopy(1, "x", "disabled")
+	if title != tr(1, "inline_empty_disabled") {
+		t.Fatalf("disabled empty title=%q", title)
+	}
+}
+
 func TestFileListPlayLine(t *testing.T) {
 	got := fileListPlayLine(2, "Show.mkv", "http://h/play/ab/2")
 	if !strings.Contains(got, "#2 — Show.mkv") || !strings.Contains(got, "<code>http://h/play/ab/2</code>") {
