@@ -17,21 +17,28 @@ func sendPlayURLs(c tele.Context, hash string, index int, path string) error {
 	short := library.ShortPlayURL(host, hash, index)
 	long := library.PlayURL(host, hash, path, index)
 	m := &tele.ReplyMarkup{}
-	rows := appendCopyRow(m, uid, hash, short, magnetForHash(hash))
-	if long != short {
-		if b, ok := copyTextBtn(m, tr(uid, "btn_copy_stream"), long); ok {
-			if len(rows) > 0 {
-				rows[0] = append(rows[0], b)
-			} else {
-				rows = []tele.Row{m.Row(b)}
-			}
-		}
+	rows, streamCopied := playLinkCopyRows(m, uid, hash, short, long)
+	msg := fmt.Sprintf(tr(uid, "link_play_dual"), short, long)
+	if long != "" && long != short && !streamCopied {
+		msg += "\n\n<i>" + tr(uid, "copy_too_long") + "</i>"
 	}
 	if len(rows) > 0 {
 		m.Inline(rows...)
-		return c.Send(fmt.Sprintf(tr(uid, "link_play_dual"), short, long), m, tele.NoPreview)
+		return c.Send(msg, m, tele.NoPreview)
 	}
-	return c.Send(fmt.Sprintf(tr(uid, "link_play_dual"), short, long), tele.NoPreview)
+	return c.Send(msg, tele.NoPreview)
+}
+
+func playLinkCopyRows(m *tele.ReplyMarkup, uid int64, hash, short, long string) ([]tele.Row, bool) {
+	rows := appendCopyRow(m, uid, hash, short, magnetForHash(hash))
+	if long == "" || long == short {
+		return rows, false
+	}
+	if b, ok := copyURLBtn(m, tr(uid, "btn_copy_stream"), long); ok {
+		rows = append(rows, m.Row(b))
+		return rows, true
+	}
+	return rows, false
 }
 
 func filePathForIndex(t *torr.Torrent, index int) string {

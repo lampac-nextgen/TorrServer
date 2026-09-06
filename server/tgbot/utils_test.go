@@ -128,13 +128,48 @@ func TestFileListActionRowCopiesPlayNotURL(t *testing.T) {
 
 func TestNextResultMarkupCopiesPlayNotURL(t *testing.T) {
 	short := "http://h:8090/play/abcd/3"
-	m := nextResultMarkup(1, "abcdabcdabcdabcdabcdabcdabcdabcdabcdabcd", short, 3)
+	long := "http://h:8090/stream/a.mkv?link=abcd&index=3&play"
+	m := nextResultMarkup(1, "abcdabcdabcdabcdabcdabcdabcdabcdabcdabcd", short, long, 3)
 	if markupHasHTTPURLButton(m) {
 		t.Fatal("next markup must not use a URL button")
 	}
 	copies := markupCopyTexts(m)
-	if len(copies) != 1 || copies[0] != short {
+	if len(copies) != 2 || copies[0] != short || copies[1] != long {
 		t.Fatalf("copy texts=%v", copies)
+	}
+}
+
+func TestPlayLinkCopyRowsStreamSeparate(t *testing.T) {
+	m := &tele.ReplyMarkup{}
+	hash := strings.Repeat("a", 40)
+	short := library.ShortPlayURL("http://h:8090", hash, 1)
+	long := library.PlayURL("http://h:8090", hash, "a.mkv", 1)
+	rows, ok := playLinkCopyRows(m, 1, hash, short, long)
+	if !ok {
+		t.Fatal("expected stream copy row")
+	}
+	m.Inline(rows...)
+	if len(m.InlineKeyboard) < 2 {
+		t.Fatalf("want stream on second row, rows=%d", len(m.InlineKeyboard))
+	}
+	if m.InlineKeyboard[len(m.InlineKeyboard)-1][0].CopyText == nil ||
+		m.InlineKeyboard[len(m.InlineKeyboard)-1][0].CopyText.Text != long {
+		t.Fatalf("last row should copy stream: %+v", m.InlineKeyboard[len(m.InlineKeyboard)-1])
+	}
+}
+
+func TestCopyURLBtnRejectsOverLimit(t *testing.T) {
+	m := &tele.ReplyMarkup{}
+	long := "http://h/" + strings.Repeat("я", 250)
+	if copyTextFits(long) {
+		t.Fatal("expected over limit")
+	}
+	if _, ok := copyURLBtn(m, "Stream", long); ok {
+		t.Fatal("over 256 runes must skip stream copy")
+	}
+	short := library.ShortPlayURL("http://192.168.1.10:8090", strings.Repeat("a", 40), 12)
+	if _, ok := copyURLBtn(m, "Play", short); !ok {
+		t.Fatal("short play should copy")
 	}
 }
 

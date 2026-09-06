@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"server/settings"
+
 	tele "gopkg.in/telebot.v4"
 )
 
@@ -123,6 +125,48 @@ func TestSettingsPage1BackToMore(t *testing.T) {
 	}
 	if !found {
 		t.Fatal("page 1 needs Back to More")
+	}
+}
+
+func TestSettingsHomeKeyboardTwoColumns(t *testing.T) {
+	kbd := sendSettingsMenuKbd(1, "1")
+	assertSettingsMaxTwoPerRow(t, kbd)
+	if len(kbd.InlineKeyboard) < 3 || len(kbd.InlineKeyboard[0]) != 2 {
+		t.Fatalf("home nav should be 2-col, rows=%d", len(kbd.InlineKeyboard))
+	}
+}
+
+func TestSettingsNetworkLocalizedLabels(t *testing.T) {
+	prev := settings.BTsets
+	settings.BTsets = &settings.BTSets{EnableDLNA: true}
+	t.Cleanup(func() { settings.BTsets = prev })
+
+	kbd := sendSettingsMenuKbd(1, "1b")
+	assertSettingsMaxTwoPerRow(t, kbd)
+	want := toggleBtn(tr(1, "settings_tgl_dlna"), true)
+	if !inlineHasText(kbd, want) {
+		t.Fatalf("want localized toggle %q", want)
+	}
+}
+
+func TestSettingsCacheHubNoCrossLinks(t *testing.T) {
+	kbd := sendSettingsMenuKbd(1, "2")
+	assertSettingsMaxTwoPerRow(t, kbd)
+	for _, row := range kbd.InlineKeyboard {
+		for _, btn := range row {
+			if btn.Data == "page|3" || btn.Data == "page|4" {
+				t.Fatalf("cache hub should not link to %s", btn.Data)
+			}
+		}
+	}
+}
+
+func assertSettingsMaxTwoPerRow(t *testing.T, kbd *tele.ReplyMarkup) {
+	t.Helper()
+	for i, row := range kbd.InlineKeyboard {
+		if len(row) > 2 {
+			t.Fatalf("row %d has %d buttons", i, len(row))
+		}
 	}
 }
 

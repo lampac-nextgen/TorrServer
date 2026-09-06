@@ -84,16 +84,21 @@ func sendNextResult(c tele.Context, uid int64, res library.NextUnwatched) error 
 		fmt.Fprintf(&sb, "\n%s\n<code>%s</code>", tr(uid, "next_m3u"), res.PlaylistURL)
 	}
 
-	m := nextResultMarkup(uid, res.Hash, res.ShortPlayURL, res.FileIndex)
+	m := nextResultMarkup(uid, res.Hash, res.ShortPlayURL, res.PlayURL, res.FileIndex)
 	return c.Send(sb.String(), m, tele.ModeHTML, tele.NoPreview)
 }
 
-func nextResultMarkup(uid int64, hash, shortPlayURL string, fileIndex int) *tele.ReplyMarkup {
+func nextResultMarkup(uid int64, hash, shortPlayURL, longPlayURL string, fileIndex int) *tele.ReplyMarkup {
 	m := &tele.ReplyMarkup{}
 	idx := strconv.Itoa(fileIndex)
 	var first []tele.Btn
-	if b, ok := copyTextBtn(m, tr(uid, "btn_copy_play"), shortPlayURL); ok {
+	if b, ok := copyURLBtn(m, tr(uid, "btn_copy_play"), shortPlayURL); ok {
 		first = append(first, b)
+	}
+	if longPlayURL != "" && longPlayURL != shortPlayURL {
+		if b, ok := copyURLBtn(m, tr(uid, "btn_copy_stream"), longPlayURL); ok {
+			first = append(first, b)
+		}
 	}
 	first = append(first, m.Data(tr(uid, "next_mark"), "fnextmark", hash, idx))
 	m.Inline(

@@ -236,14 +236,19 @@ func torrentStartURL(hash string) string {
 	return "https://t.me/" + botUsername + "?start=t_" + p
 }
 
+func copyTextFits(text string) bool {
+	return text != "" && len([]rune(text)) <= 256
+}
+
 func copyTextBtn(m *tele.ReplyMarkup, label, text string) (tele.Btn, bool) {
-	if m == nil || text == "" || label == "" {
-		return tele.Btn{}, false
-	}
-	if len([]rune(text)) > 256 {
+	if m == nil || label == "" || !copyTextFits(text) {
 		return tele.Btn{}, false
 	}
 	return m.CopyText(label, text), true
+}
+
+func copyURLBtn(m *tele.ReplyMarkup, label, url string) (tele.Btn, bool) {
+	return copyTextBtn(m, label, url)
 }
 
 func appendCopyRow(m *tele.ReplyMarkup, uid int64, hash, playURL, magnet string) []tele.Row {

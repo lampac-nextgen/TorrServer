@@ -11,7 +11,7 @@ Telegram bot for managing [TorrServer](https://github.com/YouROK/TorrServer) —
 
 - Torrent management — add, remove, drop, list via magnet, hash, or `torrs://` (title/category/poster preserved)
 - Categories — movie / tv / music / other on add, `/setcat`, `/list [category]`
-- Streaming — short `/play` and long `/stream` URLs, M3U (optional category filter). File list, `/next`, and `/m3u` copy the short play/playlist URL (Telegram URL buttons would open the in-app browser, which cannot play a stream)
+- Streaming — short `/play` and long `/stream` URLs, M3U (optional category filter). File list copies **Play** (short URL). `/link` copies Hash / Play / Magnet, then **Stream** on a second row when the long URL is ≤256 characters; `/next` copies Play and Stream when it fits. Telegram URL buttons would open the in-app browser, which cannot play a stream.
 - Next unwatched — `/next` picks the next TV episode from filenames and viewed marks
 - Export & import — magnets list; import multiple from text
 - Search — RuTor and Torznab with one-click add
@@ -21,7 +21,7 @@ Telegram bot for managing [TorrServer](https://github.com/YouROK/TorrServer) —
 - FFprobe — media metadata via `/ffp`
 - Localization — Russian and English
 - Deep links — `t.me/<bot>?start=list`, `list_tv`, `next`, `t_<hash8>`, `add`, `search_<query>`
-- Copy buttons — hash, play URL, and magnet on torrent cards and `/link`; Copy play on file rows and `/next`; Copy M3U on playlist messages
+- Copy buttons — Hash / Play / Magnet on torrent cards; `/link` adds Stream on its own row when the long URL fits (otherwise the message shows `copy_too_long`); file rows copy Play only; `/next` copies Play and Stream when it fits; Copy M3U on playlist messages
 - Players — paste the copied `/play` URL into VLC, Infuse, or another player. iOS Infuse/VLC/SenPlayer buttons live in the Mini App (HTTPS `HostWeb`), not as Telegram URL buttons (custom schemes are rejected)
 - Posters — torrent cards send the poster photo when the torrent has an HTTP(S) poster
 - Admin — shutdown, settings, presets (whitelist users only)
@@ -185,7 +185,7 @@ Tools that need a torrent (snake, preload, cache, ffprobe) set a short-lived pic
 | Command | Description |
 | --------- | ------------- |
 | `/shutdown` | Shut down server |
-| `/settings` | Interactive settings (Search, Network, Other including TrackTimecode/LPD, Cache, Paths, Storage) |
+| `/settings` | Interactive settings: one value per line, two buttons per row, localized toggle labels (Search, Network, Other, Cache, Paths, Storage) |
 | `/preset <name>` | Apply named preset: `performance`, `storage`, `streaming`, `low`, `default` |
 | `/preset <key> <value> ...` | Apply key-value pairs: `cache 256`, `preload 50`, `conn 100`, etc. |
 
@@ -222,7 +222,7 @@ Reply to file list with `2-12` to download files 2–12 to Telegram.
 - **Whitelist** — restrict to specific user IDs
 - **Blacklist** — block user IDs
 - **Admin** — when whitelist is used, admin = whitelisted users
-- **Settings** — sensitive values masked in `/settings`
+- **Settings** — sensitive values masked in `/settings`; home uses a 2-column nav and Back to More
 
 ## Dependencies
 

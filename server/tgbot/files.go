@@ -181,7 +181,7 @@ func fileListPlayLine(id int, name, short string) string {
 
 func fileListActionRow(m *tele.ReplyMarkup, uid int64, hash, idStr, fileLabel, shortURL string) tele.Row {
 	btns := []tele.Btn{m.Data(fileLabel, "upload", hash, idStr)}
-	if b, ok := copyTextBtn(m, tr(uid, "btn_copy_play"), shortURL); ok {
+	if b, ok := copyURLBtn(m, tr(uid, "btn_copy_play"), shortURL); ok {
 		btns = append(btns, b)
 	}
 	btns = append(btns, m.Data("⏳", "fpreload", hash, idStr))
