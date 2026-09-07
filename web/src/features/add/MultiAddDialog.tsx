@@ -295,9 +295,6 @@ export default function MultiAddDialog({ files, open, onClose }: MultiAddDialogP
         )}
       </Modal.Body>
       <Modal.Footer className='shrink-0'>
-        <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName}>
-          {t('Cancel')}
-        </Button>
         <Button
           variant='primary'
           onPress={() => void handleSaveAll()}

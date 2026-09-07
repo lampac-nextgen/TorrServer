@@ -524,15 +524,6 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
               {t('SettingsDialog.ResetToDefault')}
             </Button>
             <Button
-              onPress={requestClose}
-              isDisabled={saving}
-              variant='secondary'
-              className={footerButtonClassName}
-              autoFocus
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
               variant='primary'
               onPress={() => void handleSave()}
               isDisabled={loading || saving}

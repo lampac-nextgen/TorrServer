@@ -183,9 +183,6 @@ export default function EditTorrentDialog({ torrent, open, onClose }: EditTorren
         </div>
       </Modal.Body>
       <Modal.Footer className='shrink-0'>
-        <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName}>
-          {t('Cancel')}
-        </Button>
         <Button
           variant='primary'
           onPress={() => void handleSave()}
