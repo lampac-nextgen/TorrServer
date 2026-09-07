@@ -236,11 +236,6 @@ export default function AboutDialog({ open, onClose, onOpenServerStatus, onOpenD
           </ul>
         </div>
       </Modal.Body>
-      <Modal.Footer className='shrink-0'>
-        <Button variant='secondary' onPress={onClose} autoFocus>
-          {t('Close')}
-        </Button>
-      </Modal.Footer>
     </AppDialog>
   )
 }
