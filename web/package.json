@@ -83,7 +83,7 @@
     "vite": "^8.2.2",
     "vite-plugin-node-polyfills": "^0.28.0",
     "vite-plugin-pwa": "^1.3.0",
-    "vitest": "^4.1.11"
+    "vitest": "^5.0.0"
   },
   "description": "TorrServer web client",
   "keywords": [],
