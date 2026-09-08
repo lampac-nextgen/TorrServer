@@ -1,4 +1,4 @@
-import { Button, Link, Modal } from '@heroui/react'
+import { Link, Modal } from '@heroui/react'
 import { Heart, SquareArrowOutUpRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
@@ -42,11 +42,6 @@ export default function DonateDialog({ open, onClose }: DonateDialogProps) {
           ))}
         </ul>
       </Modal.Body>
-      <Modal.Footer className='shrink-0'>
-        <Button variant='secondary' onPress={onClose} autoFocus>
-          {t('Close')}
-        </Button>
-      </Modal.Footer>
     </AppDialog>
   )
 }

@@ -223,10 +223,10 @@ export default function Shell() {
         }}
       >
         <header
-          className={`flex min-w-0 items-center overflow-hidden bg-app-header text-app-header-foreground pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] ${
+          className={`flex min-w-0 items-center overflow-hidden bg-app-header text-app-header-foreground ${
             isShortViewport
-              ? 'gap-1 px-1 pt-[env(safe-area-inset-top,0px)]'
-              : 'gap-2 px-2 pt-[env(safe-area-inset-top,0px)]'
+              ? 'gap-1 pl-[max(0.25rem,env(safe-area-inset-left,0px))] pr-[max(0.25rem,env(safe-area-inset-right,0px))] pt-[env(safe-area-inset-top,0px)]'
+              : 'gap-2 pl-[max(0.5rem,env(safe-area-inset-left,0px))] pr-[max(0.5rem,env(safe-area-inset-right,0px))] pt-[env(safe-area-inset-top,0px)]'
           }`}
           style={{ gridArea: 'header', minHeight: headerHeight }}
         >

@@ -165,11 +165,6 @@ export default function ExportLibraryDialog({ open, onClose, torrents }: ExportL
           </div>
         ) : null}
       </Modal.Body>
-      <Modal.Footer className='shrink-0'>
-        <Button variant='secondary' onPress={onClose}>
-          {t('Close')}
-        </Button>
-      </Modal.Footer>
     </AppDialog>
   )
 }

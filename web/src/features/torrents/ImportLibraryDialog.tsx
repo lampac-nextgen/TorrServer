@@ -226,10 +226,7 @@ export default function ImportLibraryDialog({ open, onClose }: ImportLibraryDial
           </p>
         ) : null}
       </Modal.Body>
-      <Modal.Footer className='shrink-0 gap-2'>
-        <Button variant='secondary' onPress={handleClose} isDisabled={running}>
-          {t('Close')}
-        </Button>
+      <Modal.Footer className='shrink-0'>
         <Button variant='primary' onPress={() => void runImport()} isDisabled={running || !parsed.length}>
           {running ? <Spinner size='sm' color='current' /> : t('ImportLibraryRun')}
         </Button>
