@@ -7,14 +7,13 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"server"
+	"server/log"
+	"server/settings"
 	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
-
-	"server"
-	"server/log"
-	"server/settings"
 )
 
 var (
@@ -41,7 +40,7 @@ func StartServer(port int, dataDir string) string {
 		dataDir, _ = os.Getwd()
 	}
 
-	if err := os.MkdirAll(dataDir, 0755); err != nil {
+	if err := os.MkdirAll(dataDir, 0o755); err != nil {
 		return fmt.Sprintf("failed to create data directory: %v", err)
 	}
 
