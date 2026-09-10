@@ -59,17 +59,16 @@ func SetupRoute(route gin.IRouter) {
 		authorized.GET("/torznab/search/*query", torznabSearch)
 		authorized.GET("/torznab/caps", torznabCaps)
 	}
-
-	// Add storage settings endpoints
+	// Storage settings endpoints
 	authorized.GET("/storage/settings", GetStorageSettings)
 	authorized.POST("/storage/settings", UpdateStorageSettings)
-
-	// Add TMDB settings endpoint
+	// TMDB settings endpoint
 	authorized.GET("/tmdb/settings", tmdbSettings)
-
+	// GStreamer
 	authorized.GET("/gst/settings", GetGStreamerSettings)
 	authorized.POST("/gst/settings", UpdateGStreamerSettings)
-
+	// FFProbe
+	authorized.GET("/ffp/status", ffprobeStatus)
 	authorized.GET("/ffp/:hash/:id", ffp)
 
 	authorized.GET("/runtime/status", runtimeStatus)

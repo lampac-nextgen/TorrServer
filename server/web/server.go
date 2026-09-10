@@ -3,7 +3,6 @@ package web
 import (
 	"net"
 	"net/http"
-	"os"
 	"sort"
 
 	gstreamer "server/gstreamer/bridge"
@@ -52,7 +51,7 @@ var (
 
 // @externalDocs.description	OpenAPI
 // @externalDocs.url			https://swagger.io/resources/open-api/
-func Start() {
+func Start() error {
 	log.TLogln("Start TorrServer " + version.Version + " torrent " + version.GetTorrentVersion())
 	ips := GetLocalIps()
 	if len(ips) > 0 {
@@ -60,8 +59,8 @@ func Start() {
 	}
 	err := BTS.Connect()
 	if err != nil {
-		log.TLogln("BTS.Connect() error!", err) // waitChan <- err
-		os.Exit(1)                              // return
+		log.TLogln("BTS.Connect() error!", err)
+		return err
 	}
 	rutor.Start()
 
@@ -166,6 +165,7 @@ func Start() {
 			}(addr)
 		}
 	}()
+	return nil
 }
 
 func Wait() error {
