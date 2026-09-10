@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"server/ffprobe"
+	"server/library"
 	"server/settings"
 	"server/torr"
 
@@ -15,7 +16,7 @@ import (
 	ffp "gopkg.in/vansante/go-ffprobe.v2"
 )
 
-// TODO: Use internal API for ffp
+// Probe via localhost /play (same as the HTTP /ffp handler). Requires the torrent to be loaded.
 
 func cmdFfp(c tele.Context) error {
 	uid := c.Sender().ID
@@ -45,7 +46,8 @@ func cmdFfp(c tele.Context) error {
 		return c.Send(tr(uid, "torrent_not_found"))
 	}
 
-	link := fmt.Sprintf("http://127.0.0.1:%s/play/%s/%d", settings.Port, hash, id)
+	notifyTyping(c)
+	link := library.ShortPlayURL("http://127.0.0.1:"+settings.Port, hash, id)
 
 	data, err := ffprobe.ProbeUrl(link)
 	if err != nil {

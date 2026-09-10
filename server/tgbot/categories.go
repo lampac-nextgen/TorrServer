@@ -20,19 +20,24 @@ func cmdCategories(c tele.Context) error {
 	for _, t := range torrents {
 		cat := t.Category
 		if cat == "" {
-			cat = tr(uid, "categories_uncategorized")
+			cat = "uncategorized"
 		}
 		catCount[cat]++
 	}
 	var cats []string
-	for c := range catCount {
-		cats = append(cats, c)
+	for k := range catCount {
+		cats = append(cats, k)
 	}
 	sort.Strings(cats)
 	var sb strings.Builder
 	fmt.Fprintf(&sb, "📁 <b>%s</b>\n\n", tr(uid, "categories_title"))
 	for _, cat := range cats {
-		fmt.Fprintf(&sb, "• %s: %d\n", escapeHtml(cat), catCount[cat])
+		fmt.Fprintf(&sb, "• %s: %d\n", escapeHtml(categoryLabel(uid, cat)), catCount[cat])
 	}
-	return c.Send(strings.TrimSuffix(sb.String(), "\n"))
+	sb.WriteString("\n")
+	sb.WriteString(tr(uid, "categories_filter_hint"))
+
+	m := &tele.ReplyMarkup{}
+	m.Inline(listFilterRow(m, uid, "")...)
+	return c.Send(strings.TrimSuffix(sb.String(), "\n"), m, tele.ModeHTML)
 }

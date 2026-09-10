@@ -69,9 +69,6 @@ export default function EditPosterDialog({ torrent, open, onClose }: EditPosterD
         </TextField>
       </Modal.Body>
       <Modal.Footer className='shrink-0'>
-        <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName}>
-          {t('Cancel')}
-        </Button>
         <Button
           variant='primary'
           onPress={() => void handleSave()}

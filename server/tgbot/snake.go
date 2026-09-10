@@ -53,7 +53,14 @@ func cmdSnake(c tele.Context) error {
 	if hash == "" {
 		return c.Send(tr(c.Sender().ID, "snake_usage"))
 	}
+	return startSnake(c, hash, cols, rows)
+}
 
+func startSnakeForHash(c tele.Context, hash string) error {
+	return startSnake(c, hash, 20, 3)
+}
+
+func startSnake(c tele.Context, hash string, cols, rows int) error {
 	t := torr.GetTorrent(hash)
 	if t == nil {
 		return c.Send(tr(c.Sender().ID, "torrent_not_found") + ":\n<code>" + hash + "</code>")
@@ -355,7 +362,7 @@ func snakeRefreshLoop(api tele.API, msg *tele.Message, hash string, uid int64, c
 			txt := formatSnake(uid, st, hash, cols, rows)
 			if _, err := api.Edit(msg, txt, snakeKeyboard(uid, hash, cols, rows, true), tele.ModeHTML); err != nil {
 				errStr := err.Error()
-				if strings.Contains(errStr, "message is not modified") {
+				if isMessageNotModified(err) {
 					continue
 				}
 				if strings.Contains(errStr, "message to edit not found") {

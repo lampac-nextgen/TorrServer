@@ -34,5 +34,8 @@ func clearPendingForUser(uid int64) bool {
 	if clearPendingSearch(uid) {
 		cleared = true
 	}
+	if clearPendingTool(uid) {
+		cleared = true
+	}
 	return cleared
 }

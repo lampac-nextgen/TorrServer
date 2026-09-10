@@ -241,7 +241,7 @@ func refreshStatusLoop(api tele.API, msg *tele.Message, hash string, uid int64) 
 			}
 			if _, err := api.Edit(msg, txt, statusKeyboard(uid, hash, true), tele.ModeHTML); err != nil {
 				errStr := err.Error()
-				if strings.Contains(errStr, "message is not modified") {
+				if isMessageNotModified(err) {
 					continue
 				}
 				if strings.Contains(errStr, "message to edit not found") {

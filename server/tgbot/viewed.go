@@ -63,7 +63,11 @@ func cmdViewed(c tele.Context) error {
 	sb.WriteString("<b>" + tr(c.Sender().ID, "viewed_list") + "</b>\n\n")
 	fmt.Fprintf(&sb, "<code>%s</code>\n\n", hash)
 	for _, v := range list {
-		fmt.Fprintf(&sb, "  #%d\n", v.FileIndex)
+		if sets.BTsets != nil && sets.BTsets.TrackTimecode && v.TimeCode > 0 {
+			fmt.Fprintf(&sb, "  #%d · %.0fs\n", v.FileIndex, v.TimeCode)
+		} else {
+			fmt.Fprintf(&sb, "  #%d\n", v.FileIndex)
+		}
 	}
 	return c.Send(sb.String())
 }

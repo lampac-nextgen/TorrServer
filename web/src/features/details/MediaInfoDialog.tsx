@@ -1,4 +1,4 @@
-import { Button, Modal, Spinner } from '@heroui/react'
+import { Modal, Spinner } from '@heroui/react'
 import { AudioLines, Captions, Clapperboard, FileVideo, Layers } from 'lucide-react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -271,11 +271,6 @@ export default function MediaInfoDialog({ open, onClose, hash, fileId, fileName 
           </div>
         ) : null}
       </Modal.Body>
-      <Modal.Footer className='shrink-0'>
-        <Button variant='secondary' onPress={onClose} autoFocus>
-          {t('Close')}
-        </Button>
-      </Modal.Footer>
     </AppDialog>
   )
 }

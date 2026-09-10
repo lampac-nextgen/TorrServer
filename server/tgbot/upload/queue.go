@@ -77,7 +77,7 @@ func updateLoadStatus(wrk *Worker, file *TorrFile, fi, fc int) {
 	if wrk.isCancelled {
 		_, _ = wrk.c.Bot().Edit(wrk.msg, tr(wrk.c.Sender().ID, "upload_stopping"))
 	} else {
-		_ = wrk.c.Send(tele.UploadingVideo)
+		_ = wrk.c.Send(tele.UploadingDocument)
 		if ti.DownloadSpeed == 0 {
 			ti.DownloadSpeed = 1.0
 		}

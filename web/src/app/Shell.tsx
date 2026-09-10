@@ -1,7 +1,20 @@
 import { lazy, type ReactNode, Suspense, useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
 import { Button, Dropdown, Spinner, Tooltip, useMediaQuery } from '@heroui/react'
-import { Check, ChevronLeft, Menu, Moon, Palette, SortAsc, SortDesc, Sun, SunMoon, X } from 'lucide-react'
+import {
+  Check,
+  ChevronLeft,
+  Ellipsis,
+  Menu,
+  Moon,
+  Palette,
+  SortAsc,
+  SortDesc,
+  Sun,
+  SunMoon,
+  X,
+  type LucideIcon,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { echoHost } from 'shared/api/hosts'
 import { SUPPORTED_LANGS } from 'shared/i18n'
@@ -10,6 +23,11 @@ import useLaunchHandler from 'shared/lib/useLaunchHandler'
 import { detectApplePlatform, isStandaloneApp } from 'shared/lib/platform'
 import { useLocalJsonPref } from 'shared/hooks/useLocalPref'
 import { useTorrentsQuery } from 'shared/hooks/useTorrentsQuery'
+import {
+  requestDownloadAllPlaylists,
+  requestOpenExportLibrary,
+  requestOpenImportLibrary,
+} from 'shared/lib/libraryEvents'
 import { OPEN_SETTINGS_EVENT, type SettingsDeepLinkTab } from 'shared/lib/settingsEvents'
 import { getStoredCredentials, logoutBasicAuth } from 'shared/api/authCredentials'
 import { MEDIA_SHORT_VIEWPORT, queryMax } from 'shared/theme/breakpoints'
@@ -22,6 +40,7 @@ import { iconMenu, iconNav, iconNavMobile } from 'shared/ui/iconProps'
 import DialogErrorBoundary from 'shared/ui/DialogErrorBoundary'
 
 import BottomNav from './BottomNav'
+import { LibraryHeaderSlotHost, LibraryHeaderSlotProvider } from './LibraryHeaderSlot'
 import Sidebar from './Sidebar'
 
 const CommandPalette = lazy(() => import('./CommandPalette'))
@@ -65,7 +84,7 @@ const HEADER_HEIGHT_SHORT = 'calc(44px + env(safe-area-inset-top, 0px))'
 
 /**
  * App chrome: sidebar / bottom nav, library host, and lazy-loaded dialogs.
- * Owns offline echo probe, theme/language toggles, and settings deep-link events.
+ * Owns theme/language toggles, echo version, and settings deep-link events.
  */
 export default function Shell() {
   const { t } = useTranslation()
@@ -77,9 +96,9 @@ export default function Shell() {
   const { launchSource, setLaunchSource, launchFiles, setLaunchFiles } = useLaunchHandler()
   const [sidebarOpen, setSidebarOpen] = useLocalJsonPref('sidebarOpen', true)
 
-  const [torrServerVersion, setTorrServerVersion] = useState('')
   const [sortABC, setSortABC] = useLocalJsonPref('sortABC', false)
   const [globalCategoryFilter, setGlobalCategoryFilter] = useLocalJsonPref('categoryFilter', 'all')
+  const [torrServerVersion, setTorrServerVersion] = useState('')
 
   const [addOpen, setAddOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -96,6 +115,7 @@ export default function Shell() {
   const { isLoading, isError } = useTorrentsQuery()
   const isOffline = isError
   const sidebarWidth = sidebarOpen ? SIDEBAR_OPEN_PX : SIDEBAR_COLLAPSED_PX
+  const shortVersion = torrServerVersion.includes('-') ? torrServerVersion.split('-')[0] : torrServerVersion
 
   useEffect(() => {
     axios
@@ -164,6 +184,9 @@ export default function Shell() {
     onServerStatus: () => setServerStatusOpen(true),
     onCloseServer: () => setCloseServerOpen(true),
     onRemoveAll: () => setRemoveAllOpen(true),
+    onImportLibrary: requestOpenImportLibrary,
+    onExportLibrary: requestOpenExportLibrary,
+    onDownloadAllPlaylists: requestDownloadAllPlaylists,
     ...(getStoredCredentials() ? { onLogout: () => logoutBasicAuth() } : {}),
   }
 
@@ -184,196 +207,216 @@ export default function Shell() {
   )
   const SortIcon = sortABC ? SortAsc : SortDesc
   const headerHeight = isShortViewport ? HEADER_HEIGHT_SHORT : HEADER_HEIGHT
+  const headerTriggerClass = `${iconBtn} text-app-header-foreground hover-fine:bg-white/10`
 
   return (
-    <div
-      className='grid min-h-0 w-full overflow-hidden bg-background'
-      style={{
-        height: '100%',
-        minHeight: 0,
-        gridTemplateRows: isMobile ? `${headerHeight} minmax(0, 1fr) auto` : `${headerHeight} minmax(0, 1fr)`,
-        gridTemplateColumns: isMobile ? '1fr' : `${sidebarWidth}px 1fr`,
-        gridTemplateAreas: isMobile ? '"header" "content" "nav"' : '"header header" "sidebar content"',
-        transition: 'grid-template-columns 200ms ease',
-      }}
-    >
-      <header
-        className={`flex items-center bg-app-header text-app-header-foreground pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] ${
-          isShortViewport
-            ? 'gap-1 px-1 pt-[env(safe-area-inset-top,0px)]'
-            : 'gap-2 px-2 pt-[env(safe-area-inset-top,0px)]'
-        }`}
-        style={{ gridArea: 'header', minHeight: headerHeight }}
+    <LibraryHeaderSlotProvider>
+      <div
+        className='grid min-h-0 min-w-0 w-full overflow-hidden bg-background'
+        style={{
+          height: '100%',
+          minHeight: 0,
+          gridTemplateRows: isMobile ? `${headerHeight} minmax(0, 1fr) auto` : `${headerHeight} minmax(0, 1fr)`,
+          gridTemplateColumns: isMobile ? 'minmax(0, 1fr)' : `${sidebarWidth}px minmax(0, 1fr)`,
+          gridTemplateAreas: isMobile ? '"header" "content" "nav"' : '"header header" "sidebar content"',
+          transition: 'grid-template-columns 200ms ease',
+        }}
       >
-        {!isMobile ? (
-          <HeaderIconButton
-            label={sidebarOpen ? t('CollapseSidebar') : t('ExpandSidebar')}
-            onPress={() => setSidebarOpen(!sidebarOpen)}
-          >
-            {sidebarOpen ? <ChevronLeft {...iconNavMobile} /> : <Menu {...iconNavMobile} />}
-          </HeaderIconButton>
-        ) : null}
-
-        <h1
-          className={`flex min-w-0 flex-1 items-center gap-2 truncate font-semibold ${isShortViewport ? 'text-base' : 'text-lg'}`}
-          title={torrServerVersion ? `TorrServer ${torrServerVersion}` : 'TorrServer'}
+        <header
+          className={`flex min-w-0 items-center overflow-hidden bg-app-header text-app-header-foreground ${
+            isShortViewport
+              ? 'gap-1 pl-[max(0.25rem,env(safe-area-inset-left,0px))] pr-[max(0.25rem,env(safe-area-inset-right,0px))] pt-[env(safe-area-inset-top,0px)]'
+              : 'gap-2 pl-[max(0.5rem,env(safe-area-inset-left,0px))] pr-[max(0.5rem,env(safe-area-inset-right,0px))] pt-[env(safe-area-inset-top,0px)]'
+          }`}
+          style={{ gridArea: 'header', minHeight: headerHeight }}
         >
-          <span className='truncate'>
-            TorrServer
-            {!isMobile && torrServerVersion ? (
-              <span className='font-normal text-app-header-foreground/70'>
-                {' '}
-                {torrServerVersion.includes('-') ? torrServerVersion.split('-')[0] : torrServerVersion}
-              </span>
-            ) : null}
-          </span>
+          {!isMobile ? (
+            <HeaderIconButton
+              label={sidebarOpen ? t('CollapseSidebar') : t('ExpandSidebar')}
+              onPress={() => setSidebarOpen(!sidebarOpen)}
+            >
+              {sidebarOpen ? <ChevronLeft {...iconNavMobile} /> : <Menu {...iconNavMobile} />}
+            </HeaderIconButton>
+          ) : null}
+
+          {shortVersion && !isMobile ? (
+            <span
+              className='max-w-[5.5rem] shrink-0 truncate text-[11px] font-medium tabular-nums text-app-header-foreground/80 sm:max-w-[8rem] sm:text-xs'
+              title={torrServerVersion}
+            >
+              {shortVersion}
+            </span>
+          ) : null}
+
           {categoryFilterLabel ? (
             <button
               type='button'
               onClick={() => setGlobalCategoryFilter('all')}
-              className='inline-flex min-h-11 shrink-0 items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium hover-fine:bg-white/25'
+              className='inline-flex min-h-11 max-w-[7rem] shrink-0 items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium hover-fine:bg-white/25 sm:max-w-[9rem]'
               aria-label={t('ClearCategoryFilter')}
             >
-              <span className='max-w-[9rem] truncate'>{categoryFilterLabel}</span>
+              <span className='truncate'>{categoryFilterLabel}</span>
               <X size={13} strokeWidth={1.75} aria-hidden />
             </button>
           ) : null}
-        </h1>
 
-        <HeaderIconButton label={sortABC ? t('SortByDate') : t('SortByName')} onPress={() => setSortABC(!sortABC)}>
-          <SortIcon {...iconNav} />
-        </HeaderIconButton>
+          <LibraryHeaderSlotHost className='flex min-w-0 flex-1 items-center gap-1 sm:gap-1.5' />
 
-        <HeaderIconButton label={`${t('Theme')}: ${themeModeLabel}`} onPress={cycleTheme}>
-          <ThemeIcon {...iconNav} />
-        </HeaderIconButton>
+          <HeaderIconButton label={sortABC ? t('SortByDate') : t('SortByName')} onPress={() => setSortABC(!sortABC)}>
+            <SortIcon {...iconNav} />
+          </HeaderIconButton>
 
-        <PaletteMenu current={palette} label={t('ThemePalette')} onChange={setPalette} labels={paletteLabels} />
+          {isMobile ? (
+            <AppearanceOverflowMenu
+              themeModeLabel={themeModeLabel}
+              ThemeIcon={ThemeIcon}
+              cycleTheme={cycleTheme}
+              palette={palette}
+              paletteLabels={paletteLabels}
+              setPalette={setPalette}
+              currentLang={LANG_CYCLE.includes(currentLang as (typeof LANG_CYCLE)[number]) ? currentLang : 'en'}
+              changeLang={changeLang}
+            />
+          ) : (
+            <>
+              <HeaderIconButton label={`${t('Theme')}: ${themeModeLabel}`} onPress={cycleTheme}>
+                <ThemeIcon {...iconNav} />
+              </HeaderIconButton>
+              <PaletteMenu
+                current={palette}
+                label={t('ThemePalette')}
+                onChange={setPalette}
+                labels={paletteLabels}
+                triggerClassName={headerTriggerClass}
+              />
+              <LanguageMenu
+                currentLang={LANG_CYCLE.includes(currentLang as (typeof LANG_CYCLE)[number]) ? currentLang : 'en'}
+                label={t('Language')}
+                onChange={changeLang}
+                triggerClassName={headerTriggerClass}
+              />
+            </>
+          )}
+        </header>
 
-        <LanguageMenu
-          currentLang={LANG_CYCLE.includes(currentLang as (typeof LANG_CYCLE)[number]) ? currentLang : 'en'}
-          label={t('Language')}
-          onChange={changeLang}
-        />
-      </header>
-
-      {!isMobile ? (
-        <aside
-          className='flex h-full min-h-0 flex-col overflow-hidden'
-          style={{ gridArea: 'sidebar', width: sidebarWidth, transition: 'width 200ms ease' }}
-        >
-          <Sidebar {...navProps} collapsed={!sidebarOpen} />
-        </aside>
-      ) : null}
-
-      <main
-        className='min-h-0 min-w-0 overflow-auto overscroll-y-contain bg-background [-webkit-overflow-scrolling:touch]'
-        style={{ gridArea: 'content' }}
-      >
-        <TorrentsPage
-          sortABC={sortABC}
-          sortCategory={globalCategoryFilter}
-          onAdd={() => setAddOpen(true)}
-          onClearCategory={() => setGlobalCategoryFilter('all')}
-        />
-      </main>
-
-      {isMobile ? (
-        <div className='min-h-0 shrink-0' style={{ gridArea: 'nav' }}>
-          <BottomNav {...navProps} />
-        </div>
-      ) : null}
-
-      <Suspense fallback={lazyDialogFallback}>
-        <DialogErrorBoundary onClose={closeAdd}>
-          <AddDialog open={addOpen && !launchFiles} onClose={closeAdd} initialSource={launchSource} />
-        </DialogErrorBoundary>
-        {launchFiles ? (
-          <DialogErrorBoundary
-            onClose={() => {
-              setLaunchFiles(null)
-              setAddOpen(false)
-            }}
+        {!isMobile ? (
+          <aside
+            className='flex h-full min-h-0 flex-col overflow-hidden'
+            style={{ gridArea: 'sidebar', width: sidebarWidth, transition: 'width 200ms ease' }}
           >
-            <MultiAddDialog
-              files={launchFiles}
-              open
+            <Sidebar {...navProps} collapsed={!sidebarOpen} />
+          </aside>
+        ) : null}
+
+        <main
+          className='min-h-0 min-w-0 overflow-auto overscroll-y-contain bg-background [-webkit-overflow-scrolling:touch]'
+          style={{ gridArea: 'content' }}
+        >
+          <TorrentsPage
+            sortABC={sortABC}
+            sortCategory={globalCategoryFilter}
+            onAdd={() => setAddOpen(true)}
+            onClearCategory={() => setGlobalCategoryFilter('all')}
+          />
+        </main>
+
+        {isMobile ? (
+          <div className='min-h-0 min-w-0 w-full shrink-0' style={{ gridArea: 'nav' }}>
+            <BottomNav {...navProps} />
+          </div>
+        ) : null}
+
+        <Suspense fallback={lazyDialogFallback}>
+          <DialogErrorBoundary onClose={closeAdd}>
+            <AddDialog open={addOpen && !launchFiles} onClose={closeAdd} initialSource={launchSource} />
+          </DialogErrorBoundary>
+          {launchFiles ? (
+            <DialogErrorBoundary
               onClose={() => {
                 setLaunchFiles(null)
                 setAddOpen(false)
               }}
-            />
+            >
+              <MultiAddDialog
+                files={launchFiles}
+                open
+                onClose={() => {
+                  setLaunchFiles(null)
+                  setAddOpen(false)
+                }}
+              />
+            </DialogErrorBoundary>
+          ) : null}
+          <DialogErrorBoundary onClose={() => setSearchOpen(false)}>
+            <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
           </DialogErrorBoundary>
-        ) : null}
-        <DialogErrorBoundary onClose={() => setSearchOpen(false)}>
-          <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
-        </DialogErrorBoundary>
-        <DialogErrorBoundary
-          onClose={() => {
-            setSettingsOpen(false)
-            setSettingsInitialTab(undefined)
-          }}
-        >
-          <SettingsDialog
-            open={settingsOpen}
+          <DialogErrorBoundary
             onClose={() => {
               setSettingsOpen(false)
               setSettingsInitialTab(undefined)
             }}
-            initialTab={settingsInitialTab}
-          />
-        </DialogErrorBoundary>
-        <DialogErrorBoundary onClose={() => setAboutOpen(false)}>
-          <AboutDialog
-            open={aboutOpen}
-            onClose={() => setAboutOpen(false)}
-            onOpenServerStatus={() => setServerStatusOpen(true)}
-            onOpenDonate={() => setDonateOpen(true)}
-          />
-        </DialogErrorBoundary>
-        <DialogErrorBoundary onClose={() => setDonateOpen(false)}>
-          <DonateDialog open={donateOpen} onClose={() => setDonateOpen(false)} />
-        </DialogErrorBoundary>
-        <DialogErrorBoundary onClose={() => setCloseServerOpen(false)}>
-          <CloseServerDialog open={closeServerOpen} onClose={() => setCloseServerOpen(false)} />
-        </DialogErrorBoundary>
-        <DialogErrorBoundary onClose={() => setRemoveAllOpen(false)}>
-          <RemoveAllDialog open={removeAllOpen} onClose={() => setRemoveAllOpen(false)} />
-        </DialogErrorBoundary>
-        <DialogErrorBoundary onClose={() => setServerStatusOpen(false)}>
-          <ServerStatusDialog open={serverStatusOpen} onClose={() => setServerStatusOpen(false)} />
-        </DialogErrorBoundary>
-        <DialogErrorBoundary onClose={() => setCommandPaletteOpen(false)}>
-          {commandPaletteOpen ? (
-            <CommandPalette
-              key='cmdk'
-              open
-              onClose={() => setCommandPaletteOpen(false)}
-              onAdd={() => setAddOpen(true)}
-              onSearch={() => setSearchOpen(true)}
-              onAbout={() => setAboutOpen(true)}
-              onDonate={() => setDonateOpen(true)}
-              onServerStatus={() => setServerStatusOpen(true)}
-              onToggleTheme={cycleTheme}
+          >
+            <SettingsDialog
+              open={settingsOpen}
+              onClose={() => {
+                setSettingsOpen(false)
+                setSettingsInitialTab(undefined)
+              }}
+              initialTab={settingsInitialTab}
             />
+          </DialogErrorBoundary>
+          <DialogErrorBoundary onClose={() => setAboutOpen(false)}>
+            <AboutDialog
+              open={aboutOpen}
+              onClose={() => setAboutOpen(false)}
+              onOpenServerStatus={() => setServerStatusOpen(true)}
+              onOpenDonate={() => setDonateOpen(true)}
+            />
+          </DialogErrorBoundary>
+          <DialogErrorBoundary onClose={() => setDonateOpen(false)}>
+            <DonateDialog open={donateOpen} onClose={() => setDonateOpen(false)} />
+          </DialogErrorBoundary>
+          <DialogErrorBoundary onClose={() => setCloseServerOpen(false)}>
+            <CloseServerDialog open={closeServerOpen} onClose={() => setCloseServerOpen(false)} />
+          </DialogErrorBoundary>
+          <DialogErrorBoundary onClose={() => setRemoveAllOpen(false)}>
+            <RemoveAllDialog open={removeAllOpen} onClose={() => setRemoveAllOpen(false)} />
+          </DialogErrorBoundary>
+          <DialogErrorBoundary onClose={() => setServerStatusOpen(false)}>
+            <ServerStatusDialog open={serverStatusOpen} onClose={() => setServerStatusOpen(false)} />
+          </DialogErrorBoundary>
+          <DialogErrorBoundary onClose={() => setCommandPaletteOpen(false)}>
+            {commandPaletteOpen ? (
+              <CommandPalette
+                key='cmdk'
+                open
+                onClose={() => setCommandPaletteOpen(false)}
+                onAdd={() => setAddOpen(true)}
+                onSearch={() => setSearchOpen(true)}
+                onAbout={() => setAboutOpen(true)}
+                onDonate={() => setDonateOpen(true)}
+                onServerStatus={() => setServerStatusOpen(true)}
+                onToggleTheme={cycleTheme}
+              />
+            ) : null}
+          </DialogErrorBoundary>
+          <DialogErrorBoundary onClose={() => setCategoriesOpen(false)}>
+            <CategoriesDrawer
+              open={categoriesOpen}
+              onClose={() => setCategoriesOpen(false)}
+              selectedCategory={globalCategoryFilter}
+              onSelectCategory={setGlobalCategoryFilter}
+            />
+          </DialogErrorBoundary>
+          {detectApplePlatform().isIOS && !isStandaloneApp ? <PWAInstallationGuide /> : null}
+          {!detectApplePlatform().isIOS && !isStandaloneApp ? <AndroidInstallBanner /> : null}
+          {/* Hide donate while iOS install guide is showing — both compete for the bottom band. */}
+          {!(detectApplePlatform().isIOS && !isStandaloneApp) ? (
+            <DonateSnackbar onSupport={() => setDonateOpen(true)} />
           ) : null}
-        </DialogErrorBoundary>
-        <DialogErrorBoundary onClose={() => setCategoriesOpen(false)}>
-          <CategoriesDrawer
-            open={categoriesOpen}
-            onClose={() => setCategoriesOpen(false)}
-            selectedCategory={globalCategoryFilter}
-            onSelectCategory={setGlobalCategoryFilter}
-          />
-        </DialogErrorBoundary>
-        {detectApplePlatform().isIOS && !isStandaloneApp ? <PWAInstallationGuide /> : null}
-        {!detectApplePlatform().isIOS && !isStandaloneApp ? <AndroidInstallBanner /> : null}
-        {/* Hide donate while iOS install guide is showing — both compete for the bottom band. */}
-        {!(detectApplePlatform().isIOS && !isStandaloneApp) ? (
-          <DonateSnackbar onSupport={() => setDonateOpen(true)} />
-        ) : null}
-      </Suspense>
-    </div>
+        </Suspense>
+      </div>
+    </LibraryHeaderSlotProvider>
   )
 }
 
@@ -382,11 +425,13 @@ function PaletteMenu({
   label,
   onChange,
   labels,
+  triggerClassName,
 }: {
   current: ThemePalette
   label: string
   onChange: (palette: ThemePalette) => void
   labels: Record<ThemePalette, string>
+  triggerClassName?: string
 }) {
   return (
     <Dropdown>
@@ -394,7 +439,7 @@ function PaletteMenu({
         <Button
           variant='ghost'
           isIconOnly
-          className={`${iconBtn} text-app-header-foreground hover-fine:bg-white/10`}
+          className={triggerClassName ?? iconBtn}
           aria-label={`${label}: ${labels[current]}`}
         >
           <span className='inline-flex size-full items-center justify-center [&>svg]:m-0 [&>svg]:block'>
@@ -435,10 +480,12 @@ function LanguageMenu({
   currentLang,
   label,
   onChange,
+  triggerClassName,
 }: {
   currentLang: string
   label: string
   onChange: (lang: string) => void
+  triggerClassName?: string
 }) {
   const current = LANG_OPTIONS.find(option => option.id === currentLang) ?? LANG_OPTIONS[0]
 
@@ -447,7 +494,7 @@ function LanguageMenu({
       <Dropdown.Trigger>
         <Button
           variant='ghost'
-          className={`${iconBtn} text-xs font-semibold tracking-wide text-app-header-foreground hover-fine:bg-white/10`}
+          className={triggerClassName ?? `${iconBtn} text-xs font-semibold tracking-wide`}
           aria-label={label}
         >
           {current.code}
@@ -475,6 +522,61 @@ function LanguageMenu({
             )
           })}
         </Dropdown.Menu>
+      </Dropdown.Popover>
+    </Dropdown>
+  )
+}
+
+function AppearanceOverflowMenu({
+  themeModeLabel,
+  ThemeIcon,
+  cycleTheme,
+  palette,
+  paletteLabels,
+  setPalette,
+  currentLang,
+  changeLang,
+}: {
+  themeModeLabel: string
+  ThemeIcon: LucideIcon
+  cycleTheme: () => void
+  palette: ThemePalette
+  paletteLabels: Record<ThemePalette, string>
+  setPalette: (palette: ThemePalette) => void
+  currentLang: string
+  changeLang: (lang: string) => void
+}) {
+  const { t } = useTranslation()
+
+  return (
+    <Dropdown>
+      <Dropdown.Trigger>
+        <Button
+          variant='ghost'
+          isIconOnly
+          className={`${iconBtn} text-app-header-foreground hover-fine:bg-white/10`}
+          aria-label={t('nav.More')}
+        >
+          <span className='inline-flex size-full items-center justify-center [&>svg]:m-0 [&>svg]:block'>
+            <Ellipsis {...iconNav} aria-hidden />
+          </span>
+        </Button>
+      </Dropdown.Trigger>
+      <Dropdown.Popover placement='bottom end' className='min-w-[14rem] p-2'>
+        <div className='flex flex-col gap-1'>
+          <Button variant='ghost' className='min-h-11 justify-start gap-2' onPress={cycleTheme}>
+            <ThemeIcon {...iconMenu} aria-hidden />
+            {t('Theme')}: {themeModeLabel}
+          </Button>
+          <div className='flex items-center justify-between gap-2 px-1 py-1'>
+            <span className='text-sm'>{t('ThemePalette')}</span>
+            <PaletteMenu current={palette} label={t('ThemePalette')} onChange={setPalette} labels={paletteLabels} />
+          </div>
+          <div className='flex items-center justify-between gap-2 px-1 py-1'>
+            <span className='text-sm'>{t('Language')}</span>
+            <LanguageMenu currentLang={currentLang} label={t('Language')} onChange={changeLang} />
+          </div>
+        </div>
       </Dropdown.Popover>
     </Dropdown>
   )

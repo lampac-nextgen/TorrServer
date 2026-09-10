@@ -41,7 +41,11 @@ func AddTorrentDB(torr *Torrent) {
 		t.Size = torr.Torrent.Length()
 	}
 	// don't override timestamp from DB on edit
-	t.Timestamp = torr.Timestamp // time.Now().Unix()
+	if existing := GetTorrentDB(torr.Hash()); existing != nil && existing.Timestamp != 0 {
+		t.Timestamp = existing.Timestamp
+	} else {
+		t.Timestamp = torr.Timestamp
+	}
 
 	settings.AddTorrent(t)
 }

@@ -10,6 +10,35 @@ import (
 	tele "gopkg.in/telebot.v4"
 )
 
+func isHashPrefix(s string) bool {
+	if len(s) < 4 || len(s) > 40 {
+		return false
+	}
+	for _, c := range strings.ToLower(s) {
+		switch c {
+		case 'a', 'b', 'c', 'd', 'e', 'f', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+		default:
+			return false
+		}
+	}
+	return true
+}
+
+func torrentsByHashPrefix(prefix string) []string {
+	prefix = strings.ToLower(strings.TrimSpace(prefix))
+	if !isHashPrefix(prefix) {
+		return nil
+	}
+	var out []string
+	for _, t := range torr.ListTorrent() {
+		h := strings.ToLower(t.Hash().HexString())
+		if strings.HasPrefix(h, prefix) {
+			out = append(out, h)
+		}
+	}
+	return out
+}
+
 // resolveHash returns hash from: 1) full hash string, 2) numeric index from list, 3) reply-to message
 func resolveHash(c tele.Context, arg string) string {
 	arg = strings.TrimSpace(arg)

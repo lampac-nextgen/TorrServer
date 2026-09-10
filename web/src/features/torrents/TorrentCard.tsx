@@ -1,8 +1,9 @@
 import { useRef, useState, type ReactNode } from 'react'
 import { Chip, useMediaQuery } from '@heroui/react'
-import { ArrowDown, HardDrive, ImageOff, Users } from 'lucide-react'
+import { ArrowDown, HardDrive, ImageOff, Play, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
+import type { ContinueWatchEntry } from 'shared/lib/continueWatching'
 import { humanizeSize, humanizeSpeed } from 'shared/lib/format'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import { GETTING_INFO, PRELOAD, WORKING } from 'shared/torrent/states'
@@ -16,6 +17,8 @@ export interface TorrentCardProps {
   selectionMode?: boolean
   selected?: boolean
   onToggleSelect?: (hash: string) => void
+  resumeEntry?: ContinueWatchEntry
+  onResume?: () => void
 }
 
 type ChipColor = 'default' | 'success' | 'warning' | 'accent'
@@ -53,6 +56,8 @@ export default function TorrentCard({
   selectionMode = false,
   selected = false,
   onToggleSelect,
+  resumeEntry,
+  onResume,
 }: TorrentCardProps) {
   const { t } = useTranslation()
   const cardRef = useRef<HTMLElement>(null)
@@ -156,6 +161,22 @@ export default function TorrentCard({
             </Chip>
           ) : null}
         </div>
+
+        {resumeEntry && !selectionMode && onResume ? (
+          <button
+            type='button'
+            className={`absolute left-2 z-20 inline-flex min-h-8 max-w-[calc(100%-1rem)] items-center gap-1 rounded-full bg-black/70 px-2.5 py-1 text-xs font-medium text-white hover-fine:bg-black/85 ${
+              hoverFine ? 'bottom-2' : 'bottom-14'
+            }`}
+            onClick={event => {
+              event.stopPropagation()
+              onResume()
+            }}
+          >
+            <Play size={12} strokeWidth={2} fill='currentColor' aria-hidden />
+            <span className='truncate'>{t('Continue')}</span>
+          </button>
+        ) : null}
 
         {!selectionMode ? (
           <div

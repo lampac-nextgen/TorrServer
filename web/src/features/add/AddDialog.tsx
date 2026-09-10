@@ -353,9 +353,6 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
         </div>
       </Modal.Body>
       <Modal.Footer className='shrink-0'>
-        <Button onPress={onClose} isDisabled={saving} variant='secondary' className={footerButtonClassName}>
-          {t('Cancel')}
-        </Button>
         <Button
           variant='primary'
           onPress={() => void handleAdd()}

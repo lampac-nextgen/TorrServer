@@ -132,8 +132,9 @@ func callbackSearchAdd(c tele.Context, indexStr string) error {
 		return c.Respond(&tele.CallbackResponse{Text: tr(uid, "search_no_link")})
 	}
 	_ = c.Respond(&tele.CallbackResponse{Text: tr(uid, "search_adding")})
-	if err := addTorrent(c, link); err != nil {
+	tor, err := addTorrent(c, link)
+	if err != nil {
 		return c.Send(fmt.Sprintf(tr(uid, "add_error"), err.Error()))
 	}
-	return list(c)
+	return afterAdd(c, tor)
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"server/library"
 	"server/torr"
 
 	tele "gopkg.in/telebot.v4"
@@ -18,7 +19,7 @@ func callbackM3u(c tele.Context, hash string) error {
 	host := getHost()
 	url := fmt.Sprintf("%s/playlist?hash=%s", host, hash)
 	_ = c.Respond(&tele.CallbackResponse{})
-	return c.Send(fmt.Sprintf(tr(uid, "m3u_playlist"), url))
+	return sendPlaylistMessage(c, uid, tr(uid, "m3u_playlist"), url)
 }
 
 func cmdM3u(c tele.Context) error {
@@ -42,11 +43,36 @@ func cmdM3u(c tele.Context) error {
 	if len(args) > 1 && strings.ToLower(args[1]) == "fromlast" {
 		url += "&fromlast=1"
 	}
-	return c.Send(fmt.Sprintf(tr(c.Sender().ID, "m3u_playlist"), url))
+	return sendPlaylistMessage(c, c.Sender().ID, tr(c.Sender().ID, "m3u_playlist"), url)
 }
 
 func cmdM3uAll(c tele.Context) error {
+	cat := ""
+	if args := c.Args(); len(args) > 0 {
+		cat = library.NormalizeCategory(args[0])
+		if cat == "all" {
+			cat = ""
+		}
+	}
 	host := getHost()
-	url := host + "/playlistall/all.m3u"
-	return c.Send(fmt.Sprintf(tr(c.Sender().ID, "m3u_all"), url))
+	url := library.PlaylistAllURL(host, cat)
+	uid := c.Sender().ID
+	return sendPlaylistMessage(c, uid, tr(uid, "m3u_all"), url)
+}
+
+func sendPlaylistMessage(c tele.Context, uid int64, template, url string) error {
+	msg := fmt.Sprintf(template, url)
+	if kbd := playlistCopyMarkup(uid, url); kbd != nil {
+		return c.Send(msg, kbd, tele.ModeHTML, tele.NoPreview)
+	}
+	return c.Send(msg, tele.ModeHTML, tele.NoPreview)
+}
+
+func playlistCopyMarkup(uid int64, url string) *tele.ReplyMarkup {
+	m := &tele.ReplyMarkup{}
+	if b, ok := copyTextBtn(m, tr(uid, "btn_copy_m3u"), url); ok {
+		m.Inline(m.Row(b))
+		return m
+	}
+	return nil
 }
