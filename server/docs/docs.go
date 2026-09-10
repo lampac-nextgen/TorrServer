@@ -108,6 +108,31 @@ const docTemplate = `{
                 }
             }
         },
+        "/ffp/status": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Reports whether the ffprobe binary is available. Features that need real\nmedia duration (e.g. saving playback position) are only usable when true.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "API"
+                ],
+                "summary": "ffprobe availability",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.ffprobeStatusResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/ffp/{hash}/{id}": {
             "get": {
                 "security": [
@@ -1455,6 +1480,14 @@ const docTemplate = `{
                 },
                 "hash": {
                     "type": "string"
+                }
+            }
+        },
+        "api.ffprobeStatusResponse": {
+            "type": "object",
+            "properties": {
+                "available": {
+                    "type": "boolean"
                 }
             }
         },
