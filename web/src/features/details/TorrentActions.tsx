@@ -338,9 +338,9 @@ function TorrentActions({
         <Drawer.Root state={moreState}>
           <Drawer.Backdrop isDismissable>
             <Drawer.Content placement='bottom'>
-              <Drawer.Dialog className='ts-sheet-drawer' aria-label={t('Info')}>
+              <Drawer.Dialog className='ts-sheet-drawer' aria-label={t('Actions')}>
                 <Drawer.Header>
-                  <Drawer.Heading>{t('Info')}</Drawer.Heading>
+                  <Drawer.Heading>{t('Actions')}</Drawer.Heading>
                   <Drawer.CloseTrigger className='min-h-11 min-w-11' aria-label={t('Close')} />
                 </Drawer.Header>
                 <Drawer.Body className='flex flex-col gap-0.5 px-0 pt-1'>
@@ -355,9 +355,9 @@ function TorrentActions({
                   {sheetAction(t('CopyMagnet'), <Magnet {...iconMenu} aria-hidden />, () => void copyMagnetLink())}
                   {sheetAction(t('CopyHash'), <Hash {...iconMenu} aria-hidden />, () => void copyInfoHash())}
                   {sheetAction(t('CopyTorrs'), <Share2 {...iconMenu} aria-hidden />, () => void copyTorrsLink())}
-                  {sheetAction(t('DownloadAllPlaylists'), <ListMusic {...iconMenu} aria-hidden />, () =>
+                  {/* {sheetAction(t('DownloadAllPlaylists'), <ListMusic {...iconMenu} aria-hidden />, () =>
                     window.open(playlistAllUrl({ category: undefined }), '_blank'),
-                  )}
+                  )} */}
                   {sheetAction(t('RemoveViews'), <EyeOff {...iconMenu} aria-hidden />, () =>
                     setPendingConfirm('clearViews'),
                   )}
@@ -448,7 +448,7 @@ function TorrentActions({
       ) : null}
 
       <div>
-        <p className='mb-2 text-sm font-semibold text-muted'>{t('Info')}</p>
+        <p className='mb-2 text-sm font-semibold text-muted'>{t('Actions')}</p>
         <div className='flex w-full flex-wrap items-stretch gap-2'>
           {isSingleFileTorrent || !viewedFileList?.length ? (
             <Button
@@ -474,14 +474,14 @@ function TorrentActions({
               <span className='truncate'>{t('CopyTorrs')}</span>
             </Button>
           </ButtonGroup>
-          <Button
+          {/* <Button
             variant='tertiary'
             className='min-h-11 min-w-0 flex-1'
             onPress={() => window.open(playlistAllUrl({ category: undefined }), '_blank')}
           >
             <ListMusic {...iconMenu} aria-hidden />
             <span className='truncate'>{t('DownloadAllPlaylists')}</span>
-          </Button>
+          </Button> */}
         </div>
       </div>
 

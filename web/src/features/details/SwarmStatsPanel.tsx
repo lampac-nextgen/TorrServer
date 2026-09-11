@@ -153,18 +153,18 @@ function LoadedPreloadMeters({
   return (
     <div className={`grid grid-cols-2 ${compact ? 'gap-1.5' : 'gap-2'}`}>
       <ProgressMeter
-        label={loadedTitle}
-        valueLabel={loadedLabel}
-        ratio={loadedPct}
-        compact={compact}
-        title={loadedHint}
-      />
-      <ProgressMeter
         label={preloadTitle}
         valueLabel={preloadLabel}
         ratio={preloadPct}
         compact={compact}
         title={preloadHint}
+      />
+      <ProgressMeter
+        label={loadedTitle}
+        valueLabel={loadedLabel}
+        ratio={loadedPct}
+        compact={compact}
+        title={loadedHint}
       />
     </div>
   )

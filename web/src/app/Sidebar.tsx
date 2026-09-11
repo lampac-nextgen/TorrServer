@@ -131,7 +131,7 @@ export default function Sidebar({
   return (
     <nav className='flex h-full min-h-0 flex-col gap-1 overflow-y-auto overscroll-contain bg-app-rail p-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]'>
       {primaryItems.map(renderItem)}
-      <div className='my-1 h-px shrink-0 bg-white/12' />
+      {/* <div className='my-1 h-px shrink-0 bg-white/12' /> */}
       {!collapsed ? (
         <p className='px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-app-rail-foreground/50'>
           {t('LibraryTools')}

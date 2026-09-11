@@ -406,13 +406,6 @@ export default function DetailsDialog({
         dense
         compact={useCompactDetails}
         tight={useCompactDetails}
-        label={t('Category')}
-        value={category || '—'}
-      />
-      <StatWidget
-        dense
-        compact={useCompactDetails}
-        tight={useCompactDetails}
         label={t('PiecesCount')}
         value={cache.PiecesCount != null ? String(cache.PiecesCount) : '—'}
       />
@@ -422,6 +415,13 @@ export default function DetailsDialog({
         tight={useCompactDetails}
         label={t('PiecesLength')}
         value={cache.PiecesLength != null ? humanizeSize(cache.PiecesLength) : '—'}
+      />
+      <StatWidget
+        dense
+        compact={useCompactDetails}
+        tight={useCompactDetails}
+        label={t('Category')}
+        value={category || '—'}
       />
     </>
   )
@@ -434,12 +434,12 @@ export default function DetailsDialog({
           { label: t('CacheFilled'), value: cacheFilledValue, hint: t('CacheHint') },
           { label: t('Status'), value: statusLabel(stat) },
         ]),
-    { label: t('Category'), value: category || '—' },
     { label: t('PiecesCount'), value: cache.PiecesCount != null ? String(cache.PiecesCount) : '—' },
     {
       label: t('PiecesLength'),
       value: cache.PiecesLength != null ? humanizeSize(cache.PiecesLength) : '—',
     },
+    { label: t('Category'), value: category || '—' },
   ]
 
   const torrentActions = (
@@ -742,18 +742,6 @@ export default function DetailsDialog({
                 </div>
 
                 <div className='space-y-2.5 rounded-xl border border-border bg-surface-secondary p-2.5'>
-                  <div title={t('CacheHint')}>
-                    <div className='mb-1 flex items-baseline justify-between gap-2 text-xs'>
-                      <span className='truncate text-muted'>{t('CacheOccupied')}</span>
-                      <span className='shrink-0 font-bold tabular-nums text-foreground'>{cacheFilledValue}</span>
-                    </div>
-                    <div className='h-2 overflow-hidden rounded-full bg-surface'>
-                      <div
-                        className='h-full rounded-full bg-accent transition-[width] duration-300'
-                        style={{ width: `${cacheOccupiedPct}%` }}
-                      />
-                    </div>
-                  </div>
                   <div title={bufferHint}>
                     <div className='mb-1 flex items-baseline justify-between gap-2 text-xs'>
                       <span className='truncate text-muted'>{bufferTitle}</span>
@@ -763,6 +751,18 @@ export default function DetailsDialog({
                       <div
                         className='h-full rounded-full bg-accent transition-[width] duration-300'
                         style={{ width: `${bufferPct}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div title={t('CacheHint')}>
+                    <div className='mb-1 flex items-baseline justify-between gap-2 text-xs'>
+                      <span className='truncate text-muted'>{t('CacheOccupied')}</span>
+                      <span className='shrink-0 font-bold tabular-nums text-foreground'>{cacheFilledValue}</span>
+                    </div>
+                    <div className='h-2 overflow-hidden rounded-full bg-surface'>
+                      <div
+                        className='h-full rounded-full bg-accent transition-[width] duration-300'
+                        style={{ width: `${cacheOccupiedPct}%` }}
                       />
                     </div>
                   </div>
