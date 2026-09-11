@@ -188,7 +188,7 @@ export default function SwarmStatsPanel({
   const columns = columnsProp ?? 2
   const doStretch = stretch && !isFull
 
-  const pendingValue = torrent.pending_peers != null ? String(torrent.pending_peers) : '—'
+  const pendingValue = torrent.pending_peers != null ? String(torrent.pending_peers) : '0'
 
   const loaded = torrent.loaded_size ?? 0
   const totalSize = torrent.torrent_size ?? 0
@@ -293,7 +293,7 @@ export default function SwarmStatsPanel({
         halfOpen={torrent.half_open_peers ?? 0}
         labels={{
           active: t('ActivePeers'),
-          seeders: t('ConnectedSeeders'),
+          seeders: t('Seeders'),
           pending: t('PendingPeers'),
           halfOpen: t('HalfOpenPeers'),
         }}

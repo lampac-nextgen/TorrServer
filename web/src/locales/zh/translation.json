@@ -59,6 +59,10 @@
   "CloseServer": "关闭",
   "CopyHash": "复制哈希",
   "CopyLink": "复制链接",
+  "CopyMagnet": "复制磁力链接",
+  "CopyMcpUrl": "复制 MCP URL",
+  "CopyTorrs": "复制 web+torrs://",
+  "CopyWebDavUrl": "复制 WebDAV URL",
   "Data": "数据",
   "DebugMode": "优先级标记",
   "Delete": "删除",
@@ -120,7 +124,7 @@
   "Folders": "文件夹",
   "AllFiles": "所有文件",
   "Pause": "暂停",
-  "Peers": "Peers·Seeds",
+  "Peers": "节点",
   "PiecesCount": "块数量",
   "PiecesLength": "块长度",
   "PIP": "画中画",
@@ -129,6 +133,7 @@
   "Preload": "预加载",
   "ProjectSource": "项目GitHub",
   "Rewind-10-Sec": "倒退 10 秒",
+  "Seeders": "做种者",
   "Unmute": "取消静音",
   "PWAGuide": {
     "Header": "安装应用程序",
@@ -464,7 +469,6 @@
   "Back": "返回",
   "DLNA": "DLNA媒体服务器",
   "AddFirstTorrent": "添加您的第一个种子",
-  "CopyMagnet": "复制磁力链接",
   "SnakeIdleFrozen": "空闲 · 冻结",
   "Search": {
     "Tracker": "Tracker",
@@ -472,8 +476,8 @@
     "NoResults": "无结果",
     "TorrentAdded": "种子已添加",
     "AllTrackers": "所有 Tracker",
-    "Seeders": "做种数",
-    "Peers": "连接数",
+    "Seeders": "种子",
+    "Peers": "节点",
     "Rutor": "RuTor"
   },
   "nav": {
@@ -557,10 +561,9 @@
   "ThemePaletteInk": "墨水",
   "ThemePaletteFern": "蕨类",
   "ThemePaletteBronze": "青铜",
-  "CopyTorrs": "Copy web+torrs:// link",
   "SwarmStats": "Swarm",
-  "PendingPeers": "Pending peers",
-  "HalfOpenPeers": "Half-open",
+  "PendingPeers": "待处理节点",
+  "HalfOpenPeers": "半开连接节点",
   "Preloaded": "Preloaded",
   "BytesRead": "Read",
   "BytesWritten": "Written",
@@ -604,7 +607,6 @@
   "FuseStatus": "FUSE mount",
   "Enabled": "Enabled",
   "Disabled": "Disabled",
-  "CopyWebDavUrl": "Copy WebDAV URL",
   "ServerStatus": "Server status",
   "ServerStatusClient": "BitTorrent client",
   "ServerStatusListenPort": "Listen port",
@@ -620,7 +622,6 @@
   "ChunksWasted": "浪费块",
   "BitRate": "比特率",
   "ActivePeers": "活跃",
-  "ConnectedSeeders": "做种",
   "TotalPeers": "总节点",
   "BytesReadData": "读取数据",
   "ChunksRead": "读取块",
@@ -668,6 +669,5 @@
     "SaveFailed": "保存访问列表失败"
   },
   "MCPStatus": "MCP",
-  "CopyMcpUrl": "复制 MCP URL",
   "MCPHint": "AI 代理通过与 Web 界面相同的 HTTP 端口上的 /mcp 连接。"
 }
