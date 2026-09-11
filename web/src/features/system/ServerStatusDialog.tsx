@@ -5,7 +5,9 @@ import { useTranslation } from 'react-i18next'
 
 import { getRuntimeStatus, RUNTIME_STATUS_QUERY_KEY } from 'shared/api/runtime'
 import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
-import { humanizeSize, humanizeSpeed } from 'shared/lib/format'
+import { useSettingsQuery } from 'shared/hooks/useSettingsQuery'
+import { formatCacheFilledLabel, humanizeSize, humanizeSpeed } from 'shared/lib/format'
+import { isLiveTorrentStat } from 'shared/torrent/states'
 import AppDialog from 'shared/ui/AppDialog'
 import { DIALOG_SHEET_L } from 'shared/ui/dialogSizes'
 import { iconMenu } from 'shared/ui/iconProps'
@@ -39,10 +41,13 @@ export default function ServerStatusDialog({ open, onClose }: ServerStatusDialog
     refetchInterval: open ? 2500 : false,
   })
 
+  const { data: btSettings } = useSettingsQuery({ enabled: open })
   const bt = data?.bt
   const torrents = bt?.torrents ?? []
-  const loadedPct =
-    bt?.total_size && bt.total_size > 0 ? Math.min(100, ((bt.loaded_size ?? 0) / bt.total_size) * 100) : 0
+  const openTorrents = torrents.filter(tr => isLiveTorrentStat(tr.stat))
+  const cacheLabel =
+    formatCacheFilledLabel(bt?.loaded_size ?? 0, btSettings?.CacheSize, { percent: 'always' }) ??
+    humanizeSize(bt?.loaded_size)
 
   return (
     <AppDialog
@@ -89,7 +94,13 @@ export default function ServerStatusDialog({ open, onClose }: ServerStatusDialog
                   label={t('ServerStatusListenPort')}
                   value={bt?.listen_port != null ? String(bt.listen_port) : '—'}
                 />
-                <StatCard label={t('ServerStatusTorrents')} value={String(bt?.torrent_count ?? 0)} />
+                <StatCard
+                  label={t('ServerStatusTorrents')}
+                  value={t('ServerStatusTorrentsValue', {
+                    total: bt?.torrent_count ?? 0,
+                    open: openTorrents.length,
+                  })}
+                />
                 <StatCard label={t('ServerStatusStreams')} value={String(bt?.active_streams ?? 0)} />
                 <StatCard label={t('ServerStatusBannedIPs')} value={String(bt?.banned_ips ?? 0)} />
                 <StatCard label={t('DownloadSpeed')} value={humanizeSpeed(bt?.download_speed)} />
@@ -99,10 +110,7 @@ export default function ServerStatusDialog({ open, onClose }: ServerStatusDialog
                 <StatCard label={t('BytesRead')} value={humanizeSize(bt?.bytes_read)} />
                 <StatCard label={t('BytesWritten')} value={humanizeSize(bt?.bytes_written)} />
                 <StatCard label={t('Size')} value={humanizeSize(bt?.total_size)} />
-                <StatCard
-                  label={t('ServerStatusLoaded')}
-                  value={`${humanizeSize(bt?.loaded_size)} · ${Math.round(loadedPct)}%`}
-                />
+                <StatCard label={t('CacheFilled')} value={cacheLabel} />
               </div>
               {bt?.peer_id ? (
                 <p className='mt-2 truncate font-mono text-xs text-muted' title={bt.peer_id}>
@@ -137,30 +145,25 @@ export default function ServerStatusDialog({ open, onClose }: ServerStatusDialog
               </h3>
               {torrents.length === 0 ? (
                 <p className='text-sm text-muted'>{t('NoTorrentsAdded')}</p>
+              ) : openTorrents.length === 0 ? (
+                <p className='text-sm text-muted'>{t('ServerStatusNoOpenTorrents')}</p>
               ) : (
                 <div className='space-y-2'>
-                  {torrents.map(tr => {
-                    const pct =
-                      tr.torrent_size && tr.torrent_size > 0
-                        ? Math.min(100, ((tr.loaded_size ?? 0) / tr.torrent_size) * 100)
-                        : 0
-                    return (
-                      <div key={tr.hash} className='rounded-xl border border-border bg-surface px-3 py-2.5'>
-                        <p className='truncate text-sm font-semibold text-foreground' title={tr.title || tr.name}>
-                          {tr.title || tr.name || tr.hash}
-                        </p>
-                        <p className='mt-0.5 truncate text-xs text-muted'>
-                          {tr.stat_string || '—'} · {Math.round(pct)}% · {humanizeSize(tr.loaded_size)} /{' '}
-                          {humanizeSize(tr.torrent_size)}
-                        </p>
-                        <p className='mt-0.5 text-xs tabular-nums text-muted'>
-                          ↓ {humanizeSpeed(tr.download_speed)} · ↑ {humanizeSpeed(tr.upload_speed)} · {t('Peers')}{' '}
-                          {tr.active_peers ?? 0}/{tr.total_peers ?? 0} · {t('ServerStatusSeeders')}{' '}
-                          {tr.connected_seeders ?? 0}
-                        </p>
-                      </div>
-                    )
-                  })}
+                  {openTorrents.map(tr => (
+                    <div key={tr.hash} className='rounded-xl border border-border bg-surface px-3 py-2.5'>
+                      <p className='truncate text-sm font-semibold text-foreground' title={tr.title || tr.name}>
+                        {tr.title || tr.name || tr.hash}
+                      </p>
+                      <p className='mt-0.5 truncate text-xs text-muted'>
+                        {tr.stat_string || '—'} · {humanizeSize(tr.torrent_size)}
+                      </p>
+                      <p className='mt-0.5 text-xs tabular-nums text-muted'>
+                        ↓ {humanizeSpeed(tr.download_speed)} · ↑ {humanizeSpeed(tr.upload_speed)} · {t('Peers')}{' '}
+                        {tr.active_peers ?? 0}/{tr.total_peers ?? 0} · {t('ServerStatusSeeders')}{' '}
+                        {tr.connected_seeders ?? 0}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               )}
             </section>

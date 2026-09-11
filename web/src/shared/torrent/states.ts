@@ -9,3 +9,8 @@ export const PRELOAD = 2
 export const WORKING = 3
 export const CLOSED = 4
 export const IN_DB = 5
+
+/** Live in the BT client (preload/working/getting info). Idle library rows are `IN_DB`. */
+export function isLiveTorrentStat(stat?: number) {
+  return stat != null && stat !== IN_DB
+}

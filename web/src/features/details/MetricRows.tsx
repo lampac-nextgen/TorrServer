@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 export interface MetricRowItem {
   label: string
   value: string
-  /** Optional tooltip clarifying metric semantics (e.g. Cache vs Loaded). */
+  /** Optional tooltip clarifying metric semantics (e.g. Cache vs Buffer). */
   hint?: string
 }
 
