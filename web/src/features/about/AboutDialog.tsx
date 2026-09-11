@@ -82,9 +82,9 @@ export default function AboutDialog({ open, onClose, onOpenServerStatus, onOpenD
       const result = await runSpeedTest(speedSizeMb)
       const transferred =
         result.bytes >= 1024 * 1024 * 1024
-          ? `${(result.bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
-          : `${(result.bytes / (1024 * 1024)).toFixed(1)} MB`
-      const label = `${result.mbps.toFixed(1)} Mbps · ${(result.elapsedMs / 1000).toFixed(1)}s · ${transferred}`
+          ? `${(result.bytes / (1024 * 1024 * 1024)).toFixed(2)} ${t('GB')}`
+          : `${(result.bytes / (1024 * 1024)).toFixed(1)} ${t('MB')}`
+      const label = `${result.mbps.toFixed(1)} ${t('Mbps')} · ${(result.elapsedMs / 1000).toFixed(1)} ${t('Sec')} · ${transferred}`
       setSpeedResult(label)
       toast?.showToast({ message: label, severity: 'success' })
     } catch {
@@ -123,10 +123,12 @@ export default function AboutDialog({ open, onClose, onOpenServerStatus, onOpenD
 
         <div className='mt-2 rounded-lg border border-border bg-surface-secondary p-3'>
           <p className='mb-1 px-1 text-xs font-semibold uppercase tracking-wide text-muted'>{t('Links')}</p>
-          <AboutLink name={t('ProjectSource')} href='https://github.com/YouROK/TorrServer' />
-          <AboutLink name={t('Releases')} href='https://github.com/YouROK/TorrServer/releases' />
-          <AboutLink name={t('NasReleases')} href='https://github.com/vladlenas' />
-          <AboutLink name={t('ApiDocs')} href={publicUrl('swagger/index.html')} />
+          <ul className='flex flex-wrap gap-2'>
+            <li><AboutLink name={t('ProjectSource')} href='https://github.com/YouROK/TorrServer' /></li>
+            <li><AboutLink name={t('Releases')} href='https://github.com/YouROK/TorrServer/releases' /></li>
+            <li><AboutLink name={t('NasReleases')} href='https://github.com/vladlenas' /></li>
+            <li><AboutLink name={t('ApiDocs')} href={publicUrl('swagger/index.html')} /></li>
+          </ul>
         </div>
 
         <div className='mt-3 rounded-lg border border-border bg-surface-secondary p-3'>
@@ -144,25 +146,6 @@ export default function AboutDialog({ open, onClose, onOpenServerStatus, onOpenD
             >
               <Activity {...iconMenu} aria-hidden />
               {t('ServerStatus')}
-            </Button>
-          </div>
-        </div>
-
-        <div className='mt-3 rounded-lg border border-border bg-surface-secondary p-3'>
-          <p className='mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted'>{t('Donate')}</p>
-          <div className='px-1'>
-            <Button
-              size='sm'
-              variant='secondary'
-              className='min-h-10 gap-2'
-              onPress={() => {
-                onClose()
-                onOpenDonate?.()
-              }}
-              isDisabled={!onOpenDonate}
-            >
-              <CreditCard {...iconMenu} aria-hidden />
-              {t('Support')}
             </Button>
           </div>
         </div>
@@ -206,6 +189,25 @@ export default function AboutDialog({ open, onClose, onOpenServerStatus, onOpenD
             {speedResult ? (
               <span className='w-full text-sm tabular-nums text-muted sm:w-auto'>{speedResult}</span>
             ) : null}
+          </div>
+        </div>
+
+        <div className='mt-3 rounded-lg border border-border bg-surface-secondary p-3'>
+          <p className='mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted'>{t('Donate')}</p>
+          <div className='px-1'>
+            <Button
+              size='sm'
+              variant='secondary'
+              className='min-h-10 gap-2'
+              onPress={() => {
+                onClose()
+                onOpenDonate?.()
+              }}
+              isDisabled={!onOpenDonate}
+            >
+              <CreditCard {...iconMenu} aria-hidden />
+              {t('Support')}
+            </Button>
           </div>
         </div>
 
