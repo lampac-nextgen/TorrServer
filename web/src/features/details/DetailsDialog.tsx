@@ -68,7 +68,7 @@ function StatWidget({
   compact?: boolean
   /** Phone density pass — single-line labels, no reserved 2-line min-height. */
   tight?: boolean
-  /** Longer semantics tooltip (Cache vs Buffer vs Loaded). */
+  /** Longer semantics tooltip (Cache vs Buffer). */
   hint?: string
 }) {
   const shown = value || '—'
