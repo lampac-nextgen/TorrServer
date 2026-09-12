@@ -54,6 +54,11 @@ func ffp(c *gin.Context) {
 		return
 	}
 
+	if !ffprobe.Exists() {
+		_ = c.AbortWithError(http.StatusNotFound, fmt.Errorf("ffprobe binary not found"))
+		return
+	}
+
 	link := "http://127.0.0.1:" + sets.Port + "/play/" + hash + "/" + indexStr
 
 	data, err := ffprobe.ProbeUrl(link)

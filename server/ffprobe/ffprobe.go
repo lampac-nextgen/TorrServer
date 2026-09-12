@@ -45,7 +45,7 @@ func ProbeReader(reader io.Reader) (*ffprobe.ProbeData, error) {
 func getCtx() context.Context {
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
-		time.Sleep(5 * time.Minute)
+		time.Sleep(1 * time.Minute)
 		cancel()
 	}()
 	return ctx
