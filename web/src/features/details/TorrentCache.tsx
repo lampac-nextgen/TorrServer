@@ -352,7 +352,7 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode, hash }: Torr
             </span>
             <span className='inline-flex items-center gap-1'>
               <span
-                className='size-2 rounded-[2px] border border-[#c4a882] bg-[#c4a882]/30 dark:border-[#c4a882]'
+                className='size-2 rounded-[2px] border border-[#6b8fd4] dark:border-[#c4a882] bg-[#6b8fd4]/30 dark:bg-[#c4a882]/30'
                 aria-hidden
               />
               {t('SnakeLegendRange')}
