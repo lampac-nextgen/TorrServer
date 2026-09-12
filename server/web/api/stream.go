@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -16,7 +17,6 @@ import (
 
 	"github.com/anacrolix/torrent"
 	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
 )
 
 // get stat
@@ -75,7 +75,7 @@ func stream(c *gin.Context) {
 		err := utils.TestLink(link, !notAuth)
 		if err != nil {
 			log.TLogln("Wrong link:", err)
-			_ = c.AbortWithError(http.StatusBadRequest, errors.New("wrong link"))
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "wrong link"})
 			return
 		}
 	}
@@ -91,7 +91,7 @@ func stream(c *gin.Context) {
 	}
 
 	if link == "" {
-		_ = c.AbortWithError(http.StatusBadRequest, errors.New("link should not be empty"))
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "link should not be empty"})
 		return
 	}
 
@@ -108,7 +108,7 @@ func stream(c *gin.Context) {
 		spec, torrsHash, err = utils.ParseTorrsHash(link)
 		if err != nil {
 			log.TLogln("error parse torrshash:", err)
-			_ = c.AbortWithError(http.StatusBadRequest, err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("error parse torrshash: %v", err).Error()})
 			return
 		}
 		if title == "" {
@@ -123,7 +123,7 @@ func stream(c *gin.Context) {
 	} else {
 		spec, err = utils.ParseLink(link)
 		if err != nil {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("error parse link: %v", err).Error()})
 			return
 		}
 	}
@@ -138,13 +138,13 @@ func stream(c *gin.Context) {
 	if tor == nil || tor.Stat == state.TorrentInDB {
 		tor, err = torr.AddTorrent(spec, title, poster, data, category)
 		if err != nil {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("error adding torrent: %v", err).Error()})
 			return
 		}
 	}
 
 	if !tor.GotInfo() {
-		_ = c.AbortWithError(http.StatusInternalServerError, errors.New("torrent connection timeout"))
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "torrent connection timeout"})
 		return
 	}
 
@@ -169,7 +169,7 @@ func stream(c *gin.Context) {
 		}
 	}
 	if index == -1 && play { // if file index not set and play file exec
-		_ = c.AbortWithError(http.StatusBadRequest, errors.New("\"index\" is empty or wrong"))
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "\"index\" is empty or wrong"})
 		return
 	}
 	// preload torrent
@@ -212,7 +212,7 @@ func streamNoAuth(c *gin.Context) {
 	category := c.Query("category")
 
 	if link == "" {
-		_ = c.AbortWithError(http.StatusBadRequest, errors.New("link should not be empty"))
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "link should not be empty"})
 		return
 	}
 
@@ -229,7 +229,7 @@ func streamNoAuth(c *gin.Context) {
 		spec, torrsHash, err = utils.ParseTorrsHash(link)
 		if err != nil {
 			log.TLogln("error parse torrshash:", err)
-			_ = c.AbortWithError(http.StatusBadRequest, err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("error parse torrshash: %v", err).Error()})
 			return
 		}
 		if title == "" {
@@ -244,7 +244,7 @@ func streamNoAuth(c *gin.Context) {
 	} else {
 		spec, err = utils.ParseLink(link)
 		if err != nil {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("error parse link: %v", err).Error()})
 			return
 		}
 	}
@@ -273,13 +273,13 @@ func streamNoAuth(c *gin.Context) {
 	if tor.Stat == state.TorrentInDB {
 		tor, err = torr.AddTorrent(spec, title, poster, data, category)
 		if err != nil {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("error adding torrent: %v", err).Error()})
 			return
 		}
 	}
 
 	if !tor.GotInfo() {
-		_ = c.AbortWithError(http.StatusInternalServerError, errors.New("torrent connection timeout"))
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "torrent connection timeout"})
 		return
 	}
 
@@ -294,7 +294,7 @@ func streamNoAuth(c *gin.Context) {
 		}
 	}
 	if index == -1 && play { // if file index not set and play file exec
-		_ = c.AbortWithError(http.StatusBadRequest, errors.New("\"index\" is empty or wrong"))
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "\"index\" is empty or wrong"})
 		return
 	}
 	// preload torrent

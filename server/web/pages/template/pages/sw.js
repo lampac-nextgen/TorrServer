@@ -143,7 +143,7 @@ define(['./workbox-7e5eb42b'], (function (workbox) { 'use strict';
     "url": "static/localPrefs-bn9onfF_.js",
     "revision": null
   }, {
-    "url": "static/index-DcHk3T4g.css",
+    "url": "static/index-mOqSYJDQ.css",
     "revision": null
   }, {
     "url": "static/index-CC0FCtau.js",

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -50,7 +49,12 @@ func ffp(c *gin.Context) {
 	indexStr := c.Param("id")
 
 	if hash == "" || indexStr == "" {
-		_ = c.AbortWithError(http.StatusNotFound, errors.New("link should not be empty"))
+		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "link should not be empty"})
+		return
+	}
+
+	if !ffprobe.Exists() {
+		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "ffprobe binary not found"})
 		return
 	}
 
@@ -58,7 +62,7 @@ func ffp(c *gin.Context) {
 
 	data, err := ffprobe.ProbeUrl(link)
 	if err != nil {
-		_ = c.AbortWithError(http.StatusBadRequest, fmt.Errorf("error getting data: %v", err))
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("error getting data: %v", err).Error()})
 		return
 	}
 
