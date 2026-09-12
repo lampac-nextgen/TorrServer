@@ -105,7 +105,7 @@ func addTorrent(req torrReqJS, c *gin.Context) {
 		torrSpec, torrsHash, err = utils.ParseTorrsHash(req.Link)
 		if err != nil {
 			log.TLogln("error parse torrshash:", err)
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errors.Errorf("error parse torrshash: %v", err).Error()})
 			return
 		}
 		if req.Title == "" {
@@ -121,7 +121,7 @@ func addTorrent(req torrReqJS, c *gin.Context) {
 		torrSpec, err = utils.ParseLink(req.Link)
 		if err != nil {
 			log.TLogln("error parse link:", err)
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errors.Errorf("error parse link: %v", err).Error()})
 			return
 		}
 	}
@@ -129,7 +129,7 @@ func addTorrent(req torrReqJS, c *gin.Context) {
 	tor, err := torr.AddTorrent(torrSpec, req.Title, req.Poster, req.Data, req.Category)
 	if err != nil {
 		log.TLogln("error add torrent:", err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": errors.Errorf("error adding torrent: %v", err).Error()})
 		return
 	}
 
@@ -215,7 +215,7 @@ func listTorrents(c *gin.Context) {
 
 func dropTorrent(req torrReqJS, c *gin.Context) {
 	if req.Hash == "" {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errors.New("hash is empty").Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "hash is empty"})
 		return
 	}
 	torr.DropTorrent(req.Hash)
