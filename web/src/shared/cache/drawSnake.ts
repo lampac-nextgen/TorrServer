@@ -46,7 +46,7 @@ const fillProgress = (
 
 const strokeCell = (ctx: CanvasRenderingContext2D, size: number, color: string, line: number) => {
   const inset = line / 2
-  ctx.lineWidth = line
+  ctx.lineWidth = line / 1.25
   ctx.strokeStyle = color
   ctx.strokeRect(inset, inset, size - line, size - line)
 }
@@ -145,11 +145,11 @@ export const drawSnake = ({
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
         const cx = pieceSize / 2
-        const cy = pieceSize / 2
-        ctx.lineWidth = 3
-        ctx.strokeStyle = isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.95)'
+        const cy = pieceSize / 1.85
+        ctx.lineWidth = 1
+        ctx.strokeStyle = isDark ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.95)'
         ctx.strokeText(info, cx, cy)
-        ctx.fillStyle = isDark ? '#fff' : '#1a1a1a'
+        ctx.fillStyle = isDark ? '#fff' : '#000'
         ctx.fillText(info, cx, cy)
       }
     }

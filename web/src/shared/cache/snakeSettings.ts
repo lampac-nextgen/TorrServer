@@ -87,7 +87,7 @@ export function resolveSnakeSettings(mode: SnakeThemeMode, variant: SnakeVariant
     borderColor: isDark ? alphaCss(accent, 0.3) : border,
     completeColor: accent,
     backgroundColor: isDark ? surfaceSecondary : variant === 'mini' ? surfaceSecondary : surface,
-    readerColor: isDark ? '#050807' : variant === 'mini' ? '#0a0a0a' : '#000',
+    readerColor: isDark ? '#ff0000' : variant === 'mini' ? '#0a0a0a' : '#000',
     readerHaloColor: alphaCss('#fff', isDark ? 0.42 : 0.9),
     rangeColor,
     rangeEmptyColor: alphaCss(rangeColor, isDark ? 0.28 : 0.3),
