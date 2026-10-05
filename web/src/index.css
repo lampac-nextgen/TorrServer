@@ -2548,7 +2548,7 @@ body[data-immersive='true'] .ts-bottom-nav {
 }
 
 /**
- * Fullscreen dialogs on iOS PWA (`viewport-fit=cover` + `black-translucent`):
+ * Fullscreen dialogs on iOS PWA (`viewport-fit=cover` + status-bar `default`):
  *
  * 1) HeroUI/RAC sets `--visual-viewport-height` from `useViewportSize()` on the backdrop.
  *    On iOS Safari/PWA that value is often short, so backdrop/container (which use
