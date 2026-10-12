@@ -507,13 +507,13 @@ export default function DetailsDialog({
                   Desktop: poster spans the title and one 3×3 metric grid (9 tiles, no leftover cell).
                   Edit/close live in the right gutter.
                 */
-            <div className='ts-details-hero grid shrink-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-2 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2.5 pr-[6.75rem]'>
+            <div className='ts-details-hero grid shrink-0 grid-cols-[auto_minmax(0,1fr)] items-stretch gap-x-3 gap-y-2 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2.5 pr-[6.75rem]'>
               <button
                 type='button'
                 onClick={() => setPosterEditOpen(true)}
                 aria-label={t('AddDialog.AddPosterLinkInput')}
                 title={t('AddDialog.AddPosterLinkInput')}
-                className='group relative col-start-1 row-span-2 row-start-1 grid aspect-[2/3] w-28 shrink-0 self-start place-items-center overflow-hidden rounded-lg bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
+                className='group relative col-start-1 row-span-2 row-start-1 grid h-full w-44 shrink-0 self-stretch place-items-center overflow-hidden rounded-lg bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
               >
                 {poster ? (
                   <img
