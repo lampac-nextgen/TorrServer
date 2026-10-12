@@ -2348,6 +2348,15 @@ body[data-immersive='true'] .ts-bottom-nav {
   }
 }
 
+/* Details edit sits left of absolute Close on every width.
+   ≤960 and fullscreen rules below add the safe-area offset. */
+.modal__dialog.ts-details-modal .ts-details-edit-trigger {
+  position: absolute;
+  top: 0.5rem;
+  right: 3.5rem;
+  z-index: 20;
+}
+
 /**
  * Narrow viewports (BP.dialog = 960px): force every modal edge-to-edge.
  *
@@ -2856,6 +2865,19 @@ html[data-dialogs-fullscreen] .modal__dialog.ts-details-modal .ts-details-hero {
   padding-right: max(6.75rem, calc(5.75rem + env(safe-area-inset-right, 0px)));
   padding-bottom: 0.5rem;
   padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
+}
+
+/* Phone flow hero: only the first line reserves the button cluster (a float),
+   so the blanket right gutter must not indent the whole block. */
+html .modal__dialog.ts-details-modal .ts-details-hero.ts-details-hero-flow,
+.modal__dialog--full.ts-details-modal .ts-details-hero.ts-details-hero-flow {
+  padding-right: max(0.75rem, env(safe-area-inset-right, 0px));
+}
+
+.ts-details-hero-flow::after {
+  content: '';
+  display: block;
+  clear: both;
 }
 
 html[data-dialogs-fullscreen] .modal__dialog.ts-details-modal .ts-details-edit-trigger {

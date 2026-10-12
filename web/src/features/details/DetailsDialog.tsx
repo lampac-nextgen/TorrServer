@@ -1,6 +1,6 @@
-import { Button, Checkbox, Chip, Modal, Tabs, ToggleButton, ToggleButtonGroup, useMediaQuery } from '@heroui/react'
+import { Button, Checkbox, Modal, Tabs, ToggleButton, ToggleButtonGroup, useMediaQuery } from '@heroui/react'
 import { ImagePlus, Pencil, X } from 'lucide-react'
-import { useEffect, useMemo, useState, useCallback, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import ptt from 'parse-torrent-title'
 import { useTranslation } from 'react-i18next'
 import type { TorrentStat } from 'shared/api/types'
@@ -35,7 +35,6 @@ import { toPlayableFile } from 'shared/torrent/toPlayableFile'
 import FileBrowser from './FileBrowser'
 import CacheMapDialog from './CacheMapDialog'
 import EditPosterDialog from './EditPosterDialog'
-import MetricRows from './MetricRows'
 import SwarmStatsPanel from './SwarmStatsPanel'
 import SpeedCharts from './SpeedCharts'
 import TorrentActions from './TorrentActions'
@@ -59,6 +58,7 @@ function StatWidget({
   dense = false,
   compact = false,
   tight = false,
+  flow = false,
   hint,
 }: {
   label: string
@@ -68,24 +68,29 @@ function StatWidget({
   compact?: boolean
   /** Phone density pass — single-line labels, no reserved 2-line min-height. */
   tight?: boolean
+  /** Phone: inline tile so it can sit beside the floated poster, then wrap full-width. */
+  flow?: boolean
   /** Longer semantics tooltip (Cache vs Buffer). */
   hint?: string
 }) {
   const shown = value || '—'
+  const box = flow
+    ? 'mb-1 mr-1 inline-block w-[calc(33.333%-0.35rem)] align-top px-1.5 py-0.5'
+    : dense
+      ? tight
+        ? 'w-full px-1.5 py-0.5'
+        : 'w-full px-1.5 py-1'
+      : 'px-2.5 py-2 sm:min-w-[104px] sm:px-3'
   return (
-    <div
-      className={`min-w-0 rounded-md border border-border bg-surface-secondary text-center ${dense ? (tight ? 'w-full px-1.5 py-0.5' : 'w-full px-1.5 py-1') : 'px-2.5 py-2 sm:min-w-[104px] sm:px-3'
-        }`}
-      title={hint || undefined}
-    >
+    <div className={`min-w-0 rounded-md border border-border bg-surface-secondary text-center ${box}`} title={hint || undefined}>
       <span
         className={`block leading-tight text-muted ${tight
-            ? 'truncate text-[11px]'
-            : compact
-              ? 'line-clamp-2 min-h-[1.75rem] text-[10px]'
-              : dense
-                ? 'truncate text-[11px]'
-                : 'truncate text-[11px] sm:text-xs'
+          ? 'truncate text-[11px]'
+          : compact
+            ? 'line-clamp-2 min-h-[1.75rem] text-[10px]'
+            : dense
+              ? 'truncate text-[11px]'
+              : 'truncate text-[11px] sm:text-xs'
           }`}
         title={hint || label}
       >
@@ -133,29 +138,24 @@ function TitleRow({
   title,
   subtitle,
   compact,
-  editControl,
-  status,
 }: {
   title: string
   subtitle: string | null
   compact: boolean
-  editControl?: ReactNode
-  status?: string
 }) {
-  const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
   /** Drop subtitle when it already appears inside the primary title (common after ptt parse). */
   const showSubtitle = !!subtitle && !title.toLocaleLowerCase().includes(subtitle.toLocaleLowerCase())
 
   const titleClass = `min-w-0 flex-1 font-bold text-foreground ${compact
-      ? expanded
-        ? 'text-[15px] leading-snug'
-        : 'line-clamp-3 text-[15px] leading-snug'
-      : 'line-clamp-2 text-lg leading-snug'
+    ? expanded
+      ? 'text-[15px] leading-snug'
+      : 'line-clamp-2 text-[15px] leading-snug'
+    : 'line-clamp-2 text-lg leading-snug'
     }`
 
   return (
-    <div className='min-w-0 flex-1'>
+    <div className='min-w-0'>
       <div className='flex items-start gap-1'>
         {compact ? (
           <button
@@ -173,22 +173,11 @@ function TitleRow({
             {title}
           </h2>
         )}
-        {status ? (
-          <Chip size='sm' variant='soft' className='max-w-[42%] shrink-0'>
-            <Chip.Label className='truncate'>{status}</Chip.Label>
-          </Chip>
-        ) : null}
-        {editControl}
       </div>
       {showSubtitle ? (
         <p className={`mt-0.5 truncate text-muted ${compact ? 'text-xs' : 'text-sm'}`} title={subtitle!}>
           {subtitle}
         </p>
-      ) : null}
-      {compact ? (
-        <button type='button' className='mt-0.5 text-xs font-medium text-accent' onClick={() => setExpanded(v => !v)}>
-          {expanded ? t('ShowLess') : t('ShowMore')}
-        </button>
       ) : null}
     </div>
   )
@@ -345,32 +334,36 @@ export default function DetailsDialog({
     autoPlayTimecode,
   })
 
-  /** Live pulse in the hero — primary on all sizes; secondary only on desktop hero. */
+  /** All nine hero tiles. On the phone they are inline so they wrap the floated poster. */
   const primaryStats = (
     <>
       <StatWidget
-        dense
+        dense={useCompactDetails}
+        flow={useCompactDetails}
         compact={useCompactDetails}
         tight={useCompactDetails}
         label={t('DownloadSpeed')}
         value={humanizeSpeed(downloadSpeed)}
       />
       <StatWidget
-        dense
+        dense={useCompactDetails}
+        flow={useCompactDetails}
         compact={useCompactDetails}
         tight={useCompactDetails}
         label={t('UploadSpeed')}
         value={humanizeSpeed(uploadSpeed)}
       />
       <StatWidget
-        dense
+        dense={useCompactDetails}
+        flow={useCompactDetails}
         compact={useCompactDetails}
         tight={useCompactDetails}
         label={t('Peers') + '·' + t('Seeders')}
         value={getPeerString(torrent) || '—'}
       />
       <StatWidget
-        dense
+        dense={useCompactDetails}
+        flow={useCompactDetails}
         compact={useCompactDetails}
         tight={useCompactDetails}
         label={t('Size')}
@@ -382,7 +375,8 @@ export default function DetailsDialog({
   const cacheStatusStats = (
     <>
       <StatWidget
-        dense
+        dense={useCompactDetails}
+        flow={useCompactDetails}
         compact={useCompactDetails}
         tight={useCompactDetails}
         label={t('CacheFilled')}
@@ -390,7 +384,8 @@ export default function DetailsDialog({
         hint={t('CacheHint')}
       />
       <StatWidget
-        dense
+        dense={useCompactDetails}
+        flow={useCompactDetails}
         compact={useCompactDetails}
         tight={useCompactDetails}
         label={t('Status')}
@@ -403,21 +398,24 @@ export default function DetailsDialog({
     <>
       {cacheStatusStats}
       <StatWidget
-        dense
+        dense={useCompactDetails}
+        flow={useCompactDetails}
         compact={useCompactDetails}
         tight={useCompactDetails}
         label={t('PiecesCount')}
         value={cache.PiecesCount != null ? String(cache.PiecesCount) : '—'}
       />
       <StatWidget
-        dense
+        dense={useCompactDetails}
+        flow={useCompactDetails}
         compact={useCompactDetails}
         tight={useCompactDetails}
         label={t('PiecesLength')}
         value={cache.PiecesLength != null ? humanizeSize(cache.PiecesLength) : '—'}
       />
       <StatWidget
-        dense
+        dense={useCompactDetails}
+        flow={useCompactDetails}
         compact={useCompactDetails}
         tight={useCompactDetails}
         label={t('Category')}
@@ -425,18 +423,6 @@ export default function DetailsDialog({
       />
     </>
   )
-
-  /** Stats-tab dense rows (mobile). Cache/Status stay here; Status is also a hero chip. */
-  const secondaryMetricItems = [
-    { label: t('CacheFilled'), value: cacheFilledValue, hint: t('CacheHint') },
-    { label: t('Status'), value: statusLabel(stat) },
-    { label: t('PiecesCount'), value: cache.PiecesCount != null ? String(cache.PiecesCount) : '—' },
-    {
-      label: t('PiecesLength'),
-      value: cache.PiecesLength != null ? humanizeSize(cache.PiecesLength) : '—',
-    },
-    { label: t('Category'), value: category || '—' },
-  ]
 
   const torrentActions = (
     <TorrentActions
@@ -491,9 +477,7 @@ export default function DetailsDialog({
             On compact, edit sits in the top-right action cluster beside Close. */}
         <Modal.Header className='relative h-0 shrink-0 overflow-visible border-0 p-0'>
           <Modal.Heading className='sr-only'>{t('TorrentDetails')}</Modal.Heading>
-          {useCompactDetails && editControl ? (
-            <div className='ts-details-edit-trigger absolute z-20'>{editControl}</div>
-          ) : null}
+          {editControl ? <div className='ts-details-edit-trigger absolute z-20'>{editControl}</div> : null}
           <Modal.CloseTrigger aria-label={t('Close')} className='shrink-0'>
             <X {...iconChrome} aria-hidden />
           </Modal.CloseTrigger>
@@ -503,54 +487,44 @@ export default function DetailsDialog({
           className={`flex min-h-0 flex-1 flex-col gap-2 overflow-hidden sm:gap-3${sheetFull ? ' pt-0' : ' pt-1'}`}
         >
           {useCompactDetails ? (
-            /* Phone: flush hero on narrow CSS; rounded card only on wide desktop sheet.
-                   Fullscreen overrides radius via `.modal__dialog--full .ts-details-hero`. */
-            <div className='ts-details-hero shrink-0 space-y-2 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2 pr-[6.75rem]'>
-              <div className='flex items-start gap-2'>
-                <button
-                  type='button'
-                  onClick={() => setPosterEditOpen(true)}
-                  aria-label={t('AddDialog.AddPosterLinkInput')}
-                  title={t('AddDialog.AddPosterLinkInput')}
-                  className='group relative grid aspect-[2/3] w-16 shrink-0 place-items-center overflow-hidden rounded-md bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2 min-[420px]:w-20'
-                >
-                  {poster ? (
-                    <img
-                      src={poster}
-                      alt=''
-                      className='h-full w-full object-cover'
-                      onError={event => {
-                        event.currentTarget.style.display = 'none'
-                      }}
-                    />
-                  ) : (
-                    <ImagePlus size={16} strokeWidth={1.75} className='text-muted' aria-hidden />
-                  )}
-                </button>
-                <TitleRow
-                  title={displayTitle}
-                  subtitle={subtitle}
-                  compact
-                  status={stat != null ? statusLabel(stat) : undefined}
-                />
-              </div>
-              <div className='grid w-full grid-cols-2 gap-1 min-[420px]:grid-cols-4'>
-                {primaryStats}
-              </div>
-            </div>
-          ) : (
-            /*
-                  Desktop: poster spans both rows; title on top-right; metrics sit under the title
-                  (raised beside the poster) and stretch across the remaining width.
-                  Fullscreen tablet: same flush hero + safe-area as phone (`.ts-details-hero`).
-                */
-            <div className='ts-details-hero grid shrink-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-1.5 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2.5 pr-12'>
+            /* Phone: poster and a short button spacer float, so the title and all 9 tiles wrap into the free space. */
+            <div className='ts-details-hero ts-details-hero-flow flow-root shrink-0 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2'>
+              <div className='float-right h-11 w-[6.75rem]' aria-hidden />
               <button
                 type='button'
                 onClick={() => setPosterEditOpen(true)}
                 aria-label={t('AddDialog.AddPosterLinkInput')}
                 title={t('AddDialog.AddPosterLinkInput')}
-                className='group relative col-start-1 row-span-2 row-start-1 grid aspect-[2/3] w-[72px] shrink-0 self-start place-items-center overflow-hidden rounded-lg bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
+                className='float-left mr-2 mb-1 grid aspect-[2/3] w-20 place-items-center overflow-hidden rounded-md bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
+              >
+                {poster ? (
+                  <img
+                    src={poster}
+                    alt=''
+                    className='h-full w-full object-cover'
+                    onError={event => {
+                      event.currentTarget.style.display = 'none'
+                    }}
+                  />
+                ) : (
+                  <ImagePlus size={16} strokeWidth={1.75} className='text-muted' aria-hidden />
+                )}
+              </button>
+              <TitleRow title={displayTitle} subtitle={subtitle} compact />
+              {heroStats}
+            </div>
+          ) : (
+            /*
+                  Desktop: poster spans the title and both metric rows. Edit/close live in the
+                  right gutter (pr-[6.75rem]), not in the title row.
+                */
+            <div className='ts-details-hero grid shrink-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-1.5 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2.5 pr-[6.75rem]'>
+              <button
+                type='button'
+                onClick={() => setPosterEditOpen(true)}
+                aria-label={t('AddDialog.AddPosterLinkInput')}
+                title={t('AddDialog.AddPosterLinkInput')}
+                className='group relative col-start-1 row-span-3 row-start-1 grid aspect-[2/3] w-28 shrink-0 self-start place-items-center overflow-hidden rounded-lg bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
               >
                 {poster ? (
                   <img
@@ -570,10 +544,15 @@ export default function DetailsDialog({
               </button>
 
               <div className='col-start-2 row-start-1 min-w-0'>
-                <TitleRow title={displayTitle} subtitle={subtitle} compact={false} editControl={editControl} />
+                <TitleRow title={displayTitle} subtitle={subtitle} compact={false} />
               </div>
 
-              <div className='col-start-2 row-start-2 grid min-w-0 w-full grid-cols-9 gap-1'>{heroStats}</div>
+              <div className='col-start-2 row-start-2 grid min-w-0 w-full grid-cols-2 gap-1 min-[720px]:grid-cols-4'>
+                {primaryStats}
+              </div>
+              <div className='col-start-2 row-start-3 grid min-w-0 w-full grid-cols-2 gap-1 min-[720px]:grid-cols-4'>
+                {secondaryStats}
+              </div>
             </div>
           )}
 
@@ -666,9 +645,6 @@ export default function DetailsDialog({
                 <>
                   {/* Content-start: do not flex-stretch a void between cards and CTAs. */}
                   <div className='min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pb-2'>
-                    {secondaryMetricItems.length > 0 ? (
-                      <MetricRows title={t('Details')} items={secondaryMetricItems} columns={1} />
-                    ) : null}
                     <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
                     <SwarmStatsPanel
                       torrent={torrent}
