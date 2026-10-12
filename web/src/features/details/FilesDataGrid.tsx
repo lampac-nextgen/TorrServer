@@ -1,7 +1,7 @@
 import { CheckCircle2 } from 'lucide-react'
 import { memo, useCallback, useMemo, useState, type ReactNode } from 'react'
 import ptt from 'parse-torrent-title'
-import { Button, useMediaQuery } from '@heroui/react'
+import { useMediaQuery } from '@heroui/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { streamHost } from 'shared/api/hosts'
@@ -9,7 +9,7 @@ import { authFetch } from 'shared/api/authCredentials'
 import type { PlayableFile, TorrentFileStat } from 'shared/api/types'
 import { remViewedFile, VIEWED_QUERY_KEY } from 'shared/api/viewed'
 import { shouldUseGStreamerPlayer, useGStreamerRuntime } from 'shared/lib/gstreamer'
-import { useExternalPlayers, type ExternalPlayerLink } from 'shared/lib/externalPlayers'
+import { useExternalPlayers } from 'shared/lib/externalPlayers'
 import { externalLink, useExternalMediaBase } from 'shared/lib/mediaBase'
 import { humanizeSize } from 'shared/lib/format'
 import { queryMax } from 'shared/theme/breakpoints'
@@ -62,25 +62,22 @@ function episodeBadge(episode?: number): string | null {
 
 /**
  * Compact episode/file card used in the details Files list.
- * Mobile: badge + title | Play + …; Clear under subtitle; external players wrap below.
+ * Mobile: badge + title | Play + … (players live in More).
  * Desktop (`sm+`): denser inline viewed chip beside the title; players stay in actions.
  */
 function EpisodeRow({
   row,
   actions,
-  externalPlayers,
   onUnmarkViewed,
 }: {
   row: FileRow
   actions: ReactNode
-  externalPlayers?: ExternalPlayerLink[]
   onUnmarkViewed?: () => void
 }) {
   const { t } = useTranslation()
   const isMobile = useMediaQuery(queryMax('mobile'))
   const badge = episodeBadge(row.episode)
   const title = row.episode != null ? row.name.replace(/^E\d+\s*[·.-]\s*/i, '').trim() || row.name : row.name
-  const showMobilePlayers = isMobile && (externalPlayers?.length ?? 0) > 0
 
   return (
     <div
@@ -133,24 +130,6 @@ function EpisodeRow({
         </div>
         <div className='shrink-0 self-start sm:self-center'>{actions}</div>
       </div>
-
-      {showMobilePlayers ? (
-        <div className='flex w-full items-center gap-1.5'>
-          {externalPlayers!.map(player => (
-            <Button
-              key={player.label}
-              variant='secondary'
-              size='sm'
-              className='min-h-11 min-w-0 flex-1 px-1.5 text-[11px] font-medium'
-              onPress={() => {
-                window.location.href = player.href
-              }}
-            >
-              <span className='truncate'>{player.label}</span>
-            </Button>
-          ))}
-        </div>
-      ) : null}
     </div>
   )
 }
@@ -278,7 +257,6 @@ const FilesDataGrid = memo(
             <EpisodeRow
               key={row.id}
               row={row}
-              externalPlayers={externalPlayers}
               onUnmarkViewed={row.viewed ? () => void unmarkViewed(row.id) : undefined}
               actions={
                 <FileRowActions

@@ -23,7 +23,7 @@ export interface FileRowActionsProps {
   showOpenLink?: boolean
   /** Direct stream URL copied by "Copy link". */
   copyText: string
-  /** Deep links for Infuse / VLC / etc. — always visible; never buried in the More menu. */
+  /** Deep links for Infuse / VLC / etc. Desktop chips; mobile More menu. */
   externalPlayers: ExternalPlayerLink[]
   onProbeMedia?: () => void
 }
@@ -42,10 +42,8 @@ const moreBtn = `${iconBtn} text-muted hover-fine:text-foreground`
  *
  * Layout contract:
  * - Play is always primary and reachable (doctrine).
- * - External players stay on-screen (not only in a menu).
- * - Open / Copy / Preload / MediaInfo: spaced ghost icons on desktop; `⋯` on mobile.
- * - Mobile: Play icon + More only — EpisodeRow wraps external chips under the meta line
- *   so titles keep horizontal room.
+ * - Desktop: external players stay on the row.
+ * - Mobile: Play + More only; players and utilities live in that menu.
  */
 export default function FileRowActions({
   preloadLabel,
@@ -174,6 +172,19 @@ export default function FileRowActions({
         className='max-h-[min(70dvh,24rem)] min-w-[12rem] overflow-y-auto'
       >
         <Dropdown.Menu aria-label={t('Actions')}>
+          {externalPlayers.map(player => (
+            <Dropdown.Item
+              key={player.label}
+              className='min-h-11'
+              onPress={() => {
+                moreMenu.close()
+                window.location.href = player.href
+              }}
+            >
+              <SquareArrowOutUpRight {...menuIcon} />
+              {player.label}
+            </Dropdown.Item>
+          ))}
           {showOpenIcon ? (
             <Dropdown.Item
               className='min-h-11'
