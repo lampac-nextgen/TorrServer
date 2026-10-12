@@ -302,9 +302,10 @@ export default function DetailsDialog({
 
   const displayTitle = buildDisplayTitle(name, title) || title || name || hash
   const subtitle = name && title !== name ? ptt.parse(name).title || name : null
-  // IN_DB torrents still carry a persisted file list in `data` — only block the UI while the
-  // live torrent is actively resolving metadata and we have nothing to show yet.
-  const isLoadingMetadata = stat === GETTING_INFO && playableFileList.length === 0
+  // IN_DB torrents still carry a persisted file list in `data`. With no list yet (In DB or
+  // getting info) keep one pending files view — don't claim the torrent has nothing to play.
+  const filesUnknown = playableFileList.length === 0 && (stat === GETTING_INFO || stat === IN_DB)
+  const isLoadingMetadata = stat === GETTING_INFO && filesUnknown
   const hasMultipleSeasons = (seasonList?.length ?? 0) > 1
 
   const cacheFilledValue = formatCacheFilledLabel(cache.Filled, cache.Capacity) ?? '—'
@@ -543,12 +544,16 @@ export default function DetailsDialog({
                   </div>
                 ) : null}
 
-                {isLoadingMetadata ? (
-                  <div className='space-y-2' aria-busy aria-label={t('TorrentGettingInfo')}>
+                {filesUnknown ? (
+                  <div
+                    className='space-y-2'
+                    aria-busy={isLoadingMetadata || undefined}
+                    aria-label={isLoadingMetadata ? t('TorrentGettingInfo') : t('TorrentInDb')}
+                  >
                     {Array.from({ length: 4 }, (_, i) => (
                       <div
                         key={i}
-                        className='h-[4.5rem] animate-pulse rounded-xl border border-border bg-surface sm:h-[3.25rem]'
+                        className={`h-[4.5rem] rounded-xl border border-border bg-surface sm:h-[3.25rem] ${isLoadingMetadata ? 'animate-pulse' : ''}`}
                       />
                     ))}
                   </div>

@@ -84,7 +84,9 @@ function TorrentActions({
     },
   })
 
-  const isSingleFileTorrent = playableFileList?.length === 1
+  const fileCount = playableFileList?.length ?? 0
+  /** Series controls need a known multi-file list. In DB / getting info (0 files) stays on the film row. */
+  const isSeries = fileCount > 1
   const latestViewedFileId = viewedFileList?.[viewedFileList.length - 1]
   const latestViewedFilePath = playableFileList?.find(({ id }) => id === latestViewedFileId)?.path
   const latestViewedFileInfo = latestViewedFilePath ? ptt.parse(latestViewedFilePath) : null
@@ -200,7 +202,7 @@ function TorrentActions({
     }
   }
 
-  const hasPartialProgress = !isSingleFileTorrent && !!viewedFileList?.length
+  const hasPartialProgress = isSeries && !!viewedFileList?.length
   const latestPlayed = hasPartialProgress ? (
     <p className='truncate text-xs text-muted'>
       {t('LatestFilePlayed')}{' '}
@@ -244,7 +246,7 @@ function TorrentActions({
   )
 
   const playlistBtn = 'min-h-9 min-w-0 flex-1'
-  const playlistButtons = isSingleFileTorrent ? (
+  const playlistButtons = !isSeries ? (
     <Button
       variant='primary'
       className='min-h-9 shrink-0'
