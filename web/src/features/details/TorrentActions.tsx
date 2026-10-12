@@ -60,7 +60,7 @@ function ExternalPlayersGroup({
   players: { label: string; href: string }[]
   size?: 'sm' | 'md' | 'lg'
   compact?: boolean
-  /** Equal-width chips across the row (desktop Stats). */
+  /** Equal-width chips across the row (desktop Files). */
   stretch?: boolean
 }) {
   if (players.length === 0) return null
@@ -88,7 +88,7 @@ function ExternalPlayersGroup({
 }
 
 /**
- * Stats-tab action block: playlist / magnet / hash / drop / clear viewed.
+ * Files-tab action block: playlist / magnet / hash / drop / clear viewed.
  * Play + Cache live on their own tabs; copy helpers use {@link copyToClipboard}.
  */
 function TorrentActions({

@@ -563,8 +563,8 @@ export default function DetailsDialog({
               </Tabs.List>
             </Tabs.ListContainer>
 
-            <Tabs.Panel id='files' className='min-h-0 flex-1 overflow-y-auto overscroll-contain pt-2 sm:pt-3'>
-              <div className='pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
+            <Tabs.Panel id='files' className='flex min-h-0 flex-1 flex-col overflow-hidden pt-2 sm:pt-3'>
+              <div className='min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
                 {/* Reserve chip-row height while metadata loads or when multi-season — list won't jump. */}
                 {hasMultipleSeasons || isLoadingMetadata ? (
                   <div className='mb-2 min-h-11 sm:mb-3'>
@@ -609,45 +609,35 @@ export default function DetailsDialog({
                   />
                 )}
               </div>
+              <div className='shrink-0 border-t border-border bg-surface/95 pt-2 backdrop-blur-sm'>
+                {torrentActions}
+              </div>
             </Tabs.Panel>
 
-            <Tabs.Panel
-              id='stats'
-              className={`flex min-h-0 flex-1 flex-col pt-3 ${useCompactDetails ? 'overflow-hidden' : 'gap-3 overflow-y-auto overscroll-contain'
-                }`}
-            >
+            <Tabs.Panel id='stats' className='min-h-0 flex-1 overflow-y-auto overscroll-contain pt-3'>
               {useCompactDetails ? (
-                <>
-                  {/* Content-start: do not flex-stretch a void between cards and CTAs. */}
-                  <div className='min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pb-2'>
-                    <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
-                    <SwarmStatsPanel
-                      torrent={torrent}
-                      variant='summary'
-                      columns={2}
-                      showTitle={false}
-                      cache={cache}
-                      preloadCachePercent={preloadCachePercent}
-                    />
-                  </div>
-                  <div className='shrink-0 border-t border-border bg-surface/95 pt-2 backdrop-blur-sm'>
-                    {torrentActions}
-                  </div>
-                </>
+                <div className='space-y-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
+                  <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
+                  <SwarmStatsPanel
+                    torrent={torrent}
+                    variant='summary'
+                    columns={2}
+                    showTitle={false}
+                    cache={cache}
+                    preloadCachePercent={preloadCachePercent}
+                  />
+                </div>
               ) : (
-                <>
-                  <div className='grid min-h-[14rem] shrink-0 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-stretch gap-3'>
-                    <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact fill />
-                    <SwarmStatsPanel
-                      torrent={torrent}
-                      variant='summary'
-                      stretch
-                      cache={cache}
-                      preloadCachePercent={preloadCachePercent}
-                    />
-                  </div>
-                  <div className='shrink-0'>{torrentActions}</div>
-                </>
+                <div className='grid min-h-[14rem] grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-stretch gap-3 pb-3'>
+                  <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact fill />
+                  <SwarmStatsPanel
+                    torrent={torrent}
+                    variant='summary'
+                    stretch
+                    cache={cache}
+                    preloadCachePercent={preloadCachePercent}
+                  />
+                </div>
               )}
             </Tabs.Panel>
 
