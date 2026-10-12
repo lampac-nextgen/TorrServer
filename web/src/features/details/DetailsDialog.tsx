@@ -610,9 +610,9 @@ export default function DetailsDialog({
               </div>
             </Tabs.Panel>
 
-            <Tabs.Panel id='stats' className='min-h-0 flex-1 overflow-y-auto overscroll-contain pt-3'>
+            <Tabs.Panel id='stats' className='flex min-h-0 flex-1 flex-col overflow-hidden pt-3'>
               {useCompactDetails ? (
-                <div className='space-y-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
+                <div className='min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
                   <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
                   <SwarmStatsPanel
                     torrent={torrent}
@@ -623,10 +623,11 @@ export default function DetailsDialog({
                   />
                 </div>
               ) : (
-                <div className='grid min-h-[14rem] grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-start gap-3 pb-3'>
+                <div className='grid min-h-0 flex-1 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-stretch gap-3 pb-3'>
                   <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact fill />
                   <SwarmStatsPanel
                     torrent={torrent}
+                    className='h-full min-h-0'
                     cacheReaders={cache.Readers?.length ?? 0}
                     cache={cache}
                     preloadCachePercent={preloadCachePercent}

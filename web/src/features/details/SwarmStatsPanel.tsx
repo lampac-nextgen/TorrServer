@@ -172,8 +172,8 @@ export default function SwarmStatsPanel({
 
   const inner = (
     <>
-      <MetricRows framed={false} items={items} columns={columns} dense />
-      <div className='mt-2 space-y-1.5 border-t border-border pt-2'>
+      <MetricRows framed={false} items={items} columns={columns} dense spread />
+      <div className='mt-auto shrink-0 space-y-1.5 border-t border-border pt-2'>
         <PeerMixBar
           active={torrent.active_peers ?? 0}
           seeders={torrent.connected_seeders ?? 0}
@@ -203,7 +203,9 @@ export default function SwarmStatsPanel({
   }
 
   return (
-    <div className={`flex flex-col rounded-xl border border-border bg-surface-secondary p-2.5 ${className}`.trim()}>
+    <div
+      className={`flex min-h-0 flex-col rounded-xl border border-border bg-surface-secondary p-2.5 ${className}`.trim()}
+    >
       {inner}
     </div>
   )
