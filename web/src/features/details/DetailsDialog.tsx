@@ -211,7 +211,6 @@ export default function DetailsDialog({
   const {
     poster,
     title,
-    category,
     name,
     stat,
     download_speed: downloadSpeed,
@@ -329,7 +328,7 @@ export default function DetailsDialog({
     autoPlayTimecode,
   })
 
-  /** All nine hero tiles. On the phone they are inline so they wrap the floated poster. */
+  /** Eight hero tiles, 4×2. Category stays off the hero. */
   const primaryStats = (
     <>
       <StatWidget
@@ -400,13 +399,6 @@ export default function DetailsDialog({
         label={t('PiecesLength')}
         value={cache.PiecesLength != null ? humanizeSize(cache.PiecesLength) : '—'}
       />
-      <StatWidget
-        dense={useCompactDetails}
-        compact={useCompactDetails}
-        tight={useCompactDetails}
-        label={t('Category')}
-        value={category || '—'}
-      />
     </>
   )
 
@@ -473,7 +465,7 @@ export default function DetailsDialog({
           className={`flex min-h-0 flex-1 flex-col gap-2 overflow-hidden sm:gap-3${sheetFull ? ' pt-0' : ' pt-1'}`}
         >
           {useCompactDetails ? (
-            /* Phone: poster beside the title, then one even 3×3 grid. Tiles do not wrap into the poster column. */
+            /* Phone: poster beside the title, then one even 4×2 grid. */
             <div className='ts-details-hero ts-details-hero-flow shrink-0 space-y-2 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2'>
               <div className='flex items-start gap-2'>
                 <button
@@ -481,7 +473,7 @@ export default function DetailsDialog({
                   onClick={() => setPosterEditOpen(true)}
                   aria-label={t('AddDialog.AddPosterLinkInput')}
                   title={t('AddDialog.AddPosterLinkInput')}
-                  className='grid aspect-[2/3] w-20 shrink-0 place-items-center overflow-hidden rounded-md bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
+                  className='grid aspect-[2/3] w-16 shrink-0 place-items-center overflow-hidden rounded-md bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
                 >
                   {poster ? (
                     <img
@@ -500,20 +492,20 @@ export default function DetailsDialog({
                   <TitleRow title={displayTitle} subtitle={subtitle} compact />
                 </div>
               </div>
-              <div className='grid grid-cols-3 gap-1'>{heroStats}</div>
+              <div className='grid grid-cols-4 gap-1'>{heroStats}</div>
             </div>
           ) : (
             /*
-                  Desktop: poster spans the title and one 3×3 metric grid (9 tiles, no leftover cell).
-                  Edit/close live in the right gutter.
+                  Desktop: poster spans the title and one 4×2 metric grid.
+                  Button clearance is only on the title row — the grid stays full width.
                 */
-            <div className='ts-details-hero grid shrink-0 grid-cols-[auto_minmax(0,1fr)] items-stretch gap-x-3 gap-y-2 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2.5 pr-[6.75rem]'>
+            <div className='ts-details-hero grid shrink-0 grid-cols-[auto_minmax(0,1fr)] items-stretch gap-x-3 gap-y-2 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2.5'>
               <button
                 type='button'
                 onClick={() => setPosterEditOpen(true)}
                 aria-label={t('AddDialog.AddPosterLinkInput')}
                 title={t('AddDialog.AddPosterLinkInput')}
-                className='group relative col-start-1 row-span-2 row-start-1 grid h-full w-44 shrink-0 self-stretch place-items-center overflow-hidden rounded-lg bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
+                className='group relative col-start-1 row-span-2 row-start-1 grid h-full min-h-0 w-36 shrink-0 self-stretch place-items-center overflow-hidden rounded-lg bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
               >
                 {poster ? (
                   <img
@@ -532,11 +524,11 @@ export default function DetailsDialog({
                 </span>
               </button>
 
-              <div className='col-start-2 row-start-1 min-w-0'>
+              <div className='col-start-2 row-start-1 min-h-12 min-w-0 pr-[6.75rem]'>
                 <TitleRow title={displayTitle} subtitle={subtitle} compact={false} />
               </div>
 
-              <div className='col-start-2 row-start-2 grid min-w-0 w-full grid-cols-3 gap-1.5'>{heroStats}</div>
+              <div className='col-start-2 row-start-2 grid min-w-0 w-full grid-cols-4 gap-1.5'>{heroStats}</div>
             </div>
           )}
 
@@ -675,7 +667,7 @@ export default function DetailsDialog({
               />
             </Tabs.Panel>
 
-            <Tabs.Panel id='cache' className='flex min-h-0 flex-1 flex-col gap-2 overflow-hidden pt-3 sm:gap-4 sm:pt-4'>
+            <Tabs.Panel id='cache' className='flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain pt-3 sm:gap-4 sm:pt-4'>
               <div className='flex shrink-0 flex-col gap-2'>
                 <div className='flex items-center justify-between gap-2'>
                   {useCompactDetails ? null : (
@@ -746,8 +738,9 @@ export default function DetailsDialog({
                 </div>
               </div>
 
-              {/* flex-1 height chain required: detailed snake sizes rows via ResizeObserver height. */}
-              <div className='flex min-h-0 min-w-0 flex-1 flex-col'>
+              {/* flex-1 height chain required: detailed snake sizes rows via ResizeObserver height.
+                  min-h keeps at least ~4 rows when the 3×3 hero has already taken the sheet. */}
+              <div className='flex min-h-[12rem] min-w-0 flex-1 flex-col'>
                 <TorrentCache cache={cache} mode='detailed' isSnakeDebugMode={isSnakeDebugMode} hash={hash} />
               </div>
             </Tabs.Panel>

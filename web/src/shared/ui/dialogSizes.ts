@@ -67,12 +67,13 @@ export const DIALOG_SEARCH: CSSProperties = {
   width: 'min(92vw, 56rem)',
 }
 
-/** Details sheet — fixed height so Files / Stats / Cache tabs don't resize the window. */
+/** Details sheet — fixed height so Files / Stats / Cache tabs don't resize the window.
+ *  4×2 hero still needs the extra height so the cache snake keeps several rows. */
 export const DIALOG_DETAILS: CSSProperties = {
   ...DIALOG_SHEET_L,
-  height: 'min(80dvh, 46rem)',
-  maxHeight: 'min(80dvh, 46rem)',
-  minHeight: 'min(80dvh, 46rem)',
+  height: 'min(92dvh, 56rem)',
+  maxHeight: 'min(92dvh, 56rem)',
+  minHeight: 'min(92dvh, 56rem)',
 }
 
 /** Edit torrent — fixed height so poster search results don't resize the sheet. */
