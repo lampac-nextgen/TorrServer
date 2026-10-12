@@ -109,9 +109,8 @@ export default function TorrentCard({
   return (
     <article
       ref={cardRef}
-      className={`torrent-card group flex min-w-0 flex-col gap-2 ${
-        selected ? 'rounded-2xl ring-2 ring-accent ring-offset-2 ring-offset-background' : ''
-      }`}
+      className={`torrent-card group flex min-w-0 flex-col gap-2 ${selected ? 'rounded-2xl ring-2 ring-accent ring-offset-2 ring-offset-background' : ''
+        }`}
       data-hash={torrent.hash}
       onMouseLeave={hoverFine ? blurFocusedControl : undefined}
     >
@@ -165,9 +164,8 @@ export default function TorrentCard({
         {resumeEntry && !selectionMode && onResume ? (
           <button
             type='button'
-            className={`absolute left-2 z-20 inline-flex min-h-8 max-w-[calc(100%-1rem)] items-center gap-1 rounded-full bg-black/70 px-2.5 py-1 text-xs font-medium text-white hover-fine:bg-black/85 ${
-              hoverFine ? 'bottom-2' : 'bottom-14'
-            }`}
+            className={`absolute left-2 z-20 inline-flex min-h-8 max-w-[calc(100%-1rem)] items-center gap-1 rounded-full bg-black/70 px-2.5 py-1 text-xs font-medium text-white hover-fine:bg-black/85 ${hoverFine ? 'bottom-2' : 'bottom-16'
+              }`}
             onClick={event => {
               event.stopPropagation()
               onResume()

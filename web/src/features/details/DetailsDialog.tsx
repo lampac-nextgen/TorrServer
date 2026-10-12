@@ -1,4 +1,4 @@
-import { Button, Checkbox, Modal, Tabs, ToggleButton, ToggleButtonGroup, useMediaQuery } from '@heroui/react'
+import { Button, Checkbox, Chip, Modal, Tabs, ToggleButton, ToggleButtonGroup, useMediaQuery } from '@heroui/react'
 import { ImagePlus, Pencil, X } from 'lucide-react'
 import { useEffect, useMemo, useState, useCallback, type ReactNode } from 'react'
 import ptt from 'parse-torrent-title'
@@ -25,7 +25,7 @@ import { useSettingsQuery } from 'shared/hooks/useSettingsQuery'
 import { filesFromMetadata } from 'shared/torrent/fileMetadata'
 import { isFilePlayable } from 'shared/torrent/playable'
 import { CLOSED, GETTING_INFO, IN_DB, PRELOAD, WORKING } from 'shared/torrent/states'
-import { MEDIA_SHORT_VIEWPORT, queryMax, queryMin } from 'shared/theme/breakpoints'
+import { MEDIA_SHORT_VIEWPORT, queryMax } from 'shared/theme/breakpoints'
 import AppDialog from 'shared/ui/AppDialog'
 import { iconBtn } from 'shared/ui/controlClasses'
 import { DIALOG_DETAILS } from 'shared/ui/dialogSizes'
@@ -74,30 +74,27 @@ function StatWidget({
   const shown = value || '—'
   return (
     <div
-      className={`min-w-0 rounded-md border border-border bg-surface-secondary text-center ${
-        dense ? (tight ? 'w-full px-1.5 py-0.5' : 'w-full px-1.5 py-1') : 'px-2.5 py-2 sm:min-w-[104px] sm:px-3'
-      }`}
+      className={`min-w-0 rounded-md border border-border bg-surface-secondary text-center ${dense ? (tight ? 'w-full px-1.5 py-0.5' : 'w-full px-1.5 py-1') : 'px-2.5 py-2 sm:min-w-[104px] sm:px-3'
+        }`}
       title={hint || undefined}
     >
       <span
-        className={`block leading-tight text-muted ${
-          tight
+        className={`block leading-tight text-muted ${tight
             ? 'truncate text-[11px]'
             : compact
               ? 'line-clamp-2 min-h-[1.75rem] text-[10px]'
               : dense
                 ? 'truncate text-[11px]'
                 : 'truncate text-[11px] sm:text-xs'
-        }`}
+          }`}
         title={hint || label}
       >
         {label}
       </span>
       {/* Single-line value — long labels must not wrap and grow the hero. */}
       <span
-        className={`block truncate font-bold tabular-nums text-foreground ${
-          dense ? 'mt-0.5 h-3.5 text-[11px] leading-3.5' : 'mt-1 h-5 text-sm leading-5 sm:h-6 sm:text-base sm:leading-6'
-        }`}
+        className={`block truncate font-bold tabular-nums text-foreground ${dense ? 'mt-0.5 h-3.5 text-[11px] leading-3.5' : 'mt-1 h-5 text-sm leading-5 sm:h-6 sm:text-base sm:leading-6'
+          }`}
         title={shown}
       >
         {shown}
@@ -137,24 +134,25 @@ function TitleRow({
   subtitle,
   compact,
   editControl,
+  status,
 }: {
   title: string
   subtitle: string | null
   compact: boolean
   editControl?: ReactNode
+  status?: string
 }) {
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
   /** Drop subtitle when it already appears inside the primary title (common after ptt parse). */
   const showSubtitle = !!subtitle && !title.toLocaleLowerCase().includes(subtitle.toLocaleLowerCase())
 
-  const titleClass = `min-w-0 flex-1 font-bold text-foreground ${
-    compact
+  const titleClass = `min-w-0 flex-1 font-bold text-foreground ${compact
       ? expanded
         ? 'text-[15px] leading-snug'
         : 'line-clamp-3 text-[15px] leading-snug'
       : 'line-clamp-2 text-lg leading-snug'
-  }`
+    }`
 
   return (
     <div className='min-w-0 flex-1'>
@@ -175,6 +173,11 @@ function TitleRow({
             {title}
           </h2>
         )}
+        {status ? (
+          <Chip size='sm' variant='soft' className='max-w-[42%] shrink-0'>
+            <Chip.Label className='truncate'>{status}</Chip.Label>
+          </Chip>
+        ) : null}
         {editControl}
       </div>
       {showSubtitle ? (
@@ -204,13 +207,10 @@ export default function DetailsDialog({
   /** Equal-width Files/Stats/Cache segments — only needed below the phone breakpoint. */
   const isMobile = useMediaQuery(queryMax('mobile'))
   const isShortViewport = useMediaQuery(MEDIA_SHORT_VIEWPORT)
-  /** Wider phones (≥420px): hero can fit 6 chips including Cache + Status. */
-  const isPhoneWide = useMediaQuery(queryMin('phone'))
   /** Edge-to-edge sheet — AppDialog applies the same useDialogFullScreen policy. */
   const sheetFull = isFullScreen
   /** Compact chrome only on phone / short viewports — not force-fullscreen on a wide monitor. */
   const useCompactDetails = isMobile || isShortViewport
-  const showHeroSix = useCompactDetails && (isMobile ? isPhoneWide : true)
 
   const hash = initialTorrent.hash
   const { data: liveTorrent } = useTorrentDetail(hash, initialTorrent)
@@ -280,9 +280,9 @@ export default function DetailsDialog({
   useEffect(() => {
     const seasons = seasonsFingerprint
       ? seasonsFingerprint
-          .split(',')
-          .map(Number)
-          .filter(n => Number.isFinite(n) && n > 0)
+        .split(',')
+        .map(Number)
+        .filter(n => Number.isFinite(n) && n > 0)
       : []
     // eslint-disable-next-line react-hooks/set-state-in-effect -- keep season list/selection valid when file list changes
     setSeasonList(seasons)
@@ -351,28 +351,28 @@ export default function DetailsDialog({
       <StatWidget
         dense
         compact={useCompactDetails}
-        tight={useCompactDetails && !showHeroSix}
+        tight={useCompactDetails}
         label={t('DownloadSpeed')}
         value={humanizeSpeed(downloadSpeed)}
       />
       <StatWidget
         dense
         compact={useCompactDetails}
-        tight={useCompactDetails && !showHeroSix}
+        tight={useCompactDetails}
         label={t('UploadSpeed')}
         value={humanizeSpeed(uploadSpeed)}
       />
       <StatWidget
         dense
         compact={useCompactDetails}
-        tight={useCompactDetails && !showHeroSix}
+        tight={useCompactDetails}
         label={t('Peers') + '·' + t('Seeders')}
         value={getPeerString(torrent) || '—'}
       />
       <StatWidget
         dense
         compact={useCompactDetails}
-        tight={useCompactDetails && !showHeroSix}
+        tight={useCompactDetails}
         label={t('Size')}
         value={humanizeSize(torrentSize)}
       />
@@ -384,7 +384,7 @@ export default function DetailsDialog({
       <StatWidget
         dense
         compact={useCompactDetails}
-        tight={useCompactDetails && !showHeroSix}
+        tight={useCompactDetails}
         label={t('CacheFilled')}
         value={cacheFilledValue}
         hint={t('CacheHint')}
@@ -392,7 +392,7 @@ export default function DetailsDialog({
       <StatWidget
         dense
         compact={useCompactDetails}
-        tight={useCompactDetails && !showHeroSix}
+        tight={useCompactDetails}
         label={t('Status')}
         value={statusLabel(stat)}
       />
@@ -426,14 +426,10 @@ export default function DetailsDialog({
     </>
   )
 
-  /** Stats-tab dense rows (mobile) — omit Cache/Status when already in the 6-chip hero. */
+  /** Stats-tab dense rows (mobile). Cache/Status stay here; Status is also a hero chip. */
   const secondaryMetricItems = [
-    ...(showHeroSix
-      ? []
-      : [
-          { label: t('CacheFilled'), value: cacheFilledValue, hint: t('CacheHint') },
-          { label: t('Status'), value: statusLabel(stat) },
-        ]),
+    { label: t('CacheFilled'), value: cacheFilledValue, hint: t('CacheHint') },
+    { label: t('Status'), value: statusLabel(stat) },
     { label: t('PiecesCount'), value: cache.PiecesCount != null ? String(cache.PiecesCount) : '—' },
     {
       label: t('PiecesLength'),
@@ -516,7 +512,7 @@ export default function DetailsDialog({
                   onClick={() => setPosterEditOpen(true)}
                   aria-label={t('AddDialog.AddPosterLinkInput')}
                   title={t('AddDialog.AddPosterLinkInput')}
-                  className='group relative grid h-12 min-h-11 w-11 min-w-11 shrink-0 place-items-center overflow-hidden rounded-md bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
+                  className='group relative grid aspect-[2/3] w-16 shrink-0 place-items-center overflow-hidden rounded-md bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2 min-[420px]:w-20'
                 >
                   {poster ? (
                     <img
@@ -531,11 +527,15 @@ export default function DetailsDialog({
                     <ImagePlus size={16} strokeWidth={1.75} className='text-muted' aria-hidden />
                   )}
                 </button>
-                <TitleRow title={displayTitle} subtitle={subtitle} compact />
+                <TitleRow
+                  title={displayTitle}
+                  subtitle={subtitle}
+                  compact
+                  status={stat != null ? statusLabel(stat) : undefined}
+                />
               </div>
-              <div className={`grid w-full gap-1 ${showHeroSix ? 'grid-cols-3' : 'grid-cols-2'}`}>
+              <div className='grid w-full grid-cols-2 gap-1 min-[420px]:grid-cols-4'>
                 {primaryStats}
-                {showHeroSix ? cacheStatusStats : null}
               </div>
             </div>
           ) : (
@@ -659,9 +659,8 @@ export default function DetailsDialog({
 
             <Tabs.Panel
               id='stats'
-              className={`flex min-h-0 flex-1 flex-col pt-3 ${
-                useCompactDetails ? 'overflow-hidden' : 'gap-3 overflow-y-auto overscroll-contain'
-              }`}
+              className={`flex min-h-0 flex-1 flex-col pt-3 ${useCompactDetails ? 'overflow-hidden' : 'gap-3 overflow-y-auto overscroll-contain'
+                }`}
             >
               {useCompactDetails ? (
                 <>

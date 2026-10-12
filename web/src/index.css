@@ -2311,8 +2311,8 @@ html.dark body {
 
 body[data-modal-open='true'] .ts-bottom-nav {
   pointer-events: none;
-  /* Keep in-flow height so the shell does not jump; modal covers the reserved band */
-  visibility: hidden;
+  /* Stay in flow and visible: menus and centered confirms do not cover the bar.
+     Fullscreen dialogs paint over it. The player hides it via data-immersive. */
 }
 
 body[data-immersive='true'] .ts-bottom-nav {

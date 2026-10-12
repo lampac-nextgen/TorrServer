@@ -242,12 +242,13 @@ function TorrentActions({
               <Modal.Heading>{confirmHeading}</Modal.Heading>
             </Modal.Header>
             <Modal.Body>{confirmBody}</Modal.Body>
-            <Modal.Footer className='shrink-0'>
-              <Button variant='secondary' onPress={() => setPendingConfirm(null)} autoFocus>
+            <Modal.Footer className='flex w-full shrink-0 justify-center gap-2'>
+              <Button variant='secondary' className='min-h-11 flex-1' onPress={() => setPendingConfirm(null)} autoFocus>
                 {t('Cancel')}
               </Button>
               <Button
                 variant={pendingConfirm === 'drop' || pendingConfirm === 'delete' ? 'danger' : 'primary'}
+                className='min-h-11 flex-1'
                 onPress={runPendingConfirm}
               >
                 {t('OK')}
@@ -351,8 +352,8 @@ function TorrentActions({
                     : null}
                   {isSingleFileTorrent || !viewedFileList?.length
                     ? sheetAction(t('DownloadPlaylist'), <ListMusic {...iconMenu} aria-hidden />, () =>
-                        window.open(fullPlaylistLink, '_blank'),
-                      )
+                      window.open(fullPlaylistLink, '_blank'),
+                    )
                     : null}
                   {sheetAction(t('CopyMagnet'), <Magnet {...iconMenu} aria-hidden />, () => void copyMagnetLink())}
                   {sheetAction(t('CopyHash'), <Hash {...iconMenu} aria-hidden />, () => void copyInfoHash())}
