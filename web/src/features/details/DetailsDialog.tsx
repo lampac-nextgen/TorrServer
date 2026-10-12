@@ -79,12 +79,12 @@ function StatWidget({
     >
       <span
         className={`block leading-tight text-muted ${tight
-            ? 'truncate text-[11px]'
-            : compact
-              ? 'line-clamp-2 min-h-[1.75rem] text-[10px]'
-              : dense
-                ? 'truncate text-[11px]'
-                : 'truncate text-[11px] sm:text-xs'
+          ? 'truncate text-[11px]'
+          : compact
+            ? 'line-clamp-2 min-h-[1.75rem] text-[10px]'
+            : dense
+              ? 'truncate text-[11px]'
+              : 'truncate text-[11px] sm:text-xs'
           }`}
         title={hint || label}
       >
@@ -134,10 +134,10 @@ function TitleRow({ title, subtitle, compact }: { title: string; subtitle: strin
   const showSubtitle = !!subtitle && !title.toLocaleLowerCase().includes(subtitle.toLocaleLowerCase())
 
   const titleClass = `min-w-0 flex-1 font-bold text-foreground ${compact
-      ? expanded
-        ? 'text-[15px] leading-snug'
-        : 'line-clamp-6 text-[15px] leading-snug'
-      : 'line-clamp-2 text-lg leading-snug'
+    ? expanded
+      ? 'text-[15px] leading-snug'
+      : 'line-clamp-6 text-[15px] leading-snug'
+    : 'line-clamp-2 text-lg leading-snug'
     }`
 
   return (
@@ -393,7 +393,7 @@ export default function DetailsDialog({
         aria-label={t('EditTorrent')}
         onClick={() => onEdit(torrent)}
       >
-        <Pencil aria-hidden />
+        <Pencil {...iconChrome} aria-hidden />
       </button>
     ) : null
 

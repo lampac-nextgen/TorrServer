@@ -2487,11 +2487,20 @@ body[data-immersive='true'] .ts-bottom-nav {
     place-items: center;
   }
 
-  /* Edit sits left of absolute Close — clear both 44px targets + gap. */
+  /* Edit sits left of absolute Close — same 44px box as `.modal__close-trigger`. */
   .modal__dialog.ts-details-modal .ts-details-edit-trigger {
     position: absolute;
     top: max(0.5rem, env(safe-area-inset-top, 0px));
     right: max(3.5rem, calc(3rem + env(safe-area-inset-right, 0px)));
+  }
+
+  .modal__dialog.ts-details-modal .ts-details-edit-trigger>button {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    place-items: center;
   }
 
   .modal__dialog>.modal__body.modal__body--scroll-inside,
@@ -2781,6 +2790,15 @@ body[data-immersive='true'] .ts-bottom-nav {
   position: absolute;
   top: max(0.5rem, env(safe-area-inset-top, 0px));
   right: max(3.5rem, calc(3rem + env(safe-area-inset-right, 0px)));
+}
+
+.modal__dialog--full.ts-details-modal .ts-details-edit-trigger>button {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  place-items: center;
 }
 
 .modal__dialog--full.ts-details-modal .ts-details-tabs {
