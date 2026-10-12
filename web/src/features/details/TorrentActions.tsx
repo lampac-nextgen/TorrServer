@@ -17,12 +17,13 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { PlayableFile, TorrentStat } from 'shared/api/types'
 import { torrsShareUrl } from 'shared/api/extras'
-import { playlistTorrHost, streamHost } from 'shared/api/hosts'
+import { playlistTorrHost } from 'shared/api/hosts'
 import { dropTorrent, markTorrentsDroppedInList, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { clearViewedFiles } from 'shared/api/viewed'
 import { useExternalPlayers } from 'shared/lib/externalPlayers'
 import { externalLink, useExternalMediaBase } from 'shared/lib/mediaBase'
 import { copyToClipboard } from 'shared/lib/clipboard'
+import { streamPlayUrl, torrentPlaylistUrl } from 'shared/lib/posterPlay'
 import { requestOpenSettings } from 'shared/lib/settingsEvents'
 import { queryMax } from 'shared/theme/breakpoints'
 import { iconMenu } from 'shared/ui/iconProps'
@@ -140,18 +141,23 @@ function TorrentActions({
     autoPlayTimecode,
   })
 
-  /** Only offer app deep links when there's exactly one obvious file to hand off. */
-  const { buildExternalPlayers, hasAnyExternalPlayer } = useExternalPlayers()
+  /** File row owns single-file players. Series footer opens the whole playlist. */
+  const { buildSeriesExternalPlayers, hasAnyExternalPlayer } = useExternalPlayers()
   const mediaBase = useExternalMediaBase()
   const singleFileStream = useMemo(() => {
     if (playableFileList?.length !== 1) return null
-    const file = playableFileList[0]
-    const fileName = file.path.split('\\').pop()?.split('/').pop() || file.path
-    const link = `${streamHost()}/${encodeURIComponent(fileName)}?link=${hash}&index=${file.id}&play`
-    const fullLink = externalLink(link, mediaBase).toString()
-    return { link, fullLink, externalPlayers: buildExternalPlayers(fullLink) }
-  }, [playableFileList, hash, buildExternalPlayers, mediaBase])
-  const externalPlayers = singleFileStream?.externalPlayers ?? []
+    return { fullLink: externalLink(streamPlayUrl(hash, playableFileList[0]), mediaBase).toString() }
+  }, [playableFileList, hash, mediaBase])
+  const seriesPlayers = useMemo(() => {
+    if (!playableFileList || playableFileList.length < 2) return []
+    const playlist = externalLink(torrentPlaylistUrl(hash, displayName), mediaBase).toString()
+    const episodes = playableFileList.map(file => ({
+      url: externalLink(streamPlayUrl(hash, file), mediaBase).toString(),
+      filename: file.path.split('\\').pop()?.split('/').pop() || file.path,
+    }))
+    return buildSeriesExternalPlayers(playlist, episodes)
+  }, [playableFileList, hash, displayName, mediaBase, buildSeriesExternalPlayers])
+  const showPlayerHint = (playableFileList?.length ?? 0) > 0 && !hasAnyExternalPlayer
 
   const runPendingConfirm = () => {
     if (pendingConfirm === 'drop' || pendingConfirm === 'delete') {
@@ -286,13 +292,13 @@ function TorrentActions({
           </Button>
         </div>
 
-        {externalPlayers.length > 0 ? (
+        {seriesPlayers.length > 0 ? (
           <div className='flex flex-wrap items-center gap-1.5'>
-            <ExternalPlayersGroup players={externalPlayers} compact />
+            <ExternalPlayersGroup players={seriesPlayers} compact />
           </div>
         ) : null}
 
-        {isSingleFileTorrent && !hasAnyExternalPlayer ? (
+        {showPlayerHint ? (
           <button
             type='button'
             onClick={() => requestOpenSettings('app')}
@@ -390,19 +396,13 @@ function TorrentActions({
 
   return (
     <div className='space-y-4'>
-      {externalPlayers.length > 0 || singleFileStream ? (
+      {seriesPlayers.length > 0 ? (
         <div className='flex w-full items-center gap-2'>
-          <ExternalPlayersGroup players={externalPlayers} stretch />
-          {singleFileStream ? (
-            <Button variant='secondary' className='min-h-11 min-w-0 flex-1 px-2' onPress={() => void copyStreamLink()}>
-              <Link2 {...iconMenu} aria-hidden />
-              <span className='truncate'>{t('CopyLink')}</span>
-            </Button>
-          ) : null}
+          <ExternalPlayersGroup players={seriesPlayers} stretch />
         </div>
       ) : null}
 
-      {isSingleFileTorrent && !hasAnyExternalPlayer ? (
+      {showPlayerHint ? (
         <button
           type='button'
           onClick={() => requestOpenSettings('app')}
