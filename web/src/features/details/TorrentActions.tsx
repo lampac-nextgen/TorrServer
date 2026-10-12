@@ -74,13 +74,13 @@ function ExternalPlayersGroup({
           variant='secondary'
           size={compact ? 'sm' : size}
           className={
-            compact ? 'min-h-11 max-w-[5rem] px-2 text-xs' : stretch ? 'min-h-11 min-w-0 flex-1 px-2' : 'min-h-11'
+            compact ? 'min-h-11 max-w-[5rem] px-2 text-xs' : stretch ? 'min-h-9 min-w-0 flex-1 px-2 text-sm' : 'min-h-11'
           }
           onPress={() => {
             window.location.href = player.href
           }}
         >
-          {compact ? null : <SquareArrowOutUpRight {...iconMenu} aria-hidden />}
+          {compact || stretch ? null : <SquareArrowOutUpRight {...iconMenu} aria-hidden />}
           <span className='truncate'>{player.label}</span>
         </Button>
       ))}
@@ -395,7 +395,7 @@ function TorrentActions({
   }
 
   return (
-    <div className='space-y-4'>
+    <div className='space-y-2'>
       {seriesPlayers.length > 0 ? (
         <div className='flex w-full items-center gap-2'>
           <ExternalPlayersGroup players={seriesPlayers} stretch />
@@ -414,12 +414,12 @@ function TorrentActions({
       ) : null}
 
       {hasPartialProgress ? (
-        <div className='rounded-xl border border-border bg-surface-secondary p-4'>
-          <p className='mb-1 flex items-center gap-2 text-sm font-semibold'>
+        <div className='rounded-lg border border-border bg-surface-secondary px-3 py-2'>
+          <p className='mb-0.5 flex items-center gap-1.5 text-xs font-semibold'>
             <ListMusic {...iconMenu} className='text-accent' aria-hidden />
             {t('DownloadPlaylist')}
           </p>
-          <p className='mb-3 text-sm text-muted'>
+          <p className='mb-2 text-xs text-muted'>
             {t('LatestFilePlayed')}{' '}
             <strong className='text-foreground'>
               {latestViewedFileInfo?.title}
@@ -434,14 +434,14 @@ function TorrentActions({
           <ButtonGroup className='w-full'>
             <Button
               variant='primary'
-              className='min-h-11 flex-1'
+              className='min-h-9 flex-1'
               onPress={() => window.open(fullPlaylistLink, '_blank')}
             >
               {t('Full')}
             </Button>
             <Button
               variant='primary'
-              className='min-h-11 flex-1'
+              className='min-h-9 flex-1'
               onPress={() => window.open(fromLatestPlaylistLink, '_blank')}
             >
               {t('FromLatestFile')}
@@ -451,12 +451,12 @@ function TorrentActions({
       ) : null}
 
       <div>
-        <p className='mb-2 text-sm font-semibold text-muted'>{t('Actions')}</p>
+        <p className='mb-1 text-xs font-semibold text-muted'>{t('Actions')}</p>
         <div className='flex w-full flex-wrap items-stretch gap-2'>
           {isSingleFileTorrent || !viewedFileList?.length ? (
             <Button
               variant='primary'
-              className='min-h-11 min-w-0 flex-1'
+              className='min-h-9 min-w-0 flex-1'
               onPress={() => window.open(fullPlaylistLink, '_blank')}
             >
               <ListMusic {...iconMenu} aria-hidden />
@@ -464,15 +464,15 @@ function TorrentActions({
             </Button>
           ) : null}
           <ButtonGroup className='min-w-0 flex-[2]'>
-            <Button variant='secondary' className='min-h-11 min-w-0 flex-1' onPress={() => void copyMagnetLink()}>
+            <Button variant='secondary' className='min-h-9 min-w-0 flex-1' onPress={() => void copyMagnetLink()}>
               <Magnet {...iconMenu} aria-hidden />
               <span className='truncate'>{t('CopyMagnet')}</span>
             </Button>
-            <Button variant='secondary' className='min-h-11 min-w-0 flex-1' onPress={() => void copyInfoHash()}>
+            <Button variant='secondary' className='min-h-9 min-w-0 flex-1' onPress={() => void copyInfoHash()}>
               <Hash {...iconMenu} aria-hidden />
               <span className='truncate'>{t('CopyHash')}</span>
             </Button>
-            <Button variant='secondary' className='min-h-11 min-w-0 flex-1' onPress={() => void copyTorrsLink()}>
+            <Button variant='secondary' className='min-h-9 min-w-0 flex-1' onPress={() => void copyTorrsLink()}>
               <Share2 {...iconMenu} aria-hidden />
               <span className='truncate'>{t('CopyTorrs')}</span>
             </Button>
@@ -491,17 +491,17 @@ function TorrentActions({
       <Separator />
 
       <div>
-        <p className='mb-2 text-sm font-semibold text-muted'>{t('TorrentState')}</p>
+        <p className='mb-1 text-xs font-semibold text-muted'>{t('TorrentState')}</p>
         <div className='flex w-full flex-wrap gap-2'>
-          <Button variant='outline' className='min-h-11 min-w-0 flex-1' onPress={() => setPendingConfirm('clearViews')}>
+          <Button variant='outline' className='min-h-9 min-w-0 flex-1' onPress={() => setPendingConfirm('clearViews')}>
             <EyeOff {...iconMenu} aria-hidden />
             <span className='truncate'>{t('RemoveViews')}</span>
           </Button>
-          <Button variant='danger' className='min-h-11 min-w-0 flex-1' onPress={() => setPendingConfirm('drop')}>
+          <Button variant='danger' className='min-h-9 min-w-0 flex-1' onPress={() => setPendingConfirm('drop')}>
             <Trash2 {...iconMenu} aria-hidden />
             <span className='truncate'>{t('DropTorrent')}</span>
           </Button>
-          <Button variant='danger' className='min-h-11 min-w-0 flex-1' onPress={() => setPendingConfirm('delete')}>
+          <Button variant='danger' className='min-h-9 min-w-0 flex-1' onPress={() => setPendingConfirm('delete')}>
             <Trash2 {...iconMenu} aria-hidden />
             <span className='truncate'>{t('Delete')}</span>
           </Button>
