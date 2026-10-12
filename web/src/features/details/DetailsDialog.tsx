@@ -58,7 +58,6 @@ function StatWidget({
   dense = false,
   compact = false,
   tight = false,
-  flow = false,
   hint,
 }: {
   label: string
@@ -68,19 +67,15 @@ function StatWidget({
   compact?: boolean
   /** Phone density pass — single-line labels, no reserved 2-line min-height. */
   tight?: boolean
-  /** Phone: inline tile so it can sit beside the floated poster, then wrap full-width. */
-  flow?: boolean
   /** Longer semantics tooltip (Cache vs Buffer). */
   hint?: string
 }) {
   const shown = value || '—'
-  const box = flow
-    ? 'mb-1 mr-1 inline-block w-[calc(33.333%-0.35rem)] align-top px-1.5 py-0.5'
-    : dense
-      ? tight
-        ? 'w-full px-1.5 py-0.5'
-        : 'w-full px-1.5 py-1'
-      : 'px-2.5 py-2 sm:min-w-[104px] sm:px-3'
+  const box = dense
+    ? tight
+      ? 'w-full px-1.5 py-0.5'
+      : 'w-full px-1.5 py-1'
+    : 'w-full px-2.5 py-2 sm:px-3'
   return (
     <div className={`min-w-0 rounded-md border border-border bg-surface-secondary text-center ${box}`} title={hint || undefined}>
       <span
@@ -150,7 +145,7 @@ function TitleRow({
   const titleClass = `min-w-0 flex-1 font-bold text-foreground ${compact
     ? expanded
       ? 'text-[15px] leading-snug'
-      : 'line-clamp-2 text-[15px] leading-snug'
+      : 'line-clamp-6 text-[15px] leading-snug'
     : 'line-clamp-2 text-lg leading-snug'
     }`
 
@@ -339,7 +334,6 @@ export default function DetailsDialog({
     <>
       <StatWidget
         dense={useCompactDetails}
-        flow={useCompactDetails}
         compact={useCompactDetails}
         tight={useCompactDetails}
         label={t('DownloadSpeed')}
@@ -347,7 +341,6 @@ export default function DetailsDialog({
       />
       <StatWidget
         dense={useCompactDetails}
-        flow={useCompactDetails}
         compact={useCompactDetails}
         tight={useCompactDetails}
         label={t('UploadSpeed')}
@@ -355,7 +348,6 @@ export default function DetailsDialog({
       />
       <StatWidget
         dense={useCompactDetails}
-        flow={useCompactDetails}
         compact={useCompactDetails}
         tight={useCompactDetails}
         label={t('Peers') + '·' + t('Seeders')}
@@ -363,7 +355,6 @@ export default function DetailsDialog({
       />
       <StatWidget
         dense={useCompactDetails}
-        flow={useCompactDetails}
         compact={useCompactDetails}
         tight={useCompactDetails}
         label={t('Size')}
@@ -376,7 +367,6 @@ export default function DetailsDialog({
     <>
       <StatWidget
         dense={useCompactDetails}
-        flow={useCompactDetails}
         compact={useCompactDetails}
         tight={useCompactDetails}
         label={t('CacheFilled')}
@@ -385,7 +375,6 @@ export default function DetailsDialog({
       />
       <StatWidget
         dense={useCompactDetails}
-        flow={useCompactDetails}
         compact={useCompactDetails}
         tight={useCompactDetails}
         label={t('Status')}
@@ -399,7 +388,6 @@ export default function DetailsDialog({
       {cacheStatusStats}
       <StatWidget
         dense={useCompactDetails}
-        flow={useCompactDetails}
         compact={useCompactDetails}
         tight={useCompactDetails}
         label={t('PiecesCount')}
@@ -407,7 +395,6 @@ export default function DetailsDialog({
       />
       <StatWidget
         dense={useCompactDetails}
-        flow={useCompactDetails}
         compact={useCompactDetails}
         tight={useCompactDetails}
         label={t('PiecesLength')}
@@ -415,7 +402,6 @@ export default function DetailsDialog({
       />
       <StatWidget
         dense={useCompactDetails}
-        flow={useCompactDetails}
         compact={useCompactDetails}
         tight={useCompactDetails}
         label={t('Category')}
@@ -487,44 +473,47 @@ export default function DetailsDialog({
           className={`flex min-h-0 flex-1 flex-col gap-2 overflow-hidden sm:gap-3${sheetFull ? ' pt-0' : ' pt-1'}`}
         >
           {useCompactDetails ? (
-            /* Phone: poster and a short button spacer float, so the title and all 9 tiles wrap into the free space. */
-            <div className='ts-details-hero ts-details-hero-flow flow-root shrink-0 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2'>
-              <div className='float-right h-11 w-[6.75rem]' aria-hidden />
-              <button
-                type='button'
-                onClick={() => setPosterEditOpen(true)}
-                aria-label={t('AddDialog.AddPosterLinkInput')}
-                title={t('AddDialog.AddPosterLinkInput')}
-                className='float-left mr-2 mb-1 grid aspect-[2/3] w-20 place-items-center overflow-hidden rounded-md bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
-              >
-                {poster ? (
-                  <img
-                    src={poster}
-                    alt=''
-                    className='h-full w-full object-cover'
-                    onError={event => {
-                      event.currentTarget.style.display = 'none'
-                    }}
-                  />
-                ) : (
-                  <ImagePlus size={16} strokeWidth={1.75} className='text-muted' aria-hidden />
-                )}
-              </button>
-              <TitleRow title={displayTitle} subtitle={subtitle} compact />
-              {heroStats}
+            /* Phone: poster beside the title, then one even 3×3 grid. Tiles do not wrap into the poster column. */
+            <div className='ts-details-hero ts-details-hero-flow shrink-0 space-y-2 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2'>
+              <div className='flex items-start gap-2'>
+                <button
+                  type='button'
+                  onClick={() => setPosterEditOpen(true)}
+                  aria-label={t('AddDialog.AddPosterLinkInput')}
+                  title={t('AddDialog.AddPosterLinkInput')}
+                  className='grid aspect-[2/3] w-20 shrink-0 place-items-center overflow-hidden rounded-md bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
+                >
+                  {poster ? (
+                    <img
+                      src={poster}
+                      alt=''
+                      className='h-full w-full object-cover'
+                      onError={event => {
+                        event.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  ) : (
+                    <ImagePlus size={16} strokeWidth={1.75} className='text-muted' aria-hidden />
+                  )}
+                </button>
+                <div className='min-w-0 flex-1 pr-[6.75rem]'>
+                  <TitleRow title={displayTitle} subtitle={subtitle} compact />
+                </div>
+              </div>
+              <div className='grid grid-cols-3 gap-1'>{heroStats}</div>
             </div>
           ) : (
             /*
-                  Desktop: poster spans the title and both metric rows. Edit/close live in the
-                  right gutter (pr-[6.75rem]), not in the title row.
+                  Desktop: poster spans the title and one 3×3 metric grid (9 tiles, no leftover cell).
+                  Edit/close live in the right gutter.
                 */
-            <div className='ts-details-hero grid shrink-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-1.5 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2.5 pr-[6.75rem]'>
+            <div className='ts-details-hero grid shrink-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-2 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2.5 pr-[6.75rem]'>
               <button
                 type='button'
                 onClick={() => setPosterEditOpen(true)}
                 aria-label={t('AddDialog.AddPosterLinkInput')}
                 title={t('AddDialog.AddPosterLinkInput')}
-                className='group relative col-start-1 row-span-3 row-start-1 grid aspect-[2/3] w-28 shrink-0 self-start place-items-center overflow-hidden rounded-lg bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
+                className='group relative col-start-1 row-span-2 row-start-1 grid aspect-[2/3] w-28 shrink-0 self-start place-items-center overflow-hidden rounded-lg bg-surface-secondary outline-none ring-accent transition-shadow focus-visible:ring-2'
               >
                 {poster ? (
                   <img
@@ -547,12 +536,7 @@ export default function DetailsDialog({
                 <TitleRow title={displayTitle} subtitle={subtitle} compact={false} />
               </div>
 
-              <div className='col-start-2 row-start-2 grid min-w-0 w-full grid-cols-2 gap-1 min-[720px]:grid-cols-4'>
-                {primaryStats}
-              </div>
-              <div className='col-start-2 row-start-3 grid min-w-0 w-full grid-cols-2 gap-1 min-[720px]:grid-cols-4'>
-                {secondaryStats}
-              </div>
+              <div className='col-start-2 row-start-2 grid min-w-0 w-full grid-cols-3 gap-1.5'>{heroStats}</div>
             </div>
           )}
 
