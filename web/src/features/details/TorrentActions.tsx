@@ -6,6 +6,7 @@ import {
   Link2,
   ListMusic,
   Magnet,
+  RotateCcw,
   Settings,
   Share2,
   SquareArrowOutUpRight,
@@ -246,9 +247,9 @@ function TorrentActions({
   )
 
   const iconState = 'min-h-9 min-w-9 shrink-0'
-  /** Desktop footer buttons share the row; phone stays icon-sized. */
+  /** Icon tools stay fixed. Playlist grows on phone; every desktop button shares the row. */
   const slot = compact ? 'shrink-0' : 'flex min-w-0 flex-1 [&>*]:w-full [&>*]:min-w-0'
-  const fillBtn = compact ? 'min-h-9 shrink-0' : 'min-h-9 min-w-0 flex-1'
+  const fillBtn = 'min-h-9 min-w-0 flex-1'
 
   const playlistButtons = !isSeries || !hasPartialProgress ? (
     <Button variant='primary' className={fillBtn} onPress={() => window.open(fullPlaylistLink, '_blank')}>
@@ -364,7 +365,7 @@ function TorrentActions({
         aria-label={t('DropTorrent')}
         onPress={() => setPendingConfirm('drop')}
       >
-        <Trash2 {...iconMenu} aria-hidden />
+        <RotateCcw {...iconMenu} aria-hidden />
         {compact ? null : <span className='truncate'>{t('DropTorrent')}</span>}
       </Button>
     </span>
