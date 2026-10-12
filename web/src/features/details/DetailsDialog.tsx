@@ -1,4 +1,5 @@
 import { Button, Checkbox, Modal, Tabs, ToggleButton, ToggleButtonGroup, useMediaQuery } from '@heroui/react'
+import { closeButtonVariants } from '@heroui/styles'
 import { ImagePlus, Pencil, X } from 'lucide-react'
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import ptt from 'parse-torrent-title'
@@ -27,7 +28,6 @@ import { isFilePlayable } from 'shared/torrent/playable'
 import { CLOSED, GETTING_INFO, IN_DB, PRELOAD, WORKING } from 'shared/torrent/states'
 import { MEDIA_SHORT_VIEWPORT, queryMax } from 'shared/theme/breakpoints'
 import AppDialog from 'shared/ui/AppDialog'
-import { iconBtn } from 'shared/ui/controlClasses'
 import { DIALOG_DETAILS } from 'shared/ui/dialogSizes'
 import { iconChrome, iconEmpty } from 'shared/ui/iconProps'
 import { toPlayableFile } from 'shared/torrent/toPlayableFile'
@@ -427,15 +427,14 @@ export default function DetailsDialog({
 
   const editControl =
     onEdit != null ? (
-      <Button
-        isIconOnly
-        variant='ghost'
-        className={`${iconBtn} shrink-0`}
+      <button
+        type='button'
+        className={closeButtonVariants()}
         aria-label={t('EditTorrent')}
-        onPress={() => onEdit(torrent)}
+        onClick={() => onEdit(torrent)}
       >
-        <Pencil {...iconChrome} aria-hidden />
-      </Button>
+        <Pencil aria-hidden />
+      </button>
     ) : null
 
   const tabClass = isMobile ? 'min-h-11 w-auto flex-1 basis-0' : 'min-h-9 w-auto shrink-0'

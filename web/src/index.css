@@ -2352,8 +2352,9 @@ body[data-immersive='true'] .ts-bottom-nav {
    ≤960 and fullscreen rules below add the safe-area offset. */
 .modal__dialog.ts-details-modal .ts-details-edit-trigger {
   position: absolute;
-  top: 0.5rem;
-  right: 3.5rem;
+  /* Match HeroUI close (top-4 / end-4, 1.5rem): sit just left of it. */
+  top: 1rem;
+  right: 3rem;
   z-index: 20;
 }
 
