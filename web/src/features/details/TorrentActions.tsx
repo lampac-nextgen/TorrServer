@@ -245,53 +245,21 @@ function TorrentActions({
     </Modal.Root>
   )
 
-  const playlistBtn = 'min-h-9 min-w-0 flex-1'
-  const playlistButtons = !isSeries ? (
-    <Button
-      variant='primary'
-      className='min-h-9 shrink-0'
-      onPress={() => window.open(fullPlaylistLink, '_blank')}
-    >
+  const playlistBtn = 'min-h-9 shrink-0'
+  const playlistButtons = !isSeries || !hasPartialProgress ? (
+    <Button variant='primary' className={playlistBtn} onPress={() => window.open(fullPlaylistLink, '_blank')}>
       <ListMusic {...iconMenu} aria-hidden />
       <span className='truncate'>{t('DownloadPlaylist')}</span>
     </Button>
   ) : (
-    <div className='flex min-w-0 flex-1 gap-2'>
-      {hasPartialProgress ? (
-        <>
-          <Button
-            variant='primary'
-            className={playlistBtn}
-            onPress={() => window.open(fromLatestPlaylistLink, '_blank')}
-          >
-            <ListMusic {...iconMenu} aria-hidden />
-            <span className='truncate'>{t('FromLatestFile')}</span>
-          </Button>
-          <Button
-            variant='outline'
-            className={playlistBtn}
-            onPress={() => window.open(fullPlaylistLink, '_blank')}
-          >
-            <span className='truncate'>{t('DownloadPlaylist')}</span>
-          </Button>
-        </>
-      ) : (
-        <>
-          <Button
-            variant='primary'
-            className={playlistBtn}
-            onPress={() => window.open(fullPlaylistLink, '_blank')}
-          >
-            <ListMusic {...iconMenu} aria-hidden />
-            <span className='truncate'>{t('DownloadPlaylist')}</span>
-          </Button>
-          <span title={t('FromLatestUnavailable')} className='min-w-0 flex-1'>
-            <Button variant='outline' className='min-h-9 w-full min-w-0' isDisabled>
-              <span className='truncate'>{t('FromLatestFile')}</span>
-            </Button>
-          </span>
-        </>
-      )}
+    <div className='flex shrink-0 gap-2'>
+      <Button variant='primary' className={playlistBtn} onPress={() => window.open(fromLatestPlaylistLink, '_blank')}>
+        <ListMusic {...iconMenu} aria-hidden />
+        <span className='truncate'>{t('FromLatestFile')}</span>
+      </Button>
+      <Button variant='outline' className={playlistBtn} onPress={() => window.open(fullPlaylistLink, '_blank')}>
+        <span className='truncate'>{t('DownloadPlaylist')}</span>
+      </Button>
     </div>
   )
 

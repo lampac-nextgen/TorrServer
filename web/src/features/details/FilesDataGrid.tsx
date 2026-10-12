@@ -63,7 +63,7 @@ function episodeBadge(episode?: number): string | null {
 /**
  * Compact episode/file card used in the details Files list.
  * Mobile: badge + title | Play + … (players live in More).
- * Desktop (`sm+`): denser inline viewed chip beside the title; players stay in actions.
+ * Desktop film: player chips on the row. Series: one player menu, so the title stays visible.
  */
 function EpisodeRow({
   row,
@@ -81,9 +81,8 @@ function EpisodeRow({
 
   return (
     <div
-      className={`flex flex-col gap-1.5 rounded-lg border border-border border-l-[3px] bg-surface px-2.5 py-2 sm:gap-0 sm:rounded-xl sm:px-3 sm:py-2 ${
-        row.viewed ? 'border-l-accent/40 opacity-80' : 'border-l-accent'
-      }`}
+      className={`flex flex-col gap-1.5 rounded-lg border border-border border-l-[3px] bg-surface px-2.5 py-2 sm:gap-0 sm:rounded-xl sm:px-3 sm:py-2 ${row.viewed ? 'border-l-accent/40 opacity-80' : 'border-l-accent'
+        }`}
     >
       <div className='flex items-start gap-2 sm:items-center sm:gap-3'>
         <div className='flex min-w-0 flex-1 items-center gap-2 sm:gap-3'>
@@ -269,6 +268,7 @@ const FilesDataGrid = memo(
                   showOpenLink={shouldShowOpenLink}
                   copyText={row.fullLink}
                   externalPlayers={externalPlayers}
+                  inlinePlayers={(playableFileList?.length ?? 0) <= 1}
                   onProbeMedia={() => setMediaInfo({ fileId: row.id, fileName: row.name })}
                 />
               }

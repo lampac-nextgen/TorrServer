@@ -23,8 +23,10 @@ export interface FileRowActionsProps {
   showOpenLink?: boolean
   /** Direct stream URL copied by "Copy link". */
   copyText: string
-  /** Deep links for Infuse / VLC / etc. Desktop chips; mobile More menu. */
+  /** Deep links for Infuse / VLC / etc. Film: chips on the row. Series: one menu. */
   externalPlayers: ExternalPlayerLink[]
+  /** Series rows hide named player chips — the footer already opens the playlist. */
+  inlinePlayers?: boolean
   onProbeMedia?: () => void
 }
 
@@ -42,7 +44,8 @@ const moreBtn = `${iconBtn} text-muted hover-fine:text-foreground`
  *
  * Layout contract:
  * - Play is always primary and reachable (doctrine).
- * - Desktop: external players stay on the row.
+ * - Film desktop: external players stay on the row.
+ * - Series desktop: one player menu, so episode titles are not pushed off.
  * - Mobile: Play + More only; players and utilities live in that menu.
  */
 export default function FileRowActions({
@@ -55,12 +58,14 @@ export default function FileRowActions({
   showOpenLink,
   copyText,
   externalPlayers,
+  inlinePlayers = true,
   onProbeMedia,
 }: FileRowActionsProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
   const isMobile = useMediaQuery(queryMax('mobile'))
   const moreMenu = useOverlayState()
+  const playersMenu = useOverlayState()
 
   const copyDirectLink = async () => {
     try {
@@ -131,10 +136,10 @@ export default function FileRowActions({
     <div className='flex shrink-0 items-center gap-1.5'>
       {showOpenIcon
         ? utilityButton({
-            label: t('OpenLink'),
-            onPress: openExternal,
-            children: <SquareArrowOutUpRight {...actionIcon} />,
-          })
+          label: t('OpenLink'),
+          onPress: openExternal,
+          children: <SquareArrowOutUpRight {...actionIcon} />,
+        })
         : null}
       {utilityButton({
         label: t('CopyLink'),
@@ -148,10 +153,10 @@ export default function FileRowActions({
       })}
       {onProbeMedia
         ? utilityButton({
-            label: t('MediaInfo'),
-            onPress: onProbeMedia,
-            children: <FileVideo {...actionIcon} />,
-          })
+          label: t('MediaInfo'),
+          onPress: onProbeMedia,
+          children: <FileVideo {...actionIcon} />,
+        })
         : null}
     </div>
   )
@@ -243,19 +248,46 @@ export default function FileRowActions({
     )
   }
 
-  const externalButtons = externalPlayers.map(player => (
-    <Button
-      key={player.label}
-      variant='secondary'
-      size='sm'
-      className={playerBtn}
-      onPress={() => {
-        window.location.href = player.href
-      }}
-    >
-      {player.label}
-    </Button>
-  ))
+  const externalButtons = inlinePlayers
+    ? externalPlayers.map(player => (
+      <Button
+        key={player.label}
+        variant='secondary'
+        size='sm'
+        className={playerBtn}
+        onPress={() => {
+          window.location.href = player.href
+        }}
+      >
+        {player.label}
+      </Button>
+    ))
+    : externalPlayers.length > 0
+      ? (
+        <Dropdown isOpen={playersMenu.isOpen} onOpenChange={playersMenu.setOpen}>
+          <Dropdown.Trigger>
+            <Button variant='secondary' size='sm' isIconOnly className={moreBtn} aria-label={t('OpenIn')}>
+              <SquareArrowOutUpRight {...actionIcon} />
+            </Button>
+          </Dropdown.Trigger>
+          <Dropdown.Popover placement='bottom end'>
+            <Dropdown.Menu aria-label={t('OpenIn')}>
+              {externalPlayers.map(player => (
+                <Dropdown.Item
+                  key={player.label}
+                  onPress={() => {
+                    playersMenu.close()
+                    window.location.href = player.href
+                  }}
+                >
+                  {player.label}
+                </Dropdown.Item>
+              ))}
+            </Dropdown.Menu>
+          </Dropdown.Popover>
+        </Dropdown>
+      )
+      : null
 
   return (
     <div className='flex flex-nowrap items-center gap-1.5'>
