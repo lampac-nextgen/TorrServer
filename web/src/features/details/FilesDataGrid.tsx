@@ -63,7 +63,7 @@ function episodeBadge(episode?: number): string | null {
 /**
  * Compact episode/file card used in the details Files list.
  * Mobile: badge + title | Play + … (players live in More).
- * Desktop film: player chips on the row. Series: one player menu, so the title stays visible.
+ * Desktop (`sm+`): player chips stay on the row.
  */
 function EpisodeRow({
   row,
@@ -268,7 +268,6 @@ const FilesDataGrid = memo(
                   showOpenLink={shouldShowOpenLink}
                   copyText={row.fullLink}
                   externalPlayers={externalPlayers}
-                  inlinePlayers={(playableFileList?.length ?? 0) <= 1}
                   onProbeMedia={() => setMediaInfo({ fileId: row.id, fileName: row.name })}
                 />
               }

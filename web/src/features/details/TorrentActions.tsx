@@ -245,102 +245,107 @@ function TorrentActions({
     </Modal.Root>
   )
 
-  const playlistBtn = 'min-h-9 shrink-0'
+  const iconState = 'min-h-9 min-w-9 shrink-0'
+  /** Desktop footer buttons share the row; phone stays icon-sized. */
+  const slot = compact ? 'shrink-0' : 'flex min-w-0 flex-1 [&>*]:w-full [&>*]:min-w-0'
+  const fillBtn = compact ? 'min-h-9 shrink-0' : 'min-h-9 min-w-0 flex-1'
+
   const playlistButtons = !isSeries || !hasPartialProgress ? (
-    <Button variant='primary' className={playlistBtn} onPress={() => window.open(fullPlaylistLink, '_blank')}>
+    <Button variant='primary' className={fillBtn} onPress={() => window.open(fullPlaylistLink, '_blank')}>
       <ListMusic {...iconMenu} aria-hidden />
       <span className='truncate'>{t('DownloadPlaylist')}</span>
     </Button>
   ) : (
-    <div className='flex shrink-0 gap-2'>
-      <Button variant='primary' className={playlistBtn} onPress={() => window.open(fromLatestPlaylistLink, '_blank')}>
+    <>
+      <Button variant='primary' className={fillBtn} onPress={() => window.open(fromLatestPlaylistLink, '_blank')}>
         <ListMusic {...iconMenu} aria-hidden />
         <span className='truncate'>{t('FromLatestFile')}</span>
       </Button>
-      <Button variant='outline' className={playlistBtn} onPress={() => window.open(fullPlaylistLink, '_blank')}>
+      <Button variant='outline' className={fillBtn} onPress={() => window.open(fullPlaylistLink, '_blank')}>
         <span className='truncate'>{t('DownloadPlaylist')}</span>
       </Button>
-    </div>
+    </>
   )
-
-  const iconState = 'min-h-9 min-w-9 shrink-0'
-  const labeledState = 'min-h-9 shrink-0'
 
   const playersMenu =
     seriesPlayers.length > 0 ? (
-      <Dropdown isOpen={playersState.isOpen} onOpenChange={playersState.setOpen}>
-        <Dropdown.Trigger>
-          <Button
-            variant='secondary'
-            isIconOnly={compact}
-            className={compact ? iconState : labeledState}
-            aria-label={t('OpenIn')}
-          >
-            <SquareArrowOutUpRight {...iconMenu} aria-hidden />
-            {compact ? null : <span className='truncate'>{t('OpenIn')}</span>}
-          </Button>
-        </Dropdown.Trigger>
-        <Dropdown.Popover placement='top end'>
-          <Dropdown.Menu aria-label={t('OpenIn')}>
-            {seriesPlayers.map(player => (
-              <Dropdown.Item
-                key={player.label}
-                onPress={() => {
-                  window.location.href = player.href
-                }}
-              >
-                {player.label}
-              </Dropdown.Item>
-            ))}
-          </Dropdown.Menu>
-        </Dropdown.Popover>
-      </Dropdown>
+      <div className={slot}>
+        <Dropdown isOpen={playersState.isOpen} onOpenChange={playersState.setOpen}>
+          <Dropdown.Trigger className={compact ? undefined : 'w-full'}>
+            <Button
+              variant='secondary'
+              isIconOnly={compact}
+              className={compact ? iconState : 'min-h-9 w-full min-w-0'}
+              aria-label={t('OpenIn')}
+            >
+              <SquareArrowOutUpRight {...iconMenu} aria-hidden />
+              {compact ? null : <span className='truncate'>{t('OpenIn')}</span>}
+            </Button>
+          </Dropdown.Trigger>
+          <Dropdown.Popover placement='top end'>
+            <Dropdown.Menu aria-label={t('OpenIn')}>
+              {seriesPlayers.map(player => (
+                <Dropdown.Item
+                  key={player.label}
+                  onPress={() => {
+                    window.location.href = player.href
+                  }}
+                >
+                  {player.label}
+                </Dropdown.Item>
+              ))}
+            </Dropdown.Menu>
+          </Dropdown.Popover>
+        </Dropdown>
+      </div>
     ) : null
 
   const shareMenu = (
-    <Dropdown isOpen={shareState.isOpen} onOpenChange={shareState.setOpen}>
-      <Dropdown.Trigger>
-        <Button
-          variant='secondary'
-          isIconOnly={compact}
-          className={compact ? iconState : `${labeledState} gap-1.5 px-3`}
-          aria-label={t('Share')}
-        >
-          <Share2 {...iconMenu} aria-hidden />
-          {compact ? null : <span className='truncate'>{t('Share')}</span>}
-        </Button>
-      </Dropdown.Trigger>
-      <Dropdown.Popover placement='top end'>
-        <Dropdown.Menu aria-label={t('Share')}>
-          {singleFileStream ? (
-            <Dropdown.Item onPress={() => void copyStreamLink()}>
-              <Link2 {...iconMenu} />
-              {t('CopyLink')}
+    <div className={slot}>
+      <Dropdown isOpen={shareState.isOpen} onOpenChange={shareState.setOpen}>
+        <Dropdown.Trigger className={compact ? undefined : 'w-full'}>
+          <Button
+            variant='secondary'
+            isIconOnly={compact}
+            className={compact ? iconState : 'min-h-9 w-full min-w-0 gap-1.5'}
+            aria-label={t('Share')}
+          >
+            <Share2 {...iconMenu} aria-hidden />
+            {compact ? null : <span className='truncate'>{t('Share')}</span>}
+          </Button>
+        </Dropdown.Trigger>
+        <Dropdown.Popover placement='top end'>
+          <Dropdown.Menu aria-label={t('Share')}>
+            {singleFileStream ? (
+              <Dropdown.Item onPress={() => void copyStreamLink()}>
+                <Link2 {...iconMenu} />
+                {t('CopyLink')}
+              </Dropdown.Item>
+            ) : null}
+            <Dropdown.Item onPress={() => void copyMagnetLink()}>
+              <Magnet {...iconMenu} />
+              {t('CopyMagnet')}
             </Dropdown.Item>
-          ) : null}
-          <Dropdown.Item onPress={() => void copyMagnetLink()}>
-            <Magnet {...iconMenu} />
-            {t('CopyMagnet')}
-          </Dropdown.Item>
-          <Dropdown.Item onPress={() => void copyInfoHash()}>
-            <Hash {...iconMenu} />
-            {t('CopyHash')}
-          </Dropdown.Item>
-          <Dropdown.Item onPress={() => void copyTorrsLink()}>
-            <Share2 {...iconMenu} />
-            {t('CopyTorrs')}
-          </Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown.Popover>
-    </Dropdown>
+            <Dropdown.Item onPress={() => void copyInfoHash()}>
+              <Hash {...iconMenu} />
+              {t('CopyHash')}
+            </Dropdown.Item>
+            <Dropdown.Item onPress={() => void copyTorrsLink()}>
+              <Share2 {...iconMenu} />
+              {t('CopyTorrs')}
+            </Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown.Popover>
+      </Dropdown>
+    </div>
   )
 
   const clearButton = (
-    <span title={t('RemoveViews')}>
+    <span title={t('RemoveViews')} className={slot}>
       <Button
         variant='outline'
         isIconOnly={compact}
-        className={compact ? iconState : labeledState}
+        className={compact ? iconState : 'min-h-9 w-full min-w-0'}
         aria-label={t('RemoveViews')}
         onPress={() => setPendingConfirm('clearViews')}
       >
@@ -351,11 +356,11 @@ function TorrentActions({
   )
 
   const dropButton = (
-    <span title={t('DropTorrent')}>
+    <span title={t('DropTorrent')} className={slot}>
       <Button
         variant='outline'
         isIconOnly={compact}
-        className={compact ? iconState : labeledState}
+        className={compact ? iconState : 'min-h-9 w-full min-w-0'}
         aria-label={t('DropTorrent')}
         onPress={() => setPendingConfirm('drop')}
       >
@@ -368,8 +373,8 @@ function TorrentActions({
   const deleteButton = (
     <Button
       variant='danger'
-      isIconOnly
-      className={iconState}
+      isIconOnly={compact}
+      className={compact ? iconState : fillBtn}
       aria-label={t('Delete')}
       onPress={() => setPendingConfirm('delete')}
     >
@@ -392,7 +397,7 @@ function TorrentActions({
 
       {latestPlayed}
 
-      <div className='flex w-full flex-wrap items-stretch gap-2'>
+      <div className='flex w-full items-stretch gap-2'>
         {playlistButtons}
         {playersMenu}
         {shareMenu}
