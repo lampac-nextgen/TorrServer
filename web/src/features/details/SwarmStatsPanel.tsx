@@ -65,6 +65,76 @@ function ProgressMeter({
   )
 }
 
+function useTorrentProgress(torrent: TorrentStat, cache?: TorrentCache | null, preloadCachePercent?: number | null) {
+  const { t } = useTranslation()
+  const loaded = torrent.loaded_size ?? 0
+  const totalSize = torrent.torrent_size ?? 0
+  const loadedPct = totalSize > 0 ? Math.min(100, Math.round((loaded / totalSize) * 100)) : 0
+  const loadedRatio = totalSize > 0 ? loaded / totalSize : 0
+  const loadedLabel =
+    totalSize > 0 ? `${humanizeSize(loaded)} / ${humanizeSize(totalSize)} · ${loadedPct}%` : humanizeSize(loaded)
+
+  const bufferTarget = resolveBufferTargetBytes(cache?.Capacity, preloadCachePercent)
+  const bufferAhead = bufferAheadBytes(cache)
+  const isStreamingBuffer = bufferAhead != null
+  const bufferFilled = isStreamingBuffer ? bufferAhead : (cache?.Filled ?? 0)
+  const preloadHint = isStreamingBuffer
+    ? bufferAhead === 0
+      ? t('BufferAheadEmptyHint')
+      : t('BufferAheadHint')
+    : t('BufferHint')
+  const preloadTitle = isStreamingBuffer ? t('BufferAhead') : t('Buffer')
+  const preloadPct = bufferFillPercent(bufferFilled, bufferTarget)
+  const preloadLabel = isStreamingBuffer
+    ? (formatBufferAheadLabel(bufferAhead) ?? '—')
+    : (formatBufferFilledLabel(bufferFilled, bufferTarget, { percent: 'always' }) ??
+      (bufferFilled > 0 ? humanizeSize(bufferFilled) : '—'))
+
+  return {
+    showLoaded: totalSize > 0 || loaded > 0,
+    loadedLabel,
+    loadedRatio,
+    preloadTitle,
+    preloadLabel,
+    preloadPct,
+    preloadHint,
+  }
+}
+
+/** Full-width Loaded + Buffer meters above the Stats chart/swarm split. */
+export function TorrentProgressStrip({
+  torrent,
+  cache,
+  preloadCachePercent,
+  className = '',
+}: {
+  torrent: TorrentStat
+  cache?: TorrentCache | null
+  preloadCachePercent?: number | null
+  className?: string
+}) {
+  const { t } = useTranslation()
+  const progress = useTorrentProgress(torrent, cache, preloadCachePercent)
+
+  return (
+    <div
+      className={`grid shrink-0 grid-cols-1 gap-3 rounded-xl border border-border bg-surface-secondary p-2.5 sm:grid-cols-2 ${className}`.trim()}
+    >
+      {progress.showLoaded ? (
+        <ProgressMeter label={t('Loaded')} valueLabel={progress.loadedLabel} ratio={progress.loadedRatio} />
+      ) : (
+        <ProgressMeter label={t('Loaded')} valueLabel='—' ratio={0} />
+      )}
+      <ProgressMeter
+        label={progress.preloadTitle}
+        valueLabel={progress.preloadLabel}
+        ratio={progress.preloadPct}
+        title={progress.preloadHint}
+      />
+    </div>
+  )
+}
+
 /** Count chips always; mix bar is connected peers only so Pending cannot paint the whole bar. */
 function PeerPanel({
   active,
@@ -121,7 +191,7 @@ function PeerPanel({
   )
 }
 
-/** Swarm + transfer metrics on the Stats tab. Hero already owns Peers summary and Cache. */
+/** Transfer + peer composition for the Stats side card. Progress lives in {@link TorrentProgressStrip}. */
 export default function SwarmStatsPanel({
   torrent,
   className = '',
@@ -129,34 +199,10 @@ export default function SwarmStatsPanel({
   framed = true,
   cacheReaders,
   cache,
-  preloadCachePercent,
 }: SwarmStatsPanelProps) {
   const { t } = useTranslation()
   const columns = columnsProp ?? 2
-
-  const loaded = torrent.loaded_size ?? 0
-  const totalSize = torrent.torrent_size ?? 0
-  const loadedPct = totalSize > 0 ? Math.min(100, Math.round((loaded / totalSize) * 100)) : 0
-  const loadedRatio = totalSize > 0 ? loaded / totalSize : 0
-  const loadedLabel =
-    totalSize > 0 ? `${humanizeSize(loaded)} / ${humanizeSize(totalSize)} · ${loadedPct}%` : humanizeSize(loaded)
-
-  const bufferTarget = resolveBufferTargetBytes(cache?.Capacity, preloadCachePercent)
-  const bufferAhead = bufferAheadBytes(cache)
-  const isStreamingBuffer = bufferAhead != null
-  const bufferFilled = isStreamingBuffer ? bufferAhead : (cache?.Filled ?? 0)
-  const preloadHint = isStreamingBuffer
-    ? bufferAhead === 0
-      ? t('BufferAheadEmptyHint')
-      : t('BufferAheadHint')
-    : t('BufferHint')
-  const preloadTitle = isStreamingBuffer ? t('BufferAhead') : t('Buffer')
-  const preloadPct = bufferFillPercent(bufferFilled, bufferTarget)
   const durationLabel = formatDuration(torrent.duration_seconds)
-  const preloadLabel = isStreamingBuffer
-    ? (formatBufferAheadLabel(bufferAhead) ?? '—')
-    : (formatBufferFilledLabel(bufferFilled, bufferTarget, { percent: 'always' }) ??
-      (bufferFilled > 0 ? humanizeSize(bufferFilled) : '—'))
 
   const transferItems: MetricRowItem[] = [
     { label: t('BytesRead'), value: humanizeSize(torrent.bytes_read) },
@@ -184,6 +230,10 @@ export default function SwarmStatsPanel({
     ...(hasPositive(torrent.pieces_dirtied_bad)
       ? [{ label: t('PiecesDirtiedBad'), value: String(torrent.pieces_dirtied_bad) }]
       : []),
+    ...(cache?.PiecesCount != null ? [{ label: t('PiecesCount'), value: String(cache.PiecesCount) }] : []),
+    ...(cache?.PiecesLength != null
+      ? [{ label: t('PiecesLength'), value: humanizeSize(cache.PiecesLength) }]
+      : []),
     ...(cacheReaders != null ? [{ label: t('CacheReaders'), value: String(cacheReaders) }] : []),
     ...(torrent.bit_rate ? [{ label: t('BitRate'), value: torrent.bit_rate }] : []),
     ...(durationLabel ? [{ label: t('FfpDuration'), value: durationLabel }] : []),
@@ -191,12 +241,6 @@ export default function SwarmStatsPanel({
 
   const inner = (
     <>
-      {totalSize > 0 || loaded > 0 ? (
-        <div className='mb-2 shrink-0'>
-          <ProgressMeter label={t('Loaded')} valueLabel={loadedLabel} ratio={loadedRatio} compact />
-        </div>
-      ) : null}
-
       <div className='shrink-0 space-y-2'>
         <MetricRows framed={false} items={transferItems} columns={columns} dense />
         {detailItems.length > 0 ? (
@@ -216,13 +260,6 @@ export default function SwarmStatsPanel({
             pending: t('PendingPeers'),
             halfOpen: t('HalfOpenPeers'),
           }}
-        />
-        <ProgressMeter
-          label={preloadTitle}
-          valueLabel={preloadLabel}
-          ratio={preloadPct}
-          compact
-          title={preloadHint}
         />
       </div>
     </>

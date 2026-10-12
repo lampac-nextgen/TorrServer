@@ -1,5 +1,5 @@
 import { useMemo, memo, useState, type ReactNode } from 'react'
-import { Button, ButtonGroup, Drawer, Modal, Separator, useMediaQuery, useOverlayState } from '@heroui/react'
+import { Button, Dropdown, Drawer, Modal, useMediaQuery, useOverlayState } from '@heroui/react'
 import {
   EyeOff,
   Hash,
@@ -89,7 +89,7 @@ function ExternalPlayersGroup({
 }
 
 /**
- * Files-tab action block: playlist / magnet / hash / drop / clear viewed.
+ * Files-tab action block: playlist / share / drop.
  * Play + Cache live on their own tabs; copy helpers use {@link copyToClipboard}.
  */
 function TorrentActions({
@@ -114,6 +114,8 @@ function TorrentActions({
   const compact = compactProp || isPhone
   const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm>(null)
   const moreState = useOverlayState()
+  const shareState = useOverlayState()
+  const moreMenuState = useOverlayState()
   const confirmState = useOverlayState({
     isOpen: pendingConfirm != null,
     onOpenChange: open => {
@@ -280,6 +282,35 @@ function TorrentActions({
     </Modal.Root>
   )
 
+  const playlistButtons = hasPartialProgress ? (
+    <>
+      <Button
+        variant='primary'
+        className='min-h-9 min-w-0 flex-1'
+        onPress={() => window.open(fromLatestPlaylistLink, '_blank')}
+      >
+        <ListMusic {...iconMenu} aria-hidden />
+        <span className='truncate'>{t('FromLatestFile')}</span>
+      </Button>
+      <Button
+        variant='outline'
+        className='min-h-9 min-w-0 flex-1'
+        onPress={() => window.open(fullPlaylistLink, '_blank')}
+      >
+        <span className='truncate'>{t('DownloadPlaylist')}</span>
+      </Button>
+    </>
+  ) : (
+    <Button
+      variant='primary'
+      className='min-h-9 min-w-0 flex-1'
+      onPress={() => window.open(fullPlaylistLink, '_blank')}
+    >
+      <ListMusic {...iconMenu} aria-hidden />
+      <span className='truncate'>{t('DownloadPlaylist')}</span>
+    </Button>
+  )
+
   if (compact) {
     const closeMore = () => moreState.close()
     const sheetAction = (label: string, icon: ReactNode, onPress: () => void, danger = false) => (
@@ -298,19 +329,22 @@ function TorrentActions({
     )
 
     return (
-      <div className='space-y-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
-        <div className='flex items-center justify-end gap-2'>
-          <Button variant='secondary' size='md' className='min-h-11 min-w-0 flex-1 gap-2' onPress={moreState.open}>
-            <MoreHorizontal {...iconMenu} aria-hidden />
-            <span className='truncate text-sm'>{t('Actions')}</span>
-          </Button>
-        </div>
-
+      <div className='space-y-2 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
         {seriesPlayers.length > 0 ? (
           <div className='flex flex-wrap items-center gap-1.5'>
             <ExternalPlayersGroup players={seriesPlayers} compact />
           </div>
         ) : null}
+
+        {latestPlayed}
+
+        <div className='flex items-stretch gap-2'>
+          {playlistButtons}
+          <Button variant='secondary' size='md' className='min-h-9 min-w-11 shrink-0 px-3' onPress={moreState.open}>
+            <MoreHorizontal {...iconMenu} aria-hidden />
+            <span className='sr-only'>{t('Actions')}</span>
+          </Button>
+        </div>
 
         {showPlayerHint ? (
           <button
@@ -332,24 +366,12 @@ function TorrentActions({
                   <Drawer.CloseTrigger className='min-h-11 min-w-11' aria-label={t('Close')} />
                 </Drawer.Header>
                 <Drawer.Body className='flex flex-col gap-0.5 px-0 pt-1'>
-                  {latestPlayed ? <div className='px-4 pb-2'>{latestPlayed}</div> : null}
                   {singleFileStream
                     ? sheetAction(t('CopyLink'), <Link2 {...iconMenu} aria-hidden />, () => void copyStreamLink())
-                    : null}
-                  {sheetAction(t('DownloadPlaylist'), <ListMusic {...iconMenu} aria-hidden />, () =>
-                    window.open(fullPlaylistLink, '_blank'),
-                  )}
-                  {hasPartialProgress
-                    ? sheetAction(t('FromLatestFile'), <ListMusic {...iconMenu} aria-hidden />, () =>
-                      window.open(fromLatestPlaylistLink, '_blank'),
-                    )
                     : null}
                   {sheetAction(t('CopyMagnet'), <Magnet {...iconMenu} aria-hidden />, () => void copyMagnetLink())}
                   {sheetAction(t('CopyHash'), <Hash {...iconMenu} aria-hidden />, () => void copyInfoHash())}
                   {sheetAction(t('CopyTorrs'), <Share2 {...iconMenu} aria-hidden />, () => void copyTorrsLink())}
-                  {/* {sheetAction(t('DownloadAllPlaylists'), <ListMusic {...iconMenu} aria-hidden />, () =>
-                    window.open(playlistAllUrl({ category: undefined }), '_blank'),
-                  )} */}
                   {sheetAction(t('RemoveViews'), <EyeOff {...iconMenu} aria-hidden />, () =>
                     setPendingConfirm('clearViews'),
                   )}
@@ -396,84 +418,57 @@ function TorrentActions({
         </button>
       ) : null}
 
-      <div>
-        <p className='mb-1 text-xs font-semibold text-muted'>{t('Actions')}</p>
-        {latestPlayed ? <div className='mb-1.5'>{latestPlayed}</div> : null}
-        <div className='flex w-full flex-col gap-2'>
-          {hasPartialProgress ? (
-            <div className='flex w-full gap-2'>
-              <Button
-                variant='primary'
-                className='min-h-9 min-w-0 flex-1'
-                onPress={() => window.open(fullPlaylistLink, '_blank')}
-              >
-                <ListMusic {...iconMenu} aria-hidden />
-                <span className='truncate'>{t('DownloadPlaylist')}</span>
-              </Button>
-              <Button
-                variant='primary'
-                className='min-h-9 min-w-0 flex-1'
-                onPress={() => window.open(fromLatestPlaylistLink, '_blank')}
-              >
-                <span className='truncate'>{t('FromLatestFile')}</span>
-              </Button>
-            </div>
-          ) : null}
-          <div className='flex w-full flex-wrap items-stretch gap-2'>
-            {!hasPartialProgress ? (
-              <Button
-                variant='primary'
-                className='min-h-9 min-w-0 flex-1'
-                onPress={() => window.open(fullPlaylistLink, '_blank')}
-              >
-                <ListMusic {...iconMenu} aria-hidden />
-                <span className='truncate'>{t('DownloadPlaylist')}</span>
-              </Button>
-            ) : null}
-            <ButtonGroup className='min-w-0 flex-[2]'>
-            <Button variant='secondary' className='min-h-9 min-w-0 flex-1' onPress={() => void copyMagnetLink()}>
-              <Magnet {...iconMenu} aria-hidden />
-              <span className='truncate'>{t('CopyMagnet')}</span>
-            </Button>
-            <Button variant='secondary' className='min-h-9 min-w-0 flex-1' onPress={() => void copyInfoHash()}>
-              <Hash {...iconMenu} aria-hidden />
-              <span className='truncate'>{t('CopyHash')}</span>
-            </Button>
-            <Button variant='secondary' className='min-h-9 min-w-0 flex-1' onPress={() => void copyTorrsLink()}>
+      {latestPlayed}
+
+      <div className='flex w-full flex-wrap items-stretch gap-2'>
+        {playlistButtons}
+        <Dropdown isOpen={shareState.isOpen} onOpenChange={shareState.setOpen}>
+          <Dropdown.Trigger>
+            <Button variant='secondary' className='min-h-9 min-w-0 shrink-0 gap-1.5 px-3'>
               <Share2 {...iconMenu} aria-hidden />
-              <span className='truncate'>{t('CopyTorrs')}</span>
+              <span className='truncate'>{t('Share')}</span>
             </Button>
-          </ButtonGroup>
-          {/* <Button
-            variant='tertiary'
-            className='min-h-11 min-w-0 flex-1'
-            onPress={() => window.open(playlistAllUrl({ category: undefined }), '_blank')}
-          >
-            <ListMusic {...iconMenu} aria-hidden />
-            <span className='truncate'>{t('DownloadAllPlaylists')}</span>
-          </Button> */}
-          </div>
-        </div>
-      </div>
-
-      <Separator />
-
-      <div>
-        <p className='mb-1 text-xs font-semibold text-muted'>{t('TorrentState')}</p>
-        <div className='flex w-full flex-wrap gap-2'>
-          <Button variant='outline' className='min-h-9 min-w-0 flex-1' onPress={() => setPendingConfirm('clearViews')}>
-            <EyeOff {...iconMenu} aria-hidden />
-            <span className='truncate'>{t('RemoveViews')}</span>
-          </Button>
-          <Button variant='danger' className='min-h-9 min-w-0 flex-1' onPress={() => setPendingConfirm('drop')}>
-            <Trash2 {...iconMenu} aria-hidden />
-            <span className='truncate'>{t('DropTorrent')}</span>
-          </Button>
-          <Button variant='danger' className='min-h-9 min-w-0 flex-1' onPress={() => setPendingConfirm('delete')}>
-            <Trash2 {...iconMenu} aria-hidden />
-            <span className='truncate'>{t('Delete')}</span>
-          </Button>
-        </div>
+          </Dropdown.Trigger>
+          <Dropdown.Popover placement='top end'>
+            <Dropdown.Menu aria-label={t('Share')}>
+              <Dropdown.Item onPress={() => void copyMagnetLink()}>
+                <Magnet {...iconMenu} />
+                {t('CopyMagnet')}
+              </Dropdown.Item>
+              <Dropdown.Item onPress={() => void copyInfoHash()}>
+                <Hash {...iconMenu} />
+                {t('CopyHash')}
+              </Dropdown.Item>
+              <Dropdown.Item onPress={() => void copyTorrsLink()}>
+                <Share2 {...iconMenu} />
+                {t('CopyTorrs')}
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown.Popover>
+        </Dropdown>
+        <Dropdown isOpen={moreMenuState.isOpen} onOpenChange={moreMenuState.setOpen}>
+          <Dropdown.Trigger>
+            <Button variant='secondary' isIconOnly className='min-h-9 min-w-9 shrink-0' aria-label={t('nav.More')}>
+              <MoreHorizontal {...iconMenu} aria-hidden />
+            </Button>
+          </Dropdown.Trigger>
+          <Dropdown.Popover placement='top end'>
+            <Dropdown.Menu aria-label={t('nav.More')}>
+              <Dropdown.Item onPress={() => setPendingConfirm('clearViews')}>
+                <EyeOff {...iconMenu} />
+                {t('RemoveViews')}
+              </Dropdown.Item>
+              <Dropdown.Item onPress={() => setPendingConfirm('drop')}>
+                <Trash2 {...iconMenu} />
+                {t('DropTorrent')}
+              </Dropdown.Item>
+              <Dropdown.Item variant='danger' onPress={() => setPendingConfirm('delete')}>
+                <Trash2 {...iconMenu} />
+                {t('Delete')}
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown.Popover>
+        </Dropdown>
       </div>
 
       {playerModals}

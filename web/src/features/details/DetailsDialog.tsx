@@ -35,7 +35,7 @@ import { toPlayableFile } from 'shared/torrent/toPlayableFile'
 import FileBrowser from './FileBrowser'
 import CacheMapDialog from './CacheMapDialog'
 import EditPosterDialog from './EditPosterDialog'
-import SwarmStatsPanel from './SwarmStatsPanel'
+import SwarmStatsPanel, { TorrentProgressStrip } from './SwarmStatsPanel'
 import SpeedCharts from './SpeedCharts'
 import TorrentActions from './TorrentActions'
 import TorrentCache from './TorrentCache'
@@ -328,8 +328,8 @@ export default function DetailsDialog({
     autoPlayTimecode,
   })
 
-  /** Eight hero tiles, 4×2. Category stays off the hero. */
-  const primaryStats = (
+  /** Six hero tiles, 3×2. Pieces live on Stats; category stays off the hero. */
+  const heroStats = (
     <>
       <StatWidget
         dense={useCompactDetails}
@@ -349,7 +349,7 @@ export default function DetailsDialog({
         dense={useCompactDetails}
         compact={useCompactDetails}
         tight={useCompactDetails}
-        label={t('Peers') + '·' + t('Seeders')}
+        label={t('Peers')}
         value={getPeerString(torrent) || '—'}
       />
       <StatWidget
@@ -359,11 +359,6 @@ export default function DetailsDialog({
         label={t('Size')}
         value={humanizeSize(torrentSize)}
       />
-    </>
-  )
-
-  const cacheStatusStats = (
-    <>
       <StatWidget
         dense={useCompactDetails}
         compact={useCompactDetails}
@@ -382,26 +377,6 @@ export default function DetailsDialog({
     </>
   )
 
-  const secondaryStats = (
-    <>
-      {cacheStatusStats}
-      <StatWidget
-        dense={useCompactDetails}
-        compact={useCompactDetails}
-        tight={useCompactDetails}
-        label={t('PiecesCount')}
-        value={cache.PiecesCount != null ? String(cache.PiecesCount) : '—'}
-      />
-      <StatWidget
-        dense={useCompactDetails}
-        compact={useCompactDetails}
-        tight={useCompactDetails}
-        label={t('PiecesLength')}
-        value={cache.PiecesLength != null ? humanizeSize(cache.PiecesLength) : '—'}
-      />
-    </>
-  )
-
   const torrentActions = (
     <TorrentActions
       hash={hash}
@@ -416,13 +391,6 @@ export default function DetailsDialog({
       onDeleted={onClose}
       compact={useCompactDetails}
     />
-  )
-
-  const heroStats = (
-    <>
-      {primaryStats}
-      {secondaryStats}
-    </>
   )
 
   const editControl =
@@ -491,11 +459,11 @@ export default function DetailsDialog({
                   <TitleRow title={displayTitle} subtitle={subtitle} compact />
                 </div>
               </div>
-              <div className='grid grid-cols-4 gap-1'>{heroStats}</div>
+              <div className='grid grid-cols-3 gap-1'>{heroStats}</div>
             </div>
           ) : (
             /*
-                  Desktop: poster spans the title and one 4×2 metric grid.
+                  Desktop: poster spans the title and one 3×2 metric grid.
                   Button clearance is only on the title row — the grid stays full width.
                 */
             <div className='ts-details-hero grid shrink-0 grid-cols-[auto_minmax(0,1fr)] items-stretch gap-x-3 gap-y-2 rounded-xl bg-gradient-to-br from-accent-soft to-accent-soft/40 p-2.5'>
@@ -527,7 +495,7 @@ export default function DetailsDialog({
                 <TitleRow title={displayTitle} subtitle={subtitle} compact={false} />
               </div>
 
-              <div className='col-start-2 row-start-2 grid min-w-0 w-full grid-cols-4 gap-1.5'>{heroStats}</div>
+              <div className='col-start-2 row-start-2 grid min-w-0 w-full grid-cols-3 gap-1.5'>{heroStats}</div>
             </div>
           )}
 
@@ -613,25 +581,35 @@ export default function DetailsDialog({
             <Tabs.Panel id='stats' className='flex min-h-0 flex-1 flex-col overflow-hidden pt-3'>
               {useCompactDetails ? (
                 <div className='min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
+                  <TorrentProgressStrip
+                    torrent={torrent}
+                    cache={cache}
+                    preloadCachePercent={preloadCachePercent}
+                  />
                   <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
                   <SwarmStatsPanel
                     torrent={torrent}
                     columns={2}
                     cacheReaders={cache.Readers?.length ?? 0}
                     cache={cache}
-                    preloadCachePercent={preloadCachePercent}
                   />
                 </div>
               ) : (
-                <div className='grid min-h-0 flex-1 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-stretch gap-3 pb-3'>
-                  <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact fill />
-                  <SwarmStatsPanel
+                <div className='flex min-h-0 flex-1 flex-col gap-3 pb-3'>
+                  <TorrentProgressStrip
                     torrent={torrent}
-                    className='h-full min-h-0'
-                    cacheReaders={cache.Readers?.length ?? 0}
                     cache={cache}
                     preloadCachePercent={preloadCachePercent}
                   />
+                  <div className='grid min-h-0 flex-1 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-stretch gap-3'>
+                    <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact fill />
+                    <SwarmStatsPanel
+                      torrent={torrent}
+                      className='h-full min-h-0'
+                      cacheReaders={cache.Readers?.length ?? 0}
+                      cache={cache}
+                    />
+                  </div>
                 </div>
               )}
             </Tabs.Panel>
