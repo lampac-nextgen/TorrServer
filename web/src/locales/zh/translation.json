@@ -125,7 +125,6 @@
   "FilterLibrary": "筛选库",
   "Folders": "文件夹",
   "FromLatestFile": "从最新文件",
-  "Full": "全部",
   "FuseStatus": "FUSE mount",
   "GB": "GB",
   "GStreamer": {
@@ -269,7 +268,6 @@
   "NoTorrentsActive": "没有活跃的种子文件",
   "NoTorrentsAdded": "没有添加种子",
   "NoTorrentsInCategory": "此分类下没有种子",
-  "NowPlaying": "正在播放",
   "OK": "确定",
   "OpenLink": "打开链接",
   "Other": "其他",
@@ -456,8 +454,6 @@
     "ViewedHistoryStorage": "查看历史存储："
   },
   "ShowAllTorrents": "显示全部",
-  "ShowLess": "收起",
-  "ShowMore": "展开",
   "SignIn": "登录",
   "Size": "大小",
   "SmartCollectionActive": "当前活动",
@@ -485,7 +481,6 @@
   "StorageRestartHint": "更改存储后端需要重启 TorrServer 才能生效。",
   "StorageViewedCount": "观看记录",
   "Support": "支持",
-  "SwarmStats": "集群",
   "TB": "TB",
   "TMDB": {
     "APIKey": "TMDB API密钥",
@@ -560,7 +555,6 @@
   "TorrentGettingInfo": "获取信息",
   "TorrentInDb": "在数据库中",
   "TorrentPreload": "预加载",
-  "TorrentState": "种子",
   "TorrentWorking": "活跃",
   "Torznab": {
     "APIKey": "API密钥",

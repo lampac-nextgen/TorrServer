@@ -125,7 +125,6 @@
   "FilterLibrary": "Фильтр библиотеки",
   "Folders": "Папки",
   "FromLatestFile": "C последнего файла",
-  "Full": "Полный",
   "FuseStatus": "FUSE",
   "GB": "ГБ",
   "GStreamer": {
@@ -269,7 +268,6 @@
   "NoTorrentsActive": "Нет активных торрентов",
   "NoTorrentsAdded": "Нет торрентов",
   "NoTorrentsInCategory": "В этой категории нет торрентов",
-  "NowPlaying": "Сейчас играет",
   "OK": "OK",
   "OpenLink": "Открыть",
   "Other": "Другое",
@@ -456,8 +454,6 @@
     "ViewedHistoryStorage": "Хранилище истории просмотров:"
   },
   "ShowAllTorrents": "Показать все",
-  "ShowLess": "Свернуть",
-  "ShowMore": "Ещё",
   "SignIn": "Войти",
   "Size": "Размер",
   "SmartCollectionActive": "Активные",
@@ -485,7 +481,6 @@
   "StorageRestartHint": "Смена хранилища применяется после перезапуска TorrServer.",
   "StorageViewedCount": "Записей просмотра",
   "Support": "Поддержать",
-  "SwarmStats": "Рой",
   "TB": "ТБ",
   "TMDB": {
     "APIKey": "TMDB API-ключ",
@@ -560,7 +555,6 @@
   "TorrentGettingInfo": "Получение инфо",
   "TorrentInDb": "Торрент в БД",
   "TorrentPreload": "Предзагрузка",
-  "TorrentState": "Торрент",
   "TorrentWorking": "Активен",
   "Torznab": {
     "APIKey": "API-ключ",

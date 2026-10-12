@@ -111,9 +111,6 @@ export interface BTSets {
 }
 
 export type SettingsUpdater = (partial: Partial<BTSets>) => void
-export type SettingsInputHandler = (event: {
-  target: { type?: string; value?: unknown; checked?: boolean; id?: string; name?: string }
-}) => void
 
 export interface GStreamerRuntime {
   built_in: boolean

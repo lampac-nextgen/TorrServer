@@ -125,7 +125,6 @@
   "FilterLibrary": "Filtrează biblioteca",
   "Folders": "Foldere",
   "FromLatestFile": "Din fișierul cel mai recent",
-  "Full": "Complet",
   "FuseStatus": "FUSE mount",
   "GB": "GB",
   "GStreamer": {
@@ -269,7 +268,6 @@
   "NoTorrentsActive": "Niciun torrent activ",
   "NoTorrentsAdded": "Nu s-au adăugat torrente",
   "NoTorrentsInCategory": "Niciun torrent în această categorie",
-  "NowPlaying": "Se redă acum",
   "OK": "OK",
   "OpenLink": "Deschide link-ul",
   "Other": "Altele",
@@ -456,8 +454,6 @@
     "ViewedHistoryStorage": "Istoricul vizualizărilor stocate:"
   },
   "ShowAllTorrents": "Afișează tot",
-  "ShowLess": "Restrânge",
-  "ShowMore": "Mai mult",
   "SignIn": "Autentificare",
   "Size": "Mărime",
   "SmartCollectionActive": "Active acum",
@@ -485,7 +481,6 @@
   "StorageRestartHint": "Schimbarea backend-urilor de stocare necesită repornirea TorrServer.",
   "StorageViewedCount": "Înregistrări vizionate",
   "Support": "Suport",
-  "SwarmStats": "Roi",
   "TB": "TB",
   "TMDB": {
     "APIKey": "Cheie API TMDB",
@@ -560,7 +555,6 @@
   "TorrentGettingInfo": "Obținerea de informații",
   "TorrentInDb": "În baza de date",
   "TorrentPreload": "Preîncărcare",
-  "TorrentState": "Torrent",
   "TorrentWorking": "Activ",
   "Torznab": {
     "APIKey": "Cheie API",

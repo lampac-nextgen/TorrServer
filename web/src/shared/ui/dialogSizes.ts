@@ -49,9 +49,6 @@ export const DIALOG_FULLSCREEN: CSSProperties = {
   borderRadius: 0,
 }
 
-/** @deprecated Prefer DIALOG_FULLSCREEN — kept as alias for player call sites. */
-export const PLAYER_DIALOG_MOBILE: CSSProperties = DIALOG_FULLSCREEN
-
 /** Settings — fixed height so tab switches (Storage ↔ Network ↔ Torznab) don't resize the window. */
 export const DIALOG_SETTINGS: CSSProperties = {
   ...DIALOG_SHEET_L,

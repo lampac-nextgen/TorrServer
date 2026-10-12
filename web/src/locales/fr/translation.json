@@ -125,7 +125,6 @@
   "FilterLibrary": "Filtrer la bibliothèque",
   "Folders": "Dossiers",
   "FromLatestFile": "Depuis le dernier fichier",
-  "Full": "Complet",
   "FuseStatus": "FUSE mount",
   "GB": "Go",
   "GStreamer": {
@@ -269,7 +268,6 @@
   "NoTorrentsActive": "Aucun torrent actif",
   "NoTorrentsAdded": "Aucun torrent ajouté",
   "NoTorrentsInCategory": "Aucun torrent dans cette catégorie",
-  "NowPlaying": "Lecture en cours",
   "OK": "OK",
   "OpenLink": "Ouvrir le lien",
   "Other": "Autre",
@@ -456,8 +454,6 @@
     "ViewedHistoryStorage": "Stockage de l'historique des vues :"
   },
   "ShowAllTorrents": "Tout afficher",
-  "ShowLess": "Réduire",
-  "ShowMore": "Afficher plus",
   "SignIn": "Se connecter",
   "Size": "Taille",
   "SmartCollectionActive": "Actifs maintenant",
@@ -485,7 +481,6 @@
   "StorageRestartHint": "Changer les backends de stockage nécessite un redémarrage de TorrServer.",
   "StorageViewedCount": "Enregistrements de visionnage",
   "Support": "Assistance",
-  "SwarmStats": "Essaim",
   "TB": "To",
   "TMDB": {
     "APIKey": "Clé API TMDB",
@@ -560,7 +555,6 @@
   "TorrentGettingInfo": "Récupération des informations",
   "TorrentInDb": "En base de données",
   "TorrentPreload": "Préchargement",
-  "TorrentState": "Torrent",
   "TorrentWorking": "Actif",
   "Torznab": {
     "APIKey": "Clé API",
