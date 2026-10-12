@@ -125,6 +125,7 @@
   "FilterLibrary": "Filter library",
   "Folders": "Folders",
   "FromLatestFile": "From Latest File",
+  "FromLatestUnavailable": "Play an episode first",
   "FuseStatus": "FUSE mount",
   "GB": "GB",
   "GStreamer": {

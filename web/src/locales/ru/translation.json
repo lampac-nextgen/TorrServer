@@ -125,6 +125,7 @@
   "FilterLibrary": "Фильтр библиотеки",
   "Folders": "Папки",
   "FromLatestFile": "C последнего файла",
+  "FromLatestUnavailable": "Сначала посмотрите серию",
   "FuseStatus": "FUSE",
   "GB": "ГБ",
   "GStreamer": {

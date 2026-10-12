@@ -125,6 +125,7 @@
   "FilterLibrary": "筛选库",
   "Folders": "文件夹",
   "FromLatestFile": "从最新文件",
+  "FromLatestUnavailable": "请先播放一集",
   "FuseStatus": "FUSE mount",
   "GB": "GB",
   "GStreamer": {

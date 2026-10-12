@@ -125,6 +125,7 @@
   "FilterLibrary": "Фільтр бібліотеки",
   "Folders": "Папки",
   "FromLatestFile": "З останнього файлу",
+  "FromLatestUnavailable": "Спочатку перегляньте серію",
   "FuseStatus": "FUSE mount",
   "GB": "ГБ",
   "GStreamer": {

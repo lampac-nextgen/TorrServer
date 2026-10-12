@@ -286,32 +286,65 @@ function TorrentActions({
     </Modal.Root>
   )
 
-  const playlistButtons = hasPartialProgress ? (
-    <>
-      <Button
-        variant='primary'
-        className='min-h-9 min-w-0 flex-1'
-        onPress={() => window.open(fromLatestPlaylistLink, '_blank')}
-      >
-        <ListMusic {...iconMenu} aria-hidden />
-        <span className='truncate'>{t('FromLatestFile')}</span>
-      </Button>
-      <Button
-        variant='outline'
-        className='min-h-9 min-w-0 flex-1'
-        onPress={() => window.open(fullPlaylistLink, '_blank')}
-      >
-        <span className='truncate'>{t('DownloadPlaylist')}</span>
-      </Button>
-    </>
-  ) : (
+  const playlistBtn = 'min-h-9 min-w-0 flex-1'
+  const playlistButtons = isSingleFileTorrent ? (
     <Button
       variant='primary'
-      className='min-h-9 min-w-0 flex-1'
+      className='min-h-9 shrink-0'
       onPress={() => window.open(fullPlaylistLink, '_blank')}
     >
       <ListMusic {...iconMenu} aria-hidden />
       <span className='truncate'>{t('DownloadPlaylist')}</span>
+    </Button>
+  ) : (
+    <div className='flex min-w-0 flex-1 gap-2'>
+      {hasPartialProgress ? (
+        <>
+          <Button
+            variant='primary'
+            className={playlistBtn}
+            onPress={() => window.open(fromLatestPlaylistLink, '_blank')}
+          >
+            <ListMusic {...iconMenu} aria-hidden />
+            <span className='truncate'>{t('FromLatestFile')}</span>
+          </Button>
+          <Button
+            variant='outline'
+            className={playlistBtn}
+            onPress={() => window.open(fullPlaylistLink, '_blank')}
+          >
+            <span className='truncate'>{t('DownloadPlaylist')}</span>
+          </Button>
+        </>
+      ) : (
+        <>
+          <Button
+            variant='primary'
+            className={playlistBtn}
+            onPress={() => window.open(fullPlaylistLink, '_blank')}
+          >
+            <ListMusic {...iconMenu} aria-hidden />
+            <span className='truncate'>{t('DownloadPlaylist')}</span>
+          </Button>
+          <span title={t('FromLatestUnavailable')} className='min-w-0 flex-1'>
+            <Button variant='outline' className='min-h-9 w-full min-w-0' isDisabled>
+              <span className='truncate'>{t('FromLatestFile')}</span>
+            </Button>
+          </span>
+        </>
+      )}
+    </div>
+  )
+
+  const deleteButton = (
+    <Button
+      variant='danger'
+      isIconOnly
+      className='min-h-9 min-w-9 shrink-0'
+      aria-label={t('Delete')}
+      onPress={() => setPendingConfirm('delete')}
+    >
+      <Trash2 {...iconMenu} aria-hidden />
     </Button>
   )
 
@@ -344,6 +377,7 @@ function TorrentActions({
 
         <div className='flex items-stretch gap-2'>
           {playlistButtons}
+          {deleteButton}
           <Button variant='secondary' size='md' className='min-h-9 min-w-11 shrink-0 px-3' onPress={moreState.open}>
             <MoreHorizontal {...iconMenu} aria-hidden />
             <span className='sr-only'>{t('Actions')}</span>
@@ -383,12 +417,6 @@ function TorrentActions({
                     t('DropTorrent'),
                     <Trash2 {...iconMenu} aria-hidden />,
                     () => setPendingConfirm('drop'),
-                    true,
-                  )}
-                  {sheetAction(
-                    t('Delete'),
-                    <Trash2 {...iconMenu} aria-hidden />,
-                    () => setPendingConfirm('delete'),
                     true,
                   )}
                 </Drawer.Body>
@@ -450,6 +478,7 @@ function TorrentActions({
             </Dropdown.Menu>
           </Dropdown.Popover>
         </Dropdown>
+        {deleteButton}
         <Dropdown isOpen={moreMenuState.isOpen} onOpenChange={moreMenuState.setOpen}>
           <Dropdown.Trigger>
             <Button variant='secondary' isIconOnly className='min-h-9 min-w-9 shrink-0' aria-label={t('nav.More')}>
@@ -465,10 +494,6 @@ function TorrentActions({
               <Dropdown.Item onPress={() => setPendingConfirm('drop')}>
                 <Trash2 {...iconMenu} />
                 {t('DropTorrent')}
-              </Dropdown.Item>
-              <Dropdown.Item variant='danger' onPress={() => setPendingConfirm('delete')}>
-                <Trash2 {...iconMenu} />
-                {t('Delete')}
               </Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown.Popover>

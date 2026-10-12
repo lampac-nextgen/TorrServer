@@ -125,6 +125,7 @@
   "FilterLibrary": "Filtrează biblioteca",
   "Folders": "Foldere",
   "FromLatestFile": "Din fișierul cel mai recent",
+  "FromLatestUnavailable": "Redați mai întâi un episod",
   "FuseStatus": "FUSE mount",
   "GB": "GB",
   "GStreamer": {
