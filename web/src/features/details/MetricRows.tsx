@@ -13,10 +13,8 @@ export interface MetricRowsProps {
   title?: string
   /** Dense multi-column definition list (mobile secondary/swarm). */
   columns?: 1 | 2
-  /** Tighter row padding for full Swarm tab. */
+  /** Tighter row padding for Stats detail rows. */
   dense?: boolean
-  /** Spread rows through the parent's leftover height. */
-  spread?: boolean
   /** Wrap in a single bordered panel (default true). */
   framed?: boolean
   className?: string
@@ -32,18 +30,11 @@ export default function MetricRows({
   columns = 1,
   dense = false,
   framed = true,
-  spread = false,
   className = '',
   children,
 }: MetricRowsProps) {
   const list = (
-    <div
-      className={
-        columns === 2
-          ? `grid grid-cols-2 gap-x-3 ${spread ? 'min-h-0 flex-1 content-between gap-y-1' : 'gap-y-0.5'}`
-          : `flex flex-col ${spread ? 'min-h-0 flex-1 justify-between' : ''}`
-      }
-    >
+    <div className={columns === 2 ? 'grid grid-cols-2 gap-x-3 gap-y-0.5' : 'flex flex-col'}>
       {items.map(item => (
         <div
           key={item.label}
@@ -73,9 +64,7 @@ export default function MetricRows({
   )
 
   if (!framed) {
-    return (
-      <div className={`${spread ? 'flex min-h-0 flex-1 flex-col' : ''} ${className}`.trim() || undefined}>{body}</div>
-    )
+    return <div className={className || undefined}>{body}</div>
   }
 
   return <div className={`rounded-xl border border-border bg-surface-secondary p-2.5 ${className}`.trim()}>{body}</div>

@@ -36,6 +36,8 @@ export interface TorrentStat {
   chunks_read_useful?: number
   chunks_read_wasted?: number
   chunks_written?: number
+  pieces_dirtied_good?: number
+  pieces_dirtied_bad?: number
   /** Media bitrate string from metadata when known (e.g. "1234 kb/s"). */
   bit_rate?: string
   duration_seconds?: number

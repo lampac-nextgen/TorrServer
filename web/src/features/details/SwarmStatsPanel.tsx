@@ -34,6 +34,10 @@ function formatDuration(seconds?: number): string | null {
   return `${m}:${String(s).padStart(2, '0')}`
 }
 
+function hasPositive(n?: number | null): boolean {
+  return n != null && Number.isFinite(n) && n > 0
+}
+
 function ProgressMeter({
   label,
   valueLabel,
@@ -61,58 +65,63 @@ function ProgressMeter({
   )
 }
 
-function PeerMixBar({
+/** Count chips always; mix bar is connected peers only so Pending cannot paint the whole bar. */
+function PeerPanel({
   active,
   seeders,
   pending,
   halfOpen,
   labels,
-  compact = false,
 }: {
   active: number
   seeders: number
   pending: number
   halfOpen: number
   labels: { active: string; seeders: string; pending: string; halfOpen: string }
-  compact?: boolean
 }) {
-  const parts = [
+  const chips = [
     { key: 'active', n: active, className: 'bg-accent', label: labels.active },
     { key: 'seeders', n: seeders, className: 'bg-accent/70', label: labels.seeders },
     { key: 'pending', n: pending, className: 'bg-warning', label: labels.pending },
     { key: 'half', n: halfOpen, className: 'bg-foreground/25', label: labels.halfOpen },
   ]
-  const total = parts.reduce((sum, p) => sum + Math.max(0, p.n), 0)
+  const barParts = chips.filter(p => p.key !== 'pending')
+  const barTotal = barParts.reduce((sum, p) => sum + Math.max(0, p.n), 0)
 
   return (
-    <div className='min-w-0'>
-      <div className={`flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted ${compact ? 'mb-1' : 'mb-1.5'}`}>
-        {parts.map(p => (
-          <span key={p.key} className='inline-flex items-center gap-1'>
-            <span className={`size-1.5 rounded-full ${p.className}`} aria-hidden />
-            {p.label} <span className='font-semibold tabular-nums text-foreground'>{p.n}</span>
-          </span>
+    <div className='min-w-0 space-y-1.5'>
+      <div className='grid grid-cols-2 gap-1.5'>
+        {chips.map(p => (
+          <div
+            key={p.key}
+            className='flex min-w-0 items-center gap-1.5 rounded-lg bg-surface px-2 py-1.5'
+            title={`${p.label}: ${p.n}`}
+          >
+            <span className={`size-1.5 shrink-0 rounded-full ${p.className}`} aria-hidden />
+            <span className='min-w-0 truncate text-[10px] text-muted'>{p.label}</span>
+            <span className='ml-auto shrink-0 text-xs font-bold tabular-nums text-foreground'>{p.n}</span>
+          </div>
         ))}
       </div>
-      <div className={`flex overflow-hidden rounded-full bg-surface ${compact ? 'h-2' : 'h-2.5'}`}>
-        {total > 0
-          ? parts.map(p =>
-            p.n > 0 ? (
-              <div
-                key={p.key}
-                className={`h-full ${p.className}`}
-                style={{ width: `${(p.n / total) * 100}%` }}
-                title={`${p.label}: ${p.n}`}
-              />
-            ) : null,
-          )
+      <div className='flex h-2 overflow-hidden rounded-full bg-surface'>
+        {barTotal > 0
+          ? barParts.map(p =>
+              p.n > 0 ? (
+                <div
+                  key={p.key}
+                  className={`h-full ${p.className}`}
+                  style={{ width: `${(p.n / barTotal) * 100}%` }}
+                  title={`${p.label}: ${p.n}`}
+                />
+              ) : null,
+            )
           : null}
       </div>
     </div>
   )
 }
 
-/** Swarm metrics on the Stats tab. Hero already owns Peers and Cache. */
+/** Swarm + transfer metrics on the Stats tab. Hero already owns Peers summary and Cache. */
 export default function SwarmStatsPanel({
   torrent,
   className = '',
@@ -125,8 +134,14 @@ export default function SwarmStatsPanel({
   const { t } = useTranslation()
   const columns = columnsProp ?? 2
 
+  const loaded = torrent.loaded_size ?? 0
+  const totalSize = torrent.torrent_size ?? 0
+  const loadedPct = totalSize > 0 ? Math.min(100, Math.round((loaded / totalSize) * 100)) : 0
+  const loadedRatio = totalSize > 0 ? loaded / totalSize : 0
+  const loadedLabel =
+    totalSize > 0 ? `${humanizeSize(loaded)} / ${humanizeSize(totalSize)} · ${loadedPct}%` : humanizeSize(loaded)
+
   const bufferTarget = resolveBufferTargetBytes(cache?.Capacity, preloadCachePercent)
-  // Streaming → playable ahead; idle → preload progress toward Cache Size × Preload %.
   const bufferAhead = bufferAheadBytes(cache)
   const isStreamingBuffer = bufferAhead != null
   const bufferFilled = isStreamingBuffer ? bufferAhead : (cache?.Filled ?? 0)
@@ -143,28 +158,32 @@ export default function SwarmStatsPanel({
     : (formatBufferFilledLabel(bufferFilled, bufferTarget, { percent: 'always' }) ??
       (bufferFilled > 0 ? humanizeSize(bufferFilled) : '—'))
 
-  /** PeerMixBar owns Active/Seeders/Pending/Half-open. Skip Total peers (hero). */
-  const items: MetricRowItem[] = [
-    { label: t('BytesRead'), value: torrent.bytes_read != null ? humanizeSize(torrent.bytes_read) : '—' },
-    { label: t('BytesWritten'), value: torrent.bytes_written != null ? humanizeSize(torrent.bytes_written) : '—' },
-    {
-      label: t('UsefulRead'),
-      value: torrent.bytes_read_useful_data != null ? humanizeSize(torrent.bytes_read_useful_data) : '—',
-    },
-    {
-      label: t('BytesReadData'),
-      value: torrent.bytes_read_data != null ? humanizeSize(torrent.bytes_read_data) : '—',
-    },
-    { label: t('ChunksRead'), value: torrent.chunks_read != null ? String(torrent.chunks_read) : '—' },
-    { label: t('ChunksWritten'), value: torrent.chunks_written != null ? String(torrent.chunks_written) : '—' },
-    {
-      label: t('ChunksWasted'),
-      value: torrent.chunks_read_wasted != null ? String(torrent.chunks_read_wasted) : '—',
-    },
-    {
-      label: t('ChunksUseful'),
-      value: torrent.chunks_read_useful != null ? String(torrent.chunks_read_useful) : '—',
-    },
+  const transferItems: MetricRowItem[] = [
+    { label: t('BytesRead'), value: humanizeSize(torrent.bytes_read) },
+    { label: t('BytesWritten'), value: humanizeSize(torrent.bytes_written) },
+    { label: t('UsefulRead'), value: humanizeSize(torrent.bytes_read_useful_data) },
+  ]
+
+  const detailItems: MetricRowItem[] = [
+    ...(hasPositive(torrent.bytes_read_data)
+      ? [{ label: t('BytesReadData'), value: humanizeSize(torrent.bytes_read_data) }]
+      : []),
+    ...(hasPositive(torrent.chunks_read) ? [{ label: t('ChunksRead'), value: String(torrent.chunks_read) }] : []),
+    ...(hasPositive(torrent.chunks_written)
+      ? [{ label: t('ChunksWritten'), value: String(torrent.chunks_written) }]
+      : []),
+    ...(hasPositive(torrent.chunks_read_wasted)
+      ? [{ label: t('ChunksWasted'), value: String(torrent.chunks_read_wasted) }]
+      : []),
+    ...(hasPositive(torrent.chunks_read_useful)
+      ? [{ label: t('ChunksUseful'), value: String(torrent.chunks_read_useful) }]
+      : []),
+    ...(hasPositive(torrent.pieces_dirtied_good)
+      ? [{ label: t('PiecesDirtiedGood'), value: String(torrent.pieces_dirtied_good) }]
+      : []),
+    ...(hasPositive(torrent.pieces_dirtied_bad)
+      ? [{ label: t('PiecesDirtiedBad'), value: String(torrent.pieces_dirtied_bad) }]
+      : []),
     ...(cacheReaders != null ? [{ label: t('CacheReaders'), value: String(cacheReaders) }] : []),
     ...(torrent.bit_rate ? [{ label: t('BitRate'), value: torrent.bit_rate }] : []),
     ...(durationLabel ? [{ label: t('FfpDuration'), value: durationLabel }] : []),
@@ -172,9 +191,21 @@ export default function SwarmStatsPanel({
 
   const inner = (
     <>
-      <MetricRows framed={false} items={items} columns={columns} dense spread />
-      <div className='mt-auto shrink-0 space-y-1.5 border-t border-border pt-2'>
-        <PeerMixBar
+      {totalSize > 0 || loaded > 0 ? (
+        <div className='mb-2 shrink-0'>
+          <ProgressMeter label={t('Loaded')} valueLabel={loadedLabel} ratio={loadedRatio} compact />
+        </div>
+      ) : null}
+
+      <div className='shrink-0 space-y-2'>
+        <MetricRows framed={false} items={transferItems} columns={columns} dense />
+        {detailItems.length > 0 ? (
+          <MetricRows framed={false} items={detailItems} columns={columns} dense />
+        ) : null}
+      </div>
+
+      <div className='mt-auto shrink-0 space-y-2 border-t border-border pt-2'>
+        <PeerPanel
           active={torrent.active_peers ?? 0}
           seeders={torrent.connected_seeders ?? 0}
           pending={torrent.pending_peers ?? 0}
@@ -185,7 +216,6 @@ export default function SwarmStatsPanel({
             pending: t('PendingPeers'),
             halfOpen: t('HalfOpenPeers'),
           }}
-          compact
         />
         <ProgressMeter
           label={preloadTitle}
@@ -199,7 +229,7 @@ export default function SwarmStatsPanel({
   )
 
   if (!framed) {
-    return <div className={className || undefined}>{inner}</div>
+    return <div className={`flex min-h-0 flex-col ${className}`.trim() || undefined}>{inner}</div>
   }
 
   return (
