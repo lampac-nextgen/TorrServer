@@ -9,11 +9,13 @@ import { authFetch } from 'shared/api/authCredentials'
 import type { PlayableFile, TorrentFileStat } from 'shared/api/types'
 import { remViewedFile, VIEWED_QUERY_KEY } from 'shared/api/viewed'
 import { shouldUseGStreamerPlayer, useGStreamerRuntime } from 'shared/lib/gstreamer'
+import { copyToClipboard } from 'shared/lib/clipboard'
 import { useExternalPlayers } from 'shared/lib/externalPlayers'
 import { externalLink, useExternalMediaBase } from 'shared/lib/mediaBase'
 import { humanizeSize } from 'shared/lib/format'
 import { queryMax } from 'shared/theme/breakpoints'
 import { useOptionalAppToast } from 'shared/ui/Toast'
+import { useConfiguredPlayAction } from 'features/player/useConfiguredPlayAction'
 import { usePlayLauncher } from 'features/player/usePlayLauncher'
 
 import FileRowActions from './FileRowActions'
@@ -168,6 +170,7 @@ const FilesDataGrid = memo(
       [knownPlayableFiles, gstRuntime],
     )
 
+    const { runConfiguredPlay } = useConfiguredPlayAction()
     const { playFile, isResolving, resolvingFileId, playerModals } = usePlayLauncher({
       hash,
       displayName: displayName || hash,
@@ -262,7 +265,23 @@ const FilesDataGrid = memo(
                   preloadLabel={t('Preload')}
                   onPreload={() => preloadBuffer(row.id)}
                   playerSupported={!unsupportedPlayerKeys[row.playerKey]}
-                  onPlay={() => playFile(row.playable)}
+                  onPlay={() =>
+                    runConfiguredPlay({
+                      hash,
+                      displayName: displayName || hash,
+                      knownPlayableFiles: [row.playable],
+                      handlePlay: () => playFile(row.playable),
+                      resolvePlayableFile: onFile => onFile(row.playable),
+                      copyText: async text => {
+                        try {
+                          await copyToClipboard(text)
+                          toast?.showToast({ message: t('Copied'), severity: 'success' })
+                        } catch {
+                          toast?.showToast({ message: t('Error'), severity: 'error' })
+                        }
+                      },
+                    })
+                  }
                   isPlayPending={isResolving && resolvingFileId === row.id}
                   openLinkHref={row.link}
                   showOpenLink={shouldShowOpenLink}

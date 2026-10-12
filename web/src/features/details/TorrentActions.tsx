@@ -384,7 +384,7 @@ function TorrentActions({
   )
 
   return (
-    <div className={`space-y-2 ${compact ? 'pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]' : ''}`}>
+    <div className='space-y-2'>
       {showPlayerHint ? (
         <button
           type='button'
