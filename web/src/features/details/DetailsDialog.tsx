@@ -564,53 +564,52 @@ export default function DetailsDialog({
             </Tabs.ListContainer>
 
             <Tabs.Panel id='files' className='flex min-h-0 flex-1 flex-col overflow-hidden pt-2 sm:pt-3'>
-              {/* min-h keeps a few episode rows when the series footer (players + playlist + state) is tall. */}
-              <div className='min-h-44 flex-1 overflow-y-auto overscroll-contain pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
+              <div className='min-h-0 flex-1 overflow-y-auto overscroll-contain'>
                 {/* Reserve chip-row height while metadata loads or when multi-season — list won't jump. */}
-                {hasMultipleSeasons || isLoadingMetadata ? (
-                  <div className='mb-2 min-h-11 sm:mb-3'>
-                    {hasMultipleSeasons ? (
-                      <ToggleButtonGroup
-                        selectionMode='single'
-                        selectedKeys={selectedSeason != null ? [String(selectedSeason)] : []}
-                        onSelectionChange={keys => {
-                          const value = [...keys][0]
-                          if (value != null) setSelectedSeason(Number(value))
-                        }}
-                        className='flex flex-wrap gap-2'
-                      >
-                        {seasonList!.map(season => (
-                          <ToggleButton key={season} id={String(season)}>
-                            {t('Season')} {season}
-                          </ToggleButton>
-                        ))}
-                      </ToggleButtonGroup>
-                    ) : null}
-                  </div>
-                ) : null}
+                  {hasMultipleSeasons || isLoadingMetadata ? (
+                    <div className='mb-2 min-h-11 sm:mb-3'>
+                      {hasMultipleSeasons ? (
+                        <ToggleButtonGroup
+                          selectionMode='single'
+                          selectedKeys={selectedSeason != null ? [String(selectedSeason)] : []}
+                          onSelectionChange={keys => {
+                            const value = [...keys][0]
+                            if (value != null) setSelectedSeason(Number(value))
+                          }}
+                          className='flex flex-wrap gap-2'
+                        >
+                          {seasonList!.map(season => (
+                            <ToggleButton key={season} id={String(season)}>
+                              {t('Season')} {season}
+                            </ToggleButton>
+                          ))}
+                        </ToggleButtonGroup>
+                      ) : null}
+                    </div>
+                  ) : null}
 
-                {isLoadingMetadata ? (
-                  <div className='space-y-2' aria-busy aria-label={t('TorrentGettingInfo')}>
-                    {Array.from({ length: 4 }, (_, i) => (
-                      <div
-                        key={i}
-                        className='h-[4.5rem] animate-pulse rounded-xl border border-border bg-surface sm:h-[3.25rem]'
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <FileBrowser
-                    hash={hash}
-                    playableFileList={playableFileList || []}
-                    viewedFileList={viewedFileList}
-                    selectedSeason={selectedSeason}
-                    seasonAmount={seasonList}
-                    allFileStats={fileStats}
-                    onViewedChange={refreshViewed}
-                  />
-                )}
+                  {isLoadingMetadata ? (
+                    <div className='space-y-2' aria-busy aria-label={t('TorrentGettingInfo')}>
+                      {Array.from({ length: 4 }, (_, i) => (
+                        <div
+                          key={i}
+                          className='h-[4.5rem] animate-pulse rounded-xl border border-border bg-surface sm:h-[3.25rem]'
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <FileBrowser
+                      hash={hash}
+                      playableFileList={playableFileList || []}
+                      viewedFileList={viewedFileList}
+                      selectedSeason={selectedSeason}
+                      seasonAmount={seasonList}
+                      allFileStats={fileStats}
+                      onViewedChange={refreshViewed}
+                    />
+                  )}
               </div>
-              <div className='min-h-0 shrink overflow-y-auto overscroll-contain border-t border-border bg-surface/95 pt-2 backdrop-blur-sm'>
+              <div className='shrink-0 border-t border-border bg-surface pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
                 {torrentActions}
               </div>
             </Tabs.Panel>

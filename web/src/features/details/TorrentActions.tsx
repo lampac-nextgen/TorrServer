@@ -238,6 +238,20 @@ function TorrentActions({
   }
 
   const hasPartialProgress = !isSingleFileTorrent && !!viewedFileList?.length
+  const latestPlayed = hasPartialProgress ? (
+    <p className='truncate text-xs text-muted'>
+      {t('LatestFilePlayed')}{' '}
+      <strong className='text-foreground'>
+        {latestViewedFileInfo?.title}
+        {latestViewedFileInfo?.season ? (
+          <>
+            {' '}
+            · {t('Season')} {latestViewedFileInfo.season} · {t('Episode')} {latestViewedFileInfo.episode}
+          </>
+        ) : null}
+      </strong>
+    </p>
+  ) : null
 
   const confirmModal = (
     <Modal.Root state={confirmState}>
@@ -309,41 +323,6 @@ function TorrentActions({
           </button>
         ) : null}
 
-        {hasPartialProgress ? (
-          <div className='rounded-lg border border-border bg-surface-secondary p-3'>
-            <p className='mb-2 truncate text-xs text-muted'>
-              {t('LatestFilePlayed')}{' '}
-              <strong className='text-foreground'>
-                {latestViewedFileInfo?.title}
-                {latestViewedFileInfo?.season ? (
-                  <>
-                    {' '}
-                    · {t('Season')} {latestViewedFileInfo.season} · {t('Episode')} {latestViewedFileInfo.episode}
-                  </>
-                ) : null}
-              </strong>
-            </p>
-            <ButtonGroup className='w-full'>
-              <Button
-                variant='primary'
-                size='sm'
-                className='min-h-11 flex-1'
-                onPress={() => window.open(fullPlaylistLink, '_blank')}
-              >
-                {t('Full')}
-              </Button>
-              <Button
-                variant='primary'
-                size='sm'
-                className='min-h-11 flex-1'
-                onPress={() => window.open(fromLatestPlaylistLink, '_blank')}
-              >
-                {t('FromLatestFile')}
-              </Button>
-            </ButtonGroup>
-          </div>
-        ) : null}
-
         <Drawer.Root state={moreState}>
           <Drawer.Backdrop isDismissable>
             <Drawer.Content placement='bottom'>
@@ -353,12 +332,16 @@ function TorrentActions({
                   <Drawer.CloseTrigger className='min-h-11 min-w-11' aria-label={t('Close')} />
                 </Drawer.Header>
                 <Drawer.Body className='flex flex-col gap-0.5 px-0 pt-1'>
+                  {latestPlayed ? <div className='px-4 pb-2'>{latestPlayed}</div> : null}
                   {singleFileStream
                     ? sheetAction(t('CopyLink'), <Link2 {...iconMenu} aria-hidden />, () => void copyStreamLink())
                     : null}
-                  {isSingleFileTorrent || !viewedFileList?.length
-                    ? sheetAction(t('DownloadPlaylist'), <ListMusic {...iconMenu} aria-hidden />, () =>
-                      window.open(fullPlaylistLink, '_blank'),
+                  {sheetAction(t('DownloadPlaylist'), <ListMusic {...iconMenu} aria-hidden />, () =>
+                    window.open(fullPlaylistLink, '_blank'),
+                  )}
+                  {hasPartialProgress
+                    ? sheetAction(t('FromLatestFile'), <ListMusic {...iconMenu} aria-hidden />, () =>
+                      window.open(fromLatestPlaylistLink, '_blank'),
                     )
                     : null}
                   {sheetAction(t('CopyMagnet'), <Magnet {...iconMenu} aria-hidden />, () => void copyMagnetLink())}
@@ -413,57 +396,41 @@ function TorrentActions({
         </button>
       ) : null}
 
-      {hasPartialProgress ? (
-        <div className='rounded-lg border border-border bg-surface-secondary px-3 py-2'>
-          <p className='mb-0.5 flex items-center gap-1.5 text-xs font-semibold'>
-            <ListMusic {...iconMenu} className='text-accent' aria-hidden />
-            {t('DownloadPlaylist')}
-          </p>
-          <p className='mb-2 text-xs text-muted'>
-            {t('LatestFilePlayed')}{' '}
-            <strong className='text-foreground'>
-              {latestViewedFileInfo?.title}
-              {latestViewedFileInfo?.season ? (
-                <>
-                  {' '}
-                  · {t('Season')} {latestViewedFileInfo.season} · {t('Episode')} {latestViewedFileInfo.episode}
-                </>
-              ) : null}
-            </strong>
-          </p>
-          <ButtonGroup className='w-full'>
-            <Button
-              variant='primary'
-              className='min-h-9 flex-1'
-              onPress={() => window.open(fullPlaylistLink, '_blank')}
-            >
-              {t('Full')}
-            </Button>
-            <Button
-              variant='primary'
-              className='min-h-9 flex-1'
-              onPress={() => window.open(fromLatestPlaylistLink, '_blank')}
-            >
-              {t('FromLatestFile')}
-            </Button>
-          </ButtonGroup>
-        </div>
-      ) : null}
-
       <div>
         <p className='mb-1 text-xs font-semibold text-muted'>{t('Actions')}</p>
-        <div className='flex w-full flex-wrap items-stretch gap-2'>
-          {isSingleFileTorrent || !viewedFileList?.length ? (
-            <Button
-              variant='primary'
-              className='min-h-9 min-w-0 flex-1'
-              onPress={() => window.open(fullPlaylistLink, '_blank')}
-            >
-              <ListMusic {...iconMenu} aria-hidden />
-              <span className='truncate'>{t('DownloadPlaylist')}</span>
-            </Button>
+        {latestPlayed ? <div className='mb-1.5'>{latestPlayed}</div> : null}
+        <div className='flex w-full flex-col gap-2'>
+          {hasPartialProgress ? (
+            <div className='flex w-full gap-2'>
+              <Button
+                variant='primary'
+                className='min-h-9 min-w-0 flex-1'
+                onPress={() => window.open(fullPlaylistLink, '_blank')}
+              >
+                <ListMusic {...iconMenu} aria-hidden />
+                <span className='truncate'>{t('DownloadPlaylist')}</span>
+              </Button>
+              <Button
+                variant='primary'
+                className='min-h-9 min-w-0 flex-1'
+                onPress={() => window.open(fromLatestPlaylistLink, '_blank')}
+              >
+                <span className='truncate'>{t('FromLatestFile')}</span>
+              </Button>
+            </div>
           ) : null}
-          <ButtonGroup className='min-w-0 flex-[2]'>
+          <div className='flex w-full flex-wrap items-stretch gap-2'>
+            {!hasPartialProgress ? (
+              <Button
+                variant='primary'
+                className='min-h-9 min-w-0 flex-1'
+                onPress={() => window.open(fullPlaylistLink, '_blank')}
+              >
+                <ListMusic {...iconMenu} aria-hidden />
+                <span className='truncate'>{t('DownloadPlaylist')}</span>
+              </Button>
+            ) : null}
+            <ButtonGroup className='min-w-0 flex-[2]'>
             <Button variant='secondary' className='min-h-9 min-w-0 flex-1' onPress={() => void copyMagnetLink()}>
               <Magnet {...iconMenu} aria-hidden />
               <span className='truncate'>{t('CopyMagnet')}</span>
@@ -485,6 +452,7 @@ function TorrentActions({
             <ListMusic {...iconMenu} aria-hidden />
             <span className='truncate'>{t('DownloadAllPlaylists')}</span>
           </Button> */}
+          </div>
         </div>
       </div>
 
