@@ -564,7 +564,8 @@ export default function DetailsDialog({
             </Tabs.ListContainer>
 
             <Tabs.Panel id='files' className='flex min-h-0 flex-1 flex-col overflow-hidden pt-2 sm:pt-3'>
-              <div className='min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
+              {/* min-h keeps a few episode rows when the series footer (players + playlist + state) is tall. */}
+              <div className='min-h-44 flex-1 overflow-y-auto overscroll-contain pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
                 {/* Reserve chip-row height while metadata loads or when multi-season — list won't jump. */}
                 {hasMultipleSeasons || isLoadingMetadata ? (
                   <div className='mb-2 min-h-11 sm:mb-3'>
@@ -609,7 +610,7 @@ export default function DetailsDialog({
                   />
                 )}
               </div>
-              <div className='shrink-0 border-t border-border bg-surface/95 pt-2 backdrop-blur-sm'>
+              <div className='min-h-0 shrink overflow-y-auto overscroll-contain border-t border-border bg-surface/95 pt-2 backdrop-blur-sm'>
                 {torrentActions}
               </div>
             </Tabs.Panel>
