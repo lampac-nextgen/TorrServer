@@ -218,7 +218,9 @@ export default function HTTPSSettingsPanel({ onUpdate }: HTTPSSettingsPanelProps
             size='sm'
             variant='secondary'
             isDisabled={locked}
-            onPress={() => void run(() => axios.post(`${sslHost()}/selfsigned`), t('HTTPSSettings.SwitchedToSelfSigned'))}
+            onPress={() =>
+              void run(() => axios.post(`${sslHost()}/selfsigned`), t('HTTPSSettings.SwitchedToSelfSigned'))
+            }
           >
             {t('HTTPSSettings.UseSelfSigned')}
           </Button>
@@ -249,7 +251,12 @@ export default function HTTPSSettingsPanel({ onUpdate }: HTTPSSettingsPanelProps
               onChange={e => setKeyFile(e.target.files?.[0] || null)}
             />
           </Button>
-          <Button size='sm' variant='primary' isDisabled={locked || !certFile || !keyFile} onPress={() => void upload()}>
+          <Button
+            size='sm'
+            variant='primary'
+            isDisabled={locked || !certFile || !keyFile}
+            onPress={() => void upload()}
+          >
             {t('HTTPSSettings.Upload')}
           </Button>
         </div>
@@ -257,11 +264,7 @@ export default function HTTPSSettingsPanel({ onUpdate }: HTTPSSettingsPanelProps
 
       <div className='space-y-2'>
         <p className='text-sm text-muted'>{t('HTTPSSettings.PathsHint')}</p>
-        <TextField
-          value={paths.cert}
-          onChange={value => setPaths({ ...paths, cert: value })}
-          isDisabled={locked}
-        >
+        <TextField value={paths.cert} onChange={value => setPaths({ ...paths, cert: value })} isDisabled={locked}>
           <Label>{t('HTTPSSettings.CertPath')}</Label>
           <Input placeholder={t('HTTPSSettings.CertPathExample')} />
         </TextField>
@@ -274,9 +277,7 @@ export default function HTTPSSettingsPanel({ onUpdate }: HTTPSSettingsPanelProps
             size='sm'
             variant='primary'
             isDisabled={locked || !paths.cert || !paths.key}
-            onPress={() =>
-              void run(() => axios.post(`${sslHost()}/paths`, paths), t('HTTPSSettings.PathsApplied'))
-            }
+            onPress={() => void run(() => axios.post(`${sslHost()}/paths`, paths), t('HTTPSSettings.PathsApplied'))}
           >
             {t('HTTPSSettings.UsePaths')}
           </Button>

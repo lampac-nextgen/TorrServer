@@ -32,10 +32,7 @@ export const INFUSE_PLAYLIST_HREF_LIMIT = 8000
  * Infuse plays every `url` in order as a temporary playlist.
  * Over {@link INFUSE_PLAYLIST_HREF_LIMIT} characters, one m3u `url` instead.
  */
-export const buildInfusePlaylistHref = (
-  episodes: { url: string; filename: string }[],
-  m3uFallback: string,
-): string => {
+export const buildInfusePlaylistHref = (episodes: { url: string; filename: string }[], m3uFallback: string): string => {
   const href =
     'infuse://x-callback-url/play?' +
     episodes

@@ -79,10 +79,7 @@ export default function SpeedCharts({ downloadSpeed, uploadSpeed, compact = fals
     setUploadHistory(prev => [...prev.slice(1), ul])
   }, [downloadSpeed, uploadSpeed])
 
-  const scalePeak = useMemo(
-    () => Math.max(...downloadHistory, ...uploadHistory, 1),
-    [downloadHistory, uploadHistory],
-  )
+  const scalePeak = useMemo(() => Math.max(...downloadHistory, ...uploadHistory, 1), [downloadHistory, uploadHistory])
   const downloadPeak = useMemo(() => Math.max(...downloadHistory, 0), [downloadHistory])
   const downloadAvg = useMemo(() => average(downloadHistory), [downloadHistory])
   const downloadPath = useMemo(() => buildAreaPath(downloadHistory, scalePeak), [downloadHistory, scalePeak])

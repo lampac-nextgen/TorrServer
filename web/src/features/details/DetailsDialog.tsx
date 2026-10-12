@@ -71,30 +71,31 @@ function StatWidget({
   hint?: string
 }) {
   const shown = value || '—'
-  const box = dense
-    ? tight
-      ? 'w-full px-1.5 py-0.5'
-      : 'w-full px-1.5 py-1'
-    : 'w-full px-2.5 py-2 sm:px-3'
+  const box = dense ? (tight ? 'w-full px-1.5 py-0.5' : 'w-full px-1.5 py-1') : 'w-full px-2.5 py-2 sm:px-3'
   return (
-    <div className={`min-w-0 rounded-md border border-border bg-surface-secondary text-center ${box}`} title={hint || undefined}>
+    <div
+      className={`min-w-0 rounded-md border border-border bg-surface-secondary text-center ${box}`}
+      title={hint || undefined}
+    >
       <span
-        className={`block leading-tight text-muted ${tight
-          ? 'truncate text-[11px]'
-          : compact
-            ? 'line-clamp-2 min-h-[1.75rem] text-[10px]'
-            : dense
-              ? 'truncate text-[11px]'
-              : 'truncate text-[11px] sm:text-xs'
-          }`}
+        className={`block leading-tight text-muted ${
+          tight
+            ? 'truncate text-[11px]'
+            : compact
+              ? 'line-clamp-2 min-h-[1.75rem] text-[10px]'
+              : dense
+                ? 'truncate text-[11px]'
+                : 'truncate text-[11px] sm:text-xs'
+        }`}
         title={hint || label}
       >
         {label}
       </span>
       {/* Single-line value — long labels must not wrap and grow the hero. */}
       <span
-        className={`block truncate font-bold tabular-nums text-foreground ${dense ? 'mt-0.5 h-3.5 text-[11px] leading-3.5' : 'mt-1 h-5 text-sm leading-5 sm:h-6 sm:text-base sm:leading-6'
-          }`}
+        className={`block truncate font-bold tabular-nums text-foreground ${
+          dense ? 'mt-0.5 h-3.5 text-[11px] leading-3.5' : 'mt-1 h-5 text-sm leading-5 sm:h-6 sm:text-base sm:leading-6'
+        }`}
         title={shown}
       >
         {shown}
@@ -129,25 +130,18 @@ function buildDisplayTitle(name: string | undefined, title: string | undefined):
   return needsTrailingDot ? `${combined}.` : combined
 }
 
-function TitleRow({
-  title,
-  subtitle,
-  compact,
-}: {
-  title: string
-  subtitle: string | null
-  compact: boolean
-}) {
+function TitleRow({ title, subtitle, compact }: { title: string; subtitle: string | null; compact: boolean }) {
   const [expanded, setExpanded] = useState(false)
   /** Drop subtitle when it already appears inside the primary title (common after ptt parse). */
   const showSubtitle = !!subtitle && !title.toLocaleLowerCase().includes(subtitle.toLocaleLowerCase())
 
-  const titleClass = `min-w-0 flex-1 font-bold text-foreground ${compact
-    ? expanded
-      ? 'text-[15px] leading-snug'
-      : 'line-clamp-6 text-[15px] leading-snug'
-    : 'line-clamp-2 text-lg leading-snug'
-    }`
+  const titleClass = `min-w-0 flex-1 font-bold text-foreground ${
+    compact
+      ? expanded
+        ? 'text-[15px] leading-snug'
+        : 'line-clamp-6 text-[15px] leading-snug'
+      : 'line-clamp-2 text-lg leading-snug'
+  }`
 
   return (
     <div className='min-w-0'>
@@ -263,9 +257,9 @@ export default function DetailsDialog({
   useEffect(() => {
     const seasons = seasonsFingerprint
       ? seasonsFingerprint
-        .split(',')
-        .map(Number)
-        .filter(n => Number.isFinite(n) && n > 0)
+          .split(',')
+          .map(Number)
+          .filter(n => Number.isFinite(n) && n > 0)
       : []
     // eslint-disable-next-line react-hooks/set-state-in-effect -- keep season list/selection valid when file list changes
     setSeasonList(seasons)
@@ -581,11 +575,7 @@ export default function DetailsDialog({
             <Tabs.Panel id='stats' className='flex min-h-0 flex-1 flex-col overflow-hidden pt-3'>
               {useCompactDetails ? (
                 <div className='min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
-                  <TorrentProgressStrip
-                    torrent={torrent}
-                    cache={cache}
-                    preloadCachePercent={preloadCachePercent}
-                  />
+                  <TorrentProgressStrip torrent={torrent} cache={cache} preloadCachePercent={preloadCachePercent} />
                   <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
                   <SwarmStatsPanel
                     torrent={torrent}
@@ -596,11 +586,7 @@ export default function DetailsDialog({
                 </div>
               ) : (
                 <div className='flex min-h-0 flex-1 flex-col gap-3 pb-3'>
-                  <TorrentProgressStrip
-                    torrent={torrent}
-                    cache={cache}
-                    preloadCachePercent={preloadCachePercent}
-                  />
+                  <TorrentProgressStrip torrent={torrent} cache={cache} preloadCachePercent={preloadCachePercent} />
                   <div className='grid min-h-0 flex-1 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-stretch gap-3'>
                     <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact fill />
                     <SwarmStatsPanel
@@ -614,7 +600,10 @@ export default function DetailsDialog({
               )}
             </Tabs.Panel>
 
-            <Tabs.Panel id='cache' className='flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain pt-3 sm:gap-4 sm:pt-4'>
+            <Tabs.Panel
+              id='cache'
+              className='flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain pt-3 sm:gap-4 sm:pt-4'
+            >
               <div className='flex shrink-0 flex-col gap-2'>
                 <div className='flex items-center justify-between gap-2'>
                   {useCompactDetails ? null : (

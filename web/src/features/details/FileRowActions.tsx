@@ -133,10 +133,10 @@ export default function FileRowActions({
     <div className='flex shrink-0 items-center gap-1.5'>
       {showOpenIcon
         ? utilityButton({
-          label: t('OpenLink'),
-          onPress: openExternal,
-          children: <SquareArrowOutUpRight {...actionIcon} />,
-        })
+            label: t('OpenLink'),
+            onPress: openExternal,
+            children: <SquareArrowOutUpRight {...actionIcon} />,
+          })
         : null}
       {utilityButton({
         label: t('CopyLink'),
@@ -150,10 +150,10 @@ export default function FileRowActions({
       })}
       {onProbeMedia
         ? utilityButton({
-          label: t('MediaInfo'),
-          onPress: onProbeMedia,
-          children: <FileVideo {...actionIcon} />,
-        })
+            label: t('MediaInfo'),
+            onPress: onProbeMedia,
+            children: <FileVideo {...actionIcon} />,
+          })
         : null}
     </div>
   )

@@ -231,9 +231,7 @@ export default function SwarmStatsPanel({
       ? [{ label: t('PiecesDirtiedBad'), value: String(torrent.pieces_dirtied_bad) }]
       : []),
     ...(cache?.PiecesCount != null ? [{ label: t('PiecesCount'), value: String(cache.PiecesCount) }] : []),
-    ...(cache?.PiecesLength != null
-      ? [{ label: t('PiecesLength'), value: humanizeSize(cache.PiecesLength) }]
-      : []),
+    ...(cache?.PiecesLength != null ? [{ label: t('PiecesLength'), value: humanizeSize(cache.PiecesLength) }] : []),
     ...(cacheReaders != null ? [{ label: t('CacheReaders'), value: String(cacheReaders) }] : []),
     ...(torrent.bit_rate ? [{ label: t('BitRate'), value: torrent.bit_rate }] : []),
     ...(durationLabel ? [{ label: t('FfpDuration'), value: durationLabel }] : []),
@@ -243,9 +241,7 @@ export default function SwarmStatsPanel({
     <>
       <div className='shrink-0 space-y-2'>
         <MetricRows framed={false} items={transferItems} columns={columns} dense />
-        {detailItems.length > 0 ? (
-          <MetricRows framed={false} items={detailItems} columns={columns} dense />
-        ) : null}
+        {detailItems.length > 0 ? <MetricRows framed={false} items={detailItems} columns={columns} dense /> : null}
       </div>
 
       <div className='mt-auto shrink-0 space-y-2 border-t border-border pt-2'>

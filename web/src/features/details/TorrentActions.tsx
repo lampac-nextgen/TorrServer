@@ -74,7 +74,11 @@ function ExternalPlayersGroup({
           variant='secondary'
           size={compact ? 'sm' : size}
           className={
-            compact ? 'min-h-11 max-w-[5rem] px-2 text-xs' : stretch ? 'min-h-9 min-w-0 flex-1 px-2 text-sm' : 'min-h-11'
+            compact
+              ? 'min-h-11 max-w-[5rem] px-2 text-xs'
+              : stretch
+                ? 'min-h-9 min-w-0 flex-1 px-2 text-sm'
+                : 'min-h-11'
           }
           onPress={() => {
             window.location.href = player.href
