@@ -17,18 +17,6 @@ export interface SwarmStatsPanelProps {
   columns?: 1 | 2
   /** When false, omit outer frame (parent already provides a panel). */
   framed?: boolean
-  /** Show uppercase Swarm title inside framed summary (desktop). Hide on mobile Stats. */
-  showTitle?: boolean
-  /**
-   * Match SpeedCharts height on desktop Stats (min-h + mt-auto meters).
-   * Never enable on mobile stack — causes an empty void.
-   */
-  stretch?: boolean
-  /**
-   * `summary` — Stats side card: transfer IO + Buffer meter (hero owns Peers/Cache).
-   * `full` — Swarm tab: PeerMixBar + chunks + Buffer meter (no Peers·Seeds / Cache echo).
-   */
-  variant?: 'summary' | 'full'
   cacheReaders?: number | null
   /** Live `/cache` snapshot — Preload meter uses Filled vs Preload target; Cache line uses Filled vs Capacity. */
   cache?: TorrentCache | null
@@ -109,40 +97,33 @@ function PeerMixBar({
       <div className={`flex overflow-hidden rounded-full bg-surface ${compact ? 'h-2' : 'h-2.5'}`}>
         {total > 0
           ? parts.map(p =>
-              p.n > 0 ? (
-                <div
-                  key={p.key}
-                  className={`h-full ${p.className}`}
-                  style={{ width: `${(p.n / total) * 100}%` }}
-                  title={`${p.label}: ${p.n}`}
-                />
-              ) : null,
-            )
+            p.n > 0 ? (
+              <div
+                key={p.key}
+                className={`h-full ${p.className}`}
+                style={{ width: `${(p.n / total) * 100}%` }}
+                title={`${p.label}: ${p.n}`}
+              />
+            ) : null,
+          )
           : null}
       </div>
     </div>
   )
 }
 
-/** Swarm metrics — Stats transfer teaser or Swarm-tab peer detail (hero owns Peers/Cache). */
+/** Swarm metrics on the Stats tab. Hero already owns Peers and Cache. */
 export default function SwarmStatsPanel({
   torrent,
   className = '',
   columns: columnsProp,
   framed = true,
-  showTitle = true,
-  stretch = false,
-  variant = 'summary',
   cacheReaders,
   cache,
   preloadCachePercent,
 }: SwarmStatsPanelProps) {
   const { t } = useTranslation()
-  const isFull = variant === 'full'
   const columns = columnsProp ?? 2
-  const doStretch = stretch && !isFull
-
-  const pendingValue = torrent.pending_peers != null ? String(torrent.pending_peers) : '0'
 
   const bufferTarget = resolveBufferTargetBytes(cache?.Capacity, preloadCachePercent)
   // Streaming → playable ahead; idle → preload progress toward Cache Size × Preload %.
@@ -162,26 +143,8 @@ export default function SwarmStatsPanel({
     : (formatBufferFilledLabel(bufferFilled, bufferTarget, { percent: 'always' }) ??
       (bufferFilled > 0 ? humanizeSize(bufferFilled) : '—'))
 
-  /** Stats: Half-open + transfer IO. Buffer is meter-only; Peers/Cache stay in hero. */
-  const summaryItems: MetricRowItem[] = [
-    { label: t('HalfOpenPeers'), value: torrent.half_open_peers != null ? String(torrent.half_open_peers) : '—' },
-    { label: t('BytesRead'), value: torrent.bytes_read != null ? humanizeSize(torrent.bytes_read) : '—' },
-    { label: t('BytesWritten'), value: torrent.bytes_written != null ? humanizeSize(torrent.bytes_written) : '—' },
-    {
-      label: t('UsefulRead'),
-      value: torrent.bytes_read_useful_data != null ? humanizeSize(torrent.bytes_read_useful_data) : '—',
-    },
-    {
-      label: t('ChunksWasted'),
-      value: torrent.chunks_read_wasted != null ? String(torrent.chunks_read_wasted) : '—',
-    },
-  ]
-
-  /**
-   * Swarm tab: PeerMixBar owns Active/Seeders/Pending/Half-open.
-   * Skip Total peers (hero) and Half-open row (mix bar).
-   */
-  const fullItems: MetricRowItem[] = [
+  /** PeerMixBar owns Active/Seeders/Pending/Half-open. Skip Total peers (hero). */
+  const items: MetricRowItem[] = [
     { label: t('BytesRead'), value: torrent.bytes_read != null ? humanizeSize(torrent.bytes_read) : '—' },
     { label: t('BytesWritten'), value: torrent.bytes_written != null ? humanizeSize(torrent.bytes_written) : '—' },
     {
@@ -207,57 +170,31 @@ export default function SwarmStatsPanel({
     ...(durationLabel ? [{ label: t('FfpDuration'), value: durationLabel }] : []),
   ]
 
-  const pendingHeader = isFull ? (
-    <div className='mb-1.5 flex shrink-0 items-center gap-2'>
-      <span className='size-2.5 rounded-full bg-warning' aria-hidden />
-      <span className='text-xs text-muted'>{t('PendingPeers')}</span>
-      <span className='text-sm font-bold tabular-nums text-foreground'>{pendingValue}</span>
-    </div>
-  ) : null
-
-  const progressMeters = (
-    <ProgressMeter
-      label={preloadTitle}
-      valueLabel={preloadLabel}
-      ratio={preloadPct}
-      compact={isFull}
-      title={preloadHint}
-    />
-  )
-
-  /** Desktop stretch: pin meters to bottom of chart-height card. Mobile: flow under rows. */
-  const summaryVisuals = !isFull ? (
-    <div className={`border-t border-border pt-2.5 ${doStretch ? 'mt-auto' : 'mt-2'}`}>{progressMeters}</div>
-  ) : null
-
-  const fullVisuals = isFull ? (
-    <div className='mt-2 space-y-1.5 border-t border-border pt-2'>
-      <PeerMixBar
-        active={torrent.active_peers ?? 0}
-        seeders={torrent.connected_seeders ?? 0}
-        pending={torrent.pending_peers ?? 0}
-        halfOpen={torrent.half_open_peers ?? 0}
-        labels={{
-          active: t('ActivePeers'),
-          seeders: t('Seeders'),
-          pending: t('PendingPeers'),
-          halfOpen: t('HalfOpenPeers'),
-        }}
-        compact
-      />
-      {progressMeters}
-    </div>
-  ) : null
-
   const inner = (
     <>
-      {framed && !isFull && showTitle ? (
-        <p className='mb-1.5 shrink-0 text-xs font-semibold tracking-wide text-muted uppercase'>{t('SwarmStats')}</p>
-      ) : null}
-      {pendingHeader}
-      <MetricRows framed={false} items={isFull ? fullItems : summaryItems} columns={columns} dense={isFull} />
-      {summaryVisuals}
-      {fullVisuals}
+      <MetricRows framed={false} items={items} columns={columns} dense />
+      <div className='mt-2 space-y-1.5 border-t border-border pt-2'>
+        <PeerMixBar
+          active={torrent.active_peers ?? 0}
+          seeders={torrent.connected_seeders ?? 0}
+          pending={torrent.pending_peers ?? 0}
+          halfOpen={torrent.half_open_peers ?? 0}
+          labels={{
+            active: t('ActivePeers'),
+            seeders: t('Seeders'),
+            pending: t('PendingPeers'),
+            halfOpen: t('HalfOpenPeers'),
+          }}
+          compact
+        />
+        <ProgressMeter
+          label={preloadTitle}
+          valueLabel={preloadLabel}
+          ratio={preloadPct}
+          compact
+          title={preloadHint}
+        />
+      </div>
     </>
   )
 
@@ -266,11 +203,7 @@ export default function SwarmStatsPanel({
   }
 
   return (
-    <div
-      className={`flex flex-col rounded-xl border border-border bg-surface-secondary p-2.5 ${
-        doStretch ? 'h-full min-h-[14rem]' : ''
-      } ${className}`.trim()}
-    >
+    <div className={`flex flex-col rounded-xl border border-border bg-surface-secondary p-2.5 ${className}`.trim()}>
       {inner}
     </div>
   )
