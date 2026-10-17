@@ -112,8 +112,12 @@ export const resolveDisplayPriority = (
   return best > 0 ? best : apiPriority
 }
 
-/** Priority → debug letter (master convention). */
+/**
+ * anacrolix piecePriority: 1 Normal, 2 High, 3 Readahead, 4 Next, 5 Now.
+ * Now is drawn as A (current read). Normal is *.
+ */
 export const priorityDebugLabel = (priority: number): string => {
+  if (priority === 1) return '*'
   if (priority === 2) return 'H'
   if (priority === 3) return 'R'
   if (priority === 4) return 'N'
