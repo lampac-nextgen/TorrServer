@@ -366,7 +366,6 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode, hash }: Torr
               <span>N · {t('SnakePriorityN')}</span>
               <span>R · {t('SnakePriorityR')}</span>
               <span>H · {t('SnakePriorityH')}</span>
-              <span>* · {t('SnakePriorityNormal')}</span>
             </p>
           ) : null}
         </div>

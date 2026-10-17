@@ -475,7 +475,6 @@
   "SnakePriorityN": "următor",
   "SnakePriorityR": "citire anticipată",
   "SnakePriorityH": "ridicat",
-  "SnakePriorityNormal": "normal",
   "SnakeTooltipBucket": "piese {{start}}–{{end}} · {{fill}}%",
   "SnakeTooltipPiece": "piesă #{{id}} · {{fill}}%",
   "SomethingWentWrong": "Ceva nu a mers bine",

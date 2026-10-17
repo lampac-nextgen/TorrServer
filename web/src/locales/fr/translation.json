@@ -475,7 +475,6 @@
   "SnakePriorityN": "suivant",
   "SnakePriorityR": "lecture anticipée",
   "SnakePriorityH": "haute",
-  "SnakePriorityNormal": "normal",
   "SnakeTooltipBucket": "pièces {{start}}–{{end}} · {{fill}}%",
   "SnakeTooltipPiece": "pièce #{{id}} · {{fill}}%",
   "SomethingWentWrong": "Une erreur s'est produite",

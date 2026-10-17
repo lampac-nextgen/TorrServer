@@ -475,7 +475,6 @@
   "SnakePriorityN": "следующий",
   "SnakePriorityR": "опережение",
   "SnakePriorityH": "высокий",
-  "SnakePriorityNormal": "обычный",
   "SnakeTooltipBucket": "блоки {{start}}–{{end}} · {{fill}}%",
   "SnakeTooltipPiece": "блок #{{id}} · {{fill}}%",
   "SomethingWentWrong": "Что-то пошло не так",

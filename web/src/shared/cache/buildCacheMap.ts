@@ -113,11 +113,10 @@ export const resolveDisplayPriority = (
 }
 
 /**
- * anacrolix piecePriority: 1 Normal, 2 High, 3 Readahead, 4 Next, 5 Now.
- * Now is drawn as A (current read). Normal is *.
+ * anacrolix piecePriority shown on the snake: 2 High, 3 Readahead, 4 Next, 5 Now (drawn as A).
+ * Normal (1) is omitted — those pieces are either blank or raised into H/R/N/A.
  */
 export const priorityDebugLabel = (priority: number): string => {
-  if (priority === 1) return '*'
   if (priority === 2) return 'H'
   if (priority === 3) return 'R'
   if (priority === 4) return 'N'

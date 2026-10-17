@@ -439,7 +439,7 @@ describe('resolveFocusWindow / buildFocusModel', () => {
     expect(priorityDebugLabel(4)).toBe('N')
     expect(priorityDebugLabel(3)).toBe('R')
     expect(priorityDebugLabel(2)).toBe('H')
-    expect(priorityDebugLabel(1)).toBe('*')
+    expect(priorityDebugLabel(1)).toBe('')
   })
 
   it('keeps A on completed playhead for debug', () => {

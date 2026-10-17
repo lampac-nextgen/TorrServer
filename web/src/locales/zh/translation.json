@@ -475,7 +475,6 @@
   "SnakePriorityN": "下一个",
   "SnakePriorityR": "预读",
   "SnakePriorityH": "高",
-  "SnakePriorityNormal": "普通",
   "SnakeTooltipBucket": "块 {{start}}–{{end}} · {{fill}}%",
   "SnakeTooltipPiece": "块 #{{id}} · {{fill}}%",
   "SomethingWentWrong": "出错了",
