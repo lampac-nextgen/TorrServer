@@ -79,14 +79,7 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 describe('withImportTimestamps', () => {
   it('keeps explicit timestamps and fills the rest newest-first', () => {
-    const filled = withImportTimestamps(
-      [
-        { link: 'a', timestamp: 50 },
-        { link: 'b' },
-        { link: 'c' },
-      ],
-      100,
-    )
+    const filled = withImportTimestamps([{ link: 'a', timestamp: 50 }, { link: 'b' }, { link: 'c' }], 100)
     expect(filled.map(i => i.timestamp)).toEqual([50, 99, 98])
   })
 })

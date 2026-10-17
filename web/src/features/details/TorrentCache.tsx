@@ -138,9 +138,9 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode, hash }: Torr
   const rowCount =
     piecesPerRow > 0
       ? Math.max(
-        cells.length > 0 ? Math.ceil(cells.length / piecesPerRow) : placeholderRows,
-        isMiniView ? emptyRowCount : 1,
-      )
+          cells.length > 0 ? Math.ceil(cells.length / piecesPerRow) : placeholderRows,
+          isMiniView ? emptyRowCount : 1,
+        )
       : 0
   const fittedRows = Math.min(rowCount, maxFitRows)
   const canvasHeight = fittedRows > 0 ? fittedRows * cellStride : 0
@@ -309,8 +309,9 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode, hash }: Torr
     <div ref={rootRef} className={`relative flex w-full min-w-0 flex-col ${isMiniView ? '' : 'min-h-0 flex-1'}`}>
       <div
         ref={scrollWrapperRef}
-        className={`ts-details-cache-snake relative w-full min-w-0 rounded-lg border border-border bg-surface-secondary p-2 ${isMiniView ? 'grid max-h-[420px] justify-center overflow-hidden' : 'min-h-0 min-w-0 flex-1 overflow-hidden'
-          }`}
+        className={`ts-details-cache-snake relative w-full min-w-0 rounded-lg border border-border bg-surface-secondary p-2 ${
+          isMiniView ? 'grid max-h-[420px] justify-center overflow-hidden' : 'min-h-0 min-w-0 flex-1 overflow-hidden'
+        }`}
       >
         {showCanvas ? (
           <canvas
