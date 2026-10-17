@@ -39,13 +39,20 @@ function isTorrentSource(source: string): boolean {
 }
 
 function normalizeTorrsLink(value: string): string {
-  return toApiTorrsLink(value)
+  const api = toApiTorrsLink(value)
+  // Idle-library export used to wrap a bare infohash as web+torrs://<hash>.
+  // That is not a packed token — send a magnet so add works on older servers too.
+  const token = api.replace(/^torrs:\/\//i, '')
+  if (/^[0-9a-f]{40}$/i.test(token)) return magnetForHash(token.toLowerCase())
+  return api
 }
 
 function hashFromLink(link: string): string | undefined {
   const match = link.match(BTIH_RE)
   if (match?.[1]) return match[1].toLowerCase()
   if (HASH_ONLY_RE.test(link.trim())) return link.trim().toLowerCase()
+  const bareTorrs = link.match(/^(?:web\+)?torrs:\/\/([0-9a-f]{40})$/i)
+  if (bareTorrs?.[1]) return bareTorrs[1].toLowerCase()
   return undefined
 }
 

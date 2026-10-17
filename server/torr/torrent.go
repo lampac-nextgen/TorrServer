@@ -455,6 +455,19 @@ func (t *Torrent) Status() *state.TorrentStatus {
 		}
 	}
 
+	// Idle library rows never hit the Info() branch; still expose a packed token
+	// so web+torrs export/import keeps title/poster instead of a bare infohash.
+	if st.TorrsHash == "" && st.Hash != "" {
+		th := torrshash.New(st.Hash)
+		th.AddField(torrshash.TagTitle, st.Title)
+		th.AddField(torrshash.TagPoster, st.Poster)
+		th.AddField(torrshash.TagCategory, st.Category)
+		th.AddField(torrshash.TagSize, strconv.FormatInt(st.TorrentSize, 10))
+		if token, err := torrshash.Pack(th); err == nil {
+			st.TorrsHash = token
+		}
+	}
+
 	return st
 }
 

@@ -49,6 +49,14 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     expect(items[3].link).toBe('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
   })
 
+  it('rewrites bare-infohash web+torrs export lines to magnets', () => {
+    const hash = 'e3e497e1efd8db8df93822cad554e13740f51997'
+    const items = parseLibraryImportText(`web+torrs://${hash}\ntorrs://${hash.toUpperCase()}`)
+    expect(items).toHaveLength(1)
+    expect(items[0].link).toBe(`magnet:?xt=urn:btih:${hash}&dn=${hash}`)
+    expect(items[0].hashHint).toBe(hash)
+  })
+
   it('dedupes by hash hint', () => {
     const hash = 'dddddddddddddddddddddddddddddddddddddddd'
     const items = parseLibraryImportText(
