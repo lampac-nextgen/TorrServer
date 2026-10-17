@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties, type Reac
 import axios from 'axios'
 import Hls from 'hls.js'
 import { Alert, Button, Modal, Popover, Spinner, useOverlayState } from '@heroui/react'
-import { ArrowDown, Database, Maximize2, Minimize2, Music2, Play, Users, X } from 'lucide-react'
+import { ArrowDown, Database, Download, Maximize2, Minimize2, Music2, Play, Users, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { authFetch, withAuthMediaUrl } from 'shared/api/authCredentials'
 import { useUpdateCache } from 'shared/cache/useUpdateCache'
@@ -16,6 +16,7 @@ import { iconMenu, iconPlayerCompact } from 'shared/ui/iconProps'
 import { useModalOpen, useSyncModalOpen } from 'shared/ui/ModalOpenContext'
 
 import { extractAudioTracks, formatAudioTrackDisplay, type ProbeTrack } from './audioTrackLabel'
+import { applyPlayerHotkey, isPlayerHotkeyTarget } from './playerHotkeys'
 import PlayerChrome from './PlayerChrome'
 import { useHlsAttach, type SubtitleTrackInfo } from './useHlsAttach'
 import { useTimecodePersist } from './useTimecodePersist'
@@ -244,6 +245,32 @@ export default function VideoPlayer({
     return () => document.removeEventListener('fullscreenchange', onFullscreenChange)
   }, [])
 
+  // Document-level so shortcuts work without focusing the video. Capture + stop so Media Chrome
+  // does not also seek. Inputs stay typeable.
+  useEffect(() => {
+    if (!open || mediaError) return undefined
+    const onKey = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return
+      if (event.repeat && (event.key === ' ' || event.key === 'Spacebar')) return
+      if (!isPlayerHotkeyTarget(event.target)) return
+      const video = videoRef.current
+      if (!video || !applyPlayerHotkey(video, event.key)) return
+      event.preventDefault()
+      event.stopPropagation()
+    }
+    document.addEventListener('keydown', onKey, true)
+    return () => document.removeEventListener('keydown', onKey, true)
+  }, [open, mediaError])
+
+  const downloadVideo = useCallback(() => {
+    const a = document.createElement('a')
+    a.href = withAuthMediaUrl(downloadSrc)
+    a.download = ''
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+  }, [downloadSrc])
+
   // Restore position after GST audio remount
   useEffect(() => {
     const videoElement = videoRef.current
@@ -455,7 +482,16 @@ export default function VideoPlayer({
                         </Button>
                       </div>
                     }
-                    extraControls={null}
+                    extraControls={
+                      <button
+                        type='button'
+                        className='ts-player-download'
+                        aria-label={t('Download')}
+                        onClick={downloadVideo}
+                      >
+                        <Download size={22} strokeWidth={1.75} aria-hidden />
+                      </button>
+                    }
                   >
                     <video
                       key={playbackSrc}

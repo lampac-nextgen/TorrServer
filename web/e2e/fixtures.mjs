@@ -5,13 +5,13 @@ export const HASH = '0123456789abcdef0123456789abcdef01234567'
 export const fixtureTorrent = {
   hash: HASH,
   title: 'E2E Mock Torrent',
-  name: 'e2e.mock.mkv',
+  name: 'e2e.mock.mp4',
   category: 'movie',
   poster: '',
   torrent_size: 1024 * 1024 * 100,
   loaded_size: 0,
   stat: 5,
-  file_stats: [{ id: 1, path: 'e2e.mock.mkv', length: 1024 * 1024 * 100 }],
+  file_stats: [{ id: 1, path: 'e2e.mock.mp4', length: 1024 * 1024 * 100 }],
 }
 
 /** Extra library rows so phone poster-grid column counts are testable. */
@@ -83,7 +83,7 @@ const json = body => ({
 export async function installMocks(page, { requireAuth = false } = {}) {
   const waf = { ...fixtureWaf }
 
-  await page.route('**/echo', route => route.fulfill({ status: 200, contentType: 'text/plain', body: 'MatriX.144' }))
+  await page.route('**/echo', route => route.fulfill({ status: 200, contentType: 'text/plain', body: 'MatriX.147' }))
   await page.route('**/gst/echo', route => route.fulfill({ status: 404, body: '' }))
   await page.route('**/gst/settings', route => route.fulfill(json({})))
   await page.route('**/storage/settings', route => route.fulfill(json({})))

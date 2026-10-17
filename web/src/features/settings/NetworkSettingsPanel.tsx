@@ -130,6 +130,7 @@ export default function NetworkSettingsPanel({
             label='LPD IPv6'
             helper={t('SettingsDialog.EnableLPDIPv6Hint')}
             checked={boolChecked('LPDIPv6')}
+            disabled={!boolChecked('EnableLPD')}
             onChange={onBoolSwitch}
           />
         </div>

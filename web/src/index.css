@@ -3115,6 +3115,24 @@ html[data-dialogs-fullscreen] .modal__dialog.ts-details-modal>.modal__body.modal
   --media-button-icon-height: 1.6rem;
 }
 
+.ts-player-download {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: var(--media-control-height);
+  height: var(--media-control-height);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--media-icon-color, #fff);
+  cursor: pointer;
+}
+
+.ts-player-download:hover {
+  filter: brightness(1.15);
+}
+
 /* Poster library density: ~2 cols on phone (~360+), denser on tablet+, roomier on desktop. */
 .torrent-poster-grid {
   grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr));

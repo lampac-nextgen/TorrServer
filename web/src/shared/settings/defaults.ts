@@ -58,6 +58,7 @@ wss://tracker.openwebtorrent.com`,
   ShowFSActiveTorr: true,
   TrackTimecode: false,
   StoreSettingsInJson: true,
+  StoreViewedInJson: false,
   TMDBSettings: {
     APIKey: '',
     APIURL: 'https://api.themoviedb.org/3',

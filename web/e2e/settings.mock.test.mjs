@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { after, before, test } from 'node:test'
+import { fileURLToPath } from 'node:url'
 
 import { chromium } from 'playwright'
 
@@ -175,7 +177,7 @@ test('phone chrome: bottom nav, header search, appearance overflow', { timeout: 
     await page.locator(`.torrent-card[data-hash="${HASH}"]`).waitFor({ timeout: 20_000 })
     await page.locator('.ts-bottom-nav').waitFor()
     assert.equal(await page.getByRole('button', { name: 'Collapse sidebar' }).count(), 0)
-    assert.equal(await page.locator('header').getByText('MatriX.144').count(), 0)
+    assert.equal(await page.locator('header').getByText('MatriX.147').count(), 0)
 
     await assertNoHorizontalOverflow(page.locator('header'), 'header')
     await assertNoHorizontalOverflow(page.locator('.ts-bottom-nav'), 'bottom nav')
@@ -250,7 +252,7 @@ test('desktop chrome: appearance in header, settings is a centered card', { time
   try {
     await page.goto(origin + '/', { waitUntil: 'domcontentloaded' })
     await page.locator(`.torrent-card[data-hash="${HASH}"]`).waitFor({ timeout: 20_000 })
-    await page.locator('header').getByText('MatriX.144').waitFor()
+    await page.locator('header').getByText('MatriX.147').waitFor()
     await page.getByLabel(/Theme:/).waitFor()
     await page.getByLabel(/Palette:/).waitFor()
     await page.getByLabel('Language').waitFor()
@@ -262,6 +264,93 @@ test('desktop chrome: appearance in header, settings is a centered card', { time
     assert.ok(box && vp)
     assert.ok(box.width < vp.width * 0.9, `desktop settings should be a card, width=${box.width}`)
     await assertDialogCentered(page, dialog)
+  } finally {
+    await context.close()
+  }
+})
+
+test('mocked player download button and seek hotkeys', { timeout: 45_000 }, async () => {
+  const { context, page } = await newPage()
+  const mp4 = readFileSync(fileURLToPath(new URL('./silent.mp4', import.meta.url)))
+  await page.route('**/stream/**', async route => {
+    const range = route.request().headers().range
+    const match = range && /bytes=(\d+)-(\d*)/.exec(range)
+    if (match) {
+      const start = Number(match[1])
+      const end = match[2] ? Number(match[2]) : mp4.length - 1
+      await route.fulfill({
+        status: 206,
+        contentType: 'video/mp4',
+        headers: {
+          'Accept-Ranges': 'bytes',
+          'Content-Range': `bytes ${start}-${end}/${mp4.length}`,
+          'Content-Length': String(end - start + 1),
+        },
+        body: mp4.subarray(start, end + 1),
+      })
+      return
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'video/mp4',
+      headers: { 'Accept-Ranges': 'bytes', 'Content-Length': String(mp4.length) },
+      body: mp4,
+    })
+  })
+  try {
+    await page.goto(origin + '/', { waitUntil: 'domcontentloaded' })
+    const card = page.locator(`.torrent-card[data-hash="${HASH}"]`)
+    await card.waitFor({ timeout: 20_000 })
+    await card.hover()
+    await card.locator('button[aria-label="Play"]').click()
+
+    const video = page.locator('media-controller video')
+    await video.waitFor({ timeout: 20_000 })
+    await page.waitForFunction(() => {
+      const node = document.querySelector('media-controller video')
+      return node instanceof HTMLVideoElement && node.readyState >= 1 && Number.isFinite(node.duration)
+    })
+    await page.locator('media-controller').hover()
+    const download = page.getByRole('button', { name: 'Download' })
+    await download.waitFor()
+
+    const downloadPromise = page.waitForEvent('download')
+    await download.click()
+    const file = await downloadPromise
+    assert.ok(file.suggestedFilename().length > 0)
+
+    const before = await page.evaluate(() => {
+      const node = document.querySelector('media-controller video')
+      if (!(node instanceof HTMLVideoElement)) throw new Error('video missing')
+      node.pause()
+      const active = document.activeElement
+      if (active instanceof HTMLElement) active.blur()
+      node.currentTime = 1
+      return {
+        duration: node.duration,
+        readyState: node.readyState,
+        currentTime: node.currentTime,
+        seekable: node.seekable.length ? node.seekable.end(0) : 0,
+      }
+    })
+    assert.ok(before.duration > 12, `video not seekable: ${JSON.stringify(before)}`)
+    await page.waitForFunction(() => {
+      const node = document.querySelector('media-controller video')
+      return node instanceof HTMLVideoElement && node.currentTime >= 0.5
+    })
+    await page.keyboard.press('ArrowRight')
+    const afterSeek = await page.evaluate(() => {
+      const node = document.querySelector('media-controller video')
+      return node instanceof HTMLVideoElement ? node.currentTime : -1
+    })
+    assert.ok(Math.abs(afterSeek - 11) < 0.6, `expected ~11s after ArrowRight, got ${afterSeek}`)
+
+    await page.keyboard.press(' ')
+    const playing = await page.evaluate(() => {
+      const node = document.querySelector('media-controller video')
+      return node instanceof HTMLVideoElement ? !node.paused : false
+    })
+    assert.equal(playing, true)
   } finally {
     await context.close()
   }
