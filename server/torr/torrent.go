@@ -463,6 +463,13 @@ func (t *Torrent) Status() *state.TorrentStatus {
 		th.AddField(torrshash.TagPoster, st.Poster)
 		th.AddField(torrshash.TagCategory, st.Category)
 		th.AddField(torrshash.TagSize, strconv.FormatInt(st.TorrentSize, 10))
+		if t.TorrentSpec != nil {
+			for _, group := range t.TorrentSpec.Trackers {
+				for _, tr := range group {
+					th.AddField(torrshash.TagTracker, tr)
+				}
+			}
+		}
 		if token, err := torrshash.Pack(th); err == nil {
 			st.TorrsHash = token
 		}
