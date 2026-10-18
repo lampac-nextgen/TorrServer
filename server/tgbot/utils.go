@@ -2,6 +2,8 @@ package tgbot
 
 import (
 	"fmt"
+	"net"
+	"net/url"
 	"strconv"
 	"strings"
 	"unicode"
@@ -11,6 +13,7 @@ import (
 	"server/settings"
 	"server/tgbot/config"
 	"server/web"
+	"server/web/sslcerts"
 )
 
 var botUsername string
@@ -115,7 +118,7 @@ func logHashOrTruncate(link string) string {
 	return link
 }
 
-// getHost returns the base URL for stream/play links (e.g. http://192.168.1.1:8090)
+// getHost is the web UI origin (Mini App, /server). Stream and playlist links use getMediaHost.
 func getHost() string {
 	host := ""
 	if config.Cfg != nil {
@@ -147,6 +150,56 @@ func getHost() string {
 		}
 	}
 	return host
+}
+
+// getMediaHost is the base URL handed to players (/play, /stream, /playlist, /subs).
+// Self-signed HTTPS with media still on the plain HTTP port is rewritten to that port,
+// matching GET /mediabase. An explicit HostWeb on another port (public HTTPS) is kept.
+func getMediaHost() string {
+	explicit := config.Cfg != nil && strings.TrimSpace(config.Cfg.HostWeb) != ""
+	return mediaHostFrom(getHost(), explicit)
+}
+
+func mediaHostFrom(webHost string, explicitHostWeb bool) string {
+	if !rewriteMediaToHTTP(webHost, explicitHostWeb) {
+		return webHost
+	}
+	u, err := url.Parse(webHost)
+	if err != nil || u.Hostname() == "" {
+		return webHost
+	}
+	u.Scheme = "http"
+	u.Host = net.JoinHostPort(u.Hostname(), settings.Port)
+	u.Path, u.RawQuery, u.Fragment = "", "", ""
+	return u.String()
+}
+
+func rewriteMediaToHTTP(webHost string, explicitHostWeb bool) bool {
+	if settings.BTsets == nil || settings.Port == "" || !settings.PlainHTTPServesMedia() {
+		return false
+	}
+	if !strings.HasPrefix(strings.ToLower(webHost), "https://") {
+		return false
+	}
+	if !sslcerts.IsGenerated(settings.BTsets.SslCert, settings.BTsets.SslKey) {
+		return false
+	}
+	if !explicitHostWeb {
+		return true
+	}
+	u, err := url.Parse(webHost)
+	if err != nil {
+		return false
+	}
+	port := u.Port()
+	if port == "" {
+		port = "443"
+	}
+	sslPort := settings.SslPort
+	if sslPort == "" {
+		sslPort = settings.DefaultSslPort
+	}
+	return port == sslPort
 }
 
 func notifyTyping(c tele.Context) {

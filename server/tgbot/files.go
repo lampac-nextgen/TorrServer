@@ -13,6 +13,7 @@ import (
 	"server/library"
 	"server/log"
 	sets "server/settings"
+	"server/subs"
 	"server/torr"
 )
 
@@ -82,7 +83,7 @@ func sendFilesList(api tele.API, recipient tele.Recipient, statusMsg *tele.Messa
 		return
 	}
 
-	host := getHost()
+	host := getMediaHost()
 	txt, kbd := buildFilesListView(t, host, uid, page)
 	if kbd == nil {
 		return
@@ -144,7 +145,7 @@ func buildFilesListView(t *torr.Torrent, host string, uid int64, page int) (stri
 		idStr := strconv.Itoa(f.Id)
 		short := library.ShortPlayURL(host, hex, f.Id)
 		playLines = append(playLines, fileListPlayLine(f.Id, baseName, short))
-		rows = append(rows, fileListActionRow(m, uid, ti.Hash, idStr, fileLabel, short))
+		rows = append(rows, fileListActionRow(m, uid, ti.Hash, idStr, fileLabel, f.Path, short))
 	}
 	if len(playLines) > 0 {
 		txt += "\n\n" + strings.Join(playLines, "\n")
@@ -179,12 +180,15 @@ func fileListPlayLine(id int, name, short string) string {
 	return fmt.Sprintf("#%d — %s\n<code>%s</code>", id, escapeHtml(name), escapeHtml(short))
 }
 
-func fileListActionRow(m *tele.ReplyMarkup, uid int64, hash, idStr, fileLabel, shortURL string) tele.Row {
+func fileListActionRow(m *tele.ReplyMarkup, uid int64, hash, idStr, fileLabel, path, shortURL string) tele.Row {
 	btns := []tele.Btn{m.Data(fileLabel, "upload", hash, idStr)}
 	if b, ok := copyURLBtn(m, tr(uid, "btn_copy_play"), shortURL); ok {
 		btns = append(btns, b)
 	}
 	btns = append(btns, m.Data("⏳", "fpreload", hash, idStr))
+	if subs.IsVideo(path) {
+		btns = append(btns, m.Data(tr(uid, "btn_subs"), "fsubs", hash, idStr))
+	}
 	return m.Row(btns...)
 }
 
@@ -228,7 +232,7 @@ func editFilesListMessage(c tele.Context, hash string, uid int64, page int) erro
 		_ = c.Send(tr(uid, "torrent_not_found") + ":\n<code>" + hash + "</code>")
 		return nil
 	}
-	host := getHost()
+	host := getMediaHost()
 	txt, kbd := buildFilesListView(t, host, uid, page)
 	if kbd == nil {
 		log.TLogln("tg files: empty kbd for hash", logSafeStr(hash, 20))

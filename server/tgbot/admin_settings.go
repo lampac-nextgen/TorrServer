@@ -84,6 +84,7 @@ func sendSettingsMenuText(c tele.Context, uid int64, page string) string {
 		b.WriteString(boolKV(tr(uid, "settings_tgl_timecode"), s.TrackTimecode))
 		b.WriteString(boolKV(tr(uid, "settings_tgl_lpd"), s.EnableLPD))
 		b.WriteString(boolKV(tr(uid, "settings_tgl_lpdv6"), s.LPDIPv6))
+		b.WriteString(boolKV(tr(uid, "settings_tgl_mergem3u"), s.MergeAllM3U))
 	case "2":
 		b.WriteString(" — " + tr(uid, "settings_page2") + "\n\n")
 		fmt.Fprintf(&b, "%s: <b>%d MB</b>\n", tr(uid, "settings_tgl_cache"), s.CacheSize/(1024*1024))
@@ -407,6 +408,8 @@ func settingsCallback(c tele.Context, action string) error {
 		sets.EnableLPD = !sets.EnableLPD
 	case "lpdv6":
 		sets.LPDIPv6 = !sets.LPDIPv6
+	case "mergem3u":
+		sets.MergeAllM3U = !sets.MergeAllM3U
 	case "storejson":
 		sets.StoreSettingsInJson = !sets.StoreSettingsInJson
 	case "viewedjson":

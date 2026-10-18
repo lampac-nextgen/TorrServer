@@ -11,9 +11,10 @@ Telegram bot for managing [TorrServer](https://github.com/YouROK/TorrServer) —
 
 - Torrent management — add, remove, drop, list via magnet, hash, or `torrs://` (title/category/poster preserved)
 - Categories — movie / tv / music / other on add, `/setcat`, `/list [category]`
-- Streaming — short `/play` and long `/stream` URLs, M3U (optional category filter). File list copies **Play** (short URL). `/link` copies Hash / Play / Magnet, then **Stream** on a second row when the long URL is ≤256 characters; `/next` copies Play and Stream when it fits. Telegram URL buttons would open the in-app browser, which cannot play a stream.
+- Streaming — short `/play` and long `/stream` URLs, M3U (optional category filter). Play, stream, and playlist links use the media base (plain HTTP when the UI is on TorrServer's self-signed HTTPS and `--http-media` / the HTTP port still serves media). Mini App stays on HTTPS `HostWeb`. File list copies **Play** (short URL). `/link` copies Hash / Play / Magnet, then **Stream** on a second row when the long URL is ≤256 characters; `/next` copies Play and Stream when it fits. Telegram URL buttons would open the in-app browser, which cannot play a stream.
+- Subtitles — `/subs <hash|N> <file>` or the **Subs** button on a video row copies external `/subs` URLs
 - Next unwatched — `/next` picks the next TV episode from filenames and viewed marks
-- Export & import — magnets list; import multiple from text
+- Export & import — `torrs://` lines (packed title/poster/category; magnet if the token is missing). Import keeps list order with timestamps, and accepts the web library JSON export
 - Search — RuTor and Torznab with one-click add
 - Inline mode — `@botname` in any chat: library results open the torrent card (`t.me/<bot>?start=t_<hash8>`); search adds or pastes a magnet
 - Status & snake — real-time status, cache visualization
@@ -51,7 +52,7 @@ Config file `tg.cfg` (JSON) in the TorrServer data directory:
 | Field      | Description |
 |------------|-------------|
 | `HostTG`   | Telegram API URL (default: `https://api.telegram.org`). Point this at a local [telegram-bot-api](https://github.com/tdlib/telegram-bot-api) to upload files up to 2 GB; the official API allows 50 MB. |
-| `HostWeb`  | Base URL for stream links (auto-detected if empty) |
+| `HostWeb`  | Web UI / Mini App origin (auto-detected if empty). Play and playlist links still switch to the plain HTTP media port when the certificate is TorrServer's self-signed pair and HTTP serves media. A public `https://` host on another port is left as-is. |
 | `Socks5`   | Optional SOCKS5 for reaching Telegram (e.g. `127.0.0.1:1080`, `socks5://user:pass@host:port`) if direct access to `api.telegram.org` is blocked or times out |
 | `WhiteIds` | Allowed Telegram user IDs. Empty = allow everyone for normal commands, but **no admins** (`/settings`, `/shutdown`, `/preset` require an ID in this list). |
 | `BlackIds` | Blocked user IDs |
@@ -153,8 +154,9 @@ Tools that need a torrent (snake, preload, cache, ffprobe) set a short-lived pic
 
 | Command | Description |
 | --------- | ------------- |
-| `/link`, `/play` | Short `/play/{hash}/{id}` and long `/stream` URLs (copy buttons) |
-| `/m3u`, `/m3uall [category]` | M3U playlist (copy button) |
+| `/link`, `/play` | Short `/play/{hash}/{id}` and long `/stream` URLs (copy buttons; media base, not the Mini App origin) |
+| `/m3u`, `/m3uall [category]` | M3U playlist (copy button). Merged `all.m3u` follows the **Merge M3U** setting |
+| `/subs <hash\|N> <id>` | External subtitle tracks for a video file (copy `/subs` URLs) |
 | `/next [query\|hash] [category]` | Next unwatched TV episode (default category `tv`; copy short play URL) |
 
 ### Search
@@ -169,7 +171,7 @@ Tools that need a torrent (snake, preload, cache, ffprobe) set a short-lived pic
 
 | Command | Description |
 | --------- | ------------- |
-| `/export`, `/import` | Export/import magnets |
+| `/export`, `/import` | Export `torrs://` lines; import lines or web library JSON (order kept via timestamps) |
 | `/categories` | Category counts + filter buttons |
 | `/server`, `/stats`, `/stat` | Server info |
 | `/viewed` | Viewed files |

@@ -13,7 +13,7 @@ import (
 
 func sendPlayURLs(c tele.Context, hash string, index int, path string) error {
 	uid := c.Sender().ID
-	host := getHost()
+	host := getMediaHost()
 	short := library.ShortPlayURL(host, hash, index)
 	long := library.PlayURL(host, hash, path, index)
 	m := &tele.ReplyMarkup{}

@@ -173,6 +173,7 @@ func Start(token string) error {
 	b.Handle("/db", cmdDb)
 	b.Handle("/viewed", cmdViewed)
 	b.Handle("/ffp", cmdFfp)
+	b.Handle("/subs", cmdSubs)
 	b.Handle("/speedtest", cmdSpeedtest)
 	b.Handle("/shutdown", adminOnly(cmdShutdown))
 	b.Handle("/settings", adminOnly(cmdSettings))

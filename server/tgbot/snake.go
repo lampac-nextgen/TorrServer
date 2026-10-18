@@ -31,6 +31,34 @@ const (
 	snakeHashDisplayLen = 8
 )
 
+// isColdEofProbe matches the web cache camera: a head in the last ~2% while the
+// cache is still cold is a size probe, not playback at the end of the file.
+func isColdEofProbe(readerPiece, piecesCount int, filled, capacity int64) bool {
+	if piecesCount < 50 || readerPiece < 0 || readerPiece >= piecesCount {
+		return false
+	}
+	tail := piecesCount * 2 / 100
+	if tail < 4 {
+		tail = 4
+	}
+	if readerPiece < piecesCount-tail {
+		return false
+	}
+	const warm int64 = 8 << 20
+	if capacity > 0 {
+		limit := capacity * 15 / 100
+		if limit > warm {
+			limit = warm
+		}
+		if filled >= limit {
+			return false
+		}
+	} else if filled >= warm {
+		return false
+	}
+	return true
+}
+
 func cmdSnake(c tele.Context) error {
 	args := c.Args()
 	hash := ""
@@ -131,36 +159,50 @@ func formatSnake(uid int64, st *cacheSt.CacheState, hash string, cols, rows int)
 
 	startPiece, endPiece := 0, st.PiecesCount
 	if len(st.Readers) > 0 {
-		minReader, maxReader := st.PiecesCount, 0
+		minReader := st.PiecesCount
+		anyCamera := false
 		for _, r := range st.Readers {
+			// Cold EOF size-probes jump the window to the last pieces during Loading Media.
+			if isColdEofProbe(r.Reader, st.PiecesCount, st.Filled, st.Capacity) {
+				continue
+			}
+			anyCamera = true
 			if r.Reader < minReader {
 				minReader = r.Reader
 			}
-			if r.Reader > maxReader {
-				maxReader = r.Reader
-			}
 		}
 		windowSize := int(cacheWindowPieces)
-		snakeWindowStartMu.Lock()
-		lastStart := snakeWindowStart[hash]
-		scrollThreshold := windowSize * 3 / 4
-		if lastStart == 0 || minReader < lastStart {
-			lastStart = minReader
-		} else if minReader >= lastStart+scrollThreshold {
-			lastStart = minReader - windowSize/5
-		}
-		if lastStart < 0 {
-			lastStart = 0
-		}
-		snakeWindowStart[hash] = lastStart
-		snakeWindowStartMu.Unlock()
-		startPiece = lastStart
-		endPiece = startPiece + windowSize
-		if endPiece > st.PiecesCount {
-			endPiece = st.PiecesCount
-			startPiece = endPiece - windowSize
-			if startPiece < 0 {
-				startPiece = 0
+		if !anyCamera {
+			snakeWindowStartMu.Lock()
+			snakeWindowStart[hash] = 0
+			snakeWindowStartMu.Unlock()
+			startPiece = 0
+			endPiece = windowSize
+			if endPiece > st.PiecesCount {
+				endPiece = st.PiecesCount
+			}
+		} else {
+			snakeWindowStartMu.Lock()
+			lastStart := snakeWindowStart[hash]
+			scrollThreshold := windowSize * 3 / 4
+			if lastStart == 0 || minReader < lastStart {
+				lastStart = minReader
+			} else if minReader >= lastStart+scrollThreshold {
+				lastStart = minReader - windowSize/5
+			}
+			if lastStart < 0 {
+				lastStart = 0
+			}
+			snakeWindowStart[hash] = lastStart
+			snakeWindowStartMu.Unlock()
+			startPiece = lastStart
+			endPiece = startPiece + windowSize
+			if endPiece > st.PiecesCount {
+				endPiece = st.PiecesCount
+				startPiece = endPiece - windowSize
+				if startPiece < 0 {
+					startPiece = 0
+				}
 			}
 		}
 	} else if len(pieceFilled) > 0 {

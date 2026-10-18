@@ -2,10 +2,12 @@ package tgbot
 
 import (
 	"errors"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"server/library"
+	"server/settings"
 
 	tele "gopkg.in/telebot.v4"
 )
@@ -116,7 +118,7 @@ func markupCopyTexts(m *tele.ReplyMarkup) []string {
 func TestFileListActionRowCopiesPlayNotURL(t *testing.T) {
 	m := &tele.ReplyMarkup{}
 	short := "http://192.168.1.10:8090/play/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/2"
-	row := fileListActionRow(m, 1, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "2", "#2 file", short)
+	row := fileListActionRow(m, 1, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "2", "#2 file", "notes.txt", short)
 	m.Inline(row)
 	if markupHasHTTPURLButton(m) {
 		t.Fatal("file row must not use a URL button")
@@ -281,6 +283,53 @@ func TestFileListPlayLine(t *testing.T) {
 	got := fileListPlayLine(2, "Show.mkv", "http://h/play/ab/2")
 	if !strings.Contains(got, "#2 — Show.mkv") || !strings.Contains(got, "<code>http://h/play/ab/2</code>") {
 		t.Fatalf("got %q", got)
+	}
+}
+
+func TestMediaHostFrom(t *testing.T) {
+	dir := t.TempDir()
+	oldPath, oldPort, oldSslPort := settings.Path, settings.Port, settings.SslPort
+	oldSets, oldSsl, oldArgs := settings.BTsets, settings.Ssl, settings.Args
+	t.Cleanup(func() {
+		settings.Path, settings.Port, settings.SslPort = oldPath, oldPort, oldSslPort
+		settings.BTsets, settings.Ssl, settings.Args = oldSets, oldSsl, oldArgs
+	})
+	settings.Path = dir
+	settings.Port = "8090"
+	settings.SslPort = "8091"
+	settings.Ssl = true
+	settings.Args = &settings.ExecArgs{}
+	settings.BTsets = &settings.BTSets{
+		SslCert: filepath.Join(dir, "server.pem"),
+		SslKey:  filepath.Join(dir, "server.key"),
+	}
+
+	https := "https://192.168.1.2:8091"
+	if got := mediaHostFrom(https, false); got != "http://192.168.1.2:8090" {
+		t.Fatalf("self-signed auto: got %q", got)
+	}
+	if got := mediaHostFrom(https, true); got != "http://192.168.1.2:8090" {
+		t.Fatalf("HostWeb on ssl port: got %q", got)
+	}
+	public := "https://tv.example.com"
+	if got := mediaHostFrom(public, true); got != public {
+		t.Fatalf("public HostWeb: got %q", got)
+	}
+	settings.Args = &settings.ExecArgs{ForceHTTPS: true}
+	if got := mediaHostFrom(https, false); got != https {
+		t.Fatalf("force-https without http-media: got %q", got)
+	}
+	settings.Args = &settings.ExecArgs{ForceHTTPS: true, HTTPMedia: true}
+	if got := mediaHostFrom(https, false); got != "http://192.168.1.2:8090" {
+		t.Fatalf("http-media: got %q", got)
+	}
+	settings.BTsets = &settings.BTSets{SslCert: filepath.Join(dir, "c.pem"), SslKey: filepath.Join(dir, "k.pem")}
+	settings.Args = &settings.ExecArgs{}
+	if got := mediaHostFrom(https, false); got != https {
+		t.Fatalf("user cert: got %q", got)
+	}
+	if got := mediaHostFrom("http://192.168.1.2:8090", false); got != "http://192.168.1.2:8090" {
+		t.Fatalf("plain http: got %q", got)
 	}
 }
 

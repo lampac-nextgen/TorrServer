@@ -246,7 +246,7 @@ func showTorrentCard(c tele.Context, hash string, nav string, edit bool) error {
 		),
 	}
 	rows = append(rows, categoryButtonRows(m, uid, hash)...)
-	playURL := library.ShortPlayURL(getHost(), hash, 1)
+	playURL := library.ShortPlayURL(getMediaHost(), hash, 1)
 	rows = append(rows, appendCopyRow(m, uid, hash, playURL, magnetForHash(hash))...)
 	if nav == "" {
 		nav = "0"

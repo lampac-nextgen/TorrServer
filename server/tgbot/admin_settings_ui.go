@@ -62,7 +62,8 @@ func sendSettingsMenuKbd(uid int64, page string) *tele.ReplyMarkup {
 				"settings_tgl_fsactive", s.ShowFSActiveTorr, "fsactive|1c"),
 			togglePair(uid, "settings_tgl_timecode", s.TrackTimecode, "timecode|1c",
 				"settings_tgl_lpd", s.EnableLPD, "lpd|1c"),
-			{fsetBtn(toggleBtn(tr(uid, "settings_tgl_lpdv6"), s.LPDIPv6), "lpdv6|1c")},
+			togglePair(uid, "settings_tgl_lpdv6", s.LPDIPv6, "lpdv6|1c",
+				"settings_tgl_mergem3u", s.MergeAllM3U, "mergem3u|1c"),
 		}
 	case "2":
 		btns = [][]tele.InlineButton{

@@ -19,7 +19,7 @@ func cmdNext(c tele.Context) error {
 func runNextUnwatched(c tele.Context, query, category, hash string) error {
 	uid := c.Sender().ID
 	res := library.SelectNextUnwatched(library.ListSnapshots(), library.ViewedMapFor(hash), query, category, hash)
-	host := getHost()
+	host := getMediaHost()
 	if res.Hash != "" && res.FileIndex > 0 {
 		res.PlayURL = library.PlayURL(host, res.Hash, res.FilePath, res.FileIndex)
 		res.ShortPlayURL = library.ShortPlayURL(host, res.Hash, res.FileIndex)
@@ -120,7 +120,7 @@ func callbackNextMark(c tele.Context, hash, indexStr string) error {
 	sets.SetViewed(&sets.Viewed{Hash: hash, FileIndex: index})
 	_ = c.Respond(&tele.CallbackResponse{Text: tr(uid, "next_marked")})
 	res := library.SelectNextUnwatched(library.ListSnapshots(), library.ViewedMapFor(hash), "", "tv", hash)
-	host := getHost()
+	host := getMediaHost()
 	if res.Hash != "" && res.FileIndex > 0 {
 		res.PlayURL = library.PlayURL(host, res.Hash, res.FilePath, res.FileIndex)
 		res.ShortPlayURL = library.ShortPlayURL(host, res.Hash, res.FileIndex)

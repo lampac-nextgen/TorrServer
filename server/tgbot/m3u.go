@@ -16,7 +16,7 @@ func callbackM3u(c tele.Context, hash string) error {
 	if t == nil {
 		return c.Respond(&tele.CallbackResponse{Text: tr(uid, "torrent_not_found")})
 	}
-	host := getHost()
+	host := getMediaHost()
 	url := fmt.Sprintf("%s/playlist?hash=%s", host, hash)
 	_ = c.Respond(&tele.CallbackResponse{})
 	return sendPlaylistMessage(c, uid, tr(uid, "m3u_playlist"), url)
@@ -38,7 +38,7 @@ func cmdM3u(c tele.Context) error {
 		return c.Send(tr(c.Sender().ID, "torrent_not_found") + ":\n<code>" + hash + "</code>")
 	}
 
-	host := getHost()
+	host := getMediaHost()
 	url := fmt.Sprintf("%s/playlist?hash=%s", host, hash)
 	if len(args) > 1 && strings.ToLower(args[1]) == "fromlast" {
 		url += "&fromlast=1"
@@ -54,7 +54,7 @@ func cmdM3uAll(c tele.Context) error {
 			cat = ""
 		}
 	}
-	host := getHost()
+	host := getMediaHost()
 	url := library.PlaylistAllURL(host, cat)
 	uid := c.Sender().ID
 	return sendPlaylistMessage(c, uid, tr(uid, "m3u_all"), url)

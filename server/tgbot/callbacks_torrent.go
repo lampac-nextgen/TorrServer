@@ -98,6 +98,10 @@ func handleCallbackTorrent(c tele.Context, args []string) error {
 		if len(args) >= 3 {
 			return callbackPreload(c, args[1], args[2])
 		}
+	case "\ffsubs":
+		if len(args) >= 3 {
+			return callbackSubs(c, args[1], args[2])
+		}
 	case "\fflistcat":
 		cat := ""
 		if len(args) >= 2 {

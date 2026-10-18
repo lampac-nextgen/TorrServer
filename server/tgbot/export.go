@@ -22,29 +22,56 @@ func cmdExport(c tele.Context) error {
 	}
 	uid := c.Sender().ID
 
-	var magnets strings.Builder
+	var lines strings.Builder
 	for _, t := range torrents {
-		hash := t.Hash().HexString()
-		title := t.Title
-		if title == "" {
-			title = t.Name()
-		}
-		magnet := fmt.Sprintf("magnet:?xt=urn:btih:%s", hash)
-		if title != "" {
-			magnet += "&dn=" + url.QueryEscape(title)
-		}
-		magnets.WriteString(magnet + "\n")
+		lines.WriteString(exportTorrentLine(t) + "\n")
 	}
 
 	doc := &tele.Document{}
-	doc.FileName = "torrents.txt"
-	doc.FileReader = bytes.NewReader([]byte(strings.TrimSuffix(magnets.String(), "\n")))
+	doc.FileName = "torrserver-torrs.txt"
+	doc.FileReader = bytes.NewReader([]byte(strings.TrimSuffix(lines.String(), "\n")))
 	doc.Caption = "📁 " + tr(uid, "export_file_caption")
 	if err := c.Send(doc); err != nil {
 		return err
 	}
 
 	return sendExportPage(c, 0)
+}
+
+// exportTorrentLine is a packed torrs:// token (title/poster/category). Magnet is the fallback.
+func exportTorrentLine(t *torr.Torrent) string {
+	if t == nil {
+		return ""
+	}
+	hash := t.Hash().HexString()
+	title := t.Title
+	if title == "" && t.Torrent != nil {
+		title = t.Name()
+	}
+	if st := t.Status(); st != nil {
+		if st.Hash != "" {
+			hash = st.Hash
+		}
+		if st.Title != "" {
+			title = st.Title
+		}
+		if token := strings.TrimSpace(st.TorrsHash); token != "" {
+			lower := strings.ToLower(token)
+			switch {
+			case strings.HasPrefix(lower, "web+torrs://"):
+				return "torrs://" + token[len("web+torrs://"):]
+			case strings.HasPrefix(lower, "torrs://"):
+				return token
+			default:
+				return "torrs://" + token
+			}
+		}
+	}
+	magnet := "magnet:?xt=urn:btih:" + hash
+	if title != "" {
+		magnet += "&dn=" + url.QueryEscape(title)
+	}
+	return magnet
 }
 
 func sendExportPage(c tele.Context, page int) error {

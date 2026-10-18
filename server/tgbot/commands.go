@@ -43,6 +43,7 @@ func userCommandList(lang string) []tele.Command {
 		{Text: "stat", Description: trLang(lang, "cmd_desc_stat")},
 		{Text: "viewed", Description: trLang(lang, "cmd_desc_viewed")},
 		{Text: "ffp", Description: trLang(lang, "cmd_desc_ffp")},
+		{Text: "subs", Description: trLang(lang, "cmd_desc_subs")},
 		{Text: "speedtest", Description: trLang(lang, "cmd_desc_speedtest")},
 		{Text: "snake", Description: trLang(lang, "cmd_desc_snake")},
 		{Text: "queue", Description: trLang(lang, "cmd_desc_queue")},

@@ -15,7 +15,7 @@ import (
 	tele "gopkg.in/telebot.v4"
 )
 
-func addTorrentFromSpec(c tele.Context, torrSpec *torrent.TorrentSpec, displayLabel, title, poster, category string) (*torr.Torrent, error) {
+func addTorrentFromSpec(c tele.Context, torrSpec *torrent.TorrentSpec, displayLabel, title, poster, category string, timestamp int64) (*torr.Torrent, error) {
 	notifyTyping(c)
 	msg, err := c.Bot().Send(c.Sender(), tr(c.Sender().ID, "connecting"))
 	if err != nil {
@@ -23,6 +23,9 @@ func addTorrentFromSpec(c tele.Context, torrSpec *torrent.TorrentSpec, displayLa
 	}
 
 	tor, err := torr.AddTorrent(torrSpec, title, poster, "", category)
+	if err == nil && tor != nil && timestamp > 0 {
+		tor.Timestamp = timestamp
+	}
 	if err != nil {
 		log.TLogln("tg add err", err)
 		_, _ = c.Bot().Edit(msg, fmt.Sprintf(tr(c.Sender().ID, "add_error"), err.Error()))
@@ -69,6 +72,10 @@ func addTorrentFromSpec(c tele.Context, torrSpec *torrent.TorrentSpec, displayLa
 }
 
 func addTorrent(c tele.Context, link string) (*torr.Torrent, error) {
+	return addTorrentAt(c, link, 0)
+}
+
+func addTorrentAt(c tele.Context, link string, timestamp int64) (*torr.Torrent, error) {
 	log.TLogln("tg add torrent", logHashOrTruncate(link))
 	link = strings.ReplaceAll(link, "&amp;", "&")
 	var torrSpec *torrent.TorrentSpec
@@ -88,7 +95,7 @@ func addTorrent(c tele.Context, link string) (*torr.Torrent, error) {
 		log.TLogln("tg add parse err", err)
 		return nil, err
 	}
-	return addTorrentFromSpec(c, torrSpec, link, title, poster, category)
+	return addTorrentFromSpec(c, torrSpec, link, title, poster, category, timestamp)
 }
 
 func addTorrentFromDocument(c tele.Context, doc *tele.Document) (*torr.Torrent, error) {
@@ -115,7 +122,7 @@ func addTorrentFromDocument(c tele.Context, doc *tele.Document) (*torr.Torrent, 
 	if displayLabel == "" {
 		displayLabel = ".torrent"
 	}
-	return addTorrentFromSpec(c, torrSpec, displayLabel, "", "", "")
+	return addTorrentFromSpec(c, torrSpec, displayLabel, "", "", "", 0)
 }
 
 func afterAdd(c tele.Context, tor *torr.Torrent) error {

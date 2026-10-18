@@ -17,7 +17,7 @@ func handleCallback(c tele.Context) error {
 		"\ffstatus", "\ffm3u", "\fflink", "\ffdrop", "\ffstatusrefresh", "\ffstatusstop",
 		"\fflist", "\ffrefresh", "\ffnop", "\ffpreload", "\ffitems", "\ffifresh",
 		"\ffsnakerefresh", "\ffsnakestop", "\fftpick", "\ffbacklist", "\fflistcat",
-		"\ffsetcat", "\ffnextmark":
+		"\ffsetcat", "\ffnextmark", "\ffsubs":
 		return handleCallbackTorrent(c, args)
 	case "\ffadd", "\ffmore":
 		return handleCallbackSearch(c, args)
