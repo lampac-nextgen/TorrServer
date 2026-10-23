@@ -204,3 +204,104 @@ func TestGetRemPiecesNoopAfterClose(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestCompletionConcurrentWithMarkComplete(t *testing.T) {
+	initTestSettings(t)
+
+	c := &Cache{pieceLength: 1024, pieceCount: 1, activePieces: make(map[int]struct{})}
+	p := &Piece{Id: 0, cache: c, Size: 1024}
+	mp := NewMemPiece(p)
+	mp.buffer = make([]byte, 1024)
+	p.mPiece = mp
+
+	var wg sync.WaitGroup
+	const iters = 1000
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		for i := 0; i < iters; i++ {
+			_ = p.MarkComplete()
+			_ = p.MarkNotComplete()
+			mp.mu.Lock()
+			mp.buffer = make([]byte, 1024)
+			p.Size = 1024
+			mp.mu.Unlock()
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		for i := 0; i < iters; i++ {
+			_ = p.Completion()
+		}
+	}()
+	wg.Wait()
+}
+
+// Close holds muRemove → piece.mu → muActive; cleanPieces TryLock(muRemove).
+// Hang = lock-order regression.
+func TestCloseCleanPiecesNoDeadlock(t *testing.T) {
+	prev := settings.BTsets
+	settings.BTsets = &settings.BTSets{}
+	t.Cleanup(func() { settings.BTsets = prev })
+
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		const rounds = 100
+		for i := 0; i < rounds; i++ {
+			stor := NewStorage(4 << 10)
+			c := NewCache(4<<10, stor) // small capacity → cleanPieces evicts
+			c.pieceLength = 1024
+			c.pieceCount = 8
+			c.pieces = make(map[int]*Piece, 8)
+			c.activePieces = make(map[int]struct{})
+			// Fill map before any WriteAt (WriteAt may spawn cleanPieces).
+			for id := 0; id < 8; id++ {
+				p := &Piece{Id: id, cache: c}
+				mp := NewMemPiece(p)
+				mp.buffer = make([]byte, 1024)
+				p.mPiece = mp
+				p.Size = 1024
+				c.pieces[id] = p
+				c.notePieceFilled(id)
+			}
+			c.filled.Store(8 * 1024)
+
+			var wg sync.WaitGroup
+			wg.Add(4)
+			go func() {
+				defer wg.Done()
+				for j := 0; j < 50; j++ {
+					c.cleanPieces()
+				}
+			}()
+			go func() {
+				defer wg.Done()
+				buf := make([]byte, 64)
+				for j := 0; j < 50; j++ {
+					_, _ = c.pieces[j%8].WriteAt(buf, 0)
+					_ = c.GetState()
+				}
+			}()
+			go func() {
+				defer wg.Done()
+				for j := 0; j < 50; j++ {
+					c.cleanPieces()
+					_ = c.getRemPieces()
+				}
+			}()
+			go func() {
+				defer wg.Done()
+				time.Sleep(time.Millisecond)
+				_ = c.Close()
+			}()
+			wg.Wait()
+		}
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(30 * time.Second):
+		t.Fatal("deadlock: Close vs cleanPieces exceeded 30s")
+	}
+}

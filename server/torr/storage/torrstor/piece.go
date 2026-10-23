@@ -101,8 +101,9 @@ func (p *Piece) MarkNotComplete() error {
 }
 
 func (p *Piece) Completion() storage.Completion {
+	_, complete, _ := p.snapshotStats()
 	return storage.Completion{
-		Complete: p.Complete,
+		Complete: complete,
 		Ok:       true,
 	}
 }

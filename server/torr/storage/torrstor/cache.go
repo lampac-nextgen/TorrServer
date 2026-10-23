@@ -45,7 +45,6 @@ type Cache struct {
 	readers   map[*Reader]struct{}
 	muReaders sync.Mutex
 
-	isRemove bool
 	isClosed atomic.Bool
 	muRemove sync.Mutex
 	// muPrio serializes clearPriority and setLoadPriority so that the priority
@@ -385,18 +384,14 @@ func (c *Cache) GetState() *state.CacheState {
 }
 
 func (c *Cache) cleanPieces() {
-	if c.isRemove || c.isClosed.Load() {
+	if c.isClosed.Load() {
 		return
 	}
-
-	// Protection against concurrent deletion
+	// TryLock serializes eviction; Close takes the same muRemove around Release.
 	if !c.muRemove.TryLock() {
-		return // Cleanup is already in progress in another goroutine
+		return
 	}
 	defer c.muRemove.Unlock()
-
-	c.isRemove = true
-	defer func() { c.isRemove = false }()
 
 	remPieces := c.getRemPieces()
 	filled := c.filled.Load()
