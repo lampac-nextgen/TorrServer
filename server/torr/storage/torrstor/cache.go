@@ -747,3 +747,24 @@ func (c *Cache) GetCapacity() int64 {
 	}
 	return c.capacity
 }
+
+func (c *Cache) FilledBytes() int64 {
+	if c == nil {
+		return 0
+	}
+	return c.filled.Load()
+}
+
+func (c *Cache) PieceCount() int {
+	if c == nil {
+		return 0
+	}
+	return c.pieceCount
+}
+
+func (c *Cache) IsClosed() bool {
+	if c == nil {
+		return true
+	}
+	return c.isClosed.Load()
+}
