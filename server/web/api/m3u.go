@@ -305,7 +305,7 @@ func containsName(path, name string) bool {
 		}
 		end := i + j + len(name)
 		next, _ := utf8.DecodeRuneInString(path[end:])
-		if end == len(path) || !(unicode.IsLetter(next) || unicode.IsDigit(next)) {
+		if end == len(path) || (!unicode.IsLetter(next) && !unicode.IsDigit(next)) {
 			return true
 		}
 		i += j + 1
