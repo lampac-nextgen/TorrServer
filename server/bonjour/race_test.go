@@ -113,10 +113,15 @@ func TestStartStopConcurrent(t *testing.T) {
 }
 
 func TestAdvertiseMockInterfaces(t *testing.T) {
-	oldList, oldAddrs := listIfaces, addrsByIface
+	oldList, oldAddrs, oldNew := listIfaces, addrsByIface, newAnnouncer
 	oldPort, oldSsl, oldSslPort, oldSets := settings.Port, settings.Ssl, settings.SslPort, settings.BTsets
+	// Real zeroconf.Shutdown races its mainloop (ipv4conn Close vs recv). This
+	// test only checks iface filtering + Start/Stop bookkeeping.
+	newAnnouncer = func(string, string, int, string, []string, []string, []net.Interface) (announcer, error) {
+		return fakeAnnouncer{}, nil
+	}
 	t.Cleanup(func() {
-		listIfaces, addrsByIface = oldList, oldAddrs
+		listIfaces, addrsByIface, newAnnouncer = oldList, oldAddrs, oldNew
 		settings.Port, settings.Ssl, settings.SslPort, settings.BTsets = oldPort, oldSsl, oldSslPort, oldSets
 		Stop()
 	})

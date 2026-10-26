@@ -35,8 +35,9 @@ var (
 	// them; production uses anet.
 	listIfaces   = anet.Interfaces
 	addrsByIface = anet.InterfaceAddrsByInterface
-	// newAnnouncer opens the UDP sockets. Tests replace it: zeroconf.Shutdown
-	// races its own recv goroutines, and -race fails the process for that.
+	// newAnnouncer opens the UDP sockets. Tests that only check Start/Stop
+	// bookkeeping must replace it: zeroconf.Shutdown races its own mainloop
+	// (ipv4conn Close vs recv) and -race fails the process for that.
 	newAnnouncer = func(name, service string, port int, host string, ips, txt []string, ifaces []net.Interface) (announcer, error) {
 		return zeroconf.RegisterProxy(name, service, "local.", port, host, ips, txt, ifaces)
 	}
@@ -44,9 +45,12 @@ var (
 
 // Start advertises TorrServer over mDNS (_torrserver, _http, and _https when TLS is on).
 func Start() {
+	// Withdraw any previous ads without holding mu across zeroconf.Shutdown
+	// (that call closes UDP conns while mainloop may still read them).
+	Stop()
+
 	mu.Lock()
 	defer mu.Unlock()
-	stopLocked()
 
 	webPort := settings.Port
 	if !settings.HTTPEnabled() {
@@ -84,20 +88,25 @@ func Start() {
 }
 
 // Stop withdraws mDNS advertisements.
+// Shutdown runs outside mu: grandcat/zeroconf closes ipv4conn/ipv6conn while its
+// mainloop may still spawn recv on the same fields (DATA RACE under -race).
+// Holding mu across that only widens the window for Start/Stop waiters.
 func Stop() {
 	mu.Lock()
-	defer mu.Unlock()
-	stopLocked()
+	ss := servers
+	servers = nil
+	mu.Unlock()
+	shutdownServers(ss)
 }
 
-func stopLocked() {
-	for _, s := range servers {
+func shutdownServers(ss []announcer) {
+	if len(ss) == 0 {
+		return
+	}
+	for _, s := range ss {
 		s.Shutdown()
 	}
-	if len(servers) > 0 {
-		log.TLogln("Bonjour: stopped")
-	}
-	servers = nil
+	log.TLogln("Bonjour: stopped")
 }
 
 func baseTXT() []string {
