@@ -72,6 +72,27 @@ func TestTMDBSettingsUninitialized(t *testing.T) {
 	}
 }
 
+// {"action":"set"} with no sets object, and "sets": null, used to pass nil
+// into torr.SetSettings and panic. Both are a 400 before any restart.
+func TestSettingsSetWithoutSetsIsRejected(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	oldRO := sets.ReadOnly
+	sets.ReadOnly = false
+	t.Cleanup(func() { sets.ReadOnly = oldRO })
+
+	r := gin.New()
+	r.POST("/settings", settings)
+	for _, body := range []string{`{"action":"set"}`, `{"action":"set","sets":null}`} {
+		req := httptest.NewRequest(http.MethodPost, "/settings", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		if w.Code != http.StatusBadRequest || !strings.Contains(w.Body.String(), "sets is empty") {
+			t.Fatalf("sets %q status=%d body=%s", body, w.Code, w.Body.String())
+		}
+	}
+}
+
 func TestSettingsRejectsFloatIntegers(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
