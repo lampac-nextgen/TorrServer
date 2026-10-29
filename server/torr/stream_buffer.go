@@ -10,6 +10,9 @@ type bufferedStreamReader struct {
 	buffer *bufio.Reader
 }
 
+// ponytail: one fresh 1MiB bufio per /stream request, so every player seek
+// leaves 1MiB of garbage. Not measurable next to the piece cache; pool the
+// buffer only if a heap profile under rapid seeks shows it as a top allocator.
 func newBufferedStreamReader(source io.ReadSeeker, size int) *bufferedStreamReader {
 	return &bufferedStreamReader{source: source, buffer: bufio.NewReaderSize(source, size)}
 }

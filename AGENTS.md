@@ -189,6 +189,7 @@ Process env read by Go:
 - `TS_SETTINGS_STORAGE=json|bbolt` and `TS_VIEWED_STORAGE=json|bbolt` apply only when no settings row exists yet. Defaults: settings JSON, viewed bbolt.
 - `SSL_CERT_FILE` / `SSL_CERT_DIR` on Linux. `configureCARoots` will not override a value the user already set.
 - `GODEBUG=madvdontneed=1` is the container default so dropped piece RAM returns to the OS.
+- `GOMEMLIMIT` is unset by default and passed through Compose. Playback with a 64MiB cache measured ~127MiB vs ~29MiB idle; the limit makes GC run sooner. It is documentation, not a code default: a limit below the live cache makes GC spin.
 
 `docker-entrypoint.sh` maps `TS_*` onto flags. It enables TLS from `TS_SSL_ENABLE=1`. `docker-compose.yml` and `.env.example` publish `TS_EN_SSL`. Those names are not the same variable. Wiring TLS through Compose requires the entrypoint to see `TS_SSL_ENABLE`, or the flag is never passed. README documents `TS_SSL_ENABLE`.
 
