@@ -322,10 +322,14 @@ func (t *Torrent) expired() bool {
 	t.muTorrent.Lock()
 	cache, stat, expiredTime := t.cache, t.Stat, t.expiredTime
 	t.muTorrent.Unlock()
-	if cache == nil {
+	if stat == state.TorrentPreload {
 		return false
 	}
-	return cache.Readers() == 0 && expiredTime.Before(time.Now()) && (stat == state.TorrentWorking || stat == state.TorrentClosed)
+	readers := 0
+	if cache != nil {
+		readers = cache.Readers()
+	}
+	return readers == 0 && expiredTime.Before(time.Now())
 }
 
 func (t *Torrent) Files() []*torrent.File {

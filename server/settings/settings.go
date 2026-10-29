@@ -507,7 +507,21 @@ func SetStoragePreferences(prefs map[string]interface{}) error {
 	return nil
 }
 
+var onTorrentMutation []func()
+
+// RegisterOnTorrentMutation registers a hook called when database torrents are mutated or closed.
+func RegisterOnTorrentMutation(fn func()) {
+	onTorrentMutation = append(onTorrentMutation, fn)
+}
+
+func NotifyTorrentMutation() {
+	for _, fn := range onTorrentMutation {
+		fn()
+	}
+}
+
 func CloseDB() {
+	NotifyTorrentMutation()
 	if tdb != nil {
 		tdb.CloseDB()
 		tdb = nil

@@ -2,6 +2,7 @@ package torr
 
 import (
 	"encoding/json"
+	"sync"
 
 	"server/settings"
 	"server/torr/state"
@@ -9,6 +10,43 @@ import (
 
 	"github.com/anacrolix/torrent/metainfo"
 )
+
+func init() {
+	settings.RegisterOnTorrentMutation(InvalidateDBTorrentsCache)
+}
+
+var (
+	dbTorrentsMu sync.RWMutex
+	dbTorrents   map[metainfo.Hash]*Torrent
+)
+
+// InvalidateDBTorrentsCache drops the in-memory cache of database torrents.
+func InvalidateDBTorrentsCache() {
+	dbTorrentsMu.Lock()
+	dbTorrents = nil
+	dbTorrentsMu.Unlock()
+}
+
+func loadDBTorrentsLocked() {
+	ret := make(map[metainfo.Hash]*Torrent)
+	list := settings.ListTorrent()
+	for _, db := range list {
+		if db == nil || db.TorrentSpec == nil {
+			continue
+		}
+		torr := new(Torrent)
+		torr.TorrentSpec = db.TorrentSpec
+		torr.Title = db.Title
+		torr.Poster = db.Poster
+		torr.Category = db.Category
+		torr.Timestamp = db.Timestamp
+		torr.Size = db.Size
+		torr.Data = db.Data
+		torr.Stat = state.TorrentInDB
+		ret[db.InfoHash] = torr
+	}
+	dbTorrents = ret
+}
 
 type tsFiles struct {
 	TorrServer struct {
@@ -92,45 +130,82 @@ func AddTorrentDB(torr *Torrent) {
 	}
 
 	settings.AddTorrent(t)
+
+	dbTorrentsMu.Lock()
+	if dbTorrents != nil {
+		if existing, ok := dbTorrents[t.InfoHash]; ok && existing != nil {
+			existing.muTorrent.Lock()
+			existing.TorrentSpec = t.TorrentSpec
+			existing.Title = t.Title
+			existing.Poster = t.Poster
+			existing.Category = t.Category
+			existing.Timestamp = t.Timestamp
+			existing.Size = t.Size
+			existing.Data = t.Data
+			existing.Stat = state.TorrentInDB
+			existing.muTorrent.Unlock()
+		} else {
+			torr := new(Torrent)
+			torr.TorrentSpec = t.TorrentSpec
+			torr.Title = t.Title
+			torr.Poster = t.Poster
+			torr.Category = t.Category
+			torr.Timestamp = t.Timestamp
+			torr.Size = t.Size
+			torr.Data = t.Data
+			torr.Stat = state.TorrentInDB
+			dbTorrents[t.InfoHash] = torr
+		}
+	}
+	dbTorrentsMu.Unlock()
 }
 
 func GetTorrentDB(hash metainfo.Hash) *Torrent {
-	list := settings.ListTorrent()
-	for _, db := range list {
-		if hash == db.InfoHash {
-			torr := new(Torrent)
-			torr.TorrentSpec = db.TorrentSpec
-			torr.Title = db.Title
-			torr.Poster = db.Poster
-			torr.Category = db.Category
-			torr.Timestamp = db.Timestamp
-			torr.Size = db.Size
-			torr.Data = db.Data
-			torr.Stat = state.TorrentInDB
-			return torr
-		}
+	dbTorrentsMu.RLock()
+	if dbTorrents != nil {
+		torr := dbTorrents[hash]
+		dbTorrentsMu.RUnlock()
+		return torr
 	}
-	return nil
+	dbTorrentsMu.RUnlock()
+
+	dbTorrentsMu.Lock()
+	defer dbTorrentsMu.Unlock()
+	if dbTorrents == nil {
+		loadDBTorrentsLocked()
+	}
+	return dbTorrents[hash]
 }
 
 func RemTorrentDB(hash metainfo.Hash) {
 	settings.RemTorrent(hash)
+	dbTorrentsMu.Lock()
+	if dbTorrents != nil {
+		delete(dbTorrents, hash)
+	}
+	dbTorrentsMu.Unlock()
 }
 
 func ListTorrentsDB() map[metainfo.Hash]*Torrent {
-	ret := make(map[metainfo.Hash]*Torrent)
-	list := settings.ListTorrent()
-	for _, db := range list {
-		torr := new(Torrent)
-		torr.TorrentSpec = db.TorrentSpec
-		torr.Title = db.Title
-		torr.Poster = db.Poster
-		torr.Category = db.Category
-		torr.Timestamp = db.Timestamp
-		torr.Size = db.Size
-		torr.Data = db.Data
-		torr.Stat = state.TorrentInDB
-		ret[torr.TorrentSpec.InfoHash] = torr
+	dbTorrentsMu.RLock()
+	if dbTorrents != nil {
+		ret := make(map[metainfo.Hash]*Torrent, len(dbTorrents))
+		for h, t := range dbTorrents {
+			ret[h] = t
+		}
+		dbTorrentsMu.RUnlock()
+		return ret
+	}
+	dbTorrentsMu.RUnlock()
+
+	dbTorrentsMu.Lock()
+	defer dbTorrentsMu.Unlock()
+	if dbTorrents == nil {
+		loadDBTorrentsLocked()
+	}
+	ret := make(map[metainfo.Hash]*Torrent, len(dbTorrents))
+	for h, t := range dbTorrents {
+		ret[h] = t
 	}
 	return ret
 }
