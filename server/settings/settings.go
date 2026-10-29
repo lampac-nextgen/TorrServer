@@ -507,21 +507,11 @@ func SetStoragePreferences(prefs map[string]interface{}) error {
 	return nil
 }
 
-var onTorrentMutation []func()
-
-// RegisterOnTorrentMutation registers a hook called when database torrents are mutated or closed.
-func RegisterOnTorrentMutation(fn func()) {
-	onTorrentMutation = append(onTorrentMutation, fn)
-}
-
-func NotifyTorrentMutation() {
-	for _, fn := range onTorrentMutation {
-		fn()
-	}
-}
+// OnTorrentsChanged runs after a Torrents write and after CloseDB, with no settings
+// lock held. Package torr sets it in init to drop its decoded-row cache.
+var OnTorrentsChanged = func() {}
 
 func CloseDB() {
-	NotifyTorrentMutation()
 	if tdb != nil {
 		tdb.CloseDB()
 		tdb = nil
@@ -530,4 +520,5 @@ func CloseDB() {
 	// Leaving them set reused a closed bbolt after Stop/Start.
 	globalBboltDB = nil
 	globalJsonDB = nil
+	OnTorrentsChanged()
 }

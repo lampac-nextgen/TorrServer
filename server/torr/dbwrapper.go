@@ -12,40 +12,47 @@ import (
 )
 
 func init() {
-	settings.RegisterOnTorrentMutation(InvalidateDBTorrentsCache)
+	settings.OnTorrentsChanged = invalidateDBRows
 }
 
+// Decoded settings rows, so a /torrents list poll does not unmarshal every row.
+// The rows are read-only: callers get a new *Torrent from torrentFromDB each time,
+// because GotInfo, Close and NewTorrent mutate the Torrent and its TorrentSpec.
 var (
-	dbTorrentsMu sync.RWMutex
-	dbTorrents   map[metainfo.Hash]*Torrent
+	dbRowsMu sync.Mutex
+	dbRows   []*settings.TorrentDB
 )
 
-// InvalidateDBTorrentsCache drops the in-memory cache of database torrents.
-func InvalidateDBTorrentsCache() {
-	dbTorrentsMu.Lock()
-	dbTorrents = nil
-	dbTorrentsMu.Unlock()
+func invalidateDBRows() {
+	dbRowsMu.Lock()
+	dbRows = nil
+	dbRowsMu.Unlock()
 }
 
-func loadDBTorrentsLocked() {
-	ret := make(map[metainfo.Hash]*Torrent)
-	list := settings.ListTorrent()
-	for _, db := range list {
-		if db == nil || db.TorrentSpec == nil {
-			continue
-		}
-		torr := new(Torrent)
-		torr.TorrentSpec = db.TorrentSpec
-		torr.Title = db.Title
-		torr.Poster = db.Poster
-		torr.Category = db.Category
-		torr.Timestamp = db.Timestamp
-		torr.Size = db.Size
-		torr.Data = db.Data
-		torr.Stat = state.TorrentInDB
-		ret[db.InfoHash] = torr
+// listDBRows holds dbRowsMu across settings.ListTorrent so a mutation hook cannot
+// clear the cache between the read and the store. nil (closed or empty DB) is not cached.
+func listDBRows() []*settings.TorrentDB {
+	dbRowsMu.Lock()
+	defer dbRowsMu.Unlock()
+	if dbRows == nil {
+		dbRows = settings.ListTorrent()
 	}
-	dbTorrents = ret
+	return dbRows
+}
+
+func torrentFromDB(db *settings.TorrentDB) *Torrent {
+	spec := *db.TorrentSpec
+	spec.Trackers = append([][]string(nil), spec.Trackers...)
+	torr := new(Torrent)
+	torr.TorrentSpec = &spec
+	torr.Title = db.Title
+	torr.Poster = db.Poster
+	torr.Category = db.Category
+	torr.Timestamp = db.Timestamp
+	torr.Size = db.Size
+	torr.Data = db.Data
+	torr.Stat = state.TorrentInDB
+	return torr
 }
 
 type tsFiles struct {
@@ -130,82 +137,28 @@ func AddTorrentDB(torr *Torrent) {
 	}
 
 	settings.AddTorrent(t)
-
-	dbTorrentsMu.Lock()
-	if dbTorrents != nil {
-		if existing, ok := dbTorrents[t.InfoHash]; ok && existing != nil {
-			existing.muTorrent.Lock()
-			existing.TorrentSpec = t.TorrentSpec
-			existing.Title = t.Title
-			existing.Poster = t.Poster
-			existing.Category = t.Category
-			existing.Timestamp = t.Timestamp
-			existing.Size = t.Size
-			existing.Data = t.Data
-			existing.Stat = state.TorrentInDB
-			existing.muTorrent.Unlock()
-		} else {
-			torr := new(Torrent)
-			torr.TorrentSpec = t.TorrentSpec
-			torr.Title = t.Title
-			torr.Poster = t.Poster
-			torr.Category = t.Category
-			torr.Timestamp = t.Timestamp
-			torr.Size = t.Size
-			torr.Data = t.Data
-			torr.Stat = state.TorrentInDB
-			dbTorrents[t.InfoHash] = torr
-		}
-	}
-	dbTorrentsMu.Unlock()
 }
 
 func GetTorrentDB(hash metainfo.Hash) *Torrent {
-	dbTorrentsMu.RLock()
-	if dbTorrents != nil {
-		torr := dbTorrents[hash]
-		dbTorrentsMu.RUnlock()
-		return torr
+	for _, db := range listDBRows() {
+		if db != nil && db.TorrentSpec != nil && db.InfoHash == hash {
+			return torrentFromDB(db)
+		}
 	}
-	dbTorrentsMu.RUnlock()
-
-	dbTorrentsMu.Lock()
-	defer dbTorrentsMu.Unlock()
-	if dbTorrents == nil {
-		loadDBTorrentsLocked()
-	}
-	return dbTorrents[hash]
+	return nil
 }
 
 func RemTorrentDB(hash metainfo.Hash) {
 	settings.RemTorrent(hash)
-	dbTorrentsMu.Lock()
-	if dbTorrents != nil {
-		delete(dbTorrents, hash)
-	}
-	dbTorrentsMu.Unlock()
 }
 
 func ListTorrentsDB() map[metainfo.Hash]*Torrent {
-	dbTorrentsMu.RLock()
-	if dbTorrents != nil {
-		ret := make(map[metainfo.Hash]*Torrent, len(dbTorrents))
-		for h, t := range dbTorrents {
-			ret[h] = t
+	rows := listDBRows()
+	ret := make(map[metainfo.Hash]*Torrent, len(rows))
+	for _, db := range rows {
+		if db != nil && db.TorrentSpec != nil {
+			ret[db.InfoHash] = torrentFromDB(db)
 		}
-		dbTorrentsMu.RUnlock()
-		return ret
-	}
-	dbTorrentsMu.RUnlock()
-
-	dbTorrentsMu.Lock()
-	defer dbTorrentsMu.Unlock()
-	if dbTorrents == nil {
-		loadDBTorrentsLocked()
-	}
-	ret := make(map[metainfo.Hash]*Torrent, len(dbTorrents))
-	for h, t := range dbTorrents {
-		ret[h] = t
 	}
 	return ret
 }

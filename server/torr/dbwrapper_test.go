@@ -1,6 +1,7 @@
 package torr
 
 import (
+	"runtime"
 	"testing"
 	"time"
 
@@ -11,103 +12,121 @@ import (
 	"github.com/anacrolix/torrent/metainfo"
 )
 
-func TestDBTorrentsCacheMemoization(t *testing.T) {
-	offlinetest.Prepare(t)
-	InvalidateDBTorrentsCache()
-
+func addDBRow(t *testing.T, title string) metainfo.Hash {
+	t.Helper()
 	hash := metainfo.NewHashFromHex("0123456789abcdef0123456789abcdef01234567")
-	spec := &torrent.TorrentSpec{
-		InfoHash: hash,
+	AddTorrentDB(&Torrent{
+		TorrentSpec: &torrent.TorrentSpec{InfoHash: hash, Trackers: [][]string{{"http://t1/announce"}}},
+		Title:       title,
+		Size:        1 << 20,
+	})
+	return hash
+}
+
+// GotInfo on a library row closes it, and NewTorrent appends a tracker tier to the
+// spec it is given. Neither may leak into the next caller's row: /stream only adds
+// the torrent when the row still reads TorrentInDB.
+func TestDBRowsAreNotShared(t *testing.T) {
+	offlinetest.Prepare(t)
+	hash := addDBRow(t, "Movie")
+
+	if ListTorrentsDB()[hash].GotInfo() {
+		t.Fatal("GotInfo on a library-only row reported info")
+	}
+	if st := ListTorrentsDB()[hash].Status().Stat; st != state.TorrentInDB {
+		t.Fatalf("row stat after GotInfo on another copy = %v, want TorrentInDB", st)
 	}
 
-	torr := &Torrent{
-		TorrentSpec: spec,
-		Title:       "Test Movie",
-		Poster:      "http://example.com/poster.jpg",
-		Category:    "movie",
-		Size:        1024 * 1024,
-		Stat:        state.TorrentInDB,
-	}
-
-	AddTorrentDB(torr)
-
-	// First list: populates cache
-	list1 := ListTorrentsDB()
-	t1, ok := list1[hash]
-	if !ok || t1 == nil {
-		t.Fatalf("expected torrent in ListTorrentsDB")
-	}
-
-	// Status call caches torrsHashToken on t1
-	st1 := t1.Status()
-	if st1.TorrsHash == "" {
-		t.Fatalf("expected torrsHash to be generated")
-	}
-	token1 := t1.torrsHashToken
-	if token1 == "" {
-		t.Fatalf("expected torrsHashToken to be cached on Torrent struct")
-	}
-
-	// Second list: must return identical Torrent pointer from memory cache
-	list2 := ListTorrentsDB()
-	t2, ok := list2[hash]
-	if !ok || t2 == nil {
-		t.Fatalf("expected torrent in ListTorrentsDB")
-	}
-	if t1 != t2 {
-		t.Fatalf("expected ListTorrentsDB to return memoized *Torrent pointer, got %p != %p", t1, t2)
-	}
-
-	// Status call on t2 reuses torrsHashToken with 0 zlib re-encodes
-	st2 := t2.Status()
-	if st2.TorrsHash != st1.TorrsHash {
-		t.Fatalf("token mismatch: %q != %q", st2.TorrsHash, st1.TorrsHash)
-	}
-
-	// GetTorrentDB returns same instance
-	tGet := GetTorrentDB(hash)
-	if tGet != t1 {
-		t.Fatalf("expected GetTorrentDB to return memoized *Torrent pointer, got %p != %p", tGet, t1)
-	}
-
-	// Update via AddTorrentDB preserves cache
-	torr.Title = "Updated Movie"
-	AddTorrentDB(torr)
-	tUpdated := GetTorrentDB(hash)
-	if tUpdated == nil || tUpdated.Title != "Updated Movie" {
-		t.Fatalf("expected updated title in cache, got %v", tUpdated)
-	}
-
-	// Removal from DB removes from cache
-	RemTorrentDB(hash)
-	if GetTorrentDB(hash) != nil {
-		t.Fatalf("expected torrent to be removed from cache")
-	}
-	if _, found := ListTorrentsDB()[hash]; found {
-		t.Fatalf("expected torrent to be removed from ListTorrentsDB")
+	row := GetTorrentDB(hash)
+	addExtraTrackers(row.TorrentSpec, []string{"http://t2/announce"})
+	row.Trackers[0] = nil
+	if got := GetTorrentDB(hash).Trackers; len(got) != 1 || len(got[0]) != 1 {
+		t.Fatalf("cached spec trackers changed through a returned row: %v", got)
 	}
 }
 
-func TestExpiredDropsUnstartedTorrentWithNilCache(t *testing.T) {
-	tor := new(Torrent)
-	tor.Stat = state.TorrentAdded
-	tor.cache = nil
-
-	// Future expiry: not expired
-	tor.expiredTime = time.Now().Add(time.Minute)
-	if tor.expired() {
-		t.Fatalf("expected unexpired for future time")
+func TestDBRowsFollowWrites(t *testing.T) {
+	offlinetest.Prepare(t)
+	hash := addDBRow(t, "Movie")
+	if GetTorrentDB(hash).Title != "Movie" {
+		t.Fatal("row missing after add")
 	}
 
-	// Past expiry: expired!
+	addDBRow(t, "Renamed")
+	if got := ListTorrentsDB()[hash].Title; got != "Renamed" {
+		t.Fatalf("title after update = %q", got)
+	}
+
+	RemTorrentDB(hash)
+	if GetTorrentDB(hash) != nil || len(ListTorrentsDB()) != 0 {
+		t.Fatal("row still listed after remove")
+	}
+}
+
+// A list poll must not unmarshal rows or zlib-pack the torrs token again.
+// flate's BestCompression writer alone allocates hundreds of KiB.
+func TestDBListPollAllocs(t *testing.T) {
+	offlinetest.Prepare(t)
+	hash := addDBRow(t, "Movie")
+	if ListTorrentsDB()[hash].Status().TorrsHash == "" {
+		t.Fatal("no torrs token")
+	}
+
+	const polls = 50
+	var before, after runtime.MemStats
+	runtime.ReadMemStats(&before)
+	for range polls {
+		ListTorrentsDB()[hash].Status()
+	}
+	runtime.ReadMemStats(&after)
+	if perPoll := (after.TotalAlloc - before.TotalAlloc) / polls; perPoll > 32<<10 {
+		t.Fatalf("list poll allocates %d B, want <= 32KiB (token repacked or rows decoded per poll)", perPoll)
+	}
+}
+
+func TestExpiredWaitsForPendingInfo(t *testing.T) {
+	offlinetest.Prepare(t)
+	bt := NewBTS()
+	InitApiHelper(bt)
+	if err := bt.Connect(); err != nil {
+		t.Fatalf("Connect: %v", err)
+	}
+	t.Cleanup(bt.Disconnect)
+
+	// No peers, no trackers, no DHT: metadata never arrives.
+	tor, err := NewTorrent(&torrent.TorrentSpec{InfoHash: metainfo.NewHashFromHex("89abcdef0123456789abcdef0123456789abcdef")}, bt)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tor.muTorrent.Lock()
 	tor.expiredTime = time.Now().Add(-time.Second)
+	tor.muTorrent.Unlock()
+
 	if !tor.expired() {
-		t.Fatalf("expected expired for past time with nil cache")
+		t.Fatal("idle TorrentAdded torrent with nil cache past its expiry must expire")
 	}
 
-	// Preload state: must never expire while preloading
-	tor.Stat = state.TorrentPreload
+	done := make(chan bool)
+	go func() { done <- tor.WaitInfo() }()
+	for tor.infoWaiters.Load() == 0 {
+		runtime.Gosched()
+	}
 	if tor.expired() {
-		t.Fatalf("expected preload stat to not expire")
+		t.Fatal("torrent expired while WaitInfo was still waiting for metadata")
+	}
+
+	tor.Close()
+	if <-done {
+		t.Fatal("WaitInfo reported info after Close")
+	}
+	if !tor.expired() {
+		t.Fatal("closed torrent past its expiry must expire once nobody waits")
+	}
+
+	tor.muTorrent.Lock()
+	tor.Stat = state.TorrentPreload
+	tor.muTorrent.Unlock()
+	if tor.expired() {
+		t.Fatal("preloading torrent must not expire")
 	}
 }
