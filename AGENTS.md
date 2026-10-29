@@ -138,6 +138,7 @@ Piece buffers (`server/torr/storage/torrstor/piecebuf.go`):
 - One `sync.Pool` per exact length, stored as `*pieceSlab` in a `sync.Map`.
 - `putPieceBuf` clears the full cap before publish.
 - `MemPiece.Release` does not recycle when `cache.isClosed` is set, so `FreeOSMem` after drop can return the RAM. Do not "simplify" that to always `Put`.
+- Only `Cache.Close` forces `FreeOSMem` (via the `freeOSMem` var). `cleanPieces` must not: evicted slabs are pooled for the next piece, and a forced GC every 4s under load only empties the pools (`TestPieceCacheEvictionHeapCeiling` counts the calls).
 - Never retain a sub-slice of a slab after `Release`. The next tenant of that pool owns the backing array.
 - `ponytail:` on the global map is intentional. Split pools per cache only if a profile shows the map.
 
