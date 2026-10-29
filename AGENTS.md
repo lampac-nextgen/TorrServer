@@ -130,6 +130,7 @@ Copy path, do not add a third buffer:
 - `streamCopyWriter.ReadFrom` is what `http.ServeContent` actually hits. gin's writer has no `ReaderFrom`, and `io.CopyN`'s `LimitedReader` has no `WriterTo`.
 - `buf[:nr]` passed to `Write` must not escape. The pool reuses the same array on the next read.
 - `ServeStreamContent` nils `ResponseWriter` before `Put` so the pool does not pin the request.
+- The 1MiB read-ahead (`streamBufSize`) comes from `streamBufPool`; `Stream` calls `body.release()` after `ServeStreamContent`. Every player seek is a new request, so unpooled it was the largest TorrServer-owned allocator under seeks. Other sizes (tests) are not pooled.
 - `bufferedStreamReader.Seek` subtracts `buffer.Buffered()` on `SeekCurrent`, then `Reset`. Skipping that seeks to the wrong byte.
 
 Piece buffers (`server/torr/storage/torrstor/piecebuf.go`):
