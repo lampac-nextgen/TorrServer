@@ -215,8 +215,9 @@ export default function AddDialog({ open, onClose, initialSource }: AddDialogPro
       toast?.showToast({ message: t('Search.TorrentAdded'), severity: 'success' })
       resetForm()
       onClose()
-    } catch {
-      toast?.showToast({ message: t('Error'), severity: 'error' })
+    } catch (err) {
+      // addTorrent carries the server's `error` text (e.g. a 400 for a bad magnet).
+      toast?.showToast({ message: err instanceof Error && err.message ? err.message : t('Error'), severity: 'error' })
     } finally {
       setSaving(false)
     }
