@@ -40,6 +40,13 @@ describe('CacheSize megabytes <-> bytes', () => {
     expect(loaded.form.ReaderReadAHead).toBe(95)
   })
 
+  it('a GET body without CacheSize falls back to 64 MiB, not to the 64 MB seed read as bytes', () => {
+    const loaded = applyLoadedSettings({ FriendlyName: 'Box' }, seed)
+    expect(loaded.cacheSizeMb).toBe(64)
+    expect(loaded.form.CacheSize).toBe(64)
+    expect(loaded.shared.CacheSize).toBe(64 * MB)
+  })
+
   it('rounds a non-whole megabyte value from the server', () => {
     expect(cacheBytesToMb(64 * MB + 300_000)).toBe(64)
     expect(cacheBytesToMb(Math.floor(64.6 * MB))).toBe(65)
