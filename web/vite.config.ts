@@ -148,8 +148,17 @@ export default defineConfig(({ mode }) => {
       },
     },
     test: {
+      // Pure-logic tests stay on node. A component test opts in per file with
+      // `// @vitest-environment happy-dom` as its first line.
       environment: 'node',
-      include: ['src/**/*.test.ts'],
+      include: ['src/**/*.test.{ts,tsx}'],
+      setupFiles: ['src/test/setup.ts'],
+      coverage: {
+        provider: 'v8',
+        reporter: ['text-summary', 'json-summary', 'lcov'],
+        include: ['src/**/*.{ts,tsx}'],
+        exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**', 'src/locales/**', 'src/**/*.d.ts'],
+      },
     },
   }
 })
