@@ -1,0 +1,57 @@
+goos: darwin
+goarch: arm64
+pkg: server/subs
+cpu: Apple M3 Max
+BenchmarkSubsParse/match-16         	  135789	      1695 ns/op	     749 B/op	      10 allocs/op
+BenchmarkSubsParse/vtt-16           	  166584	      1423 ns/op	  54.11 MB/s	     715 B/op	      13 allocs/op
+PASS
+ok  	server/subs	0.812s
+2026/10/30 20:20:37 Create cache for: bench b100000000000000000000000000000000000000
+goos: darwin
+goarch: arm64
+pkg: server/torr/storage/torrstor
+cpu: Apple M3 Max
+BenchmarkTorrstorPieceWriteRead/sequential-16         	  258489	       935.0 ns/op	70089.93 MB/s	       0 B/op	       0 allocs/op
+BenchmarkTorrstorPieceWriteRead/turnover-16           	  116506	      2054 ns/op	31908.57 MB/s	     133 B/op	       1 allocs/op
+BenchmarkTorrstorPieceWriteRead/parallel-16           	  440066	       534.8 ns/op	122539.02 MB/s	       0 B/op	       0 allocs/op
+2026/10/30 20:20:38 Close cache for: b100000000000000000000000000000000000000
+2026/10/30 20:20:38 Close cache for: 0000000000000000000000000000000000000000
+BenchmarkWriteAtRejectedWhenClosed-16                 	2026/10/30 20:20:38 Close cache for: 0000000000000000000000000000000000000000
+2026/10/30 20:20:38 Close cache for: 0000000000000000000000000000000000000000
+2026/10/30 20:20:38 Close cache for: 0000000000000000000000000000000000000000
+2026/10/30 20:20:38 Close cache for: 0000000000000000000000000000000000000000
+29123416	         8.193 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	server/torr/storage/torrstor	1.416s
+goos: darwin
+goarch: arm64
+pkg: server/torrshash
+cpu: Apple M3 Max
+BenchmarkTorrshash-16    	    2240	     98721 ns/op	   1.34 MB/s	 1185569 B/op	      85 allocs/op
+PASS
+ok  	server/torrshash	0.534s
+2026/10/30 20:20:39 No migration needed for Settings/BitTorr (already exists or no data)
+2026/10/30 20:20:39 Viewed migration result: 0 migrated, 0 skipped
+2026/10/30 20:20:39 XPathDBRouter: Registered new DB "JsonDB", total 1 DBs registered
+2026/10/30 20:20:39 XPathDBRouter: Registered new route "default" for DB "JsonDB", total 1 routes
+2026/10/30 20:20:39 XPathDBRouter: Registered new route "settings" for DB "JsonDB", total 2 routes
+2026/10/30 20:20:39 XPathDBRouter: Registered new DB "TDB", total 2 DBs registered
+2026/10/30 20:20:39 XPathDBRouter: Registered new route "viewed" for DB "TDB", total 3 routes
+2026/10/30 20:20:39 XPathDBRouter: Registered new route "torrents" for DB "TDB", total 4 routes
+2026/10/30 20:20:39 Storage: Settings->JSON, Viewed->BBolt, Torrents->BBolt
+goos: darwin
+goarch: arm64
+pkg: server/torrfs
+cpu: Apple M3 Max
+BenchmarkVFSReadDir/root-16         	    6307	     39863 ns/op	   49455 B/op	     996 allocs/op
+BenchmarkVFSReadDir/category-16     	    5554	     40639 ns/op	   51284 B/op	    1040 allocs/op
+PASS
+ok  	server/torrfs	1.199s
+goos: darwin
+goarch: arm64
+pkg: server/web/api
+cpu: Apple M3 Max
+BenchmarkPlaylistGeneration-16    	     891	    259225 ns/op	 1099809 B/op	     353 allocs/op
+BenchmarkStreamRangeHeader-16     	  384742	       586.3 ns/op	6986.31 MB/s	     149 B/op	      10 allocs/op
+PASS
+ok  	server/web/api	1.106s
