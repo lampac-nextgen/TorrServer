@@ -155,7 +155,7 @@ export default defineConfig(({ mode }) => {
       setupFiles: ['src/test/setup.ts'],
       coverage: {
         provider: 'v8',
-        reporter: ['text-summary', 'text', 'lcov'],
+        reporter: ['text-summary', 'json-summary', 'lcov'],
         include: ['src/**/*.{ts,tsx}'],
         exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**', 'src/locales/**', 'src/**/*.d.ts'],
       },
