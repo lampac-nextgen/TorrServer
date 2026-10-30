@@ -447,6 +447,13 @@ func isSuspiciousAddress(addr string) bool {
 	return false
 }
 
+// literalAddrResolver is set on the Dialers that reach a DNS server by IP:port. Their
+// address needs no lookup, but a Dialer with a nil Resolver reads the global
+// net.DefaultResolver on every dial, and dnsResolve replaces that global right after
+// pickServer returns while the lookups it abandoned may still be dialling. A non-nil
+// Resolver keeps those dials off the global.
+var literalAddrResolver = &net.Resolver{}
+
 // initCustomResolver creates a custom resolver with fallback support
 func (d *DNSChecker) initCustomResolver() {
 	server := d.pickServer()
@@ -463,6 +470,7 @@ func (d *DNSChecker) initCustomResolver() {
 			dialer := &net.Dialer{
 				Timeout:   d.config.Timeout,
 				KeepAlive: 30 * time.Second,
+				Resolver:  literalAddrResolver,
 			}
 			// UDP dial succeeds even when nobody answers, so the server
 			// is chosen by a real reply in pickServer, not here
@@ -582,7 +590,7 @@ func (d *DNSChecker) pickServer() string {
 			r := &net.Resolver{
 				PreferGo: true,
 				Dial: func(ctx context.Context, network, _ string) (net.Conn, error) {
-					var dialer net.Dialer
+					dialer := net.Dialer{Resolver: literalAddrResolver}
 					return dialer.DialContext(ctx, network, server)
 				},
 			}

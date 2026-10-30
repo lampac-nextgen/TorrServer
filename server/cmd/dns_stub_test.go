@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"net"
-	"runtime"
 	"sync"
 	"testing"
 	"time"
@@ -66,7 +65,7 @@ func stubResolver(server string) *net.Resolver {
 	return &net.Resolver{
 		PreferGo: true,
 		Dial: func(ctx context.Context, network, _ string) (net.Conn, error) {
-			var d net.Dialer
+			d := net.Dialer{Resolver: literalAddrResolver}
 			return d.DialContext(ctx, network, server)
 		},
 	}
@@ -77,10 +76,6 @@ func swapDefaultResolver(t *testing.T, r *net.Resolver) {
 	prev := net.DefaultResolver
 	net.DefaultResolver = r
 	t.Cleanup(func() { net.DefaultResolver = prev })
-	// Resolver dials read net.DefaultResolver and may still be running when a
-	// lookup returns (A and AAAA race); settle before the restore above runs.
-	base := runtime.NumGoroutine()
-	t.Cleanup(func() { settleGoroutines(t, base, 200*time.Millisecond) })
 }
 
 func TestCheckAndResolveSystemOK(t *testing.T) {
@@ -128,8 +123,6 @@ func TestCheckAndResolveHijackedSystemUsesCustom(t *testing.T) {
 
 func TestInitCustomResolverNoServerAnswers(t *testing.T) {
 	bad := startDNSStub(t, net.ParseIP("127.0.0.1"))
-	base := runtime.NumGoroutine()
-	defer settleGoroutines(t, base, 400*time.Millisecond)
 	d := NewDNSChecker(DNSConfig{PrimaryServers: []string{bad}, Timeout: 300 * time.Millisecond, CacheDuration: time.Minute})
 	d.initCustomResolver()
 	if d.customResolver != net.DefaultResolver || d.useFallback {
@@ -146,8 +139,6 @@ func TestPickServerSkipsDeadServer(t *testing.T) {
 	closedAddr := closed.LocalAddr().String()
 	_ = closed.Close()
 	good := startDNSStub(t, net.ParseIP("93.184.216.34"))
-	base := runtime.NumGoroutine()
-	defer settleGoroutines(t, base, 300*time.Millisecond)
 
 	d := NewDNSChecker(DNSConfig{
 		PrimaryServers:  []string{closedAddr},
@@ -158,40 +149,4 @@ func TestPickServerSkipsDeadServer(t *testing.T) {
 	if got := d.pickServer(); got != good {
 		t.Fatalf("pickServer = %q, want %q", got, good)
 	}
-}
-
-// settleGoroutines waits for lookups that pickServer abandoned: the Go resolver
-// only stops reading a UDP socket at the context deadline, not on cancel.
-func settleGoroutines(t *testing.T, base int, min time.Duration) {
-	t.Helper()
-	// Other goroutines can exit meanwhile and hide ours from the count, so
-	// also wait out the lookup deadline.
-	time.Sleep(min)
-	defer syncWithNetIO(t)
-	deadline := time.Now().Add(5 * time.Second)
-	for runtime.NumGoroutine() > base {
-		if time.Now().After(deadline) {
-			t.Errorf("lookup goroutines still running: have %d, baseline %d", runtime.NumGoroutine(), base)
-			return
-		}
-		time.Sleep(20 * time.Millisecond)
-	}
-}
-
-// syncWithNetIO gives the race detector a happens-before edge from every
-// finished net write (a resolver goroutine's last act) to the caller. The
-// abandoned lookups end without any other synchronisation with the test, and
-// the test is about to write net.DefaultResolver.
-func syncWithNetIO(t *testing.T) {
-	t.Helper()
-	a, err := net.ListenPacket("udp", "127.0.0.1:0")
-	if err != nil {
-		return
-	}
-	defer func() { _ = a.Close() }()
-	if _, err := a.WriteTo([]byte{0}, a.LocalAddr()); err != nil {
-		return
-	}
-	_ = a.SetReadDeadline(time.Now().Add(time.Second))
-	_, _, _ = a.ReadFrom(make([]byte, 1))
 }
