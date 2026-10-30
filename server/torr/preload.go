@@ -85,6 +85,7 @@ func (t *Torrent) Preload(index int, size int64) {
 			case <-ticker.C:
 				t.muTorrent.Lock()
 				stat := t.Stat
+				preloaded, speed := t.PreloadedBytes, t.DownloadSpeed
 				t.muTorrent.Unlock()
 
 				if stat != state.TorrentPreload {
@@ -92,9 +93,9 @@ func (t *Torrent) Preload(index int, size int64) {
 				}
 				st := torrent.Stats()
 				statStr := fmt.Sprint(file.Torrent().InfoHash().HexString(), " ",
-					utils2.Format(float64(t.PreloadedBytes)), " / ",
+					utils2.Format(float64(preloaded)), " / ",
 					utils2.Format(float64(t.PreloadSize)), " Speed: ",
-					utils2.Format(t.DownloadSpeed), " Peers: ",
+					utils2.Format(speed), " Peers: ",
 					st.ActivePeers, " / ",
 					st.TotalPeers, " [ Seeds: ",
 					st.ConnectedSeeders, " ]")
