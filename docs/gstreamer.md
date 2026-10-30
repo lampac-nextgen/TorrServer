@@ -18,7 +18,7 @@ cd server
 CGO_ENABLED=0 go build -tags="nosqlite gst" -trimpath -o TorrServer-gst ./cmd
 ```
 
-Supported gst targets are Windows amd64, Linux amd64/arm64, and macOS amd64/arm64. A Windows single-file build with an embedded runtime additionally uses the `embed_gstlib` tag and `server/gstreamer/gst-libs/win-x86_64`; see [`.github/scripts/build-gst-windows.ps1`](.github/scripts/build-gst-windows.ps1).
+Supported gst targets are Windows amd64, Linux amd64/arm64, and macOS amd64/arm64. A Windows single-file build with an embedded runtime additionally uses the `embed_gstlib` tag and `server/gstreamer/gst-libs/win-x86_64`; see [`.github/scripts/build-gst-windows.ps1`](../.github/scripts/build-gst-windows.ps1).
 
 ## Runtime loading
 

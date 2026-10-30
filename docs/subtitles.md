@@ -9,4 +9,4 @@ GET /subs/{hash}/{id}?track={index}    return one subtitle file (WebVTT by defau
 
 Query parameters for `track`: `format` (`vtt` or `original`) and `encoding` (`utf8` or `windows-1251`).
 
-See [server/subs/README.md](server/subs/README.md) for the supported formats and encodings, and for the file layouts inside a torrent that are recognized.
+See [server/subs/README.md](../server/subs/README.md) for the supported formats and encodings, and for the file layouts inside a torrent that are recognized.

@@ -39,4 +39,4 @@ mcp_servers:
       Authorization: "Basic <base64-user-pass>"
 ```
 
-See [server/mcp/README.md](server/mcp/README.md) for the tool list and next-unwatched behavior.
+See [server/mcp/README.md](../server/mcp/README.md) for the tool list and next-unwatched behavior.

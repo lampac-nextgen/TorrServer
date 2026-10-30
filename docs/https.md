@@ -14,7 +14,7 @@ Four flags decide what the plain HTTP port (`--port`, default 8090) and the HTTP
 
 | Mode | Flags | HTTP port | HTTPS port | Use it when |
 |---|---|---|---|---|
-| HTTP only (default) | none | everything | not opened | a trusted home network, or behind a [reverse proxy](#reverse-proxy) |
+| HTTP only (default) | none | everything | not opened | a trusted home network, or behind a [reverse proxy](reverse-proxy.md) |
 | HTTP and HTTPS | `--ssl` | everything | everything | browsers use HTTPS, players and TVs keep using HTTP |
 | HTTPS, media also on HTTP | `--ssl --force-https --http-media` | media only; everything else redirects to HTTPS | everything | the self-signed certificate, with players and TVs that can't use it |
 | HTTPS preferred | `--ssl --force-https` | redirects everything to HTTPS | everything | a trusted certificate; clients that type `http://` are sent to HTTPS |

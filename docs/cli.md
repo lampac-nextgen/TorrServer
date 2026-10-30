@@ -6,9 +6,9 @@
 - `--sslport PORT` -  web server https port (default 8091). If not set, will be taken from db (if stored previously) or the default will be used.
 - `--sslcert PATH` -  path to SSL cert file. If not set, will be taken from db (if stored previously) or default self-signed certificate/key will be generated. Replacing the cert/key files (e.g. a certbot renewal) takes effect without a restart. An invalid user-supplied cert stops startup instead of being replaced.
 - `--sslkey PATH` - path to SSL key file. If not set, will be taken from db (if stored previously) or default self-signed certificate/key will be generated.
-- `--force-https` - with `--ssl`, the HTTP listener (`--port`) answers every request with **307 Temporary Redirect** to the same path on HTTPS (`--sslport`). Requires `--ssl` (startup fails if `--force-https` is set without `--ssl`). Default is off. Media players and TVs usually can't use a self-signed certificate, see [HTTPS](#https).
+- `--force-https` - with `--ssl`, the HTTP listener (`--port`) answers every request with **307 Temporary Redirect** to the same path on HTTPS (`--sslport`). Requires `--ssl` (startup fails if `--force-https` is set without `--ssl`). Default is off. Media players and TVs usually can't use a self-signed certificate, see [HTTPS](https.md).
 - `--http-media` - with `--force-https`, keep serving media URLs (`/stream`, `/play`, `/playlist`, `/playlistall`, which DLNA also uses, and GStreamer HLS under `/gst/<hash>/`) over plain HTTP for players that can't use HTTPS; everything else still redirects. Stream URLs and Basic auth credentials then travel unencrypted, so only use it on a trusted network and never expose the HTTP port to the internet. Requires `--force-https`.
-- `--https-only` - with `--ssl`, don't open the plain HTTP port (`--port`) at all: the UI, API, media, DLNA links and Bonjour all use HTTPS on `--sslport`. Unlike `--force-https`, clients using the usual `http://host:<port>` address can't send credentials or requests over plain HTTP before being redirected. Use it with a trusted certificate, see [HTTPS](#https); with the self-signed one, players and TVs won't play. Requires `--ssl`; can't be combined with `--http-media`.
+- `--https-only` - with `--ssl`, don't open the plain HTTP port (`--port`) at all: the UI, API, media, DLNA links and Bonjour all use HTTPS on `--sslport`. Unlike `--force-https`, clients using the usual `http://host:<port>` address can't send credentials or requests over plain HTTP before being redirected. Use it with a trusted certificate, see [HTTPS](https.md); with the self-signed one, players and TVs won't play. Requires `--ssl`; can't be combined with `--http-media`.
 
 - `--path PATH`, `-d PATH` - database and config dir path
 - `--logpath LOGPATH`, `-l LOGPATH` - server log file path
@@ -23,7 +23,7 @@
 - `--pubipv6 PUBIPV6`, `-6 PUBIPV6` - set public IPv6 addr
 - `--searchwa`, `-s` - allow search without authentication
 - `--maxsize MAXSIZE`, `-m MAXSIZE` - max allowed stream size (in Bytes)
-- `--tgtoken TGTOKEN`, `-T TGTOKEN` - [Telegram bot](server/tgbot/README.md) token
+- `--tgtoken TGTOKEN`, `-T TGTOKEN` - [Telegram bot](../server/tgbot/README.md) token
 - `--fusepath FUSEPATH`, `-f FUSEPATH` - FUSE mount path
 - `--webdav` - enable WebDAV
 - `--proxyurl PROXYURL` - set proxy URL for BitTorrent traffic (HTTP, SOCKS4, SOCKS5, SOCKS5H), example: socks5h://user:<password@example.com>:2080

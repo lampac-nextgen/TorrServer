@@ -1,6 +1,6 @@
 # Installation
 
-Download the application for the required platform in the [releases](https://github.com/YouROK/TorrServer/releases) page. After installation, open the link <http://127.0.0.1:8090> in the browser. iOS is shipped as `TorrServer-ios-TorrServerKit.xcframework.zip` for embedding in a host app (see [Build → iOS](#ios)).
+Download the application for the required platform in the [releases](https://github.com/YouROK/TorrServer/releases) page. After installation, open the link <http://127.0.0.1:8090> in the browser. iOS is shipped as `TorrServer-ios-TorrServerKit.xcframework.zip` for embedding in a host app (see [Build → iOS](development.md#ios)).
 
 Standard binaries are named `TorrServer-<platform>-<arch>` (for example, `TorrServer-linux-amd64`). From release **141.10**, optional **GStreamer (gst)** builds are named `TorrServer-gst-<platform>-<arch>`. Supported gst targets are Windows amd64, Linux amd64/arm64, and macOS amd64/arm64. The install scripts below can install either variant when the matching release asset is available.
 

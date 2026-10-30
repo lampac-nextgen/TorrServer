@@ -1,6 +1,6 @@
 # Development
 
-See **[docs/BUILD.md](docs/BUILD.md)** for Makefile commands, CI, tagged releases, GHCR images, and fork setup.
+See **[docs/BUILD.md](BUILD.md)** for Makefile commands, CI, tagged releases, GHCR images, and fork setup.
 
 ## Go server
 
@@ -14,7 +14,7 @@ cd server && go run ./cmd
 
 ## Web development
 
-React 19 + Vite 8 + HeroUI v3 UI. See **[web/README.md](web/README.md)** for stack, scripts, and env setup.
+React 19 + Vite 8 + HeroUI v3 UI. See **[web/README.md](../web/README.md)** for stack, scripts, and env setup.
 
 ```bash
 cd web && yarn && yarn start
@@ -60,7 +60,7 @@ Web UI build inside `gen_web.go` needs **Node.js 22+** (see `web/.nvmrc`).
 
 `binary` builds use **Go 1.26.4**; `android` uses **Go 1.25.7**.
 
-See [docs/BUILD.md](docs/BUILD.md) for cross-compilation, Docker builder mode (`USE_DOCKER_BUILDER=1`), and Android NDK setup.
+See [docs/BUILD.md](BUILD.md) for cross-compilation, Docker builder mode (`USE_DOCKER_BUILDER=1`), and Android NDK setup.
 
 ### Server
 
