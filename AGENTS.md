@@ -24,6 +24,10 @@ Comments marked `NE` are upstream APIs this fork does not have (`DisableWebtorre
 
 `configure()` in `server/torr/btserver.go` spoofs `qBittorrent/4.3.9` / peer id prefix `-qB4390-`. `UpnpID` stays `TorrServer/<version>`. `TotalHalfOpenConns` is hardcoded to 500. Do not "correct" the peer id to TorrServer's own name without a reason: swarms treat the qB prefix differently.
 
+## Pull requests
+
+Open PRs on `lampac-nextgen/TorrServer` (`--repo` is mandatory) and merge with squash only (upstream sync PRs excepted). Details: `.cursor/rules/pull-requests.mdc`.
+
 ## UI boundary
 
 The React UI is `web/` (Yarn, Vite). The binary serves a generated copy under `server/web/pages/template/pages`. Edit `web/src`, then rebuild (`gen_web.go`, `make webgen-clean`). Do not hand-edit the generated pages.

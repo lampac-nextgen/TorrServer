@@ -1,5 +1,5 @@
 ---
-description: Open pull requests on lampac-nextgen/TorrServer, not the YouROK upstream
+description: Open pull requests on lampac-nextgen/TorrServer, not the YouROK upstream; merge them with squash
 alwaysApply: true
 ---
 
@@ -15,3 +15,14 @@ alwaysApply: true
 git push -u origin HEAD
 gh pr create --repo lampac-nextgen/TorrServer --base master --head "$(git branch --show-current)" --title "..." --body "..."
 ```
+
+## Merging
+
+Merge with squash, always: `gh pr merge <n> --repo lampac-nextgen/TorrServer --squash`. `master` history is one commit per PR, titled like the PR with the number suffix (`docs: ... (#95)`). Do not use `--merge` or `--rebase`.
+
+One exception: a PR that brings commits from the `YouROK/TorrServer` upstream is merged with `--merge`, so the upstream commits keep their identity. A user-requested exception only; ask if unsure.
+
+- Only merge when the user asks. Never merge on your own, and never enable auto-merge unless asked.
+- Put the PR title in conventional-commit form (`fix:`, `test:`, `docs:` ...), since it becomes the commit subject.
+- Several small commits on the branch (failing test first, then the fix) are fine: they are squashed away. Keep the explanation in the PR body.
+- Before merging, read `gh pr checks`. Name any failing check to the user, and say whether it touches the PR's files.
