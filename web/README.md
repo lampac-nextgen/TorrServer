@@ -39,8 +39,19 @@ src/locales/    # i18n JSON (en, ru, ua, zh, bg, fr, ro)
 | `yarn typecheck` | TypeScript (`tsc --noEmit`) |
 | `yarn lint` / `yarn fix` | ESLint / autofix |
 | `yarn test` | Vitest |
+| `yarn test --coverage` | Vitest with v8 coverage (summary in the terminal, `coverage/lcov-report/` for detail) |
+| `yarn test:e2e` | Mocked-API Playwright flows (`yarn playwright install chromium` once) |
 | `yarn build` | Production bundle → `build/` |
 | `yarn i18n:check` | Locale key consistency |
+
+## Testing
+
+- Pure logic (`shared/*`, models, URL builders) runs on Vitest's default `node` environment: `foo.test.ts` next to `foo.ts`.
+- A component or hook that needs the DOM opts in per file with `// @vitest-environment happy-dom` as the first line, in a `*.test.tsx` file.
+- Render with `renderWithProviders` from `src/test/renderWithProviders.tsx` (same providers as `src/index.tsx`, a `QueryClient` that never retries). `src/test/setup.ts` stubs `matchMedia`, the observers, `scrollTo` and media playback, and cleans up after each test.
+- Drive the UI with `@testing-library/user-event` and query by role or label; assert what the user sees or what request was sent, not the markup.
+- Mock the network with `vi.stubGlobal('fetch', ...)` as in `src/shared/api/apiModules.test.ts`. No test may reach a real server.
+- CI prints coverage in the job summary; there is no threshold yet.
 
 ## Embed into Go
 
