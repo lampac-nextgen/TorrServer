@@ -53,6 +53,13 @@ func newReader(file *torrent.File, cache *Cache) *Reader {
 	r.lastAccess = time.Now().Unix()
 
 	cache.muReaders.Lock()
+	if cache.readers == nil {
+		// Close ran between the caller picking this cache and now (a drop during a
+		// request): the map is gone and writing to it panics. Give the reader back.
+		cache.muReaders.Unlock()
+		_ = r.Reader.Close()
+		return nil
+	}
 	cache.readers[r] = struct{}{}
 	cache.muReaders.Unlock()
 	cache.AdjustRA(ReaderReadaheadBytes)

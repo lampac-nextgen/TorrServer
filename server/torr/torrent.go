@@ -376,19 +376,27 @@ func (t *Torrent) Length() int64 {
 }
 
 func (t *Torrent) NewReader(file *torrent.File) *torrstor.Reader {
-	if t.Stat == state.TorrentClosed || t.cache == nil {
+	// drop and WaitInfo write t.cache under muTorrent. Snapshot it and build the reader
+	// from the snapshot: cache.NewReader must not run under muTorrent.
+	t.muTorrent.Lock()
+	stat, cache := t.Stat, t.cache
+	t.muTorrent.Unlock()
+	if stat == state.TorrentClosed || cache == nil {
 		return nil
 	}
-	return t.cache.NewReader(file)
+	return cache.NewReader(file)
 }
 
 func (t *Torrent) CloseReader(reader *torrstor.Reader) {
-	// t.cache may be nil after drop(); CloseReader keys off reader.cache.
-	t.cache.CloseReader(reader)
+	// The cache may be nil after drop(); CloseReader is safe on a nil *Cache and keys
+	// off reader.cache.
+	t.GetCache().CloseReader(reader)
 	t.AddExpiredTime(time.Second * time.Duration(settings.BTsets.TorrentDisconnectTimeout))
 }
 
 func (t *Torrent) GetCache() *torrstor.Cache {
+	t.muTorrent.Lock()
+	defer t.muTorrent.Unlock()
 	return t.cache
 }
 
@@ -613,8 +621,12 @@ func (t *Torrent) cachedTorrsHash(hash, title, poster, category string, size int
 }
 
 func (t *Torrent) CacheState() *cacheSt.CacheState {
-	if t.Torrent != nil && t.cache != nil {
-		st := t.cache.GetState()
+	// Snapshot both pointers under the lock; Status takes it again below.
+	t.muTorrent.Lock()
+	tor, cache := t.Torrent, t.cache
+	t.muTorrent.Unlock()
+	if tor != nil && cache != nil {
+		st := cache.GetState()
 		st.Torrent = t.Status()
 		return st
 	}
