@@ -24,7 +24,11 @@ describe('VideoPlayer without audioTracks', () => {
     chromeRenders.count = 0
     renderWithProviders(
       <ModalOpenProvider>
-        <VideoPlayer videoSrc='http://localhost/stream/movie.mp4?link=x&index=1&play' showTrigger={false} initiallyOpen />
+        <VideoPlayer
+          videoSrc='http://localhost/stream/movie.mp4?link=x&index=1&play'
+          showTrigger={false}
+          initiallyOpen
+        />
       </ModalOpenProvider>,
     )
     await waitFor(() => expect(document.querySelector('video')).not.toBeNull())
