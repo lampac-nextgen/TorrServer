@@ -115,6 +115,13 @@ func initTestGlobals(t *testing.T) {
 	if settings.Args == nil {
 		settings.Args = &settings.ExecArgs{}
 	}
+	// These tests are about lock discipline, not the network. Whatever an earlier test
+	// left in BTsets, keep the client off DHT, PEX, uTP, UPnP, LPD and IPv6: with DHT
+	// on, a dhtAnnouncer goroutine outlives Disconnect and the fork's closeSockets
+	// races with its LocalPort read (reported once the test order changed).
+	b := settings.BTsets
+	b.DisableDHT, b.DisablePEX, b.DisableUTP, b.DisableUPNP = true, true, true, true
+	b.EnableLPD, b.EnableIPv6 = false, false
 }
 
 // TestNewTorrentDoesNotDeadlock фиксирует требование к дисциплине блокировок в
