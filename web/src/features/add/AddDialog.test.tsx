@@ -97,7 +97,15 @@ describe('AddDialog', () => {
 
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
     expect(posts()).toEqual([
-      { action: 'add', link: sent, title: undefined, category: undefined, poster: '', save_to_db: true, timestamp: undefined },
+      {
+        action: 'add',
+        link: sent,
+        title: undefined,
+        category: undefined,
+        poster: '',
+        save_to_db: true,
+        timestamp: undefined,
+      },
     ])
     expect(toast.success).toHaveBeenCalledWith('Torrent added', expect.anything())
   })
@@ -146,7 +154,11 @@ describe('AddDialog', () => {
 
   it('on a 400 shows the server error and keeps the dialog open with the input intact', async () => {
     mockServer(() => {
-      throw { isAxiosError: true, message: 'Request failed', response: { status: 400, data: { error: 'bad magnet: no infohash' } } }
+      throw {
+        isAxiosError: true,
+        message: 'Request failed',
+        response: { status: 400, data: { error: 'bad magnet: no infohash' } },
+      }
     })
     const { onClose } = renderDialog()
     await userEvent.type(sourceField(), MAGNET)

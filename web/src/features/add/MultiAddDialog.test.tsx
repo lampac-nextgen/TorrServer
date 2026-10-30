@@ -57,7 +57,8 @@ beforeEach(() => {
   vi.mocked(axios.post).mockImplementation(async (url, body) => {
     if (String(url).endsWith('/torrent/upload')) {
       const f = (body as FormData).get('file') as File
-      if (failing.has(f.name)) throw { isAxiosError: true, message: 'Request failed', response: { status: 500, data: { error: 'boom' } } }
+      if (failing.has(f.name))
+        throw { isAxiosError: true, message: 'Request failed', response: { status: 500, data: { error: 'boom' } } }
       const added = row(hashOf(f))
       library = [...library, added]
       return { data: added }
@@ -81,7 +82,9 @@ function renderDialog(names: string[]) {
 
 const addAll = async (count: number) => {
   const button = await screen.findByRole('button', { name: `Add (${count})` })
-  await waitFor(() => expect(button.hasAttribute('disabled') || button.getAttribute('aria-disabled') === 'true').toBe(false))
+  await waitFor(() =>
+    expect(button.hasAttribute('disabled') || button.getAttribute('aria-disabled') === 'true').toBe(false),
+  )
   await userEvent.click(button)
 }
 
