@@ -1,6 +1,6 @@
 # Development
 
-See **[docs/BUILD.md](BUILD.md)** for Makefile commands, CI, tagged releases, GHCR images, and fork setup.
+See **[BUILD.md](BUILD.md)** for Makefile commands, CI, tagged releases, GHCR images, and fork setup.
 
 ## Go server
 
@@ -40,13 +40,6 @@ make dist-full         # full snapshot (all platforms)
 make update            # web embed + swagger
 ```
 
-Install Go toolchain wrappers used by GoReleaser:
-
-```bash
-go install golang.org/dl/go1.26.4@latest && go1.26.4 download
-go install golang.org/dl/go1.25.7@latest && go1.25.7 download   # Android (release only)
-```
-
 **Tagged releases** (`.goreleaser.yaml`, workflow `.github/workflows/release.yml`) use the `MatriX.*` tag scheme and publish to `ghcr.io/<owner>/<repo>` where `<owner>/<repo>` is the GitHub repository lowercased. Override locally with `REGISTRY_IMAGE=owner/repo make …`.
 
 Direct GoReleaser (without Make):
@@ -58,13 +51,11 @@ GOOS=linux GOARCH=amd64 goreleaser build --snapshot --clean --single-target --id
 
 Web UI build inside `gen_web.go` needs **Node.js 22+** (see `web/.nvmrc`).
 
-`binary` builds use **Go 1.26.4**; `android` uses **Go 1.25.7**.
-
-See [docs/BUILD.md](BUILD.md) for cross-compilation, Docker builder mode (`USE_DOCKER_BUILDER=1`), and Android NDK setup.
+Go toolchain versions are pinned in [`.github/versions.env`](../.github/versions.env) (`GO_VERSION` for the server, `GO_ANDROID_VERSION` for Android; `server/go.mod` carries the module minimum). See [BUILD.md](BUILD.md) for the toolchain wrappers, cross-compilation, Docker builder mode (`USE_DOCKER_BUILDER=1`), and Android NDK setup.
 
 ### Server
 
-- Install [Golang](https://golang.org/doc/install) 1.26+ (1.25.7 additionally for Android via GoReleaser)
+- Install [Golang](https://golang.org/doc/install) (`GO_VERSION` in `.github/versions.env`; the minimum is the `go` line in `server/go.mod`, and `GO_ANDROID_VERSION` is additionally needed for Android via GoReleaser)
 - Go to the TorrServer source directory
 - Run `make binary` or GoReleaser as above
 
