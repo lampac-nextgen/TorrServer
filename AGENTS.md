@@ -26,7 +26,7 @@ Comments marked `NE` are upstream APIs this fork does not have (`DisableWebtorre
 
 ## Pull requests
 
-Open PRs on `lampac-nextgen/TorrServer` (`--repo` is mandatory) and merge with squash only. Details: `.cursor/rules/pull-requests.mdc`.
+Open PRs on `lampac-nextgen/TorrServer` (`--repo` is mandatory) and merge with squash only (upstream sync PRs excepted). Details: `.cursor/rules/pull-requests.mdc`.
 
 ## UI boundary
 
