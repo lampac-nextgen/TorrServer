@@ -3,7 +3,7 @@ import { after, before, test } from 'node:test'
 
 import { chromium } from 'playwright'
 
-import { HASH, installMocks } from './fixtures.mjs'
+import { HASH, fixtureSettings, installMocks } from './fixtures.mjs'
 import { embedPagesRoot, serveEmbedDir } from './static-server.mjs'
 
 let server
@@ -262,6 +262,87 @@ test('desktop chrome: appearance in header, settings is a centered card', { time
     assert.ok(box && vp)
     assert.ok(box.width < vp.width * 0.9, `desktop settings should be a card, width=${box.width}`)
     await assertDialogCentered(page, dialog)
+  } finally {
+    await context.close()
+  }
+})
+
+/** Override the default `/settings` mock. `handler(body, route)` returns a fulfill() object. */
+async function mockSettings(page, handler) {
+  const posts = []
+  await page.route('**/settings', async route => {
+    const body = route.request().postDataJSON() || {}
+    posts.push(body)
+    await route.fulfill(handler(body))
+  })
+  return posts
+}
+
+const jsonBody = (status, body) => ({ status, contentType: 'application/json', body: JSON.stringify(body) })
+
+test('settings: Save stays disabled when GET /settings fails and nothing is POSTed', { timeout: 45_000 }, async () => {
+  const { context, page } = await newPage()
+  try {
+    const posts = await mockSettings(page, body =>
+      body.action === 'get' ? jsonBody(500, { error: 'boom' }) : jsonBody(200, {}),
+    )
+    await page.goto(origin + '/', { waitUntil: 'domcontentloaded' })
+    await openSettings(page)
+    const save = settingsDialog(page).getByRole('button', { name: 'Save', exact: true })
+    await save.waitFor()
+    await page.waitForTimeout(800)
+    assert.equal(await save.isDisabled(), true)
+    assert.equal(
+      posts.some(p => p.action === 'set'),
+      false,
+    )
+  } finally {
+    await context.close()
+  }
+})
+
+test('settings: Save is enabled after load and posts CacheSize as whole bytes', { timeout: 45_000 }, async () => {
+  const { context, page } = await newPage()
+  try {
+    const posts = await mockSettings(page, body =>
+      body.action === 'get' ? jsonBody(200, fixtureSettings) : jsonBody(200, {}),
+    )
+    await page.goto(origin + '/', { waitUntil: 'domcontentloaded' })
+    await openSettings(page)
+    const save = settingsDialog(page).getByRole('button', { name: 'Save', exact: true })
+    await page.waitForFunction(
+      el => el && !el.disabled && el.getAttribute('aria-disabled') !== 'true',
+      await save.elementHandle(),
+      { timeout: 15_000 },
+    )
+    await save.click()
+    await settingsDialog(page).waitFor({ state: 'detached', timeout: 15_000 })
+    const set = posts.find(p => p.action === 'set')
+    assert.ok(set, 'a set request was sent')
+    assert.equal(set.sets.CacheSize, 64 * 1024 * 1024)
+    assert.equal(Number.isInteger(set.sets.ReaderReadAHead), true)
+  } finally {
+    await context.close()
+  }
+})
+
+test('settings: a 403 on save shows read-only and keeps the dialog open', { timeout: 45_000 }, async () => {
+  const { context, page } = await newPage()
+  try {
+    await mockSettings(page, body =>
+      body.action === 'get' ? jsonBody(200, fixtureSettings) : jsonBody(403, { error: 'Read-only mode' }),
+    )
+    await page.goto(origin + '/', { waitUntil: 'domcontentloaded' })
+    await openSettings(page)
+    const save = settingsDialog(page).getByRole('button', { name: 'Save', exact: true })
+    await page.waitForFunction(
+      el => el && !el.disabled && el.getAttribute('aria-disabled') !== 'true',
+      await save.elementHandle(),
+      { timeout: 15_000 },
+    )
+    await save.click()
+    await page.getByText('Server is read-only. Settings were not saved.').waitFor({ timeout: 10_000 })
+    assert.equal(await settingsDialog(page).isVisible(), true)
   } finally {
     await context.close()
   }

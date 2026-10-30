@@ -1,5 +1,4 @@
 import { Button, Description, Label, ListBox, Modal, Select, Spinner, Tabs, useMediaQuery } from '@heroui/react'
-import axios from 'axios'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
@@ -37,6 +36,7 @@ import StorageSettingsPanel from './StorageSettingsPanel'
 import TMDBSettingsSection from './TMDBSettingsSection'
 import TorznabSettingsPanel from './TorznabSettingsPanel'
 import WAFSettingsPanel from './WAFSettingsPanel'
+import { applyLoadedSettings, buildSettingsPayload, isSaveDisabled, saveErrorMessage } from './settingsModel'
 
 export interface SettingsDialogProps {
   open: boolean
@@ -167,14 +167,12 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
   const loadSettings = useCallback(
     async (signal?: AbortSignal) => {
       const data = await getSettings(signal)
-      const loaded = { ...defaultSettings, ...data }
-      const mb = Math.round((loaded.CacheSize ?? (defaultSettings.CacheSize ?? 64) * 1024 * 1024) / (1024 * 1024))
-      const next = { ...loaded, CacheSize: mb }
-      setLocalSettings(next)
-      setCacheSizeMb(mb)
+      const loaded = applyLoadedSettings(data, defaultSettings)
+      setLocalSettings(loaded.form)
+      setCacheSizeMb(loaded.cacheSizeMb)
       setSettingsReady(true)
       // Keep play/resume TrackTimecode readers in sync even before Save.
-      queryClient.setQueryData(SETTINGS_QUERY_KEY, { ...loaded, CacheSize: loaded.CacheSize })
+      queryClient.setQueryData(SETTINGS_QUERY_KEY, loaded.shared)
     },
     [queryClient],
   )
@@ -269,28 +267,13 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
     [confirmDiscardWaf, tab],
   )
 
-  const saveErrorMessage = (err: unknown): string => {
-    if (axios.isAxiosError(err)) {
-      if (err.response?.status === 403) return t('SettingsReadOnly')
-      const data = err.response?.data as { error?: string } | undefined
-      if (data?.error) return String(data.error)
-    }
-    if (err instanceof Error && err.message) return err.message
-    return t('Error')
-  }
-
   const handleSave = async () => {
-    if (saving || !settingsReady) return
+    if (isSaveDisabled({ loading, saving, settingsReady })) return
     if (wafDirty && !confirmDiscardWaf()) return
     setWafDirty(false)
     setSaving(true)
     try {
-      const sets: BTSets = {
-        ...settings,
-        CacheSize: cacheSizeMb * 1024 * 1024,
-        ReaderReadAHead: settings.ReaderReadAHead ?? defaultSettings.ReaderReadAHead,
-        PreloadCache: settings.PreloadCache ?? defaultSettings.PreloadCache,
-      }
+      const sets = buildSettingsPayload(settings, cacheSizeMb, defaultSettings)
       await setSettings(sets)
       queryClient.setQueryData(SETTINGS_QUERY_KEY, sets)
       if (storageLoadedOk) {
@@ -309,7 +292,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
       })
       onClose()
     } catch (err) {
-      toast?.showToast({ message: saveErrorMessage(err), severity: 'error' })
+      toast?.showToast({ message: saveErrorMessage(err, t), severity: 'error' })
     } finally {
       setSaving(false)
     }
@@ -328,7 +311,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
       await queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEY })
       toast?.showToast({ message: t('SettingsDialog.ResetToDefault'), severity: 'success' })
     } catch (err) {
-      toast?.showToast({ message: saveErrorMessage(err), severity: 'error' })
+      toast?.showToast({ message: saveErrorMessage(err, t), severity: 'error' })
     } finally {
       setSaving(false)
     }
@@ -522,7 +505,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
             <Button
               variant='primary'
               onPress={() => void handleSave()}
-              isDisabled={loading || saving || !settingsReady}
+              isDisabled={isSaveDisabled({ loading, saving, settingsReady })}
               className={`${footerButtonClassName || ''} w-full`.trim()}
             >
               {saving ? <Spinner size='sm' color='current' /> : t('Save')}
@@ -541,7 +524,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
             <Button
               variant='primary'
               onPress={() => void handleSave()}
-              isDisabled={loading || saving || !settingsReady}
+              isDisabled={isSaveDisabled({ loading, saving, settingsReady })}
               className={footerButtonClassName}
             >
               {saving ? <Spinner size='sm' color='current' /> : t('Save')}
