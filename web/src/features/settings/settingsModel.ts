@@ -20,9 +20,11 @@ export interface LoadedSettings {
 
 /** Merge a `GET /settings` body over the client seed. */
 export const applyLoadedSettings = (data: BTSets, seed: BTSets): LoadedSettings => {
+  // The seed's CacheSize is megabytes (form units); only the server's value is bytes.
+  const bytes = data.CacheSize ?? (seed.CacheSize ?? 64) * BYTES_PER_MB
+  const mb = cacheBytesToMb(bytes)
   const loaded = { ...seed, ...data }
-  const mb = cacheBytesToMb(loaded.CacheSize ?? (seed.CacheSize ?? 64) * BYTES_PER_MB)
-  return { form: { ...loaded, CacheSize: mb }, cacheSizeMb: mb, shared: { ...loaded, CacheSize: loaded.CacheSize } }
+  return { form: { ...loaded, CacheSize: mb }, cacheSizeMb: mb, shared: { ...loaded, CacheSize: bytes } }
 }
 
 /** Body for `POST /settings`: megabytes back to bytes, nullable sliders to the seed. */
