@@ -44,6 +44,8 @@ export interface VideoPlayerProps {
 }
 
 const HEARTBEAT_INTERVAL_MS = 30_000
+/** Stable default: a fresh `[]` per render re-fired the effect that adopts `audioTracks` and looped forever. */
+const NO_AUDIO_TRACKS: ProbeTrack[] = []
 
 function PlayerStat({ tip, children }: { tip: string; children: ReactNode }) {
   return (
@@ -94,7 +96,7 @@ export default function VideoPlayer({
   initialTimecode = 0,
   trackTimecode = false,
   onViewedChange,
-  audioTracks = [],
+  audioTracks = NO_AUDIO_TRACKS,
   audioIndex = 0,
   onAudioIndexChange,
 }: VideoPlayerProps) {
