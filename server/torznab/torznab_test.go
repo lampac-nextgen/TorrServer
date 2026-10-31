@@ -1,7 +1,10 @@
 package torznab
 
 import (
+	"context"
 	"encoding/xml"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"server/settings"
@@ -166,5 +169,26 @@ func TestParseTorznabError(t *testing.T) {
 				t.Fatalf("parseTorznabError() = %q, want %q", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestSearchOneFormatsSizeInBinaryUnits(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`<rss><channel>
+<item><title>a</title><enclosure url="magnet:?xt=urn:btih:aa" length="1610612736" type="application/x-bittorrent"/></item>
+<item><title>b</title><size>512</size></item>
+</channel></rss>`))
+	}))
+	defer srv.Close()
+
+	results := searchOne(context.Background(), srv.URL, "key", "q", "", "", 0, 0)
+	if len(results) != 2 {
+		t.Fatalf("got %d results, want 2", len(results))
+	}
+	if results[0].Size != "1.5 GiB" {
+		t.Errorf("size = %q, want %q", results[0].Size, "1.5 GiB")
+	}
+	if results[1].Size != "512 B" {
+		t.Errorf("size = %q, want %q", results[1].Size, "512 B")
 	}
 }
