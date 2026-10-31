@@ -88,7 +88,8 @@ func get(r http.Handler, path string) *httptest.ResponseRecorder {
 }
 
 // settleReload waits for the background reload that GetTorrent starts for a DB-only
-// row, so it cannot read settings after the test restored them.
+// row, so it cannot read settings after the test restored them. The torrent turns
+// Working inside NewTorrent, before that goroutine takes its last look at settings.
 func settleReload(t *testing.T, hash string) {
 	t.Helper()
 	deadline := time.Now().Add(10 * time.Second)
@@ -101,7 +102,7 @@ func settleReload(t *testing.T, hash string) {
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
-	time.Sleep(100 * time.Millisecond)
+	torr.WaitReloads()
 }
 
 func fileID(t *testing.T, tor *torr.Torrent, suffix string) int {
