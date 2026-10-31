@@ -234,6 +234,70 @@ func TestMiddlewareWhitelistIPv6(t *testing.T) {
 	})
 }
 
+// A link-local IPv6 client arrives as "fe80::1%eth0"; the zone must not make it unparsable.
+func TestMiddlewareWhitelistLinkLocalZone(t *testing.T) {
+	withTestWAFDB(t, func(string) {
+		if err := settings.SetWAFConfig(settings.WAFConfig{Whitelist: []string{"fe80::1"}}); err != nil {
+			t.Fatal(err)
+		}
+		Load()
+
+		r := gin.New()
+		r.Use(WAF())
+		r.GET("/", func(c *gin.Context) { c.String(200, "ok") })
+
+		for addr, want := range map[string]int{
+			"[fe80::1%eth0]:9999": http.StatusOK,
+			"[fe80::2%eth0]:9999": http.StatusForbidden,
+		} {
+			req := httptest.NewRequest(http.MethodGet, "/", nil)
+			req.RemoteAddr = addr
+			w := httptest.NewRecorder()
+			r.ServeHTTP(w, req)
+			if w.Code != want {
+				t.Fatalf("%s status=%d want %d", addr, w.Code, want)
+			}
+		}
+	})
+}
+
+// Browsers send Referer and Origin hosts in punycode, while the rule is typed in Unicode.
+func TestMiddlewareBlocksIDNRefererFromConfig(t *testing.T) {
+	withTestWAFDB(t, func(string) {
+		if err := settings.SetWAFConfig(settings.WAFConfig{Referers: []string{"пример.рф"}}); err != nil {
+			t.Fatal(err)
+		}
+		Load()
+
+		r := gin.New()
+		r.Use(WAF())
+		r.GET("/", func(c *gin.Context) { c.String(200, "ok") })
+
+		for header, value := range map[string]string{
+			"Referer": "http://xn--e1afmkfd.xn--p1ai/page",
+			"Origin":  "http://xn--e1afmkfd.xn--p1ai",
+		} {
+			req := httptest.NewRequest(http.MethodGet, "/", nil)
+			req.RemoteAddr = "127.0.0.1:9999"
+			req.Header.Set(header, value)
+			w := httptest.NewRecorder()
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusForbidden {
+				t.Fatalf("%s status=%d want 403", header, w.Code)
+			}
+		}
+
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req.RemoteAddr = "127.0.0.1:9999"
+		req.Header.Set("Referer", "http://example.org/")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		if w.Code != http.StatusOK {
+			t.Fatalf("unrelated referer status=%d want 200", w.Code)
+		}
+	})
+}
+
 func TestMiddlewareWhitelistDoesNotBypassDefaultReferer(t *testing.T) {
 	withTestWAFDB(t, func(dir string) {
 		if err := settings.SetWAFConfig(settings.WAFConfig{Whitelist: []string{"127.0.0.1"}}); err != nil {
