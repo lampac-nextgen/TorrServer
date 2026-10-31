@@ -10,6 +10,7 @@ import {
   formatSizeToClassicUnits,
   getPeerString,
   humanizeSize,
+  parseSizeToBytes,
   resolveBufferTargetBytes,
 } from './format'
 
@@ -205,5 +206,22 @@ describe('bufferAheadBytes', () => {
       bufferAheadBytes(cache({ 3: { Size: 100, Length: 100 } }, [{ Reader: 3, Start: 3, End: 9, Active: false }])),
     ).toBeNull()
     expect(bufferAheadBytes(undefined)).toBeNull()
+  })
+})
+
+describe('parseSizeToBytes', () => {
+  it('reads the KiB/MiB/GiB sizes the server writes now and the old KCiB form as the same value', () => {
+    expect(parseSizeToBytes('1.5 GiB')).toBe(1.5 * 1024 ** 3)
+    expect(parseSizeToBytes('1.5 GCiB')).toBe(1.5 * 1024 ** 3)
+    expect(parseSizeToBytes('700.0 MiB')).toBe(700 * 1024 ** 2)
+    expect(parseSizeToBytes('2.0 KiB')).toBe(2048)
+  })
+
+  it('reads plain bytes and decimal units, and gives 0 for junk', () => {
+    expect(parseSizeToBytes('512 B')).toBe(512)
+    expect(parseSizeToBytes('2 GB')).toBe(2 * 1000 ** 3)
+    expect(parseSizeToBytes('')).toBe(0)
+    expect(parseSizeToBytes(undefined)).toBe(0)
+    expect(parseSizeToBytes('n/a')).toBe(0)
   })
 })
