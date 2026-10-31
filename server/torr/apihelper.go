@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"sync"
 	"time"
 
 	"github.com/anacrolix/torrent"
@@ -115,6 +116,13 @@ func parseHash(hashHex string) (metainfo.Hash, bool) {
 	return hash, true
 }
 
+// reloads counts the background reloads GetTorrent starts for rows that exist only in the DB.
+var reloads sync.WaitGroup
+
+// WaitReloads blocks until every reload GetTorrent started has returned. Tests call it
+// before they restore settings; Done to Wait is the ordering the race detector needs.
+func WaitReloads() { reloads.Wait() }
+
 func GetTorrent(hashHex string) *Torrent {
 	hash, ok := parseHash(hashHex)
 	if !ok {
@@ -133,7 +141,9 @@ func GetTorrent(hashHex string) *Torrent {
 	tr := GetTorrentDB(hash)
 	if tr != nil {
 		tor = tr
+		reloads.Add(1)
 		go func() {
+			defer reloads.Done()
 			log.TLogln("New torrent", tor.Hash())
 			tr, _ := NewTorrent(tor.TorrentSpec, bts)
 			if tr != nil {
