@@ -39,6 +39,7 @@ Rules:
 - Invalid entries are skipped and reported as warnings; valid entries remain active.
 - Banned responses use HTTP **403** with body `Banned`.
 - Client IP is taken from the TCP peer address (`RemoteAddr`). Reverse-proxy headers are not trusted by default.
+- A link-local IPv6 client with a zone (`fe80::1%eth0`) is matched by its address; the zone is ignored.
 
 Supported array-entry formats include IPv4, IPv6, ranges, CIDR blocks, comments, and optional descriptions:
 
@@ -64,6 +65,7 @@ Block HTTP requests that come from unwanted sites (for example mirror pages that
 - Each entry is a hostname. URLs with only an HTTP/HTTPS scheme and host are also accepted.
 - A rule blocks the hostname and all its subdomains.
 - Both `Referer` and `Origin` are checked before the IP allowlist, so an IP whitelist match cannot bypass a referer rule.
+- Internationalized names are compared in punycode, so `пример.рф` and `xn--e1afmkfd.xn--p1ai` are the same rule. An IPv6 address matches however it is written (`2001:db8::1`, `2001:0db8:0:0:0:0:0:1`).
 - Requests without either header are allowed.
 - Protected internal rules remain active and are not displayed in the web UI.
 
