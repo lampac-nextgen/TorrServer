@@ -192,3 +192,21 @@ func TestSearchOneFormatsSizeInBinaryUnits(t *testing.T) {
 		t.Errorf("size = %q, want %q", results[1].Size, "512 B")
 	}
 }
+
+func TestFormatSizeUnitBoundaries(t *testing.T) {
+	cases := map[int64]string{
+		0:                  "0 B",
+		1023:               "1023 B",
+		1024:               "1.0 KiB",
+		1536:               "1.5 KiB",
+		1024 * 1024:        "1.0 MiB",
+		1024 * 1024 * 1024: "1.0 GiB",
+		3 << 40:            "3.0 TiB",
+		5 << 50:            "5.0 PiB",
+	}
+	for in, want := range cases {
+		if got := formatSize(in); got != want {
+			t.Errorf("formatSize(%d) = %q, want %q", in, got, want)
+		}
+	}
+}
