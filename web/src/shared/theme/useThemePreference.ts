@@ -10,6 +10,9 @@ export type ThemePreference = (typeof THEME_MODES)[keyof typeof THEME_MODES]
 
 /** Named accent/chrome palettes layered on top of light/dark. */
 export const THEME_PALETTES = {
+  NEXTGEN: 'nextgen',
+  NEON: 'neon',
+  AMBER: 'amber',
   FOREST: 'forest',
   OCEAN: 'ocean',
   SLATE: 'slate',
@@ -80,7 +83,7 @@ function readStoredPalette(): ThemePalette {
   } catch {
     /* ignore */
   }
-  return THEME_PALETTES.FOREST
+  return THEME_PALETTES.NEXTGEN
 }
 
 function resolveDark(preference: ThemePreference, systemDark: boolean): boolean {
@@ -105,7 +108,7 @@ function applyThemeToDocument(isDark: boolean, palette: ThemePalette) {
 
 /**
  * Browser/PWA chrome color follows the active palette header. The static tags in index.html
- * (media-scoped, forest) are the pre-JS fallback; the first matching tag wins, so they are
+ * (media-scoped) are the pre-JS fallback; the first matching tag wins, so they are
  * dropped once the store runs and a single unscoped tag takes over (user choice beats the OS scheme).
  */
 function syncThemeColorMeta(root: HTMLElement) {
@@ -139,7 +142,7 @@ const listeners = new Set<() => void>()
 
 let snapshot: ThemeStoreSnapshot = (() => {
   const preference = typeof window === 'undefined' ? THEME_MODES.AUTO : readStoredPreference()
-  const palette = typeof window === 'undefined' ? THEME_PALETTES.FOREST : readStoredPalette()
+  const palette = typeof window === 'undefined' ? THEME_PALETTES.NEXTGEN : readStoredPalette()
   const systemDark = readSystemDark()
   return {
     preference,
@@ -203,7 +206,7 @@ function getSnapshot(): ThemeStoreSnapshot {
 function getServerSnapshot(): ThemeStoreSnapshot {
   return {
     preference: THEME_MODES.AUTO,
-    palette: THEME_PALETTES.FOREST,
+    palette: THEME_PALETTES.NEXTGEN,
     systemDark: false,
     isDark: false,
   }
