@@ -42,6 +42,8 @@
     "test:e2e": "playwright test --project=mock",
     "test:e2e:real": "playwright test --project=real",
     "test:e2e:live": "playwright test --project=live",
+    "test:e2e:palettes": "playwright test --project=palettes",
+    "palettes:report": "node scripts/palettes-report.mjs",
     "test:e2e:shots": "playwright test --project=screenshots",
     "test:e2e:ui": "playwright test --project=mock --ui",
     "verify": "yarn typecheck && yarn lint && yarn test && yarn i18n:check && yarn test:e2e",

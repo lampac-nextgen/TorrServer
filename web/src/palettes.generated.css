@@ -13,7 +13,7 @@
   --border: #dbe7e0;
   --separator: #e3ede7;
 
-  --accent: #00845b;
+  --accent: #007853;
   --accent-foreground: #ffffff;
   --accent-secondary: #bd8522;
 
@@ -65,7 +65,7 @@
   --border: #d3e0ec;
   --separator: #dde8f2;
 
-  --accent: #0a6fa8;
+  --accent: #0a6ca4;
   --accent-foreground: #ffffff;
   --accent-secondary: #b86e00;
 
@@ -117,7 +117,7 @@
   --border: #cde3e8;
   --separator: #d8eaef;
 
-  --accent: #00788a;
+  --accent: #007182;
   --accent-foreground: #ffffff;
   --accent-secondary: #b86e00;
 
@@ -168,7 +168,7 @@
   --border: #e6dcc6;
   --separator: #ece2cc;
 
-  --accent: #a85f00;
+  --accent: #965500;
   --accent-foreground: #ffffff;
   --accent-secondary: #00788a;
 
@@ -219,7 +219,7 @@
   --border: #d4e4ea;
   --separator: #ddebf0;
 
-  --accent: #0a808d;
+  --accent: #097480;
   --accent-foreground: #ffffff;
   --accent-secondary: #bd8522;
 
@@ -270,7 +270,7 @@
   --border: #d9dee1;
   --separator: #e4e7e9;
 
-  --accent: #4d7a6c;
+  --accent: #466f62;
   --accent-foreground: #ffffff;
   --accent-secondary: #bc8422;
 
@@ -321,7 +321,7 @@
   --border: #ddd4cb;
   --separator: #e6dfd7;
 
-  --accent: #bb5824;
+  --accent: #a04b1f;
   --accent-foreground: #ffffff;
   --accent-secondary: #ba8321;
 
@@ -372,7 +372,7 @@
   --border: #d0dbe8;
   --separator: #dce5f0;
 
-  --accent: #2b6cb0;
+  --accent: #2968a9;
   --accent-foreground: #ffffff;
   --accent-secondary: #ba8321;
 
@@ -423,7 +423,7 @@
   --border: #ddd2d6;
   --separator: #e8e0e3;
 
-  --accent: #bf4e68;
+  --accent: #ac3e58;
   --accent-foreground: #ffffff;
   --accent-secondary: #ba8321;
 
@@ -474,7 +474,7 @@
   --border: #d4e4c8;
   --separator: #e2efd8;
 
-  --accent: #548121;
+  --accent: #4c741e;
   --accent-foreground: #ffffff;
   --accent-secondary: #bd8522;
 
@@ -525,7 +525,7 @@
   --border: #d5d9e0;
   --separator: #e2e5ea;
 
-  --accent: #5b6b85;
+  --accent: #586780;
   --accent-foreground: #ffffff;
   --accent-secondary: #ba8321;
 
@@ -576,7 +576,7 @@
   --border: #dbd2c6;
   --separator: #e5ddd3;
 
-  --accent: #a4672d;
+  --accent: #895626;
   --accent-foreground: #ffffff;
   --accent-secondary: #b88121;
 
@@ -627,8 +627,8 @@
   --border: #ddd6be;
   --separator: #ebe5d2;
 
-  --accent: #ad8b21;
-  --accent-foreground: #1a1608;
+  --accent: #7b6318;
+  --accent-foreground: #ffffff;
   --accent-secondary: #bd8522;
 
   --danger: #e05555;
@@ -729,7 +729,7 @@
   --border: #d0d8ce;
   --separator: #dde4db;
 
-  --accent: #647a67;
+  --accent: #566959;
   --accent-foreground: #ffffff;
   --accent-secondary: #ba8321;
 
@@ -780,7 +780,7 @@
   --border: #dfd0c9;
   --separator: #eadfd9;
 
-  --accent: #d04525;
+  --accent: #b33b20;
   --accent-foreground: #ffffff;
   --accent-secondary: #bc8422;
 
@@ -831,8 +831,8 @@
   --border: #ddd4be;
   --separator: #ebe3d2;
 
-  --accent: #bd8519;
-  --accent-foreground: #1a1408;
+  --accent: #855e12;
+  --accent-foreground: #ffffff;
   --accent-secondary: #bd8522;
 
   --danger: #e05555;
@@ -882,7 +882,7 @@
   --border: #cfd8c4;
   --separator: #dce3d4;
 
-  --accent: #5a7040;
+  --accent: #556a3c;
   --accent-foreground: #ffffff;
   --accent-secondary: #ba8321;
 
@@ -933,7 +933,7 @@
   --border: #c8d9e8;
   --separator: #d8e7f2;
 
-  --accent: #2b7ab6;
+  --accent: #266b9f;
   --accent-foreground: #ffffff;
   --accent-secondary: #bc8422;
 
@@ -1035,7 +1035,7 @@
   --border: #c4ddd4;
   --separator: #d8ebe4;
 
-  --accent: #238367;
+  --accent: #1f755c;
   --accent-foreground: #ffffff;
   --accent-secondary: #bd8522;
 
@@ -1137,7 +1137,7 @@
   --border: #dfcdc6;
   --separator: #eadcd6;
 
-  --accent: #d4391a;
+  --accent: #b73116;
   --accent-foreground: #ffffff;
   --accent-secondary: #ba8321;
 
@@ -1188,7 +1188,7 @@
   --border: #c4dde2;
   --separator: #d8ecef;
 
-  --accent: #2c7f8b;
+  --accent: #28727d;
   --accent-foreground: #ffffff;
   --accent-secondary: #bd8522;
 
@@ -1239,7 +1239,7 @@
   --border: #d4d4c4;
   --separator: #e2e2d4;
 
-  --accent: #787839;
+  --accent: #676731;
   --accent-foreground: #ffffff;
   --accent-secondary: #ba8321;
 
@@ -1341,7 +1341,7 @@
   --border: #dfccd6;
   --separator: #eadce4;
 
-  --accent: #c8407e;
+  --accent: #af326b;
   --accent-foreground: #ffffff;
   --accent-secondary: #bc8422;
 
@@ -1392,7 +1392,7 @@
   --border: #dbd4c4;
   --separator: #e6e0d4;
 
-  --accent: #817350;
+  --accent: #6f6345;
   --accent-foreground: #ffffff;
   --accent-secondary: #ba8321;
 
@@ -1494,7 +1494,7 @@
   --border: #c0d4ec;
   --separator: #d2e4f4;
 
-  --accent: #1a6fd0;
+  --accent: #1763ba;
   --accent-foreground: #ffffff;
   --accent-secondary: #ba8321;
 
@@ -1647,7 +1647,7 @@
   --border: #c8e0d6;
   --separator: #d5ebe3;
 
-  --accent: #0d8566;
+  --accent: #0b7459;
   --accent-foreground: #ffffff;
   --accent-secondary: #bd8522;
 
@@ -1749,7 +1749,7 @@
   --border: #e0cfc4;
   --separator: #eadad0;
 
-  --accent: #b85a2a;
+  --accent: #9a4b23;
   --accent-foreground: #ffffff;
   --accent-secondary: #bc8422;
 
@@ -1851,7 +1851,7 @@
   --border: #c8e0da;
   --separator: #d5ebe6;
 
-  --accent: #238273;
+  --accent: #1f7265;
   --accent-foreground: #ffffff;
   --accent-secondary: #bd8522;
 
@@ -1902,7 +1902,7 @@
   --border: #d8d0cc;
   --separator: #e4dedc;
 
-  --accent: #b84838;
+  --accent: #a84233;
   --accent-foreground: #ffffff;
   --accent-secondary: #ba8321;
 
@@ -2004,7 +2004,7 @@
   --border: #e0d6c0;
   --separator: #ebe2d0;
 
-  --accent: #9d6b0d;
+  --accent: #885d0b;
   --accent-foreground: #ffffff;
   --accent-secondary: #bd8522;
 
@@ -2106,7 +2106,7 @@
   --border: #d8d0c4;
   --separator: #e4dcd2;
 
-  --accent: #8a5a3c;
+  --accent: #84563a;
   --accent-foreground: #ffffff;
   --accent-secondary: #ba8321;
 
@@ -2157,7 +2157,7 @@
   --border: #cfdcbe;
   --separator: #dce8d0;
 
-  --accent: #578114;
+  --accent: #4b6f11;
   --accent-foreground: #ffffff;
   --accent-secondary: #bc8422;
 
@@ -2208,7 +2208,7 @@
   --border: #d4d8dc;
   --separator: #e4e8ec;
 
-  --accent: #5a7888;
+  --accent: #516c7a;
   --accent-foreground: #ffffff;
   --accent-secondary: #bd8522;
 
@@ -2310,7 +2310,7 @@
   --border: #c8dcc4;
   --separator: #d8e8d4;
 
-  --accent: #378339;
+  --accent: #307332;
   --accent-foreground: #ffffff;
   --accent-secondary: #bc8422;
 
@@ -2361,7 +2361,7 @@
   --border: #d8d0c0;
   --separator: #e4dcd0;
 
-  --accent: #8a6a38;
+  --accent: #795d31;
   --accent-foreground: #ffffff;
   --accent-secondary: #ba8321;
 
@@ -2412,7 +2412,7 @@
   --border: #ddd5ee;
   --separator: #e4def2;
 
-  --accent: #7c4dcc;
+  --accent: #7747ca;
   --accent-foreground: #ffffff;
   --accent-secondary: #9a6a10;
 
@@ -2514,7 +2514,7 @@
   --border: #ecd5e4;
   --separator: #f0dcea;
 
-  --accent: #b0359a;
+  --accent: #a83393;
   --accent-foreground: #ffffff;
   --accent-secondary: #9a6a10;
 
@@ -2667,7 +2667,7 @@
   --border: #e6d6de;
   --separator: #ebdfe5;
 
-  --accent: #c4501d;
+  --accent: #a94519;
   --accent-foreground: #ffffff;
   --accent-secondary: #9a6a10;
 
@@ -2703,6 +2703,27 @@
   --app-header-foreground: #f3e8ee;
   --app-rail: #0a0610;
   --app-rail-foreground: rgba(255, 255, 255, 0.9);
+}
+
+/*
+ * HeroUI ships its own neutral chrome (zinc grays: overlays, default buttons, fields, segments).
+ * Map it onto the palette tokens so dialogs, popovers, chips and inputs follow every palette.
+ */
+:root {
+  --overlay: var(--surface);
+  --overlay-foreground: var(--foreground);
+  --default: var(--surface-tertiary);
+  --default-foreground: var(--foreground);
+  --field-background: var(--surface-secondary);
+  --field-foreground: var(--foreground);
+  --segment: var(--surface);
+  --segment-foreground: var(--foreground);
+}
+
+.dark {
+  --overlay: var(--surface-secondary);
+  --field-background: var(--surface);
+  --segment: color-mix(in srgb, var(--surface-tertiary) 80%, var(--foreground));
 }
 
 /*

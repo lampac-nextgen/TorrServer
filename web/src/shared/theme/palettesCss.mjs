@@ -39,6 +39,27 @@ export function renderPalettesCss(data) {
     parts.push(`${note}${block(light, p.light, p.id, 'light')}\n${block(dark, p.dark, p.id, 'dark')}`)
   }
   parts.push(`/*
+ * HeroUI ships its own neutral chrome (zinc grays: overlays, default buttons, fields, segments).
+ * Map it onto the palette tokens so dialogs, popovers, chips and inputs follow every palette.
+ */
+:root {
+  --overlay: var(--surface);
+  --overlay-foreground: var(--foreground);
+  --default: var(--surface-tertiary);
+  --default-foreground: var(--foreground);
+  --field-background: var(--surface-secondary);
+  --field-foreground: var(--foreground);
+  --segment: var(--surface);
+  --segment-foreground: var(--foreground);
+}
+
+.dark {
+  --overlay: var(--surface-secondary);
+  --field-background: var(--surface);
+  --segment: color-mix(in srgb, var(--surface-tertiary) 80%, var(--foreground));
+}
+
+/*
  * Increased-contrast preference: push secondary text and hairlines toward the foreground
  * for every palette. Same specificity as the palette blocks and later in the file, so it wins.
  */

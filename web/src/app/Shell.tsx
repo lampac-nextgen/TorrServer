@@ -241,7 +241,7 @@ export default function Shell() {
 
           {shortVersion && !isMobile ? (
             <span
-              className='max-w-[5.5rem] shrink-0 truncate text-[11px] font-medium tabular-nums text-app-header-foreground/80 sm:max-w-[8rem] sm:text-xs'
+              className='max-w-[5.5rem] shrink-0 truncate text-[11px] font-medium tabular-nums text-app-header-foreground/90 sm:max-w-[8rem] sm:text-xs'
               title={torrServerVersion}
             >
               {shortVersion}
