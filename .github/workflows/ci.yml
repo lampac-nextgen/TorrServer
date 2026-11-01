@@ -280,6 +280,7 @@ jobs:
             real:
               - 'web/src/**'
               - 'web/e2e/**'
+              - 'web/playwright.config.ts'
               - 'web/package.json'
               - 'server/web/**'
               - 'server/torr/**'

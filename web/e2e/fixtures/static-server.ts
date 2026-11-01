@@ -1,9 +1,9 @@
-import http from 'node:http'
 import fs from 'node:fs'
+import http from 'node:http'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const mime = {
+const mime: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -17,10 +17,10 @@ const mime = {
 }
 
 /** Serve the embedded SPA so Playwright can mock same-origin APIs. */
-export function serveEmbedDir(rootDir) {
+export function serveEmbedDir(rootDir: string): Promise<{ server: http.Server; origin: string }> {
   const root = path.resolve(rootDir)
   const server = http.createServer((req, res) => {
-    let urlPath
+    let urlPath: string
     try {
       urlPath = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname)
     } catch {
@@ -58,6 +58,6 @@ export function serveEmbedDir(rootDir) {
   })
 }
 
-export function embedPagesRoot() {
-  return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../server/web/pages/template/pages')
+export function embedPagesRoot(): string {
+  return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../server/web/pages/template/pages')
 }

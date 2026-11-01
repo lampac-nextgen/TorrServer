@@ -22,7 +22,7 @@ export default tseslint.config(
   prettierConfig,
   {
     // Node-side Playwright suites and helper scripts.
-    files: ['e2e/**/*.mjs', 'scripts/**/*.mjs'],
+    files: ['e2e/**/*.{ts,mjs}', 'scripts/**/*.mjs', 'playwright.config.ts'],
     languageOptions: { ecmaVersion: 2023, sourceType: 'module', globals: { ...globals.node, ...globals.browser } },
     plugins: { prettier },
     rules: {
