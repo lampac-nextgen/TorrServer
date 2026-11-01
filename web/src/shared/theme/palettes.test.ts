@@ -75,6 +75,9 @@ describe('theme palettes stay in sync', () => {
           ['accent/surface-tertiary', v.accent, v['surface-tertiary'], 4.5],
           ['accent-secondary/surface', v['accent-secondary'], v.surface, 3],
           ['danger/surface', v.danger, v.surface, 3],
+          ['danger-foreground/danger', v['danger-foreground'], v.danger, 4.5],
+          ['warning-foreground/warning', v['warning-foreground'], v.warning, 4.5],
+          ['success-foreground/success', v['success-foreground'], v.success, 4.5],
           ['warning/surface', v.warning, v.surface, 3],
           ['header-foreground/header', v['app-header-foreground'], v['app-header'], 4.5],
         ]

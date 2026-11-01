@@ -191,6 +191,28 @@ for (const id of ids) {
           return '#' + [d[0], d[1], d[2]].map(v => v.toString(16).padStart(2, '0')).join('')
         })
       expect.soft(footerBg, 'details action bar background matches the dialog').toBe(dialogBg)
+      // Icon-only buttons have no text node for the scan: check own colour vs own background.
+      for (const variant of ['danger', 'primary']) {
+        const btn = detailsModal(page).locator(`.button--${variant}`).first()
+        if (!(await btn.count())) continue
+        const ratio = await btn.evaluate(el => {
+          const ctx = document.createElement('canvas').getContext('2d')!
+          const px = (css: string) => {
+            ctx.clearRect(0, 0, 1, 1)
+            ctx.fillStyle = css
+            ctx.fillRect(0, 0, 1, 1)
+            return [...ctx.getImageData(0, 0, 1, 1).data.slice(0, 3)].map(v => {
+              const c = v / 255
+              return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+            })
+          }
+          const l = (c: number[]) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+          const cs = getComputedStyle(el)
+          const [a, b] = [l(px(cs.color)), l(px(cs.backgroundColor))]
+          return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)
+        })
+        expect.soft(ratio, `${variant} button colour contrast`).toBeGreaterThanOrEqual(4.5)
+      }
       const tabs = page.locator('.ts-details-tabs [role="tab"]')
       for (const [i, screen] of ['files', 'stats', 'cache'].entries()) {
         await tabs.nth(i).click()

@@ -8,7 +8,7 @@ const GROUPS = [
   ['surface', 'surface-secondary', 'surface-tertiary'],
   ['muted', 'border', 'separator'],
   ['accent', 'accent-foreground', 'accent-secondary'],
-  ['danger', 'warning'],
+  ['danger', 'danger-foreground', 'warning', 'warning-foreground', 'success', 'success-foreground'],
   ['app-header', 'app-header-foreground', 'app-rail', 'app-rail-foreground'],
 ]
 
