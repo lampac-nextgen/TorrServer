@@ -260,6 +260,84 @@ jobs:
           # Ensure release-like embed build (no localhost API baked in)
           VITE_SERVER_HOST: ""
 
+  e2e-changes:
+    name: E2E paths filter
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      real: ${{ steps.filter.outputs.real }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Detect relevant changes
+        id: filter
+        uses: dorny/paths-filter@v4
+        with:
+          filters: |
+            real:
+              - 'web/src/**'
+              - 'web/e2e/**'
+              - 'web/package.json'
+              - 'server/web/**'
+              - 'server/torr/**'
+              - 'server/settings/**'
+              - 'Makefile'
+              - '.github/workflows/ci.yml'
+
+  e2e-real:
+    name: E2E (real server)
+    needs: e2e-changes
+    if: needs.e2e-changes.outputs.real == 'true'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    # Advisory until the suite has a track record on shared runners.
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Load toolchain versions
+        run: grep -v '^#' .github/versions.env >> "$GITHUB_ENV"
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: server/go.sum
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: yarn
+          cache-dependency-path: web/yarn.lock
+
+      - name: Install dependencies
+        working-directory: web
+        run: yarn install --frozen-lockfile
+
+      - name: Install Playwright Chromium and ffmpeg
+        working-directory: web
+        run: |
+          yarn playwright install chromium --with-deps
+          sudo apt-get install -y --no-install-recommends ffmpeg
+
+      - name: Build binaries and run suite
+        run: make e2e-real
+        env:
+          VITE_SERVER_HOST: ""
+
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-real-artifacts
+          path: web/e2e/.artifacts
+          if-no-files-found: ignore
+
   build:
     name: Build (linux amd64)
     runs-on: ubuntu-22.04

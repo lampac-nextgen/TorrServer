@@ -5,11 +5,35 @@ import prettier from 'eslint-plugin-prettier'
 import prettierConfig from 'eslint-config-prettier'
 import tseslint from 'typescript-eslint'
 
+const PRETTIER = {
+  trailingComma: 'all',
+  singleQuote: true,
+  jsxSingleQuote: true,
+  printWidth: 120,
+  arrowParens: 'avoid',
+  semi: false,
+  endOfLine: 'auto',
+}
+
 export default tseslint.config(
   { ignores: ['build/**', 'node_modules/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   prettierConfig,
+  {
+    // Node-side Playwright suites and helper scripts.
+    files: ['e2e/**/*.mjs', 'scripts/**/*.mjs'],
+    languageOptions: { ecmaVersion: 2023, sourceType: 'module', globals: { ...globals.node, ...globals.browser } },
+    plugins: { prettier },
+    rules: {
+      'prettier/prettier': ['warn', PRETTIER],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { vars: 'local', args: 'after-used', argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^(error|_)$' },
+      ],
+      'no-empty': ['error', { allowEmptyCatch: true }],
+    },
+  },
   {
     files: ['src/**/*.{ts,tsx}'],
     languageOptions: {
@@ -45,18 +69,7 @@ export default tseslint.config(
       'react-hooks/unsupported-syntax': 'warn',
       'react-hooks/config': 'off',
       'react-hooks/gating': 'off',
-      'prettier/prettier': [
-        'warn',
-        {
-          trailingComma: 'all',
-          singleQuote: true,
-          jsxSingleQuote: true,
-          printWidth: 120,
-          arrowParens: 'avoid',
-          semi: false,
-          endOfLine: 'auto',
-        },
-      ],
+      'prettier/prettier': ['warn', PRETTIER],
       '@typescript-eslint/no-unused-expressions': 'off',
       'no-unused-expressions': 'off',
       '@typescript-eslint/no-unused-vars': [

@@ -16,8 +16,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright'
 
-import { installMocks } from '../e2e/fixtures.mjs'
-import { embedPagesRoot, serveEmbedDir } from '../e2e/static-server.mjs'
+import { installMocks } from '../e2e/mock-fixtures.mjs'
+import { embedPagesRoot, serveEmbedDir } from '../e2e/mock-static-server.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const outDir = path.resolve(__dirname, '../tmp/viewports')
@@ -52,7 +52,7 @@ async function main() {
   let server
   let origin = liveUrl
   if (!origin) {
-    ; ({ server, origin } = await serveEmbedDir(embedPagesRoot()))
+    ;({ server, origin } = await serveEmbedDir(embedPagesRoot()))
   }
 
   const browser = await chromium.launch({ headless: true })

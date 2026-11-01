@@ -14,12 +14,7 @@ const srcDir = path.join(root, 'src')
 const langs = ['en', 'ru', 'ua', 'bg', 'fr', 'ro', 'zh']
 
 /** Dynamic t(`prefix${…}`) / t('ThemePalette'+id) prefixes — not full keys. */
-const DYNAMIC_PREFIXES = [
-  'HTTPSSettings.Source.',
-  'ThemePalette',
-  'WAF.Lists.',
-  'WAF.WarningCodes.',
-]
+const DYNAMIC_PREFIXES = ['HTTPSSettings.Source.', 'ThemePalette', 'WAF.Lists.', 'WAF.WarningCodes.']
 
 function flatten(obj, prefix = '', out = {}) {
   for (const [k, v] of Object.entries(obj)) {

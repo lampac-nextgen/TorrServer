@@ -47,3 +47,6 @@ toolchains/
 /settings.json
 /server/config.db
 /server/settings.json
+
+# local e2e binaries and reports
+/tmp/

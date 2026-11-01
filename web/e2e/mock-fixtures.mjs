@@ -1,4 +1,4 @@
-import { JAC_RED_HOST, JAC_RED_KEY, JAC_RED_NAME } from './indexers.mjs'
+import { JAC_RED_HOST, JAC_RED_KEY, JAC_RED_NAME } from './mock-indexers.mjs'
 
 export const HASH = '0123456789abcdef0123456789abcdef01234567'
 

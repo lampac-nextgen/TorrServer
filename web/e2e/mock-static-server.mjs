@@ -20,7 +20,7 @@ const mime = {
 export function serveEmbedDir(rootDir) {
   const root = path.resolve(rootDir)
   const server = http.createServer((req, res) => {
-    let urlPath = '/'
+    let urlPath
     try {
       urlPath = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname)
     } catch {

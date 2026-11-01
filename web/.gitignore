@@ -30,3 +30,6 @@ yarn-error.log*
 /tmp
 
 .env
+
+# real-server e2e output
+/e2e/.artifacts

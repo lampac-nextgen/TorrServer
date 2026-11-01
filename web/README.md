@@ -37,10 +37,12 @@ src/locales/    # i18n JSON (en, ru, ua, zh, bg, fr, ro)
 | `yarn` | Install dependencies |
 | `yarn start` / `yarn dev` | Vite dev server |
 | `yarn typecheck` | TypeScript (`tsc --noEmit`) |
-| `yarn lint` / `yarn fix` | ESLint / autofix |
+| `yarn lint` / `yarn fix` | ESLint / autofix (`src`, `e2e`, `scripts`) |
 | `yarn test` | Vitest |
 | `yarn test --coverage` | Vitest with v8 coverage (summary in the terminal, `coverage/lcov-report/` for detail) |
 | `yarn test:e2e` | Mocked-API Playwright flows (`yarn playwright install chromium` once) |
+| `yarn test:e2e:real` | Playwright against the real binary and a loopback seeder; build first with `make e2e-real-build` (repo root), or run `make e2e-real` |
+| `yarn verify` / `yarn verify:full` | Required gates / the same plus the real-server suite |
 | `yarn build` | Production bundle → `build/` |
 | `yarn i18n:check` | Locale key consistency |
 
@@ -52,6 +54,10 @@ src/locales/    # i18n JSON (en, ru, ua, zh, bg, fr, ro)
 - Drive the UI with `@testing-library/user-event` and query by role or label; assert what the user sees or what request was sent, not the markup.
 - Mock the network with `vi.stubGlobal('fetch', ...)` as in `src/shared/api/apiModules.test.ts`. No test may reach a real server.
 - CI prints coverage in the job summary; there is no threshold yet.
+
+### Playwright layout (`web/e2e/`)
+
+Flat, with the kind in the file name. Mocked suites are `*.mock.test.mjs` and use `mock-*.mjs` helpers (the embedded build served by `mock-static-server.mjs`, `page.route` stubs in `mock-fixtures.mjs`). Real-server suites are `<topic>.real.test.mjs` and use `real-server.mjs` (starts `tmp/e2e/torrserver` plus the loopback seeder) and `real-browser.mjs`. `live-torrent.test.mjs` needs a live server and the network and is opt-in. `yarn test:e2e` and `yarn test:e2e:real` glob their kind, so a new file is picked up without editing `package.json`. From the repo root: `make web-check` runs the required web gates, `make check-all` adds Go lint and tests, `make e2e-real` builds and runs the real-server suite.
 
 ## Embed into Go
 

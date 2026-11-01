@@ -221,7 +221,9 @@ const FilesDataGrid = memo(
               ? `E${parsed.episode}${parsed.title ? ` · ${parsed.title}` : ''}`
               : shouldDisplayFullFileName
                 ? file.path
-                : parsed.title || fileName
+                : (playableFileList?.length ?? 0) > 1
+                  ? fileName
+                  : parsed.title || fileName
           return {
             id: file.id,
             name: episodeLabel,
@@ -237,7 +239,7 @@ const FilesDataGrid = memo(
             playable: file,
           }
         }),
-      [filteredFiles, viewedFileList, shouldDisplayFullFileName, hash, gstRuntime, mediaBase],
+      [filteredFiles, playableFileList, viewedFileList, shouldDisplayFullFileName, hash, gstRuntime, mediaBase],
     )
 
     if (!playableFileList?.length) {

@@ -3,15 +3,15 @@ import { after, before, test } from 'node:test'
 
 import { chromium } from 'playwright'
 
-import { HASH, fixtureSettings, installMocks } from './fixtures.mjs'
-import { embedPagesRoot, serveEmbedDir } from './static-server.mjs'
+import { HASH, fixtureSettings, installMocks } from './mock-fixtures.mjs'
+import { embedPagesRoot, serveEmbedDir } from './mock-static-server.mjs'
 
 let server
 let origin
 let browser
 
 before(async () => {
-  ; ({ server, origin } = await serveEmbedDir(embedPagesRoot()))
+  ;({ server, origin } = await serveEmbedDir(embedPagesRoot()))
   browser = await chromium.launch({ headless: true })
 })
 
@@ -198,7 +198,13 @@ test('phone chrome: bottom nav, header search, appearance overflow', { timeout: 
       await tab.waitFor()
       await assertBoxInViewport(page, tab, `nav ${name}`)
     }
-    assert.equal(await page.locator('header').getByLabel(/Theme:/).count(), 0)
+    assert.equal(
+      await page
+        .locator('header')
+        .getByLabel(/Theme:/)
+        .count(),
+      0,
+    )
 
     const vp = page.viewportSize()
     const cardBoxes = await page.locator('.torrent-card').evaluateAll(els =>
