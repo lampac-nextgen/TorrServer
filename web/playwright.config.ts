@@ -30,6 +30,8 @@ export default defineConfig({
       retries: CI ? 1 : 0,
       expect: { timeout: 15_000 },
     },
+    // Manual screenshot matrix (yarn test:e2e:shots); not a gate.
+    { name: 'screenshots', testMatch: 'screenshots/**/*.spec.ts', timeout: 90_000 },
     // Opt-in against a running server: LIVE=1 TORRSERVER_URL=...
     { name: 'live', testMatch: 'live/**/*.spec.ts', timeout: 180_000 },
   ],

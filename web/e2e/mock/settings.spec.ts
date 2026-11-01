@@ -1,29 +1,6 @@
 import type { Locator, Page, Route } from '@playwright/test'
-import { test as base, expect } from '@playwright/test'
-
-import { embedPagesRoot, serveEmbedDir } from '../fixtures/static-server'
-import { HASH, fixtureSettings, installMocks } from '../fixtures/mocks'
-
-const test = base.extend<{ requireAuth: boolean; mockApi: void }, { origin: string }>({
-  origin: [
-    // eslint-disable-next-line no-empty-pattern
-    async ({}, use) => {
-      const { server, origin } = await serveEmbedDir(embedPagesRoot())
-      await use(origin)
-      await new Promise(resolve => server.close(resolve))
-    },
-    { scope: 'worker' },
-  ],
-  baseURL: async ({ origin }, use) => use(origin),
-  requireAuth: [false, { option: true }],
-  mockApi: [
-    async ({ page, requireAuth }, use) => {
-      await installMocks(page, { requireAuth })
-      await use()
-    },
-    { auto: true },
-  ],
-})
+import { test, expect } from '../fixtures/mock-test'
+import { HASH, fixtureSettings } from '../fixtures/mocks'
 
 const libraryCard = (page: Page) => page.locator(`.torrent-card[data-hash="${HASH}"]`)
 const settingsDialog = (page: Page) =>
@@ -86,7 +63,7 @@ test.describe('library', () => {
 })
 
 test.describe('auth gate', () => {
-  test.use({ requireAuth: true })
+  test.use({ mockOptions: { requireAuth: true } })
 
   test('login form appears when torrents API returns 401', async ({ page }) => {
     await expect(page.locator('input[name="username"]')).toBeVisible({ timeout: 20_000 })

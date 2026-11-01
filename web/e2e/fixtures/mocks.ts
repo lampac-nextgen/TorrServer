@@ -54,6 +54,46 @@ export const fixtureSettings = {
   TMDBSettings: { APIKey: '', APIURL: 'https://api.themoviedb.org/3' },
 }
 
+export const fixtureCache = { Hash: HASH, Pieces: {}, Readers: [] }
+
+/** Long Cyrillic title, 4 big episodes: stresses the details modal on a phone. */
+export const fixtureDragon = {
+  hash: HASH,
+  title: '[LAMPA] Дом дракона (3 сезон: 1-4 серии из 8) / House of the Dragon / 2026 / 4 х ДБ, 3 х ПМ, WEB-DLRip 2160p',
+  name: 'House.of.the.Dragon.S03E01-E04.2160p.WEB-DL.x265',
+  category: 'tv',
+  poster: '',
+  torrent_size: 37.09 * 1024 ** 3,
+  loaded_size: 0,
+  preloaded_bytes: 0,
+  preload_size: 0,
+  download_speed: 0,
+  upload_speed: 0,
+  active_peers: 1,
+  total_peers: 51,
+  connected_seeders: 0,
+  pending_peers: 51,
+  half_open_peers: 0,
+  bytes_read: 95100,
+  bytes_written: 955,
+  stat: 3,
+  file_stats: [1, 2, 3, 4].map((id, i) => ({
+    id,
+    path: `House of the Dragon/S03E0${id}.mkv`,
+    length: [9.02, 10.6, 8.9, 8.57][i] * 1024 ** 3,
+  })),
+}
+
+export const fixtureDragonCache = {
+  Hash: HASH,
+  Capacity: 256 * 1024 * 1024,
+  Filled: 0,
+  PiecesLength: 8 * 1024 * 1024,
+  PiecesCount: 4748,
+  Pieces: {},
+  Readers: [],
+}
+
 export const fixtureWaf = {
   whitelist: '',
   blacklist: '',
@@ -81,7 +121,20 @@ const json = (body: unknown) => ({
 })
 
 /** Intercept TorrServer APIs so the embedded SPA can run without a backend. */
-export async function installMocks(page: Page, { requireAuth = false }: { requireAuth?: boolean } = {}) {
+export interface MockOptions {
+  requireAuth?: boolean
+  /** Rows returned by `action: list`. */
+  library?: unknown[]
+  /** Body returned by every other `/torrents` action. */
+  torrent?: unknown
+  /** Body returned by `/cache`. */
+  cache?: unknown
+}
+
+export async function installMocks(
+  page: Page,
+  { requireAuth = false, library = fixtureLibrary, torrent = fixtureTorrent, cache = fixtureCache }: MockOptions = {},
+) {
   const waf: Record<string, unknown> = { ...fixtureWaf }
 
   await page.route('**/echo', route => route.fulfill({ status: 200, contentType: 'text/plain', body: 'MatriX.144' }))
@@ -90,7 +143,7 @@ export async function installMocks(page: Page, { requireAuth = false }: { requir
   await page.route('**/storage/settings', route => route.fulfill(json({})))
   await page.route('**/viewed', route => route.fulfill(json([])))
   await page.route('**/runtime/status', route => route.fulfill(json(fixtureRuntime)))
-  await page.route('**/cache', route => route.fulfill(json({ Hash: HASH, Pieces: {}, Readers: [] })))
+  await page.route('**/cache', route => route.fulfill(json(cache)))
 
   await page.route('**/waf', async route => {
     if (requireAuth && !route.request().headers().authorization) {
@@ -130,10 +183,10 @@ export async function installMocks(page: Page, { requireAuth = false }: { requir
       /* ignore */
     }
     if (action === 'list') {
-      await route.fulfill(json(fixtureLibrary))
+      await route.fulfill(json(library))
       return
     }
-    await route.fulfill(json(fixtureTorrent))
+    await route.fulfill(json(torrent))
   })
 
   await page.route('**/torznab/search**', async route => {

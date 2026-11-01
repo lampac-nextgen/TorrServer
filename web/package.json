@@ -41,14 +41,13 @@
     "test:e2e": "playwright test --project=mock",
     "test:e2e:real": "playwright test --project=real",
     "test:e2e:live": "playwright test --project=live",
+    "test:e2e:shots": "playwright test --project=screenshots",
     "test:e2e:ui": "playwright test --project=mock --ui",
     "verify": "yarn typecheck && yarn lint && yarn test && yarn i18n:check && yarn test:e2e",
     "verify:full": "yarn verify && yarn test:e2e:real",
     "preview": "vite preview",
     "lint": "eslint src e2e scripts --color",
-    "fix": "eslint src e2e scripts --fix --color",
-    "screenshots:iphone": "node scripts/screenshots-iphone.mjs",
-    "screenshots:viewports": "node scripts/screenshots-viewports.mjs"
+    "fix": "eslint src e2e scripts --fix --color"
   },
   "browserslist": {
     "production": [
