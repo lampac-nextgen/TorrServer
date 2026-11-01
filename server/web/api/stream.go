@@ -150,7 +150,7 @@ func stream(c *gin.Context) {
 	}
 
 	if !tor.GotInfo() {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "torrent connection timeout"})
+		abortTorrentUnavailable(c)
 		return
 	}
 
@@ -282,7 +282,7 @@ func streamNoAuth(c *gin.Context) {
 	}
 
 	if !tor.GotInfo() {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "torrent connection timeout"})
+		abortTorrentUnavailable(c)
 		return
 	}
 
@@ -323,4 +323,12 @@ func streamNoAuth(c *gin.Context) {
 	}
 	c.Header("WWW-Authenticate", "Basic realm=Authorization Required")
 	c.AbortWithStatus(http.StatusUnauthorized)
+}
+
+// abortTorrentUnavailable answers a stream/play request that cannot get torrent info
+// right now: metadata did not arrive in time, or the BT client was recreated (settings
+// save, drop). Both are transient, so players get 503 + Retry-After instead of a fatal 500.
+func abortTorrentUnavailable(c *gin.Context) {
+	c.Header("Retry-After", "5")
+	c.AbortWithStatusJSON(http.StatusServiceUnavailable, gin.H{"error": "torrent connection timeout"})
 }

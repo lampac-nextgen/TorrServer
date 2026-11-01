@@ -14,6 +14,8 @@ function average(values: number[]): number {
 interface SpeedChartsProps {
   downloadSpeed?: number | null
   uploadSpeed?: number | null
+  /** Server-side session peak; the sparkline only sees one sample per poll and misses short bursts. */
+  peakDownloadSpeed?: number | null
   /** Hide full legend + shorter chart — used when hero already shows live speeds. */
   compact?: boolean
   /** Grow into leftover Stats panel height (desktop two-col layout). */
@@ -65,10 +67,18 @@ function ChartSvg({
 }
 
 /** Live download/upload sparkline for the torrent Stats tab. */
-export default function SpeedCharts({ downloadSpeed, uploadSpeed, compact = false, fill = false }: SpeedChartsProps) {
+export default function SpeedCharts({
+  downloadSpeed,
+  uploadSpeed,
+  peakDownloadSpeed,
+  compact = false,
+  fill = false,
+}: SpeedChartsProps) {
   const { t } = useTranslation()
   const [downloadHistory, setDownloadHistory] = useState<number[]>(() => Array(HISTORY_LENGTH).fill(0))
   const [uploadHistory, setUploadHistory] = useState<number[]>(() => Array(HISTORY_LENGTH).fill(0))
+  // The history starts as 60 zero placeholders; the average must only count real samples.
+  const [sampleCount, setSampleCount] = useState(0)
   const gradientId = useId()
 
   useEffect(() => {
@@ -77,11 +87,18 @@ export default function SpeedCharts({ downloadSpeed, uploadSpeed, compact = fals
     // eslint-disable-next-line react-hooks/set-state-in-effect -- append speed samples into rolling history
     setDownloadHistory(prev => [...prev.slice(1), dl])
     setUploadHistory(prev => [...prev.slice(1), ul])
+    setSampleCount(n => Math.min(HISTORY_LENGTH, n + 1))
   }, [downloadSpeed, uploadSpeed])
 
   const scalePeak = useMemo(() => Math.max(...downloadHistory, ...uploadHistory, 1), [downloadHistory, uploadHistory])
-  const downloadPeak = useMemo(() => Math.max(...downloadHistory, 0), [downloadHistory])
-  const downloadAvg = useMemo(() => average(downloadHistory), [downloadHistory])
+  const downloadPeak = useMemo(
+    () => Math.max(...downloadHistory, peakDownloadSpeed ?? 0, 0),
+    [downloadHistory, peakDownloadSpeed],
+  )
+  const downloadAvg = useMemo(
+    () => average(sampleCount > 0 ? downloadHistory.slice(-sampleCount) : []),
+    [downloadHistory, sampleCount],
+  )
   const downloadPath = useMemo(() => buildAreaPath(downloadHistory, scalePeak), [downloadHistory, scalePeak])
   const uploadPath = useMemo(() => buildAreaPath(uploadHistory, scalePeak), [uploadHistory, scalePeak])
   const hasTraffic = useMemo(
@@ -89,8 +106,9 @@ export default function SpeedCharts({ downloadSpeed, uploadSpeed, compact = fals
       downloadHistory.some(v => v > 0) ||
       uploadHistory.some(v => v > 0) ||
       (downloadSpeed ?? 0) > 0 ||
-      (uploadSpeed ?? 0) > 0,
-    [downloadHistory, uploadHistory, downloadSpeed, uploadSpeed],
+      (uploadSpeed ?? 0) > 0 ||
+      (peakDownloadSpeed ?? 0) > 0,
+    [downloadHistory, uploadHistory, downloadSpeed, uploadSpeed, peakDownloadSpeed],
   )
 
   const showInlineLive = fill || !compact

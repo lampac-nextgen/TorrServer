@@ -63,7 +63,7 @@ func play(c *gin.Context) {
 	}
 
 	if !tor.GotInfo() {
-		_ = c.AbortWithError(http.StatusInternalServerError, errors.New("torrent connection timeout"))
+		abortTorrentUnavailable(c)
 		return
 	}
 
