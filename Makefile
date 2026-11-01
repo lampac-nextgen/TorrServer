@@ -407,7 +407,7 @@ bench: ## In-process benches; results at server/bench.txt
 
 E2E_DIR := $(CURDIR)/tmp/e2e
 
-e2e-real-build: webgen ## Binaries for the real-server Playwright suite (tmp/e2e)
+e2e-real-build: webgen-clean ## Binaries for the real-server Playwright suite (tmp/e2e)
 	mkdir -p $(E2E_DIR)
 	cd server && CGO_ENABLED=0 $(GO_BINARY) build -tags nosqlite -trimpath -ldflags "-s -w -checklinkname=0" -o $(E2E_DIR)/torrserver ./cmd
 	cd server && CGO_ENABLED=0 $(GO_BINARY) build -tags "e2eseed nosqlite" -o $(E2E_DIR)/e2e-seed ./torr/offlinetest/e2e-seed

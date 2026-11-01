@@ -220,37 +220,32 @@ describe('library UI', { skip }, () => {
     },
   )
 
-  // F2: opening a 600-file pack blocks the main thread for ~350ms on a laptop and
-  // ~1.5-2s at 4x CPU throttle or on a shared CI runner (longtask API). The rows are
-  // all mounted at once (FilesDataGrid has no virtualization).
-  test(
-    'large pack (600 files) opens without long main-thread stalls',
-    { todo: 'F2 600-file details dialog blocks the main thread >500ms' },
-    async () => {
-      await addSeeded(srv, 'many')
-      await waitReady(srv, srv.seed.many.hash, 60000)
-      const { context, page } = await openPage(srv)
-      await page.addInitScript(() => {
-        window.__long = []
-        new PerformanceObserver(l => l.getEntries().forEach(e => window.__long.push(e.duration))).observe({
-          entryTypes: ['longtask'],
-        })
+  // F2 (fixed): FilesDataGrid mounts rows in pages of FILE_ROWS_PAGE; mounting all 600 at once
+  // blocked the main thread for ~350ms on a laptop and 1.5-2s on a CI runner.
+  test('large pack (600 files) opens without long main-thread stalls', async () => {
+    await addSeeded(srv, 'many')
+    await waitReady(srv, srv.seed.many.hash, 60000)
+    const { context, page } = await openPage(srv)
+    await page.addInitScript(() => {
+      window.__long = []
+      new PerformanceObserver(l => l.getEntries().forEach(e => window.__long.push(e.duration))).observe({
+        entryTypes: ['longtask'],
       })
-      await page.goto(srv.base)
-      await card(page, 'Discography').first().waitFor()
-      const t0 = Date.now()
-      await openDetails(page, 'Discography')
-      await page.locator('.ts-details-modal').getByRole('button', { name: 'Play' }).first().waitFor({ timeout: 15000 })
-      const open = Date.now() - t0
-      await page.waitForTimeout(1000)
-      const long = await page.evaluate(() => window.__long)
-      await shot(page, 'details-many')
-      // Wall-clock bound is generous: shared CI runners are 2-3x slower than a laptop (4.4s seen).
-      assert.ok(open < 10_000, `open took ${open}ms`)
-      assert.ok(Math.max(0, ...long) < 500, `longest task ${Math.max(0, ...long)}ms`)
-      await context.close()
-    },
-  )
+    })
+    await page.goto(srv.base)
+    await card(page, 'Discography').first().waitFor()
+    const t0 = Date.now()
+    await openDetails(page, 'Discography')
+    await page.locator('.ts-details-modal').getByRole('button', { name: 'Play' }).first().waitFor({ timeout: 15000 })
+    const open = Date.now() - t0
+    await page.waitForTimeout(1000)
+    const long = await page.evaluate(() => window.__long)
+    await shot(page, 'details-many')
+    // Wall-clock bound is generous: shared CI runners are 2-3x slower than a laptop (4.4s seen).
+    assert.ok(open < 10_000, `open took ${open}ms`)
+    assert.ok(Math.max(0, ...long) < 500, `longest task ${Math.max(0, ...long)}ms`)
+    await context.close()
+  })
 
   test('phone viewport: bottom nav, details usable', async () => {
     const { context, page, problems } = await openPage(srv, {
