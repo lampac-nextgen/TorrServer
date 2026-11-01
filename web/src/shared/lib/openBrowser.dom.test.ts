@@ -35,16 +35,13 @@ afterEach(() => {
 
 describe('openInBrowser', () => {
   it('clicks a temporary noopener _blank anchor and removes it', () => {
-    let clicked: HTMLAnchorElement | null = null
+    let seen: { target: string; rel: string; href: string; attached: boolean } | null = null
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
-      clicked = this
+      seen = { target: this.target, rel: this.rel, href: this.href, attached: document.body.contains(this) }
     })
     openInBrowser(URL_M3U)
-    expect(clicked).toBeTruthy()
-    expect(clicked!.target).toBe('_blank')
-    expect(clicked!.rel).toBe('noopener noreferrer')
-    expect(clicked!.href).toBe(URL_M3U)
-    expect(document.body.contains(clicked)).toBe(false)
+    expect(seen).toEqual({ target: '_blank', rel: 'noopener noreferrer', href: URL_M3U, attached: true })
+    expect(document.querySelector('a[target=_blank]')).toBeNull() // removed after the click
   })
 })
 

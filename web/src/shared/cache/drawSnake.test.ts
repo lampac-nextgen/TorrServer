@@ -55,7 +55,7 @@ describe('drawSnake', () => {
     })
     const rects = calls.fillRect.map(a => a as number[])
     // Partial piece: empty background, then a half-height fill anchored at the bottom.
-    expect(rects.some(([, y, w, h]) => w === 20 && h === 10)).toBe(true)
+    expect(rects.some(([, , w, h]) => w === 20 && h === 10)).toBe(true)
     // Completed pieces fill the whole cell.
     expect(rects.filter(([, , w, h]) => w === 20 && h === 20).length).toBeGreaterThanOrEqual(4)
   })

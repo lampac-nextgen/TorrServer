@@ -53,7 +53,7 @@ src/locales/    # i18n JSON (en, ru, ua, zh, bg, fr, ro)
 - Render with `renderWithProviders` from `src/test/renderWithProviders.tsx` (same providers as `src/index.tsx`, a `QueryClient` that never retries). `src/test/setup.ts` stubs `matchMedia`, the observers, `scrollTo` and media playback, and cleans up after each test.
 - Drive the UI with `@testing-library/user-event` and query by role or label; assert what the user sees or what request was sent, not the markup.
 - Mock the network with `vi.stubGlobal('fetch', ...)` as in `src/shared/api/apiModules.test.ts`. No test may reach a real server.
-- CI prints coverage in the job summary; there is no threshold yet.
+- CI runs `yarn test --coverage`, which enforces the floors in `vite.config.ts` (`test.coverage.thresholds`: lines 90, statements 88, functions 84, branches 76) and prints the table in the job summary. Raise the floor when coverage grows; do not lower it to land a change. `src/index.tsx` and `src/shared/testing` are excluded from the metric.
 
 ### Playwright layout (`web/e2e/`)
 
