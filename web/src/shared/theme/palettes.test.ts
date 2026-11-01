@@ -23,6 +23,23 @@ const ratio = (a: string, b: string) => {
   return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05)
 }
 
+const oklab = (h: string) => {
+  const lin = (i: number) => {
+    const c = parseInt(h.slice(i, i + 2), 16) / 255
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  }
+  const [r, g, b] = [lin(1), lin(3), lin(5)]
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
+  return [
+    0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+    1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+    0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
+  ]
+}
+const deltaE = (a: string, b: string) => Math.hypot(...oklab(a).map((v, i) => v - oklab(b)[i]))
+
 describe('theme palettes stay in sync', () => {
   it('lists the same palette ids in palettes.json and the TS union', () => {
     expect(data.palettes.map(p => p.id).sort()).toEqual([...THEME_PALETTE_IDS].sort())
@@ -88,5 +105,17 @@ describe('theme palettes stay in sync', () => {
       }
     }
     expect(failures).toEqual([])
+  })
+
+  it('keeps accent and accent-secondary visibly different (OKLab ΔE ≥ 0.1) in every palette and mode', () => {
+    const close: string[] = []
+    for (const p of data.palettes) {
+      for (const mode of ['light', 'dark'] as const) {
+        const v = p[mode] as Record<string, string>
+        const d = deltaE(v.accent, v['accent-secondary'])
+        if (d < 0.1) close.push(`${p.id} ${mode} ΔE ${d.toFixed(3)}`)
+      }
+    }
+    expect(close).toEqual([])
   })
 })

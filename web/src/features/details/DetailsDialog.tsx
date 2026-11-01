@@ -641,7 +641,7 @@ export default function DetailsDialog({
                     </div>
                     <div className='h-2 overflow-hidden rounded-full bg-surface'>
                       <div
-                        className='h-full rounded-full bg-accent transition-[width] duration-300'
+                        className='h-full rounded-full bg-accent-secondary transition-[width] duration-300'
                         style={{ width: `${bufferPct}%` }}
                       />
                     </div>

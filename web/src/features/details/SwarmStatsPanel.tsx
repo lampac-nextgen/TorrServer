@@ -44,12 +44,15 @@ function ProgressMeter({
   ratio,
   compact = false,
   title,
+  tone = 'accent',
 }: {
   label: string
   valueLabel: string
   ratio: number
   compact?: boolean
   title?: string
+  /** `secondary` marks live/streaming readiness (buffer); `accent` is plain progress. */
+  tone?: 'accent' | 'secondary'
 }) {
   const width = Number.isFinite(ratio) ? Math.min(100, Math.max(0, ratio)) : 0
   return (
@@ -59,7 +62,10 @@ function ProgressMeter({
         <span className='shrink-0 font-bold tabular-nums text-foreground'>{valueLabel}</span>
       </div>
       <div className={`overflow-hidden rounded-full bg-surface ${compact ? 'h-2' : 'h-2.5'}`}>
-        <div className='h-full rounded-full bg-accent transition-[width] duration-300' style={{ width: `${width}%` }} />
+        <div
+          className={`h-full rounded-full transition-[width] duration-300 ${tone === 'secondary' ? 'bg-accent-secondary' : 'bg-accent'}`}
+          style={{ width: `${width}%` }}
+        />
       </div>
     </div>
   )
@@ -121,7 +127,7 @@ export function TorrentProgressStrip({
       className={`grid shrink-0 grid-cols-1 gap-3 rounded-xl border border-border bg-surface-secondary p-2.5 sm:grid-cols-2 ${className}`.trim()}
     >
       {progress.showLoaded ? (
-        <ProgressMeter label={t('Loaded')} valueLabel={progress.loadedLabel} ratio={progress.loadedRatio} />
+        <ProgressMeter label={t('Loaded')} valueLabel={progress.loadedLabel} ratio={progress.loadedRatio * 100} />
       ) : (
         <ProgressMeter label={t('Loaded')} valueLabel='—' ratio={0} />
       )}
@@ -130,6 +136,7 @@ export function TorrentProgressStrip({
         valueLabel={progress.preloadLabel}
         ratio={progress.preloadPct}
         title={progress.preloadHint}
+        tone='secondary'
       />
     </div>
   )
