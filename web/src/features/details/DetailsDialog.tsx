@@ -561,7 +561,7 @@ export default function DetailsDialog({
                   />
                 )}
               </div>
-              <div className='shrink-0 border-t border-border bg-surface pt-1 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
+              <div className='shrink-0 border-t border-border bg-overlay pt-1 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
                 {torrentActions}
               </div>
             </Tabs.Panel>

@@ -179,6 +179,18 @@ for (const id of ids) {
       })
       const expected = [tokens.surface, tokens['surface-secondary']].map(h => h.toLowerCase())
       expect.soft(expected, `details dialog background ${dialogBg}`).toContain(dialogBg)
+      // The sticky action bar must blend into the dialog instead of showing as a band.
+      const footerBg = await detailsModal(page)
+        .locator('div.border-t.border-border')
+        .last()
+        .evaluate(el => {
+          const ctx = document.createElement('canvas').getContext('2d')!
+          ctx.fillStyle = getComputedStyle(el).backgroundColor
+          ctx.fillRect(0, 0, 1, 1)
+          const d = ctx.getImageData(0, 0, 1, 1).data
+          return '#' + [d[0], d[1], d[2]].map(v => v.toString(16).padStart(2, '0')).join('')
+        })
+      expect.soft(footerBg, 'details action bar background matches the dialog').toBe(dialogBg)
       const tabs = page.locator('.ts-details-tabs [role="tab"]')
       for (const [i, screen] of ['files', 'stats', 'cache'].entries()) {
         await tabs.nth(i).click()
