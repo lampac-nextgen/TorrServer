@@ -167,6 +167,9 @@ test.describe('desktop', () => {
         await page.getByRole('button', { name: 'Settings' }).first().click()
         await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
         await snap('settings')
+        await page.getByRole('tab', { name: 'Appearance' }).first().click()
+        await expect(page.getByRole('listbox', { name: 'Palette' })).toBeVisible()
+        await snap('appearance')
         await closeDialog(page)
 
         for (const [screen, name] of [

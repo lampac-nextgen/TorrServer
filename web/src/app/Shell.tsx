@@ -31,6 +31,7 @@ import {
 import { OPEN_SETTINGS_EVENT, type SettingsDeepLinkTab } from 'shared/lib/settingsEvents'
 import { getStoredCredentials, logoutBasicAuth } from 'shared/api/authCredentials'
 import { MEDIA_SHORT_VIEWPORT, queryMax } from 'shared/theme/breakpoints'
+import { pickerPaletteIds } from 'shared/theme/paletteGroups'
 import { THEME_PALETTE_SWATCHES } from 'shared/theme/paletteSwatches'
 import { THEME_MODES, THEME_PALETTE_IDS, useThemePreference, type ThemePalette } from 'shared/theme/useThemePreference'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
@@ -447,7 +448,7 @@ function PaletteMenu({
       </Button>
       <Dropdown.Popover placement='bottom end' className='max-h-[min(70dvh,28rem)] min-w-[13rem] overflow-y-auto'>
         <Dropdown.Menu aria-label={label}>
-          {THEME_PALETTE_IDS.map(id => {
+          {pickerPaletteIds(current).map(id => {
             const selected = id === current
             const swatch = THEME_PALETTE_SWATCHES[id]
             return (

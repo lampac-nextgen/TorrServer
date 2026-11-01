@@ -5,12 +5,17 @@ import { useTranslation } from 'react-i18next'
 
 import { DIALOGS_FULLSCREEN_PREF } from 'shared/hooks/useDialogFullScreen'
 import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
+import { groupedPalettes } from 'shared/theme/paletteGroups'
 import { THEME_PALETTE_SWATCHES } from 'shared/theme/paletteSwatches'
 import { THEME_MODES, THEME_PALETTE_IDS, useThemePreference, type ThemePalette } from 'shared/theme/useThemePreference'
 import { iconMenu } from 'shared/ui/iconProps'
 
 import { SettingSwitch } from './SettingSwitch'
 import SettingsSection from './SettingsSection'
+
+function groupLabelKey(group: string): string {
+  return `ThemePaletteGroup${group.charAt(0).toUpperCase()}${group.slice(1)}`
+}
 
 function paletteLabelKey(id: ThemePalette): string {
   return `ThemePalette${id.charAt(0).toUpperCase()}${id.slice(1)}`
@@ -28,14 +33,19 @@ export default function AppearanceSettingsPanel() {
     [t],
   )
 
-  const filtered = useMemo(() => {
+  const all = useMemo(() => groupedPalettes(palette), [palette])
+  const total = all.reduce((n, g) => n + g.ids.length, 0)
+  const groups = useMemo(() => {
     const q = query.trim().toLocaleLowerCase()
-    if (!q) return THEME_PALETTE_IDS
-    return THEME_PALETTE_IDS.filter(id => {
-      const name = labels[id].toLocaleLowerCase()
-      return name.includes(q) || id.includes(q)
-    })
-  }, [labels, query])
+    if (!q) return all
+    return all
+      .map(g => ({
+        ...g,
+        ids: g.ids.filter(id => labels[id].toLocaleLowerCase().includes(q) || id.includes(q)),
+      }))
+      .filter(g => g.ids.length > 0)
+  }, [all, labels, query])
+  const shown = groups.reduce((n, g) => n + g.ids.length, 0)
 
   return (
     <div className='space-y-6'>
@@ -84,9 +94,7 @@ export default function AppearanceSettingsPanel() {
             <Label className='text-sm'>{t('ThemePalette')}</Label>
             <p className='text-xs text-muted'>
               {labels[palette]}
-              {filtered.length !== THEME_PALETTE_IDS.length
-                ? ` · ${filtered.length}/${THEME_PALETTE_IDS.length}`
-                : null}
+              {shown !== total ? ` · ${shown}/${total}` : null}
             </p>
           </div>
 
@@ -102,43 +110,54 @@ export default function AppearanceSettingsPanel() {
             </TextField>
           </div>
 
-          {filtered.length === 0 ? (
+          {shown === 0 ? (
             <p className='py-6 text-center text-sm text-muted'>{t('SettingsDialog.ThemePaletteEmpty')}</p>
           ) : (
-            <div className='grid grid-cols-2 gap-2 sm:grid-cols-3' role='listbox' aria-label={t('ThemePalette')}>
-              {filtered.map(id => {
-                const selected = id === palette
-                const swatch = THEME_PALETTE_SWATCHES[id]
-                return (
-                  <button
-                    key={id}
-                    type='button'
-                    role='option'
-                    aria-selected={selected}
-                    onClick={() => setPalette(id)}
-                    className={`flex min-h-11 items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left transition-colors ${
-                      selected
-                        ? 'border-accent bg-accent/10 ring-1 ring-accent/40'
-                        : 'border-border bg-surface hover-fine:border-accent/40 hover-fine:bg-surface-tertiary'
-                    }`}
-                  >
-                    <span
-                      className='relative size-8 shrink-0 overflow-hidden rounded-md border border-black/10 shadow-sm'
-                      aria-hidden
-                      style={{
-                        background: `linear-gradient(135deg, ${swatch.header} 0 52%, ${swatch.accent} 52% 100%)`,
-                      }}
-                    >
-                      {selected ? (
-                        <span className='absolute inset-0 grid place-items-center bg-black/25'>
-                          <Check size={14} strokeWidth={2.5} className='text-white' />
-                        </span>
-                      ) : null}
-                    </span>
-                    <span className='min-w-0 flex-1 truncate text-sm font-medium'>{labels[id]}</span>
-                  </button>
-                )
-              })}
+            <div className='space-y-4' role='listbox' aria-label={t('ThemePalette')}>
+              {groups.map(g => (
+                <div key={g.group} role='group' aria-label={t(groupLabelKey(g.group))}>
+                  <p className='mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted'>
+                    {t(groupLabelKey(g.group))}
+                  </p>
+                  <div className='grid grid-cols-2 gap-2 sm:grid-cols-3'>
+                    {g.ids.map(id => {
+                      const selected = id === palette
+                      const swatch = THEME_PALETTE_SWATCHES[id]
+                      return (
+                        <button
+                          key={id}
+                          type='button'
+                          role='option'
+                          aria-selected={selected}
+                          onClick={() => setPalette(id)}
+                          className={`flex min-h-11 items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left transition-colors ${
+                            selected
+                              ? 'border-accent bg-accent/10 ring-1 ring-accent/40'
+                              : 'border-border bg-surface hover-fine:border-accent/40 hover-fine:bg-surface-tertiary'
+                          }`}
+                        >
+                          <span
+                            className='relative size-8 shrink-0 overflow-hidden rounded-md border border-black/10 shadow-sm'
+                            aria-hidden
+                            style={{
+                              background: `linear-gradient(135deg, ${swatch.header} 0 52%, ${swatch.accent} 52% 100%)`,
+                            }}
+                          >
+                            {selected ? (
+                              <span className='absolute inset-0 grid place-items-center bg-black/25'>
+                                <Check size={14} strokeWidth={2.5} className='text-white' />
+                              </span>
+                            ) : null}
+                          </span>
+                          <span className='min-w-0 flex-1 truncate text-sm font-medium text-foreground'>
+                            {labels[id]}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>

@@ -3129,6 +3129,242 @@
   --app-rail-foreground: rgba(255, 255, 255, 0.9);
 }
 
+/* Heritage — amber accent on navy chrome, sky secondary (the logo bolt over the tile). */
+:root[data-palette='heritage'] {
+  --background: #f4f6fb;
+  --foreground: #0c1a28;
+
+  --surface: #ffffff;
+  --surface-secondary: #eaeff7;
+  --surface-tertiary: #dde5f1;
+
+  --muted: #4d6479;
+  --border: #d3deec;
+  --separator: #dde5f1;
+
+  --accent: #935800;
+  --accent-foreground: #ffffff;
+  --accent-secondary: #0a6ca4;
+
+  --danger: #e05555;
+  --danger-foreground: #1f0508;
+  --warning: #bd8522;
+  --warning-foreground: #1a1000;
+  --success: #22c55e;
+  --success-foreground: #052e16;
+
+  --app-header: #0b2540;
+  --app-header-foreground: #ffffff;
+  --app-rail: #0a1626;
+  --app-rail-foreground: rgba(255, 255, 255, 0.92);
+}
+
+.dark[data-palette='heritage'] {
+  --background: #080e18;
+  --foreground: #e4eef8;
+
+  --surface: #0f1a2a;
+  --surface-secondary: #132033;
+  --surface-tertiary: #182840;
+
+  --muted: #8aa5bf;
+  --border: #25384f;
+  --separator: #1a2a3d;
+
+  --accent: #ffaa00;
+  --accent-foreground: #1a1000;
+  --accent-secondary: #38bdf8;
+
+  --danger: #e2707a;
+  --danger-foreground: #1f0508;
+  --warning: #e0a040;
+  --warning-foreground: #1a1000;
+  --success: #4ade80;
+  --success-foreground: #052e16;
+
+  --app-header: #0c1524;
+  --app-header-foreground: #e4eef8;
+  --app-rail: #050a12;
+  --app-rail-foreground: rgba(255, 255, 255, 0.9);
+}
+
+/* Circuit — PCB teal-green accent on near-black green, gold trace secondary. */
+:root[data-palette='circuit'] {
+  --background: #f1f8f5;
+  --foreground: #0b1d17;
+
+  --surface: #ffffff;
+  --surface-secondary: #e5f2ec;
+  --surface-tertiary: #d6e9e0;
+
+  --muted: #4a6a5e;
+  --border: #cfe3da;
+  --separator: #d6e9e0;
+
+  --accent: #09744f;
+  --accent-foreground: #ffffff;
+  --accent-secondary: #8a6500;
+
+  --danger: #e05555;
+  --danger-foreground: #1f0508;
+  --warning: #bd8522;
+  --warning-foreground: #1a1000;
+  --success: #22c55e;
+  --success-foreground: #052e16;
+
+  --app-header: #0c3b2d;
+  --app-header-foreground: #ffffff;
+  --app-rail: #0a1d17;
+  --app-rail-foreground: rgba(255, 255, 255, 0.92);
+}
+
+.dark[data-palette='circuit'] {
+  --background: #06100d;
+  --foreground: #dff5ec;
+
+  --surface: #0b1a15;
+  --surface-secondary: #0f211b;
+  --surface-tertiary: #142a22;
+
+  --muted: #86b3a3;
+  --border: #1f3b30;
+  --separator: #16302a;
+
+  --accent: #2be0a0;
+  --accent-foreground: #03140d;
+  --accent-secondary: #ffd000;
+
+  --danger: #e2707a;
+  --danger-foreground: #1f0508;
+  --warning: #e0a040;
+  --warning-foreground: #1a1000;
+  --success: #4ade80;
+  --success-foreground: #052e16;
+
+  --app-header: #08130f;
+  --app-header-foreground: #dff5ec;
+  --app-rail: #040a08;
+  --app-rail-foreground: rgba(255, 255, 255, 0.9);
+}
+
+/* Fuchsia — vivid magenta accent, aubergine chrome, cyan secondary. */
+:root[data-palette='fuchsia'] {
+  --background: #fbf4fb;
+  --foreground: #1f0f22;
+
+  --surface: #ffffff;
+  --surface-secondary: #f5e8f6;
+  --surface-tertiary: #ecd8ee;
+
+  --muted: #70507a;
+  --border: #e8d3ea;
+  --separator: #ecd8ee;
+
+  --accent: #a21caf;
+  --accent-foreground: #ffffff;
+  --accent-secondary: #0e7490;
+
+  --danger: #e05555;
+  --danger-foreground: #1f0508;
+  --warning: #bd8522;
+  --warning-foreground: #1a1000;
+  --success: #22c55e;
+  --success-foreground: #052e16;
+
+  --app-header: #4a145a;
+  --app-header-foreground: #ffffff;
+  --app-rail: #230a2b;
+  --app-rail-foreground: rgba(255, 255, 255, 0.92);
+}
+
+.dark[data-palette='fuchsia'] {
+  --background: #12081a;
+  --foreground: #f6e6f8;
+
+  --surface: #1b0e25;
+  --surface-secondary: #22132e;
+  --surface-tertiary: #2c1a3b;
+
+  --muted: #c39acb;
+  --border: #432a55;
+  --separator: #2c1a3b;
+
+  --accent: #e879f9;
+  --accent-foreground: #2a0630;
+  --accent-secondary: #22d3ee;
+
+  --danger: #e2707a;
+  --danger-foreground: #1f0508;
+  --warning: #e0a040;
+  --warning-foreground: #1a1000;
+  --success: #4ade80;
+  --success-foreground: #052e16;
+
+  --app-header: #190c24;
+  --app-header-foreground: #f6e6f8;
+  --app-rail: #0b0410;
+  --app-rail-foreground: rgba(255, 255, 255, 0.9);
+}
+
+/* Lagoon — cyan-blue accent, deep teal chrome, peach secondary. */
+:root[data-palette='lagoon'] {
+  --background: #f1f9fb;
+  --foreground: #08202a;
+
+  --surface: #ffffff;
+  --surface-secondary: #e3f3f8;
+  --surface-tertiary: #d3eaf2;
+
+  --muted: #4a6b78;
+  --border: #cce4ec;
+  --separator: #d3eaf2;
+
+  --accent: #096f8c;
+  --accent-foreground: #ffffff;
+  --accent-secondary: #a35200;
+
+  --danger: #e05555;
+  --danger-foreground: #1f0508;
+  --warning: #bd8522;
+  --warning-foreground: #1a1000;
+  --success: #22c55e;
+  --success-foreground: #052e16;
+
+  --app-header: #0a4a5e;
+  --app-header-foreground: #ffffff;
+  --app-rail: #08202a;
+  --app-rail-foreground: rgba(255, 255, 255, 0.92);
+}
+
+.dark[data-palette='lagoon'] {
+  --background: #07131a;
+  --foreground: #e0f3f8;
+
+  --surface: #0d1f29;
+  --surface-secondary: #112734;
+  --surface-tertiary: #17313f;
+
+  --muted: #8bb2c1;
+  --border: #234255;
+  --separator: #17313f;
+
+  --accent: #22c7e8;
+  --accent-foreground: #031820;
+  --accent-secondary: #ffb86b;
+
+  --danger: #e2707a;
+  --danger-foreground: #1f0508;
+  --warning: #e0a040;
+  --warning-foreground: #1a1000;
+  --success: #4ade80;
+  --success-foreground: #052e16;
+
+  --app-header: #0a1a23;
+  --app-header-foreground: #e0f3f8;
+  --app-rail: #040d12;
+  --app-rail-foreground: rgba(255, 255, 255, 0.9);
+}
+
 /*
  * HeroUI ships its own neutral chrome (zinc grays: overlays, default buttons, fields, segments).
  * Map it onto the palette tokens so dialogs, popovers, chips and inputs follow every palette.

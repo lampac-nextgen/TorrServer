@@ -36,10 +36,18 @@ HeroUI's own neutral tokens (`overlay`, `default`, `field-background`, `segment`
 
 `@media (prefers-contrast: more)` darkens `muted`/`border`/`separator` for every palette (generated).
 
+## Groups, hidden palettes and the report
+
+Each palette has a `group` (`brand`, `neutral`, `warm`, `cool`, `green`, `vivid`, `accessible`); pickers render them grouped (`shared/theme/paletteGroups.ts`). Near-duplicates are retired with `"hidden": true`: they stay fully defined, so a stored choice keeps working and shows in the picker while it is in use, but new users do not see them. Find candidates with:
+
+```bash
+cd web && node scripts/palette-report.mjs --threshold 0.03   # closest pairs, clusters, accent hue coverage
+```
+
 ## Adding or changing a palette
 
 1. Edit/add the entry in `palettes.json` (all tokens, both modes), then `yarn gen:palettes`.
-2. Add the id to `THEME_PALETTES` in `useThemePreference.ts` and `ThemePalette<Id>` to all seven locales.
+2. Pick a `group`. Add the id to `THEME_PALETTES` in `useThemePreference.ts` and `ThemePalette<Id>` to all seven locales.
 3. `yarn test` (token rules), then `yarn test:e2e:palettes` (see below).
 
 ## Checking how it looks

@@ -299,7 +299,9 @@ export async function settleUi(page: Page): Promise<void> {
   for (let i = 0; i < 20; i++) {
     const now = await page.evaluate(() => {
       const parts: string[] = []
-      for (const el of document.querySelectorAll('.torrent-card, [role="dialog"], .modal__dialog, main')) {
+      for (const el of document.querySelectorAll(
+        '.torrent-card, [role="dialog"], .modal__dialog, main, [role="tabpanel"], [role="listbox"]',
+      )) {
         let o = 1
         for (let n: Element | null = el; n; n = n.parentElement) o *= parseFloat(getComputedStyle(n).opacity)
         parts.push(o.toFixed(2))

@@ -3,6 +3,7 @@
     {
       "id": "forest",
       "note": "Forest — green chrome and accent.",
+      "group": "green",
       "light": {
         "background": "#f5faf7",
         "foreground": "#0f1915",
@@ -53,6 +54,7 @@
     {
       "id": "nextgen",
       "note": "NextGen — sky accent on deep navy chrome, amber for warnings (logo duo). Default.",
+      "group": "brand",
       "light": {
         "background": "#f3f7fb",
         "foreground": "#0c1a28",
@@ -103,6 +105,7 @@
     {
       "id": "neon",
       "note": "Neon — logo cyan accent, teal-black chrome.",
+      "group": "brand",
       "light": {
         "background": "#f2f9fb",
         "foreground": "#0b1a1f",
@@ -153,6 +156,7 @@
     {
       "id": "amber",
       "note": "Amber — logo amber accent, warm near-black chrome.",
+      "group": "brand",
       "light": {
         "background": "#fbf7f0",
         "foreground": "#1f1608",
@@ -203,6 +207,7 @@
     {
       "id": "ocean",
       "note": "Ocean — cool teal chrome + accent",
+      "group": "cool",
       "light": {
         "background": "#f3f9fb",
         "foreground": "#0e171c",
@@ -253,6 +258,7 @@
     {
       "id": "slate",
       "note": "Slate — neutral graphite chrome, muted sage accent",
+      "group": "neutral",
       "light": {
         "background": "#f5f6f7",
         "foreground": "#14181a",
@@ -303,6 +309,7 @@
     {
       "id": "ember",
       "note": "Ember — warm copper accent, charcoal chrome (not cream/terracotta).",
+      "group": "warm",
       "light": {
         "background": "#f7f4f1",
         "foreground": "#1a1410",
@@ -353,6 +360,7 @@
     {
       "id": "arctic",
       "note": "Arctic — icy blue surfaces, cool azure accent.",
+      "group": "cool",
       "light": {
         "background": "#f2f6fb",
         "foreground": "#0e1520",
@@ -403,6 +411,7 @@
     {
       "id": "rose",
       "note": "Rose — muted coral accent on cool gray (not purple).",
+      "group": "warm",
       "light": {
         "background": "#f8f5f6",
         "foreground": "#1a1214",
@@ -453,6 +462,7 @@
     {
       "id": "meadow",
       "note": "Meadow — fresh lime chartreuse (distinct from forest).",
+      "group": "green",
       "light": {
         "background": "#f5faf2",
         "foreground": "#142016",
@@ -503,6 +513,7 @@
     {
       "id": "fog",
       "note": "Fog — soft desaturated blue-gray.",
+      "group": "neutral",
       "light": {
         "background": "#f4f5f7",
         "foreground": "#16181c",
@@ -553,6 +564,7 @@
     {
       "id": "copper",
       "note": "Copper — metallic bronze (warmer metal than ember orange).",
+      "group": "warm",
       "light": {
         "background": "#f6f3ef",
         "foreground": "#1a1510",
@@ -603,6 +615,8 @@
     {
       "id": "citrus",
       "note": "Citrus — bright gold-yellow accent.",
+      "group": "warm",
+      "hidden": true,
       "light": {
         "background": "#faf8f0",
         "foreground": "#1a180e",
@@ -653,6 +667,7 @@
     {
       "id": "midnight",
       "note": "midnight",
+      "group": "cool",
       "light": {
         "background": "#f2f4f8",
         "foreground": "#0e1218",
@@ -703,6 +718,8 @@
     {
       "id": "sage",
       "note": "sage",
+      "group": "green",
+      "hidden": true,
       "light": {
         "background": "#f4f6f3",
         "foreground": "#151a16",
@@ -753,6 +770,7 @@
     {
       "id": "coral",
       "note": "coral",
+      "group": "warm",
       "light": {
         "background": "#faf5f3",
         "foreground": "#1a1210",
@@ -803,6 +821,7 @@
     {
       "id": "honey",
       "note": "honey",
+      "group": "warm",
       "light": {
         "background": "#faf7f0",
         "foreground": "#1a160e",
@@ -853,6 +872,8 @@
     {
       "id": "moss",
       "note": "moss",
+      "group": "green",
+      "hidden": true,
       "light": {
         "background": "#f3f5f0",
         "foreground": "#141810",
@@ -903,6 +924,8 @@
     {
       "id": "sky",
       "note": "sky",
+      "group": "cool",
+      "hidden": true,
       "light": {
         "background": "#f2f7fb",
         "foreground": "#0e1620",
@@ -953,6 +976,7 @@
     {
       "id": "wine",
       "note": "wine",
+      "group": "warm",
       "light": {
         "background": "#f8f4f5",
         "foreground": "#1a1214",
@@ -1003,6 +1027,8 @@
     {
       "id": "mint",
       "note": "mint",
+      "group": "green",
+      "hidden": true,
       "light": {
         "background": "#f2faf7",
         "foreground": "#0e1a16",
@@ -1053,6 +1079,7 @@
     {
       "id": "charcoal",
       "note": "charcoal",
+      "group": "neutral",
       "light": {
         "background": "#f5f5f5",
         "foreground": "#141414",
@@ -1103,6 +1130,7 @@
     {
       "id": "lava",
       "note": "lava",
+      "group": "warm",
       "light": {
         "background": "#faf4f2",
         "foreground": "#1a100e",
@@ -1153,6 +1181,8 @@
     {
       "id": "ice",
       "note": "ice",
+      "group": "cool",
+      "hidden": true,
       "light": {
         "background": "#f2fafb",
         "foreground": "#0e1a1c",
@@ -1203,6 +1233,7 @@
     {
       "id": "olive",
       "note": "olive",
+      "group": "green",
       "light": {
         "background": "#f5f5ee",
         "foreground": "#181810",
@@ -1253,6 +1284,8 @@
     {
       "id": "steel",
       "note": "steel",
+      "group": "neutral",
+      "hidden": true,
       "light": {
         "background": "#f3f5f7",
         "foreground": "#12161a",
@@ -1303,6 +1336,7 @@
     {
       "id": "blossom",
       "note": "blossom",
+      "group": "vivid",
       "light": {
         "background": "#faf5f7",
         "foreground": "#1a1216",
@@ -1353,6 +1387,8 @@
     {
       "id": "sand",
       "note": "sand",
+      "group": "warm",
+      "hidden": true,
       "light": {
         "background": "#f7f5f0",
         "foreground": "#1a1812",
@@ -1403,6 +1439,7 @@
     {
       "id": "pine",
       "note": "pine",
+      "group": "green",
       "light": {
         "background": "#f2f5f2",
         "foreground": "#0e1610",
@@ -1453,6 +1490,7 @@
     {
       "id": "azure",
       "note": "azure",
+      "group": "cool",
       "light": {
         "background": "#f0f6fc",
         "foreground": "#0c1420",
@@ -1503,6 +1541,7 @@
     {
       "id": "graphite",
       "note": "graphite",
+      "group": "neutral",
       "light": {
         "background": "#f4f4f5",
         "foreground": "#161618",
@@ -1553,6 +1592,7 @@
     {
       "id": "noir",
       "note": "Noir — high-contrast cinema black/white.",
+      "group": "neutral",
       "light": {
         "background": "#f6f6f6",
         "foreground": "#0a0a0a",
@@ -1603,6 +1643,8 @@
     {
       "id": "jade",
       "note": "Jade — rich gemstone green.",
+      "group": "green",
+      "hidden": true,
       "light": {
         "background": "#f2f9f6",
         "foreground": "#0c1a16",
@@ -1653,6 +1695,8 @@
     {
       "id": "navy",
       "note": "Navy — classic deep maritime blue.",
+      "group": "cool",
+      "hidden": true,
       "light": {
         "background": "#f3f5f9",
         "foreground": "#0c1220",
@@ -1703,6 +1747,7 @@
     {
       "id": "rust",
       "note": "Rust — oxidized iron orange-brown.",
+      "group": "warm",
       "light": {
         "background": "#faf5f1",
         "foreground": "#1a100c",
@@ -1753,6 +1798,7 @@
     {
       "id": "espresso",
       "note": "Espresso — deep coffee browns.",
+      "group": "warm",
       "light": {
         "background": "#f7f3ef",
         "foreground": "#1a1410",
@@ -1803,6 +1849,8 @@
     {
       "id": "seafoam",
       "note": "Seafoam — soft aqua green-blue.",
+      "group": "green",
+      "hidden": true,
       "light": {
         "background": "#f2faf8",
         "foreground": "#0e1a18",
@@ -1853,6 +1901,8 @@
     {
       "id": "brick",
       "note": "Brick — clay red on cool gray (not cream/terracotta).",
+      "group": "warm",
+      "hidden": true,
       "light": {
         "background": "#f6f4f3",
         "foreground": "#1a1210",
@@ -1903,6 +1953,8 @@
     {
       "id": "storm",
       "note": "Storm — dramatic blue-gray weather.",
+      "group": "neutral",
+      "hidden": true,
       "light": {
         "background": "#f2f4f7",
         "foreground": "#12161c",
@@ -1953,6 +2005,7 @@
     {
       "id": "saffron",
       "note": "Saffron — spice yellow-orange.",
+      "group": "warm",
       "light": {
         "background": "#faf7f0",
         "foreground": "#1a160c",
@@ -2003,6 +2056,8 @@
     {
       "id": "denim",
       "note": "Denim — classic jean indigo-blue (not purple).",
+      "group": "cool",
+      "hidden": true,
       "light": {
         "background": "#f3f5f8",
         "foreground": "#10141c",
@@ -2053,6 +2108,8 @@
     {
       "id": "cedar",
       "note": "Cedar — warm wood reddish-brown green.",
+      "group": "warm",
+      "hidden": true,
       "light": {
         "background": "#f6f4f0",
         "foreground": "#16120e",
@@ -2103,6 +2160,7 @@
     {
       "id": "volt",
       "note": "Volt — electric lime neon accent.",
+      "group": "green",
       "light": {
         "background": "#f4f8f0",
         "foreground": "#12180c",
@@ -2153,6 +2211,7 @@
     {
       "id": "pearl",
       "note": "Pearl — soft luminous neutrals with silver-teal accent.",
+      "group": "neutral",
       "light": {
         "background": "#f7f8f9",
         "foreground": "#14181c",
@@ -2203,6 +2262,7 @@
     {
       "id": "ink",
       "note": "Ink — deep writing-ink blue (not purple).",
+      "group": "neutral",
       "light": {
         "background": "#f2f4f8",
         "foreground": "#0c1018",
@@ -2253,6 +2313,8 @@
     {
       "id": "fern",
       "note": "Fern — bright botanical leaf green.",
+      "group": "green",
+      "hidden": true,
       "light": {
         "background": "#f3f8f2",
         "foreground": "#101810",
@@ -2303,6 +2365,8 @@
     {
       "id": "bronze",
       "note": "Bronze — metallic warm gold-brown (distinct from copper).",
+      "group": "warm",
+      "hidden": true,
       "light": {
         "background": "#f7f4ef",
         "foreground": "#18140e",
@@ -2353,6 +2417,7 @@
     {
       "id": "violet",
       "note": "Violet — soft purple accent, plum chrome.",
+      "group": "vivid",
       "light": {
         "background": "#f7f5fc",
         "foreground": "#1a1424",
@@ -2403,6 +2468,7 @@
     {
       "id": "indigo",
       "note": "Indigo — deep blue-violet accent, midnight chrome.",
+      "group": "cool",
       "light": {
         "background": "#f4f5fc",
         "foreground": "#121830",
@@ -2453,6 +2519,7 @@
     {
       "id": "orchid",
       "note": "Orchid — magenta-pink accent, wine chrome.",
+      "group": "vivid",
       "light": {
         "background": "#fcf5fa",
         "foreground": "#25101f",
@@ -2503,6 +2570,7 @@
     {
       "id": "mono",
       "note": "Mono — pure neutral grayscale, no hue.",
+      "group": "neutral",
       "light": {
         "background": "#f6f6f6",
         "foreground": "#111111",
@@ -2553,6 +2621,7 @@
     {
       "id": "contrast",
       "note": "Contrast — maximum legibility: black, white, strong blue / yellow accents.",
+      "group": "accessible",
       "light": {
         "background": "#ffffff",
         "foreground": "#000000",
@@ -2603,6 +2672,7 @@
     {
       "id": "dusk",
       "note": "Dusk — warm orange accent on twilight plum.",
+      "group": "warm",
       "light": {
         "background": "#faf6f7",
         "foreground": "#231520",
@@ -2647,6 +2717,210 @@
         "app-header": "#170e1c",
         "app-header-foreground": "#f3e8ee",
         "app-rail": "#0a0610",
+        "app-rail-foreground": "rgba(255, 255, 255, 0.9)"
+      }
+    },
+    {
+      "id": "heritage",
+      "note": "Heritage — amber accent on navy chrome, sky secondary (the logo bolt over the tile).",
+      "group": "brand",
+      "light": {
+        "background": "#f4f6fb",
+        "foreground": "#0c1a28",
+        "surface": "#ffffff",
+        "surface-secondary": "#eaeff7",
+        "surface-tertiary": "#dde5f1",
+        "muted": "#4d6479",
+        "border": "#d3deec",
+        "separator": "#dde5f1",
+        "accent": "#935800",
+        "accent-foreground": "#ffffff",
+        "accent-secondary": "#0a6ca4",
+        "danger": "#e05555",
+        "danger-foreground": "#1f0508",
+        "warning": "#bd8522",
+        "warning-foreground": "#1a1000",
+        "success": "#22c55e",
+        "success-foreground": "#052e16",
+        "app-header": "#0b2540",
+        "app-header-foreground": "#ffffff",
+        "app-rail": "#0a1626",
+        "app-rail-foreground": "rgba(255, 255, 255, 0.92)"
+      },
+      "dark": {
+        "background": "#080e18",
+        "foreground": "#e4eef8",
+        "surface": "#0f1a2a",
+        "surface-secondary": "#132033",
+        "surface-tertiary": "#182840",
+        "muted": "#8aa5bf",
+        "border": "#25384f",
+        "separator": "#1a2a3d",
+        "accent": "#ffaa00",
+        "accent-foreground": "#1a1000",
+        "accent-secondary": "#38bdf8",
+        "danger": "#e2707a",
+        "danger-foreground": "#1f0508",
+        "warning": "#e0a040",
+        "warning-foreground": "#1a1000",
+        "success": "#4ade80",
+        "success-foreground": "#052e16",
+        "app-header": "#0c1524",
+        "app-header-foreground": "#e4eef8",
+        "app-rail": "#050a12",
+        "app-rail-foreground": "rgba(255, 255, 255, 0.9)"
+      }
+    },
+    {
+      "id": "circuit",
+      "note": "Circuit — PCB teal-green accent on near-black green, gold trace secondary.",
+      "group": "vivid",
+      "light": {
+        "background": "#f1f8f5",
+        "foreground": "#0b1d17",
+        "surface": "#ffffff",
+        "surface-secondary": "#e5f2ec",
+        "surface-tertiary": "#d6e9e0",
+        "muted": "#4a6a5e",
+        "border": "#cfe3da",
+        "separator": "#d6e9e0",
+        "accent": "#09744f",
+        "accent-foreground": "#ffffff",
+        "accent-secondary": "#8a6500",
+        "danger": "#e05555",
+        "danger-foreground": "#1f0508",
+        "warning": "#bd8522",
+        "warning-foreground": "#1a1000",
+        "success": "#22c55e",
+        "success-foreground": "#052e16",
+        "app-header": "#0c3b2d",
+        "app-header-foreground": "#ffffff",
+        "app-rail": "#0a1d17",
+        "app-rail-foreground": "rgba(255, 255, 255, 0.92)"
+      },
+      "dark": {
+        "background": "#06100d",
+        "foreground": "#dff5ec",
+        "surface": "#0b1a15",
+        "surface-secondary": "#0f211b",
+        "surface-tertiary": "#142a22",
+        "muted": "#86b3a3",
+        "border": "#1f3b30",
+        "separator": "#16302a",
+        "accent": "#2be0a0",
+        "accent-foreground": "#03140d",
+        "accent-secondary": "#ffd000",
+        "danger": "#e2707a",
+        "danger-foreground": "#1f0508",
+        "warning": "#e0a040",
+        "warning-foreground": "#1a1000",
+        "success": "#4ade80",
+        "success-foreground": "#052e16",
+        "app-header": "#08130f",
+        "app-header-foreground": "#dff5ec",
+        "app-rail": "#040a08",
+        "app-rail-foreground": "rgba(255, 255, 255, 0.9)"
+      }
+    },
+    {
+      "id": "fuchsia",
+      "note": "Fuchsia — vivid magenta accent, aubergine chrome, cyan secondary.",
+      "group": "vivid",
+      "light": {
+        "background": "#fbf4fb",
+        "foreground": "#1f0f22",
+        "surface": "#ffffff",
+        "surface-secondary": "#f5e8f6",
+        "surface-tertiary": "#ecd8ee",
+        "muted": "#70507a",
+        "border": "#e8d3ea",
+        "separator": "#ecd8ee",
+        "accent": "#a21caf",
+        "accent-foreground": "#ffffff",
+        "accent-secondary": "#0e7490",
+        "danger": "#e05555",
+        "danger-foreground": "#1f0508",
+        "warning": "#bd8522",
+        "warning-foreground": "#1a1000",
+        "success": "#22c55e",
+        "success-foreground": "#052e16",
+        "app-header": "#4a145a",
+        "app-header-foreground": "#ffffff",
+        "app-rail": "#230a2b",
+        "app-rail-foreground": "rgba(255, 255, 255, 0.92)"
+      },
+      "dark": {
+        "background": "#12081a",
+        "foreground": "#f6e6f8",
+        "surface": "#1b0e25",
+        "surface-secondary": "#22132e",
+        "surface-tertiary": "#2c1a3b",
+        "muted": "#c39acb",
+        "border": "#432a55",
+        "separator": "#2c1a3b",
+        "accent": "#e879f9",
+        "accent-foreground": "#2a0630",
+        "accent-secondary": "#22d3ee",
+        "danger": "#e2707a",
+        "danger-foreground": "#1f0508",
+        "warning": "#e0a040",
+        "warning-foreground": "#1a1000",
+        "success": "#4ade80",
+        "success-foreground": "#052e16",
+        "app-header": "#190c24",
+        "app-header-foreground": "#f6e6f8",
+        "app-rail": "#0b0410",
+        "app-rail-foreground": "rgba(255, 255, 255, 0.9)"
+      }
+    },
+    {
+      "id": "lagoon",
+      "note": "Lagoon — cyan-blue accent, deep teal chrome, peach secondary.",
+      "group": "cool",
+      "light": {
+        "background": "#f1f9fb",
+        "foreground": "#08202a",
+        "surface": "#ffffff",
+        "surface-secondary": "#e3f3f8",
+        "surface-tertiary": "#d3eaf2",
+        "muted": "#4a6b78",
+        "border": "#cce4ec",
+        "separator": "#d3eaf2",
+        "accent": "#096f8c",
+        "accent-foreground": "#ffffff",
+        "accent-secondary": "#a35200",
+        "danger": "#e05555",
+        "danger-foreground": "#1f0508",
+        "warning": "#bd8522",
+        "warning-foreground": "#1a1000",
+        "success": "#22c55e",
+        "success-foreground": "#052e16",
+        "app-header": "#0a4a5e",
+        "app-header-foreground": "#ffffff",
+        "app-rail": "#08202a",
+        "app-rail-foreground": "rgba(255, 255, 255, 0.92)"
+      },
+      "dark": {
+        "background": "#07131a",
+        "foreground": "#e0f3f8",
+        "surface": "#0d1f29",
+        "surface-secondary": "#112734",
+        "surface-tertiary": "#17313f",
+        "muted": "#8bb2c1",
+        "border": "#234255",
+        "separator": "#17313f",
+        "accent": "#22c7e8",
+        "accent-foreground": "#031820",
+        "accent-secondary": "#ffb86b",
+        "danger": "#e2707a",
+        "danger-foreground": "#1f0508",
+        "warning": "#e0a040",
+        "warning-foreground": "#1a1000",
+        "success": "#4ade80",
+        "success-foreground": "#052e16",
+        "app-header": "#0a1a23",
+        "app-header-foreground": "#e0f3f8",
+        "app-rail": "#040d12",
         "app-rail-foreground": "rgba(255, 255, 255, 0.9)"
       }
     }

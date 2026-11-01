@@ -63,6 +63,10 @@ export const THEME_PALETTES = {
   MONO: 'mono',
   CONTRAST: 'contrast',
   DUSK: 'dusk',
+  HERITAGE: 'heritage',
+  CIRCUIT: 'circuit',
+  FUCHSIA: 'fuchsia',
+  LAGOON: 'lagoon',
 } as const
 
 export type ThemePalette = (typeof THEME_PALETTES)[keyof typeof THEME_PALETTES]
