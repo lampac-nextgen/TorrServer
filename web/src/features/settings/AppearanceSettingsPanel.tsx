@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { Check, Maximize2, Moon, Palette, Search, Sun, SunMoon } from 'lucide-react'
 import { Input, Label, TextField, ToggleButton, ToggleButtonGroup } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { DIALOGS_FULLSCREEN_PREF } from 'shared/hooks/useDialogFullScreen'
 import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
 import { groupedPalettes } from 'shared/theme/paletteGroups'
-import { THEME_PALETTE_SWATCHES } from 'shared/theme/paletteSwatches'
+import { swatchBackground, THEME_PALETTE_SWATCHES } from 'shared/theme/paletteSwatches'
 import { THEME_MODES, THEME_PALETTE_IDS, useThemePreference, type ThemePalette } from 'shared/theme/useThemePreference'
 import { iconMenu } from 'shared/ui/iconProps'
 
@@ -48,6 +48,28 @@ export default function AppearanceSettingsPanel() {
       .filter(g => g.ids.length > 0)
   }, [all, labels, query])
   const shown = groups.reduce((n, g) => n + g.ids.length, 0)
+  const visibleIds = groups.flatMap(g => g.ids)
+  // Roving tabindex: the selected option (or the first one when it is filtered out) is the single tab stop.
+  const tabStopId = visibleIds.includes(palette) ? palette : visibleIds[0]
+  const listRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    listRef.current?.querySelector('[aria-selected="true"]')?.scrollIntoView?.({ block: 'nearest' })
+  }, [])
+
+  const onListKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const options = [...(listRef.current?.querySelectorAll<HTMLButtonElement>('[role="option"]') ?? [])]
+    const at = options.indexOf(document.activeElement as HTMLButtonElement)
+    if (at < 0) return
+    const step: Record<string, number> = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }
+    let next = -1
+    if (event.key in step) next = Math.min(options.length - 1, Math.max(0, at + step[event.key]))
+    else if (event.key === 'Home') next = 0
+    else if (event.key === 'End') next = options.length - 1
+    if (next < 0) return
+    event.preventDefault()
+    options[next].focus()
+  }
 
   return (
     <div className='space-y-6'>
@@ -115,7 +137,13 @@ export default function AppearanceSettingsPanel() {
           {shown === 0 ? (
             <p className='py-6 text-center text-sm text-muted'>{t('SettingsDialog.ThemePaletteEmpty')}</p>
           ) : (
-            <div className='space-y-4' role='listbox' aria-label={t('ThemePalette')}>
+            <div
+              ref={listRef}
+              className='space-y-4'
+              role='listbox'
+              aria-label={t('ThemePalette')}
+              onKeyDown={onListKeyDown}
+            >
               {groups.map(g => (
                 <div key={g.group} role='group' aria-label={t(groupLabelKey(g.group))}>
                   <p className='mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted'>
@@ -131,6 +159,7 @@ export default function AppearanceSettingsPanel() {
                           type='button'
                           role='option'
                           aria-selected={selected}
+                          tabIndex={id === tabStopId ? 0 : -1}
                           onClick={() => setPalette(id)}
                           className={`flex min-h-11 items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left transition-colors ${
                             selected
@@ -142,7 +171,7 @@ export default function AppearanceSettingsPanel() {
                             className='relative size-8 shrink-0 overflow-hidden rounded-md border border-black/10 shadow-sm'
                             aria-hidden
                             style={{
-                              background: `linear-gradient(135deg, ${swatch.header} 0 52%, ${swatch.accent} 52% 100%)`,
+                              background: swatchBackground(swatch),
                             }}
                           >
                             {selected ? (
