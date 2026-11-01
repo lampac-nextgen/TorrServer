@@ -57,6 +57,12 @@ export const THEME_PALETTES = {
   INK: 'ink',
   FERN: 'fern',
   BRONZE: 'bronze',
+  VIOLET: 'violet',
+  INDIGO: 'indigo',
+  ORCHID: 'orchid',
+  MONO: 'mono',
+  CONTRAST: 'contrast',
+  DUSK: 'dusk',
 } as const
 
 export type ThemePalette = (typeof THEME_PALETTES)[keyof typeof THEME_PALETTES]
