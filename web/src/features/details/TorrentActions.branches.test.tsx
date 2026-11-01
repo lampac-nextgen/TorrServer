@@ -211,3 +211,70 @@ describe('TorrentActions: phone layout', () => {
     expect(items.some(i => (i as HTMLAnchorElement).href?.includes('&fromlast'))).toBe(true)
   })
 })
+describe('TorrentActions: external players', () => {
+  beforeEach(() => localStorage.setItem('isVlcUsed', 'true'))
+
+  const withLocation = async (run: (nav: { href: string }) => Promise<void>) => {
+    const original = window.location
+    const nav = { href: original.href }
+    Object.defineProperty(window, 'location', { value: nav, configurable: true })
+    try {
+      await run(nav)
+    } finally {
+      Object.defineProperty(window, 'location', { value: original, configurable: true })
+    }
+  }
+
+  it('hides the settings hint once a player is enabled', async () => {
+    install()
+    mount()
+    await screen.findAllByRole('button', { name: 'Share' })
+    expect(screen.queryByRole('button', { name: /Open in VLC/i })).toBeNull()
+  })
+
+  it('offers "Open in" for a series and opens the playlist in VLC', async () => {
+    install()
+    mount({ playableFileList: many })
+    await withLocation(async nav => {
+      await userEvent.click((await screen.findAllByRole('button', { name: 'Open in' }))[0])
+      await userEvent.click(await screen.findByRole('menuitem', { name: 'VLC' }))
+      expect(nav.href).toMatch(/^vlc/)
+      expect(nav.href).toContain('m3u')
+    })
+  })
+
+  it('has no "Open in" for a single file, where the row owns the players', async () => {
+    install()
+    mount()
+    await screen.findAllByRole('button', { name: 'Share' })
+    expect(screen.queryByRole('button', { name: 'Open in' })).toBeNull()
+  })
+
+  it('shows "Open in" icon-only on a phone', async () => {
+    phone(true)
+    install()
+    mount({ playableFileList: many })
+    expect((await screen.findAllByRole('button', { name: 'Open in' }))[0].textContent).toBe('')
+  })
+})
+
+describe('TorrentActions: playlist button actions', () => {
+  it('desktop series with progress shows two playlist links, the first from the latest file', async () => {
+    install()
+    mount({ playableFileList: many, viewedFileList: [1] })
+    const links = await screen.findAllByRole('link')
+    expect(links.some(l => (l as HTMLAnchorElement).href.includes('&fromlast'))).toBe(true)
+    expect(
+      links.some(
+        l => !(l as HTMLAnchorElement).href.includes('&fromlast') && /m3u/.test((l as HTMLAnchorElement).href),
+      ),
+    ).toBe(true)
+  })
+
+  it('a phone single-file torrent uses the short playlist label', async () => {
+    phone(true)
+    install()
+    mount()
+    expect(await screen.findAllByLabelText(/playlist/i)).not.toHaveLength(0)
+  })
+})
