@@ -157,7 +157,18 @@ export default defineConfig(({ mode }) => {
         provider: 'v8',
         reporter: ['text-summary', 'json-summary', 'lcov'],
         include: ['src/**/*.{ts,tsx}'],
-        exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**', 'src/locales/**', 'src/**/*.d.ts'],
+        // index.tsx is the browser entrypoint (mounts React into #root); shared/testing is test infrastructure.
+        exclude: [
+          'src/**/*.test.{ts,tsx}',
+          'src/test/**',
+          'src/shared/testing/**',
+          'src/index.tsx',
+          'src/locales/**',
+          'src/**/*.d.ts',
+        ],
+        // Only enforced with `--coverage`. A floor a couple of points below the measured value, so it catches a
+        // regression without failing on noise.
+        thresholds: { lines: 90, statements: 88, functions: 84, branches: 76 },
       },
     },
   }
