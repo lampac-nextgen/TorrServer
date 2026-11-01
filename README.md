@@ -1,31 +1,35 @@
-<p align="center" style="text-align: center">
-  <img src="web/public/logo.png" width="200" alt="TorrServer Logo"><br/>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/logo-light.png">
+    <img alt="TorrServer" src="docs/assets/logo-dark.png" width="480">
+  </picture>
 </p>
 
 <p align="center">
   Simple and powerful tool for streaming torrents.
   <br/>
   <br/>
-  <a href="https://github.com/YouROK/TorrServer/blob/master/LICENSE">
-    <img alt="GitHub" src="https://img.shields.io/github/license/YouROK/TorrServer"/>
+  <a href="https://github.com/lampac-nextgen/TorrServer/actions/workflows/ci.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/lampac-nextgen/TorrServer/ci.yml?branch=master&logo=github&label=build" alt="Build" />
   </a>
-  <a href="https://goreportcard.com/report/github.com/YouROK/TorrServer">
-    <img src="https://goreportcard.com/badge/github.com/YouROK/TorrServer" />
+  <a href="https://github.com/lampac-nextgen/TorrServer/releases">
+    <img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/lampac-nextgen/TorrServer?label=version"/>
   </a>
-  <a href="https://pkg.go.dev/github.com/YouROK/TorrServer">
-    <img src="https://pkg.go.dev/badge/github.com/YouROK/TorrServer.svg" alt="Go Reference"/>
+  <a href="https://github.com/lampac-nextgen/TorrServer/tags">
+    <img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/lampac-nextgen/TorrServer?include_prereleases&label=pre-release"/>
   </a>
-  <a href="https://github.com/YouROK/TorrServer/issues">
-    <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="CodeFactor" />
+  <a href="https://go.dev/">
+    <img src="https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go" alt="Go 1.25+" />
   </a>
-  <a href="https://github.com/YouROK/TorrServer/actions/workflows/ci.yml" rel="nofollow">
-    <img src="https://img.shields.io/github/actions/workflow/status/YouROK/TorrServer/ci.yml?logo=Github" alt="CI" />
+  <a href="https://github.com/lampac-nextgen/TorrServer/blob/master/LICENSE">
+    <img alt="License: GPL-3.0" src="https://img.shields.io/github/license/lampac-nextgen/TorrServer"/>
   </a>
-  <a href="https://github.com/YouROK/TorrServer/releases" rel="nofollow">
-    <img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/YouROK/TorrServer?label=version"/>
+  <a href="https://github.com/lampac-nextgen/TorrServer/pkgs/container/torrserver">
+    <img src="https://img.shields.io/badge/ghcr.io-lampac--nextgen%2Ftorrserver-2496ED?logo=github" alt="Docker GHCR" />
   </a>
-  <a href="https://github.com/YouROK/TorrServer/tags" rel="nofollow">
-    <img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/YouROK/TorrServer?include_prereleases&label=pre-release"/>
+  <a href="https://github.com/lampac-nextgen/TorrServer/issues">
+    <img src="https://img.shields.io/github/issues/lampac-nextgen/TorrServer" alt="Issues" />
   </a>
 </p>
 
@@ -68,7 +72,7 @@ Docker:
 docker run --rm -d --name torrserver -p 8090:8090 ghcr.io/yourok/torrserver:latest
 ```
 
-Windows, macOS, NAS and others: download the binary for your platform from the [releases](https://github.com/YouROK/TorrServer/releases) page and run it.
+Windows, macOS, NAS and others: download the binary for your platform from the [releases](https://github.com/lampac-nextgen/TorrServer/releases) page and run it.
 
 Then open <http://127.0.0.1:8090> in a browser. [Installation](docs/installation.md) covers every platform and the installer's options.
 
