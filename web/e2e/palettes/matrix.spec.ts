@@ -106,6 +106,25 @@ test.describe('desktop', () => {
         await expectPalette(page, id, mode)
         await snap('library')
 
+        // Text input focus ring (inputs always match :focus-visible).
+        const filter = page.getByRole('textbox', { name: /Filter library/ })
+        await filter.focus()
+        await page.waitForTimeout(300)
+        const inputRing = await checkFocusRing(page, 'desktop:filter-focus')
+        if (inputRing) findings.push(inputRing)
+        await filter.blur()
+
+        // Command palette (Ctrl+K) and the header palette menu.
+        await page.keyboard.press('Control+k')
+        await expect(page.getByRole('dialog')).toBeVisible()
+        await snap('command-palette')
+        await closeDialog(page)
+        await page.getByLabel(/^Palette:/).click()
+        await expect(page.getByRole('menu')).toBeVisible()
+        await snap('palette-menu')
+        await page.keyboard.press('Escape')
+        await expect(page.getByRole('menu')).toHaveCount(0)
+
         await openDetails(page, fixtureDragon.title)
         await expect.poll(() => detailsModal(page).evaluate(el => getComputedStyle(el).transform)).toBe('none')
 
@@ -150,6 +169,13 @@ test.describe('desktop', () => {
             expect.soft(colours, 'cache snake paints several colours').toBeGreaterThan(3)
           }
         }
+
+        // Keyboard focus on tabs (arrow keys move focus visibly).
+        await tabs.nth(0).focus()
+        await page.keyboard.press('ArrowRight')
+        await page.waitForTimeout(300)
+        const tabRing = await checkFocusRing(page, 'desktop:tab-focus')
+        if (tabRing) findings.push(tabRing)
 
         // Hover and keyboard focus on the file rows.
         await tabs.nth(0).click()
@@ -310,6 +336,23 @@ test.describe('prefers-contrast: more', () => {
         await openDetails(page, fixtureDragon.title)
         await expect.poll(() => detailsModal(page).evaluate(el => getComputedStyle(el).transform)).toBe('none')
         await snap('details-files')
+        finish()
+      })
+    }
+  }
+})
+
+test.describe('empty library', () => {
+  test.use({ mockOptions: { library: [], torrent: fixtureDragon, cache: fixtureDragonCacheRich } })
+
+  for (const id of ids) {
+    for (const mode of MODES) {
+      test(`${id} · ${mode}`, async ({ page }) => {
+        const { snap, finish } = await prepare(page, id, mode, 'empty')
+        await page.goto('/', { waitUntil: 'domcontentloaded' })
+        await expect(page.getByText('No torrents added')).toBeVisible()
+        expect(await page.evaluate(() => document.documentElement.dataset.palette)).toBe(id)
+        await snap('empty')
         finish()
       })
     }
