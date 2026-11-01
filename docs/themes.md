@@ -46,9 +46,18 @@ cd web && node scripts/palette-report.mjs --threshold 0.03   # closest pairs, cl
 
 ## Adding or changing a palette
 
-1. Edit/add the entry in `palettes.json` (all tokens, both modes), then `yarn gen:palettes`.
-2. Pick a `group`. Add the id to `THEME_PALETTES` in `useThemePreference.ts` and `ThemePalette<Id>` to all seven locales.
-3. `yarn test` (token rules), then `yarn test:e2e:palettes` (see below).
+```bash
+cd web
+yarn palettes:new <id> --from heritage --group vivid   # scaffold: tokens, THEME_PALETTES, labels, CSS
+```
+
+Then:
+
+1. Tune the light/dark tokens of the new entry in `palettes.json`, rewrite its `note`, and `yarn gen:palettes`.
+2. Translate `ThemePalette<Id>` in `ru`, `ua`, `bg`, `fr`, `ro`, `zh` (the scaffold writes the English name everywhere).
+3. `yarn test` (token, group and sync rules), then `yarn test:e2e:palettes` (`PALETTES=<id>` for just this one).
+
+By hand instead: add the entry, add the id to `THEME_PALETTES` in `useThemePreference.ts`, add the label to all seven locales, `yarn gen:palettes`.
 
 ## Checking how it looks
 

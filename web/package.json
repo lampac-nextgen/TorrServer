@@ -34,6 +34,7 @@
   "scripts": {
     "i18n:check": "node scripts/i18n-check.mjs",
     "gen:palettes": "node scripts/gen-palettes.mjs",
+    "palettes:new": "node scripts/new-palette.mjs",
     "start": "vite",
     "dev": "vite",
     "build": "vite build",
