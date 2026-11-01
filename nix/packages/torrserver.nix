@@ -96,7 +96,7 @@ pkgs.stdenv.mkDerivation rec {
 
   meta = with pkgs.lib; {
     description = "Simple and powerful tool for streaming torrents";
-    homepage = "https://github.com/YouROK/TorrServer";
+    homepage = "https://github.com/lampac-nextgen/TorrServer";
     license = licenses.gpl3Only;
     mainProgram = "torrserver";
     platforms = [

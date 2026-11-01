@@ -126,10 +126,10 @@ export default function AboutDialog({ open, onClose, onOpenServerStatus, onOpenD
           <p className='mb-1 px-1 text-xs font-semibold uppercase tracking-wide text-muted'>{t('Links')}</p>
           <ul className='flex flex-wrap gap-2'>
             <li>
-              <AboutLink name={t('ProjectSource')} href='https://github.com/YouROK/TorrServer' />
+              <AboutLink name={t('ProjectSource')} href='https://github.com/lampac-nextgen/TorrServer' />
             </li>
             <li>
-              <AboutLink name={t('Releases')} href='https://github.com/YouROK/TorrServer/releases' />
+              <AboutLink name={t('Releases')} href='https://github.com/lampac-nextgen/TorrServer/releases' />
             </li>
             <li>
               <AboutLink name={t('NasReleases')} href='https://github.com/vladlenas' />
