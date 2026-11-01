@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="48" viewBox="0 0 240 48" role="img" aria-labelledby="title">
+  <title id="title">TorrServer</title>
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="lampacGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F0FF"/>
+      <stop offset="100%" stop-color="#C026D3"/>
+    </linearGradient>
+    <linearGradient id="boltGrad" x1="0%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="50%" stop-color="#818CF8"/>
+      <stop offset="100%" stop-color="#E879F9"/>
+    </linearGradient>
+    <linearGradient id="squircleBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F0FF" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#C026D3" stop-opacity="0.4"/>
+    </linearGradient>
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Squircle Icon Container -->
+  <rect x="1" y="1" width="46" height="46" rx="12" fill="#070814" stroke="url(#squircleBorder)" stroke-width="1.5"/>
+
+  <!-- Icon Mark: Magnet + Lightning with Circuit Lines -->
+  <g transform="translate(4, 4) scale(0.833)" filter="url(#neonGlow)">
+    <!-- Circuit Background Tracks -->
+    <path d="M12 18 L12 28 A12 12 0 0 0 36 28 L36 18" fill="none" stroke="url(#lampacGrad)" stroke-width="6" stroke-linecap="round"/>
+    <path d="M16 18 L16 28 A8 8 0 0 0 32 28 L32 18" fill="none" stroke="#070814" stroke-width="3"/>
+
+    <!-- Magnet Poles -->
+    <rect x="9" y="10" width="6" height="8" rx="1.5" fill="#00F0FF"/>
+    <rect x="33" y="10" width="6" height="8" rx="1.5" fill="#C026D3"/>
+
+    <!-- PCB Circuit Dots -->
+    <circle cx="12" cy="22" r="1" fill="#38BDF8"/>
+    <circle cx="12" cy="28" r="1" fill="#60A5FA"/>
+    <circle cx="36" cy="22" r="1" fill="#E879F9"/>
+    <circle cx="36" cy="28" r="1" fill="#C026D3"/>
+    <circle cx="24" cy="40" r="1.2" fill="#A855F7"/>
+
+    <!-- Integrated Central Lightning Bolt -->
+    <path d="M27 6 L17 23 L24 23 L18 40 L31 21 L24 21 Z" fill="url(#boltGrad)" stroke="#FFFFFF" stroke-width="0.75" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Typography -->
+  <text x="60" y="32" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="23" font-weight="800" letter-spacing="-0.5">
+    <tspan fill="#F8FAFC">Torr</tspan><tspan fill="url(#lampacGrad)">Server</tspan>
+  </text>
+</svg>

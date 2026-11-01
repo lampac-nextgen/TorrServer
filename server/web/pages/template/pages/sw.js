@@ -78,31 +78,31 @@ define(['./workbox-7e5eb42b'], (function (workbox) { 'use strict';
    */
   workbox.precacheAndRoute([{
     "url": "mstile-150x150.png",
-    "revision": "5701d873784a3f27c3dffb8a15736079"
+    "revision": "8b1e380c324cbb396762a0d48a4c58f5"
   }, {
     "url": "logo.png",
-    "revision": "f5db7f222c6f454cdf40c0793ef529f3"
+    "revision": "309432780e6787fb85db09f65df99d3a"
   }, {
     "url": "index.html",
     "revision": "bdbec0dc32e7844b7db6ed346d362c25"
   }, {
     "url": "icon.png",
-    "revision": "4425f6f2b52d2deaf2374ff63c682bcc"
+    "revision": "4a7a2fa5a2a3c9bbfde8e92aaeab2cf4"
   }, {
     "url": "favicon.ico",
-    "revision": "80c0375465582708d791bcab9b4053af"
+    "revision": "55a7d8b2cf89818a9badaf8c2c9a1ce2"
   }, {
     "url": "favicon-32x32.png",
-    "revision": "d34d53cbac4d729b0f49677fecbb48ac"
+    "revision": "8a4fc6ed45884443cd47ab7f3b0b83e6"
   }, {
     "url": "favicon-16x16.png",
-    "revision": "1cabe79322b89571937189d95cbe968b"
+    "revision": "bf58b52542cfe6e641d684189918bc48"
   }, {
     "url": "dlnaicon-48.png",
-    "revision": "94fb147303f8625b3f0dd99a385d72d8"
+    "revision": "c9b5afe8c9408fa46deebec9ca6d2f81"
   }, {
     "url": "dlnaicon-120.png",
-    "revision": "a741da374199bad465c9e2576da666d0"
+    "revision": "75b551cbe2025437ddce98463bc9f293"
   }, {
     "url": "static/workbox-window.prod.es5-Bd17z0YL.js",
     "revision": null

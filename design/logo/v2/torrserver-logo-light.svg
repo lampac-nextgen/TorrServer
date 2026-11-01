@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="48" viewBox="0 0 240 48" role="img" aria-labelledby="title">
+  <title id="title">TorrServer</title>
+  <defs>
+    <linearGradient id="lightIconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284C7"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="lightBoltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284C7"/>
+      <stop offset="100%" stop-color="#D946EF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Squircle Icon Container -->
+  <rect x="1" y="1" width="46" height="46" rx="12" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1.5"/>
+
+  <!-- Icon Mark: Magnet + Lightning -->
+  <g transform="translate(4, 4) scale(0.833)">
+    <path d="M12 18 L12 28 A12 12 0 0 0 36 28 L36 18" fill="none" stroke="url(#lightIconGrad)" stroke-width="6" stroke-linecap="round"/>
+    <path d="M16 18 L16 28 A8 8 0 0 0 32 28 L32 18" fill="none" stroke="#F1F5F9" stroke-width="3"/>
+
+    <rect x="9" y="10" width="6" height="8" rx="1.5" fill="#0284C7"/>
+    <rect x="33" y="10" width="6" height="8" rx="1.5" fill="#7C3AED"/>
+
+    <circle cx="12" cy="22" r="1.2" fill="#0284C7"/>
+    <circle cx="12" cy="28" r="1.2" fill="#0284C7"/>
+    <circle cx="36" cy="22" r="1.2" fill="#7C3AED"/>
+    <circle cx="36" cy="28" r="1.2" fill="#7C3AED"/>
+    <circle cx="24" cy="40" r="1.2" fill="#6D28D9"/>
+
+    <path d="M27 6 L17 23 L24 23 L18 40 L31 21 L24 21 Z" fill="url(#lightBoltGrad)" stroke="#FFFFFF" stroke-width="0.75" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Typography -->
+  <text x="60" y="32" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="23" font-weight="800" letter-spacing="-0.5">
+    <tspan fill="#0F172A">Torr</tspan><tspan fill="url(#lightIconGrad)">Server</tspan>
+  </text>
+</svg>
