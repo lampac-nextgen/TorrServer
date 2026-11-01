@@ -33,7 +33,7 @@ describe('drawSnake', () => {
       ctx,
       cells: [{ percentage: 0, priority: 0 }, {} as CacheMapItem],
       theme: 'dark',
-      variant: 'classic',
+      variant: 'default',
     })
     expect(calls.clearRect).toHaveLength(1)
     expect(calls.strokeRect).toHaveLength(2)
@@ -51,7 +51,7 @@ describe('drawSnake', () => {
         { completed: true, percentage: 0, priority: 0 },
       ],
       theme: 'light',
-      variant: 'classic',
+      variant: 'default',
     })
     const rects = calls.fillRect.map(a => a as number[])
     // Partial piece: empty background, then a half-height fill anchored at the bottom.
@@ -71,7 +71,7 @@ describe('drawSnake', () => {
         { percentage: 0, priority: 0, isReaderRange: true },
       ],
       theme: 'dark',
-      variant: 'classic',
+      variant: 'default',
     })
     expect(calls.setLineDash).toHaveLength(2) // dash on, dash off
     expect(calls.strokeRect.length).toBeGreaterThanOrEqual(3)
@@ -85,13 +85,13 @@ describe('drawSnake', () => {
       { percentage: 0, priority: 1 },
       { percentage: 0, priority: 2 },
     ]
-    drawSnake({ ...base, ctx: quiet.ctx, cells, theme: 'dark', variant: 'classic' })
+    drawSnake({ ...base, ctx: quiet.ctx, cells, theme: 'dark', variant: 'default' })
     drawSnake({
       ...base,
       ctx: loud.ctx,
       cells,
       theme: 'light',
-      variant: 'classic',
+      variant: 'default',
       isSnakeDebugMode: true,
       isMini: true,
     })
