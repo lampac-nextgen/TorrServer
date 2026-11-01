@@ -194,7 +194,7 @@ dockers_v2:
       - binary
     dockerfile: Dockerfile
     images:
-      - '{{ envOrDefault "DOCKER_IMAGE_ID" (printf "ghcr.io/%s" (envOrDefault "REGISTRY_IMAGE" "yourok/torrserver")) }}'
+      - '{{ envOrDefault "DOCKER_IMAGE_ID" (printf "ghcr.io/%s" (envOrDefault "REGISTRY_IMAGE" "lampac-nextgen/torrserver")) }}'
     tags:
       - '{{ .Tag }}'
       - latest

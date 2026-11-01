@@ -23,10 +23,10 @@
     <img src="https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go&logoColor=white" alt="Go 1.25+" />
   </a>
   <a href="https://www.typescriptlang.org/">
-    <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
   </a>
   <a href="https://react.dev/">
-    <img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black" alt="React" />
+    <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React" />
   </a>
   <a href="https://github.com/lampac-nextgen/TorrServer/blob/master/LICENSE">
     <img alt="License: GPL-3.0" src="https://img.shields.io/github/license/lampac-nextgen/TorrServer?color=blue"/>

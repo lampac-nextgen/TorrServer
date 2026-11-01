@@ -100,6 +100,27 @@ function applyThemeToDocument(isDark: boolean, palette: ThemePalette) {
     root.style.backgroundColor = surface
     if (document.body) document.body.style.backgroundColor = surface
   }
+  syncThemeColorMeta(root)
+}
+
+/**
+ * Browser/PWA chrome color follows the active palette header. The static tags in index.html
+ * (media-scoped, forest) are the pre-JS fallback; the first matching tag wins, so they are
+ * dropped once the store runs and a single unscoped tag takes over (user choice beats the OS scheme).
+ */
+function syncThemeColorMeta(root: HTMLElement) {
+  const header = getComputedStyle(root).getPropertyValue('--app-header').trim()
+  if (!header) return
+  const id = 'ts-theme-color'
+  document.querySelectorAll(`meta[name='theme-color']:not(#${id})`).forEach(el => el.remove())
+  let meta = document.getElementById(id) as HTMLMetaElement | null
+  if (!meta) {
+    meta = document.createElement('meta')
+    meta.id = id
+    meta.name = 'theme-color'
+    document.head.appendChild(meta)
+  }
+  meta.content = header
 }
 
 function readSystemDark(): boolean {
