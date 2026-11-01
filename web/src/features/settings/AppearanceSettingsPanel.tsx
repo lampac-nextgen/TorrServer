@@ -13,6 +13,8 @@ import { iconMenu } from 'shared/ui/iconProps'
 import { SettingSwitch } from './SettingSwitch'
 import SettingsSection from './SettingsSection'
 
+const ALL_GROUPS = groupedPalettes()
+
 function groupLabelKey(group: string): string {
   return `ThemePaletteGroup${group.charAt(0).toUpperCase()}${group.slice(1)}`
 }
@@ -33,7 +35,7 @@ export default function AppearanceSettingsPanel() {
     [t],
   )
 
-  const all = useMemo(() => groupedPalettes(palette), [palette])
+  const all = ALL_GROUPS
   const total = all.reduce((n, g) => n + g.ids.length, 0)
   const groups = useMemo(() => {
     const q = query.trim().toLocaleLowerCase()

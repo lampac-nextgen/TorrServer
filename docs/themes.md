@@ -36,9 +36,9 @@ HeroUI's own neutral tokens (`overlay`, `default`, `field-background`, `segment`
 
 `@media (prefers-contrast: more)` darkens `muted`/`border`/`separator` for every palette (generated).
 
-## Groups, hidden palettes and the report
+## Groups, retired palettes and the report
 
-Each palette has a `group` (`brand`, `neutral`, `warm`, `cool`, `green`, `vivid`, `accessible`); pickers render them grouped (`shared/theme/paletteGroups.ts`). Near-duplicates are retired with `"hidden": true`: they stay fully defined, so a stored choice keeps working and shows in the picker while it is in use, but new users do not see them. Find candidates with:
+Each palette has a `group` (`brand`, `neutral`, `warm`, `cool`, `green`, `vivid`, `accessible`); pickers render them grouped (`shared/theme/paletteGroups.ts`). Near-duplicates are retired by deleting the entry and adding it to the top-level `aliases` map of `palettes.json` (`"mint": "forest"`): a stored choice resolves to the successor and is migrated, and the pre-paint script in `index.html` (generated block between `/*palettes:start*/` and `/*palettes:end*/`) applies the same mapping, so there is no flash. Find candidates with:
 
 ```bash
 cd web && node scripts/palette-report.mjs --threshold 0.03   # closest pairs, clusters, accent hue coverage

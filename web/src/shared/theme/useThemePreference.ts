@@ -1,5 +1,7 @@
 import { useCallback, useSyncExternalStore } from 'react'
 
+import palettes from './palettes.json'
+
 export const THEME_MODES = {
   LIGHT: 'light',
   DARK: 'dark',
@@ -22,41 +24,24 @@ export const THEME_PALETTES = {
   MEADOW: 'meadow',
   FOG: 'fog',
   COPPER: 'copper',
-  CITRUS: 'citrus',
   MIDNIGHT: 'midnight',
-  SAGE: 'sage',
   CORAL: 'coral',
   HONEY: 'honey',
-  MOSS: 'moss',
-  SKY: 'sky',
   WINE: 'wine',
-  MINT: 'mint',
   CHARCOAL: 'charcoal',
   LAVA: 'lava',
-  ICE: 'ice',
   OLIVE: 'olive',
-  STEEL: 'steel',
   BLOSSOM: 'blossom',
-  SAND: 'sand',
   PINE: 'pine',
   AZURE: 'azure',
   GRAPHITE: 'graphite',
   NOIR: 'noir',
-  JADE: 'jade',
-  NAVY: 'navy',
   RUST: 'rust',
   ESPRESSO: 'espresso',
-  SEAFOAM: 'seafoam',
-  BRICK: 'brick',
-  STORM: 'storm',
   SAFFRON: 'saffron',
-  DENIM: 'denim',
-  CEDAR: 'cedar',
   VOLT: 'volt',
   PEARL: 'pearl',
   INK: 'ink',
-  FERN: 'fern',
-  BRONZE: 'bronze',
   VIOLET: 'violet',
   INDIGO: 'indigo',
   ORCHID: 'orchid',
@@ -90,6 +75,12 @@ function readStoredPalette(): ThemePalette {
   try {
     const stored = localStorage.getItem(STORAGE_KEY_PALETTE)
     if (stored && (THEME_PALETTE_IDS as string[]).includes(stored)) return stored as ThemePalette
+    // Retired palettes resolve to their nearest successor (and the choice is migrated).
+    const successor = stored ? (palettes.aliases as Record<string, string>)[stored] : undefined
+    if (successor && (THEME_PALETTE_IDS as string[]).includes(successor)) {
+      localStorage.setItem(STORAGE_KEY_PALETTE, successor)
+      return successor as ThemePalette
+    }
   } catch {
     /* ignore */
   }

@@ -1,4 +1,4 @@
-// Usage: node scripts/palette-report.mjs [--threshold 0.06] [--all]   (--all includes hidden palettes)
+// Usage: node scripts/palette-report.mjs [--threshold 0.06]
 // Compares every palette with every other one (OKLab distance over accent, header and background
 // in both modes) and prints near-duplicates plus the accent-hue coverage, to guide curation.
 import { readFileSync } from 'node:fs'
@@ -7,7 +7,6 @@ import { fileURLToPath } from 'node:url'
 const data = JSON.parse(
   readFileSync(fileURLToPath(new URL('../src/shared/theme/palettes.json', import.meta.url)), 'utf8'),
 )
-if (!process.argv.includes('--all')) data.palettes = data.palettes.filter(p => !p.hidden) // hidden = already curated away
 const threshold = Number(process.argv[process.argv.indexOf('--threshold') + 1]) || 0.06
 
 const lin = c => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)

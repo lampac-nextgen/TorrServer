@@ -448,7 +448,7 @@ function PaletteMenu({
       </Button>
       <Dropdown.Popover placement='bottom end' className='max-h-[min(70dvh,28rem)] min-w-[13rem] overflow-y-auto'>
         <Dropdown.Menu aria-label={label}>
-          {pickerPaletteIds(current).map(id => {
+          {pickerPaletteIds().map(id => {
             const selected = id === current
             const swatch = THEME_PALETTE_SWATCHES[id]
             return (

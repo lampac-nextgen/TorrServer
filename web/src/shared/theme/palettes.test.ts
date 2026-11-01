@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import data from './palettes.json'
-import { PALETTE_TOKENS, renderPalettesCss } from './palettesCss.mjs'
+import { PALETTE_TOKENS, renderPalettesCss, spliceIndexHtml } from './palettesCss.mjs'
 import { THEME_PALETTE_SWATCHES } from './paletteSwatches'
 import { THEME_PALETTE_IDS } from './useThemePreference'
 
@@ -63,6 +63,11 @@ describe('theme palettes stay in sync', () => {
   it('keeps palettes.generated.css in sync with palettes.json (run `yarn gen:palettes`)', () => {
     const css = readFileSync(resolve(SRC, 'palettes.generated.css'), 'utf8')
     expect(css).toBe(renderPalettesCss(data))
+  })
+
+  it('keeps the index.html pre-paint block in sync with palettes.json (run `yarn gen:palettes`)', () => {
+    const html = readFileSync(resolve(SRC, '../index.html'), 'utf8')
+    expect(html).toBe(spliceIndexHtml(html, data))
   })
 
   it.each(LOCALES)('has a label for every palette in %s', locale => {

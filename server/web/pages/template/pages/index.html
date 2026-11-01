@@ -13,17 +13,32 @@
     <meta name="application-name" content="TorrServer">
     <meta name="color-scheme" content="light dark">
 
-    <!-- Apply the stored palette/brightness before first paint (mirrors shared/theme/useThemePreference.ts). -->
+    <!-- Apply the stored palette/brightness (and theme-color) before first paint; mirrors shared/theme/useThemePreference.ts. -->
     <script>
       ;(function () {
+        /*palettes:start*/
+          var ALIASES = {"brick":"rust","bronze":"honey","cedar":"copper","citrus":"honey","denim":"midnight","fern":"meadow","ice":"ocean","jade":"forest","mint":"forest","moss":"olive","navy":"midnight","sage":"slate","sand":"olive","seafoam":"forest","sky":"arctic","steel":"fog","storm":"fog"}
+          var HEADERS = {"forest":["#0d6b4f","#0e1613"],"nextgen":["#0b2540","#0c1524"],"neon":["#0a3d4a","#0a141b"],"amber":["#3a2608","#14100a"],"ocean":["#0c5f6e","#0c1419"],"slate":["#3a4542","#121516"],"ember":["#3d2e24","#14100d"],"arctic":["#1e3a5f","#0c1018"],"rose":["#5a3542","#140f12"],"meadow":["#3d5c28","#101610"],"fog":["#3e4654","#12151a"],"copper":["#4a3a2c","#13100d"],"midnight":["#1a2d4a","#0a0e14"],"coral":["#6b3a2e","#140f0d"],"honey":["#5a4210","#12100c"],"wine":["#4a2030","#120c0e"],"charcoal":["#2a2a2a","#101010"],"lava":["#6b2410","#120c0a"],"olive":["#484828","#10100c"],"blossom":["#6b3554","#120e10"],"pine":["#0e4a2c","#0c1410"],"azure":["#0e3a78","#0a1018"],"graphite":["#303038","#101012"],"noir":["#111111","#0c0c0c"],"rust":["#7a3a1c","#140e0c"],"espresso":["#4a2e18","#12100e"],"saffron":["#8a5e08","#14120c"],"volt":["#3e6410","#0e140c"],"pearl":["#3a4c58","#101418"],"ink":["#122040","#0a0e16"],"violet":["#3b2478","#120d20"],"indigo":["#1f2766","#0d1022"],"orchid":["#5c1a50","#1a0c15"],"mono":["#1a1a1a","#101010"],"contrast":["#000000","#000000"],"dusk":["#3d1f45","#170e1c"],"heritage":["#0b2540","#0c1524"],"circuit":["#0c3b2d","#08130f"],"fuchsia":["#4a145a","#190c24"],"lagoon":["#0a4a5e","#0a1a23"]}
+          /*palettes:end*/
         try {
           var scheme = localStorage.getItem('ts-color-scheme')
           var palette = localStorage.getItem('ts-color-palette')
           var root = document.documentElement
-          if (scheme === 'dark' || (scheme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            root.classList.add('dark')
-          }
+          var dark = scheme === 'dark' || (scheme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          if (dark) root.classList.add('dark')
+          if (palette && ALIASES[palette]) palette = ALIASES[palette]
           if (palette && /^[a-z]+$/.test(palette)) root.dataset.palette = palette
+          if (palette && HEADERS[palette]) {
+            // The static, media-scoped tags below are the fallback; one unscoped tag follows the user's choice.
+            document.querySelectorAll('meta[name="theme-color"]').forEach(function (el) {
+              el.remove()
+            })
+            var meta = document.createElement('meta')
+            meta.id = 'ts-theme-color'
+            meta.name = 'theme-color'
+            meta.content = HEADERS[palette][dark ? 1 : 0]
+            document.head.appendChild(meta)
+          }
         } catch (e) {
           /* storage unavailable: the app falls back to the default palette */
         }
@@ -99,14 +114,14 @@
     <link rel="apple-touch-startup-image" href="./apple-splash-1334-750.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
     <link rel="apple-touch-startup-image" href="./apple-splash-640-1136.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
     <link rel="apple-touch-startup-image" href="./apple-splash-1136-640.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
-    <script type="module" crossorigin src="./static/index-CaL7SBlK.js"></script>
+    <script type="module" crossorigin src="./static/index-C24xvTwg.js"></script>
     <link rel="modulepreload" crossorigin href="./static/rolldown-runtime-CNOWq4Kh.js">
     <link rel="modulepreload" crossorigin href="./static/heroui-DxLYSTdm.js">
     <link rel="modulepreload" crossorigin href="./static/vendor-Bh6mcoZx.js">
     <link rel="modulepreload" crossorigin href="./static/hosts-CEyv4OUe.js">
     <link rel="modulepreload" crossorigin href="./static/settings-DrGI2L6K.js">
     <link rel="modulepreload" crossorigin href="./static/localPrefs-C6BvauQz.js">
-    <link rel="modulepreload" crossorigin href="./static/useThemePreference-odwqqDVt.js">
+    <link rel="modulepreload" crossorigin href="./static/useThemePreference-BHjuin5i.js">
     <link rel="modulepreload" crossorigin href="./static/ModalOpenContext-Px9vUVWH.js">
     <link rel="modulepreload" crossorigin href="./static/authCredentials-CGFatuGp.js">
     <link rel="modulepreload" crossorigin href="./static/createLucideIcon-DHLRA3xa.js">
@@ -118,7 +133,7 @@
     <link rel="modulepreload" crossorigin href="./static/torrents-BhaJRK4z.js">
     <link rel="modulepreload" crossorigin href="./static/pollInterval-DDhtkZBE.js">
     <link rel="modulepreload" crossorigin href="./static/useDialogFullScreen-CK6Ze7fg.js">
-    <link rel="stylesheet" crossorigin href="./static/index-ahln5DLX.css">
+    <link rel="stylesheet" crossorigin href="./static/index-DTa776_G.css">
   </head>
 
   <body>

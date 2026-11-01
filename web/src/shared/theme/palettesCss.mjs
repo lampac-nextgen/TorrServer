@@ -73,3 +73,23 @@ export function renderPalettesCss(data) {
 `)
   return parts.join('\n')
 }
+
+/**
+ * The data block of the pre-paint script in index.html: retired-palette aliases and the header
+ * colours (light, dark) used for `theme-color`. Spliced between the markers by gen-palettes.mjs.
+ */
+export function renderPrepaintData(data) {
+  const headers = Object.fromEntries(data.palettes.map(p => [p.id, [p.light['app-header'], p.dark['app-header']]]))
+  return `var ALIASES = ${JSON.stringify(data.aliases ?? {})}\n          var HEADERS = ${JSON.stringify(headers)}`
+}
+
+export const PREPAINT_START = '/*palettes:start*/'
+export const PREPAINT_END = '/*palettes:end*/'
+
+/** Replace the marked region of an index.html with the current data. */
+export function spliceIndexHtml(html, data) {
+  const a = html.indexOf(PREPAINT_START)
+  const b = html.indexOf(PREPAINT_END)
+  if (a < 0 || b < a) throw new Error('index.html: pre-paint markers not found')
+  return `${html.slice(0, a + PREPAINT_START.length)}\n          ${renderPrepaintData(data)}\n          ${html.slice(b)}`
+}
