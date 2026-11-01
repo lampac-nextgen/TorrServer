@@ -43,10 +43,10 @@ isAuthPass=""
 
 # Constants
 # GitHub release source (default: upstream; forks: TORRSERVER_GITHUB_REPO=owner/TorrServer)
-GITHUB_REPO="${TORRSERVER_GITHUB_REPO:-YouROK/TorrServer}"
+GITHUB_REPO="${TORRSERVER_GITHUB_REPO:-lampac-nextgen/TorrServer}"
 readonly REPO_URL="https://github.com/${GITHUB_REPO}"
 readonly REPO_API_URL="https://api.github.com/repos/${GITHUB_REPO}"
-readonly VERSION_PREFIX="MatriX"
+readonly VERSION_PREFIX="NextGen"
 readonly BINARY_NAME_PREFIX="TorrServer-linux"
 readonly BINARY_PLATFORM="linux"
 readonly MIN_GLIBC_VERSION="2.32"
@@ -448,7 +448,9 @@ getAlternateBinaryName() {
 
 getReleaseVersionNumber() {
   local target_version="$1"
-  echo "${target_version#"${VERSION_PREFIX}".}"
+  target_version="${target_version#NextGen.}"
+  target_version="${target_version#MatriX.}"
+  echo "$target_version"
 }
 
 supportsGstArch() {
@@ -867,8 +869,8 @@ checkGlibcCompatibility() {
   local version_number
 
   # Extract numeric version
-  if [[ "$target_version" =~ ${VERSION_PREFIX}\.([0-9]+) ]]; then
-    version_number="${BASH_REMATCH[1]}"
+  if [[ "$target_version" =~ (NextGen|MatriX)\.([0-9]+) ]]; then
+    version_number="${BASH_REMATCH[2]}"
   elif [[ "$target_version" =~ ^[0-9]+$ ]]; then
     version_number="$target_version"
   else

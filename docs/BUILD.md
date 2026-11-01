@@ -286,9 +286,9 @@ docker run --rm -d --name torrserver \
 1. Fork on GitHub; clone with `origin` pointing at your fork.
 2. `make start-build` — verify local build.
 3. Enable GitHub Actions on the fork.
-4. Push a tag (e.g. `MatriX.141.4-test`) to test release + GHCR push.
+4. Push a tag (e.g. `NextGen.148.1-test`) to test release + GHCR push.
 
-Install scripts default to **YouROK/TorrServer** releases. Forks can override:
+Install scripts default to **lampac-nextgen/TorrServer** releases. Forks can override:
 
 ```bash
 TORRSERVER_GITHUB_REPO=myorg/TorrServer sudo bash ./installTorrServerLinux.sh --install --silent

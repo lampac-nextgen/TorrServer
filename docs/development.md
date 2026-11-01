@@ -44,7 +44,7 @@ make dist-full         # full snapshot (all platforms)
 make update            # web embed + swagger
 ```
 
-**Tagged releases** (`.goreleaser.yaml`, workflow `.github/workflows/release.yml`) use the `MatriX.*` tag scheme and publish to `ghcr.io/<owner>/<repo>` where `<owner>/<repo>` is the GitHub repository lowercased. Override locally with `REGISTRY_IMAGE=owner/repo make …`.
+**Tagged releases** (`.goreleaser.yaml`, workflow `.github/workflows/release.yml`) use the `NextGen.*` tag scheme and publish to `ghcr.io/<owner>/<repo>` where `<owner>/<repo>` is the GitHub repository lowercased. Override locally with `REGISTRY_IMAGE=owner/repo make …`.
 
 Direct GoReleaser (without Make):
 

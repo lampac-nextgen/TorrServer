@@ -38,13 +38,13 @@ async function api(
 
 test.skip(!live, 'set LIVE=1 TORRSERVER_URL=http://127.0.0.1:PORT')
 
-test('live echo is MatriX', async () => {
+test('live echo is NextGen', async () => {
   const testInfo = test.info()
   testInfo.setTimeout(15_000)
   const res = await api('/echo')
   const body = await res.text()
   expect(res.status).toBe(200)
-  expect(body).toMatch(/MatriX/)
+  expect(body).toMatch(/(NextGen|MatriX)/)
 })
 
 test('live torrent get/add + stream stat + play range + ffp', async () => {

@@ -24,7 +24,7 @@ vi.mock('features/pwa/AndroidInstallBanner', () => ({ default: () => null }))
 
 const routes = (over: Record<string, unknown> = {}) =>
   routeApi({
-    'GET /echo': 'MatriX.141-abcdef',
+    'GET /echo': 'NextGen.148-abcdef',
     'POST /torrents': [],
     'POST /settings': { CacheSize: 64 * 1024 * 1024 },
     'GET /storage/settings': { settings: 'json', viewed: 'bbolt' },
@@ -44,7 +44,7 @@ describe('Shell', () => {
   it('shows the short server version from /echo and hosts the library page', async () => {
     routes()
     renderWithApp(<Shell />)
-    expect(await screen.findByText('MatriX.141')).toBeTruthy()
+    expect(await screen.findByText('NextGen.148')).toBeTruthy()
     expect(screen.getByTestId('library')).toBeTruthy()
   })
 
@@ -56,7 +56,7 @@ describe('Shell', () => {
     })
     renderWithApp(<Shell />)
     await screen.findByTestId('library')
-    expect(screen.queryByText(/MatriX/)).toBeNull()
+    expect(screen.queryByText(/NextGen/)).toBeNull()
   })
 
   it('persists the sort toggle and passes it to the library', async () => {

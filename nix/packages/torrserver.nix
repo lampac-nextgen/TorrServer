@@ -9,10 +9,10 @@
 }:
 pkgs.stdenv.mkDerivation rec {
   pname = "torrserver";
-  version = "MatriX.141";
+  version = "NextGen.148";
 
   src = pkgs.fetchgit {
-    url = "https://github.com/YouROK/TorrServer.git";
+    url = "https://github.com/lampac-nextgen/TorrServer.git";
     rev = "${version}";
     hash = "sha256-OeAAYyxfZxcx0ANeRAWJTrZMNWtdrM/pwXyO5QNTwYo=";
   };

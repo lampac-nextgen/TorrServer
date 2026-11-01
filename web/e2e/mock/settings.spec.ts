@@ -117,7 +117,7 @@ test.describe('phone', () => {
     const nav = page.locator('.ts-bottom-nav')
     await expect(nav).toBeVisible()
     await expect(page.getByRole('button', { name: 'Collapse sidebar' })).toHaveCount(0)
-    await expect(page.locator('header').getByText('MatriX.144')).toHaveCount(0)
+    await expect(page.locator('header').getByText('NextGen.148')).toHaveCount(0)
 
     await assertNoHorizontalOverflow(page.locator('header'), 'header')
     await assertNoHorizontalOverflow(nav, 'bottom nav')
@@ -187,7 +187,7 @@ test.describe('tablet', () => {
 test.describe('desktop', () => {
   test('chrome: appearance in header, settings is a centered card', async ({ page }) => {
     await expect(libraryCard(page)).toBeVisible({ timeout: 20_000 })
-    await expect(page.locator('header').getByText('MatriX.144')).toBeVisible()
+    await expect(page.locator('header').getByText('NextGen.148')).toBeVisible()
     await expect(page.getByLabel(/Theme:/)).toBeVisible()
     await expect(page.getByLabel(/Palette:/)).toBeVisible()
     await expect(page.getByLabel('Language')).toBeVisible()

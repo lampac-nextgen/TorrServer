@@ -65,7 +65,7 @@ func TestLiveTorrentStreamStatPlayFFP(t *testing.T) {
 
 	echo := do(http.MethodGet, base+"/echo", "", nil)
 	b := readClose(echo)
-	if echo.StatusCode != 200 || !strings.Contains(string(b), "MatriX") {
+	if echo.StatusCode != 200 || (!strings.Contains(string(b), "NextGen") && !strings.Contains(string(b), "MatriX")) {
 		t.Fatalf("echo %d %s", echo.StatusCode, b)
 	}
 

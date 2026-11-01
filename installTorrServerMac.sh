@@ -41,10 +41,10 @@ sysPath=""
 
 # Constants
 # GitHub release source (default: upstream; forks: TORRSERVER_GITHUB_REPO=owner/TorrServer)
-GITHUB_REPO="${TORRSERVER_GITHUB_REPO:-YouROK/TorrServer}"
+GITHUB_REPO="${TORRSERVER_GITHUB_REPO:-lampac-nextgen/TorrServer}"
 readonly REPO_URL="https://github.com/${GITHUB_REPO}"
 readonly REPO_API_URL="https://api.github.com/repos/${GITHUB_REPO}"
-readonly VERSION_PREFIX="MatriX"
+readonly VERSION_PREFIX="NextGen"
 readonly BINARY_NAME_PREFIX="TorrServer-darwin"
 readonly BINARY_PLATFORM="darwin"
 readonly MIN_VERSION_WITH_GST="141.10"
@@ -280,7 +280,9 @@ getAlternateBinaryName() {
 
 getReleaseVersionNumber() {
   local target_version="$1"
-  echo "${target_version#"${VERSION_PREFIX}".}"
+  target_version="${target_version#NextGen.}"
+  target_version="${target_version#MatriX.}"
+  echo "$target_version"
 }
 
 compareVersions() {

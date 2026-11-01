@@ -137,7 +137,7 @@ export async function installMocks(
 ) {
   const waf: Record<string, unknown> = { ...fixtureWaf }
 
-  await page.route('**/echo', route => route.fulfill({ status: 200, contentType: 'text/plain', body: 'MatriX.144' }))
+  await page.route('**/echo', route => route.fulfill({ status: 200, contentType: 'text/plain', body: 'NextGen.148' }))
   await page.route('**/gst/echo', route => route.fulfill({ status: 404, body: '' }))
   await page.route('**/gst/settings', route => route.fulfill(json({})))
   await page.route('**/storage/settings', route => route.fulfill(json({})))

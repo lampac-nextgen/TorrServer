@@ -19,7 +19,7 @@ test.describe('library API', () => {
   test('GET /echo is anonymous and returns the version', async () => {
     const r = await fetch(s.srv.base + '/echo')
     expect(r.status).toBe(200)
-    expect(await r.text()).toMatch(/^MatriX\.\d+/)
+    expect(await r.text()).toMatch(/^(NextGen|MatriX)\.\d+/)
   })
 
   test('mediabase and runtime status answer', async () => {
@@ -249,7 +249,7 @@ test.describe('library UI', () => {
         .toBeVisible({ timeout: 3000 })
         .catch(() => {})
       const txt = await page.locator('body').innerText()
-      expect(txt.replace(/\d+\.\d+\.\d+|MatriX\.\d+|\w+\.(mkv|srt|jpg)/g, ''), `raw key in ${l}`).not.toMatch(
+      expect(txt.replace(/\d+\.\d+\.\d+|(NextGen|MatriX)\.\d+|\w+\.(mkv|srt|jpg)/g, ''), `raw key in ${l}`).not.toMatch(
         /\b[A-Za-z]+\.[a-z]+[A-Za-z]*\.[A-Za-z]+\b/,
       )
       await page.keyboard.press('Escape')

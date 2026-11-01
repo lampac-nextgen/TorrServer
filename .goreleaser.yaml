@@ -10,7 +10,7 @@ env:
   - Metadata_Description=Torrent stream server
   - Metadata_License=GPL-3.0
 
-# MatriX.* tags: sort versions correctly for changelog "previous tag".
+# NextGen.* tags: sort versions correctly for changelog "previous tag".
 git:
   tag_sort: -version:refname
 

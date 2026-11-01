@@ -14,22 +14,44 @@
     <img src="https://img.shields.io/github/actions/workflow/status/lampac-nextgen/TorrServer/ci.yml?branch=master&logo=github&label=build" alt="Build" />
   </a>
   <a href="https://github.com/lampac-nextgen/TorrServer/releases">
-    <img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/lampac-nextgen/TorrServer?label=version"/>
+    <img alt="GitHub release" src="https://img.shields.io/github/v/release/lampac-nextgen/TorrServer?label=release&color=00F0FF"/>
   </a>
   <a href="https://github.com/lampac-nextgen/TorrServer/tags">
-    <img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/lampac-nextgen/TorrServer?include_prereleases&label=pre-release"/>
+    <img alt="GitHub tag" src="https://img.shields.io/github/v/tag/lampac-nextgen/TorrServer?include_prereleases&label=pre-release&color=FFAA00"/>
   </a>
   <a href="https://go.dev/">
-    <img src="https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go" alt="Go 1.25+" />
+    <img src="https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go&logoColor=white" alt="Go 1.25+" />
+  </a>
+  <a href="https://www.typescriptlang.org/">
+    <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+  </a>
+  <a href="https://react.dev/">
+    <img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black" alt="React" />
   </a>
   <a href="https://github.com/lampac-nextgen/TorrServer/blob/master/LICENSE">
-    <img alt="License: GPL-3.0" src="https://img.shields.io/github/license/lampac-nextgen/TorrServer"/>
+    <img alt="License: GPL-3.0" src="https://img.shields.io/github/license/lampac-nextgen/TorrServer?color=blue"/>
   </a>
   <a href="https://github.com/lampac-nextgen/TorrServer/pkgs/container/torrserver">
-    <img src="https://img.shields.io/badge/ghcr.io-lampac--nextgen%2Ftorrserver-2496ED?logo=github" alt="Docker GHCR" />
+    <img src="https://img.shields.io/badge/ghcr.io-lampac--nextgen%2Ftorrserver-2496ED?logo=docker&logoColor=white" alt="Docker GHCR" />
+  </a>
+  <br/>
+  <a href="https://github.com/lampac-nextgen/TorrServer/stargazers">
+    <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/lampac-nextgen/TorrServer?style=flat&logo=github&color=gold" />
+  </a>
+  <a href="https://github.com/lampac-nextgen/TorrServer/forks">
+    <img alt="GitHub forks" src="https://img.shields.io/github/forks/lampac-nextgen/TorrServer?style=flat&logo=github" />
   </a>
   <a href="https://github.com/lampac-nextgen/TorrServer/issues">
-    <img src="https://img.shields.io/github/issues/lampac-nextgen/TorrServer" alt="Issues" />
+    <img src="https://img.shields.io/github/issues/lampac-nextgen/TorrServer?logo=github" alt="Issues" />
+  </a>
+  <a href="https://github.com/lampac-nextgen/TorrServer/pulls">
+    <img src="https://img.shields.io/github/issues-pr/lampac-nextgen/TorrServer?logo=github" alt="Pull Requests" />
+  </a>
+  <a href="https://github.com/lampac-nextgen/TorrServer/commits/master">
+    <img src="https://img.shields.io/github/last-commit/lampac-nextgen/TorrServer?logo=github" alt="Last Commit" />
+  </a>
+  <a href="https://t.me/LampacTalks">
+    <img src="https://img.shields.io/badge/Telegram-Chat-2CA5E0?logo=telegram&logoColor=white" alt="Telegram Chat" />
   </a>
 </p>
 
@@ -42,7 +64,7 @@ allowing the cache size to be adjusted according to the system parameters and th
 
 ## AI Documentation
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/YouROK/TorrServer)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/lampac-nextgen/TorrServer)
 
 ## Features
 
@@ -63,13 +85,13 @@ allowing the cache size to be adjusted according to the system parameters and th
 Linux (interactive installer, systemd service):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YouROK/TorrServer/master/installTorrServerLinux.sh -o installTorrServerLinux.sh && chmod 755 installTorrServerLinux.sh && sudo bash ./installTorrServerLinux.sh
+curl -fsSL https://raw.githubusercontent.com/lampac-nextgen/TorrServer/master/installTorrServerLinux.sh -o installTorrServerLinux.sh && chmod 755 installTorrServerLinux.sh && sudo bash ./installTorrServerLinux.sh
 ```
 
 Docker:
 
 ```bash
-docker run --rm -d --name torrserver -p 8090:8090 ghcr.io/yourok/torrserver:latest
+docker run --rm -d --name torrserver -p 8090:8090 ghcr.io/lampac-nextgen/torrserver:latest
 ```
 
 Windows, macOS, NAS and others: download the binary for your platform from the [releases](https://github.com/lampac-nextgen/TorrServer/releases) page and run it.
