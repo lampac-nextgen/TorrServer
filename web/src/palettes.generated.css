@@ -15,6 +15,7 @@
 
   --accent: #00845b;
   --accent-foreground: #ffffff;
+  --accent-secondary: #bd8522;
 
   --danger: #e05555;
   --warning: #bd8522;
@@ -39,6 +40,7 @@
 
   --accent: #2ecf9a;
   --accent-foreground: #06120d;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -65,6 +67,7 @@
 
   --accent: #0a6fa8;
   --accent-foreground: #ffffff;
+  --accent-secondary: #b86e00;
 
   --danger: #e05555;
   --warning: #bc8422;
@@ -90,6 +93,7 @@
 
   --accent: #38bdf8;
   --accent-foreground: #04202e;
+  --accent-secondary: #ffaa00;
 
   --danger: #e2707a;
   --warning: #ffaa00;
@@ -115,6 +119,7 @@
 
   --accent: #00788a;
   --accent-foreground: #ffffff;
+  --accent-secondary: #b86e00;
 
   --danger: #e05555;
   --warning: #bd8522;
@@ -139,6 +144,7 @@
 
   --accent: #00e5f5;
   --accent-foreground: #00181a;
+  --accent-secondary: #ffaa00;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -164,6 +170,7 @@
 
   --accent: #a85f00;
   --accent-foreground: #ffffff;
+  --accent-secondary: #00788a;
 
   --danger: #e05555;
   --warning: #bd8522;
@@ -188,6 +195,7 @@
 
   --accent: #ffaa00;
   --accent-foreground: #1a1000;
+  --accent-secondary: #00e5f5;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -213,6 +221,7 @@
 
   --accent: #0a808d;
   --accent-foreground: #ffffff;
+  --accent-secondary: #bd8522;
 
   --danger: #e05555;
   --warning: #bd8522;
@@ -237,6 +246,7 @@
 
   --accent: #3ecfd4;
   --accent-foreground: #061014;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -262,6 +272,7 @@
 
   --accent: #4d7a6c;
   --accent-foreground: #ffffff;
+  --accent-secondary: #bc8422;
 
   --danger: #e05555;
   --warning: #bc8422;
@@ -286,6 +297,7 @@
 
   --accent: #8fb8a8;
   --accent-foreground: #0c1210;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -311,6 +323,7 @@
 
   --accent: #bb5824;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -335,6 +348,7 @@
 
   --accent: #e8955a;
   --accent-foreground: #1a1008;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -360,6 +374,7 @@
 
   --accent: #2b6cb0;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -384,6 +399,7 @@
 
   --accent: #6eb6ff;
   --accent-foreground: #081018;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -409,6 +425,7 @@
 
   --accent: #bf4e68;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -433,6 +450,7 @@
 
   --accent: #e890a4;
   --accent-foreground: #1a0c10;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -458,6 +476,7 @@
 
   --accent: #548121;
   --accent-foreground: #ffffff;
+  --accent-secondary: #bd8522;
 
   --danger: #e05555;
   --warning: #bd8522;
@@ -482,6 +501,7 @@
 
   --accent: #a8d96a;
   --accent-foreground: #101808;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -507,6 +527,7 @@
 
   --accent: #5b6b85;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -531,6 +552,7 @@
 
   --accent: #9aabc4;
   --accent-foreground: #0c1016;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -556,6 +578,7 @@
 
   --accent: #a4672d;
   --accent-foreground: #ffffff;
+  --accent-secondary: #b88121;
 
   --danger: #e05555;
   --warning: #b88121;
@@ -580,6 +603,7 @@
 
   --accent: #d4a574;
   --accent-foreground: #1a1208;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -605,6 +629,7 @@
 
   --accent: #ad8b21;
   --accent-foreground: #1a1608;
+  --accent-secondary: #bd8522;
 
   --danger: #e05555;
   --warning: #bd8522;
@@ -629,6 +654,7 @@
 
   --accent: #e8c84a;
   --accent-foreground: #1a1608;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -654,6 +680,7 @@
 
   --accent: #2a4a7a;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -678,6 +705,7 @@
 
   --accent: #7aa2e0;
   --accent-foreground: #081018;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -703,6 +731,7 @@
 
   --accent: #647a67;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -727,6 +756,7 @@
 
   --accent: #a3bba6;
   --accent-foreground: #0c120e;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -752,6 +782,7 @@
 
   --accent: #d04525;
   --accent-foreground: #ffffff;
+  --accent-secondary: #bc8422;
 
   --danger: #e05555;
   --warning: #bc8422;
@@ -776,6 +807,7 @@
 
   --accent: #f0a08c;
   --accent-foreground: #1a0c08;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -801,6 +833,7 @@
 
   --accent: #bd8519;
   --accent-foreground: #1a1408;
+  --accent-secondary: #bd8522;
 
   --danger: #e05555;
   --warning: #bd8522;
@@ -825,6 +858,7 @@
 
   --accent: #e8b84a;
   --accent-foreground: #1a1408;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -850,6 +884,7 @@
 
   --accent: #5a7040;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -874,6 +909,7 @@
 
   --accent: #9cba6e;
   --accent-foreground: #0c1208;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -899,6 +935,7 @@
 
   --accent: #2b7ab6;
   --accent-foreground: #ffffff;
+  --accent-secondary: #bc8422;
 
   --danger: #e05555;
   --warning: #bc8422;
@@ -923,6 +960,7 @@
 
   --accent: #6eb8f0;
   --accent-foreground: #081018;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -948,6 +986,7 @@
 
   --accent: #8b3a4a;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -972,6 +1011,7 @@
 
   --accent: #d48090;
   --accent-foreground: #1a080c;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -997,6 +1037,7 @@
 
   --accent: #238367;
   --accent-foreground: #ffffff;
+  --accent-secondary: #bd8522;
 
   --danger: #e05555;
   --warning: #bd8522;
@@ -1021,6 +1062,7 @@
 
   --accent: #5ed4b0;
   --accent-foreground: #061410;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1046,6 +1088,7 @@
 
   --accent: #3d3d3d;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -1070,6 +1113,7 @@
 
   --accent: #c0c0c0;
   --accent-foreground: #0c0c0c;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1095,6 +1139,7 @@
 
   --accent: #d4391a;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -1119,6 +1164,7 @@
 
   --accent: #ff6b4a;
   --accent-foreground: #1a0804;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1144,6 +1190,7 @@
 
   --accent: #2c7f8b;
   --accent-foreground: #ffffff;
+  --accent-secondary: #bd8522;
 
   --danger: #e05555;
   --warning: #bd8522;
@@ -1168,6 +1215,7 @@
 
   --accent: #6ed4e4;
   --accent-foreground: #061418;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1193,6 +1241,7 @@
 
   --accent: #787839;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -1217,6 +1266,7 @@
 
   --accent: #c0c070;
   --accent-foreground: #121208;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1242,6 +1292,7 @@
 
   --accent: #4a6278;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -1266,6 +1317,7 @@
 
   --accent: #8aabc4;
   --accent-foreground: #0a1016;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1291,6 +1343,7 @@
 
   --accent: #c8407e;
   --accent-foreground: #ffffff;
+  --accent-secondary: #bc8422;
 
   --danger: #e05555;
   --warning: #bc8422;
@@ -1315,6 +1368,7 @@
 
   --accent: #f0a0c4;
   --accent-foreground: #1a0810;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1340,6 +1394,7 @@
 
   --accent: #817350;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -1364,6 +1419,7 @@
 
   --accent: #d0c090;
   --accent-foreground: #121008;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1389,6 +1445,7 @@
 
   --accent: #1a6b40;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -1413,6 +1470,7 @@
 
   --accent: #4ecf8a;
   --accent-foreground: #06140c;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1438,6 +1496,7 @@
 
   --accent: #1a6fd0;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -1462,6 +1521,7 @@
 
   --accent: #5aa0f0;
   --accent-foreground: #061018;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1487,6 +1547,7 @@
 
   --accent: #505058;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -1511,6 +1572,7 @@
 
   --accent: #b0b0b8;
   --accent-foreground: #0c0c0e;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1536,6 +1598,7 @@
 
   --accent: #1a1a1a;
   --accent-foreground: #ffffff;
+  --accent-secondary: #bc8422;
 
   --danger: #e05555;
   --warning: #bc8422;
@@ -1560,6 +1623,7 @@
 
   --accent: #e8e8e8;
   --accent-foreground: #0a0a0a;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1585,6 +1649,7 @@
 
   --accent: #0d8566;
   --accent-foreground: #ffffff;
+  --accent-secondary: #bd8522;
 
   --danger: #e05555;
   --warning: #bd8522;
@@ -1609,6 +1674,7 @@
 
   --accent: #3dd4a8;
   --accent-foreground: #06140f;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1634,6 +1700,7 @@
 
   --accent: #1e4a8c;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -1658,6 +1725,7 @@
 
   --accent: #6a9ef0;
   --accent-foreground: #081018;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1683,6 +1751,7 @@
 
   --accent: #b85a2a;
   --accent-foreground: #ffffff;
+  --accent-secondary: #bc8422;
 
   --danger: #e05555;
   --warning: #bc8422;
@@ -1707,6 +1776,7 @@
 
   --accent: #e88850;
   --accent-foreground: #1a0c08;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1732,6 +1802,7 @@
 
   --accent: #6b4423;
   --accent-foreground: #ffffff;
+  --accent-secondary: #b88121;
 
   --danger: #e05555;
   --warning: #b88121;
@@ -1756,6 +1827,7 @@
 
   --accent: #c4a078;
   --accent-foreground: #140e0a;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1781,6 +1853,7 @@
 
   --accent: #238273;
   --accent-foreground: #ffffff;
+  --accent-secondary: #bd8522;
 
   --danger: #e05555;
   --warning: #bd8522;
@@ -1805,6 +1878,7 @@
 
   --accent: #5ed4c0;
   --accent-foreground: #061210;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1830,6 +1904,7 @@
 
   --accent: #b84838;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -1854,6 +1929,7 @@
 
   --accent: #e87868;
   --accent-foreground: #1a0c0a;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1879,6 +1955,7 @@
 
   --accent: #4a5a70;
   --accent-foreground: #ffffff;
+  --accent-secondary: #b88121;
 
   --danger: #e05555;
   --warning: #b88121;
@@ -1903,6 +1980,7 @@
 
   --accent: #9aacc4;
   --accent-foreground: #0c1018;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1928,6 +2006,7 @@
 
   --accent: #9d6b0d;
   --accent-foreground: #ffffff;
+  --accent-secondary: #bd8522;
 
   --danger: #e05555;
   --warning: #bd8522;
@@ -1952,6 +2031,7 @@
 
   --accent: #f0c040;
   --accent-foreground: #1a1208;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -1977,6 +2057,7 @@
 
   --accent: #3a5a8c;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -2001,6 +2082,7 @@
 
   --accent: #7aa0d8;
   --accent-foreground: #081018;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -2026,6 +2108,7 @@
 
   --accent: #8a5a3c;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -2050,6 +2133,7 @@
 
   --accent: #d0a080;
   --accent-foreground: #140e0a;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -2075,6 +2159,7 @@
 
   --accent: #578114;
   --accent-foreground: #ffffff;
+  --accent-secondary: #bc8422;
 
   --danger: #e05555;
   --warning: #bc8422;
@@ -2099,6 +2184,7 @@
 
   --accent: #b8f030;
   --accent-foreground: #0c1408;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -2124,6 +2210,7 @@
 
   --accent: #5a7888;
   --accent-foreground: #ffffff;
+  --accent-secondary: #bd8522;
 
   --danger: #e05555;
   --warning: #bd8522;
@@ -2148,6 +2235,7 @@
 
   --accent: #a8c0d0;
   --accent-foreground: #0c1014;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -2173,6 +2261,7 @@
 
   --accent: #1a3060;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -2197,6 +2286,7 @@
 
   --accent: #7090d0;
   --accent-foreground: #080c14;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -2222,6 +2312,7 @@
 
   --accent: #378339;
   --accent-foreground: #ffffff;
+  --accent-secondary: #bc8422;
 
   --danger: #e05555;
   --warning: #bc8422;
@@ -2246,6 +2337,7 @@
 
   --accent: #70d070;
   --accent-foreground: #081008;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -2271,6 +2363,7 @@
 
   --accent: #8a6a38;
   --accent-foreground: #ffffff;
+  --accent-secondary: #ba8321;
 
   --danger: #e05555;
   --warning: #ba8321;
@@ -2295,6 +2388,7 @@
 
   --accent: #d0b070;
   --accent-foreground: #141008;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -2320,6 +2414,7 @@
 
   --accent: #7c4dcc;
   --accent-foreground: #ffffff;
+  --accent-secondary: #9a6a10;
 
   --danger: #e05555;
   --warning: #9a6a10;
@@ -2344,6 +2439,7 @@
 
   --accent: #b18cf5;
   --accent-foreground: #14082b;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -2369,6 +2465,7 @@
 
   --accent: #4a52cc;
   --accent-foreground: #ffffff;
+  --accent-secondary: #9a6a10;
 
   --danger: #e05555;
   --warning: #9a6a10;
@@ -2393,6 +2490,7 @@
 
   --accent: #8c96f5;
   --accent-foreground: #0a0d2e;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -2418,6 +2516,7 @@
 
   --accent: #b0359a;
   --accent-foreground: #ffffff;
+  --accent-secondary: #9a6a10;
 
   --danger: #e05555;
   --warning: #9a6a10;
@@ -2442,6 +2541,7 @@
 
   --accent: #e37cc9;
   --accent-foreground: #2a0a22;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -2467,6 +2567,7 @@
 
   --accent: #2b2b2b;
   --accent-foreground: #ffffff;
+  --accent-secondary: #9a6a10;
 
   --danger: #e05555;
   --warning: #9a6a10;
@@ -2491,6 +2592,7 @@
 
   --accent: #e8e8e8;
   --accent-foreground: #0a0a0a;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;
@@ -2516,6 +2618,7 @@
 
   --accent: #0033cc;
   --accent-foreground: #ffffff;
+  --accent-secondary: #8a5a00;
 
   --danger: #b00020;
   --warning: #8a5a00;
@@ -2540,6 +2643,7 @@
 
   --accent: #ffd400;
   --accent-foreground: #000000;
+  --accent-secondary: #ffb000;
 
   --danger: #ff6b6b;
   --warning: #ffb000;
@@ -2565,6 +2669,7 @@
 
   --accent: #c4501d;
   --accent-foreground: #ffffff;
+  --accent-secondary: #9a6a10;
 
   --danger: #e05555;
   --warning: #9a6a10;
@@ -2589,6 +2694,7 @@
 
   --accent: #ff8a4c;
   --accent-foreground: #2a1000;
+  --accent-secondary: #e0a040;
 
   --danger: #e2707a;
   --warning: #e0a040;

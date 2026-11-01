@@ -72,6 +72,7 @@ describe('theme palettes stay in sync', () => {
           ['accent-foreground/accent', v['accent-foreground'], v.accent, 4.5],
           ['accent/surface', v.accent, v.surface, 3],
           ['accent/background', v.accent, v.background, 3],
+          ['accent-secondary/surface', v['accent-secondary'], v.surface, 3],
           ['danger/surface', v.danger, v.surface, 3],
           ['warning/surface', v.warning, v.surface, 3],
           ['header-foreground/header', v['app-header-foreground'], v['app-header'], 4.5],

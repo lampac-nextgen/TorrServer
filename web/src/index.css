@@ -19,6 +19,7 @@
  * palettes.generated.css (imported above); edit the JSON, never the generated file.
  */
 @theme inline {
+  --color-accent-secondary: var(--accent-secondary);
   --color-app-header: var(--app-header);
   --color-app-header-foreground: var(--app-header-foreground);
   --color-app-rail: var(--app-rail);
@@ -79,7 +80,6 @@ body {
 
 body {
   font-family: "Plus Jakarta Sans", system-ui, sans-serif;
-  background-color: #ffffff;
   background: var(--surface);
   color: var(--foreground);
   overflow: hidden;
@@ -89,7 +89,7 @@ body {
 }
 
 html.dark body {
-  background-color: #121a16;
+  background-color: var(--surface);
 }
 
 #root {
@@ -808,7 +808,7 @@ html[data-dialogs-fullscreen] .modal__dialog.ts-details-modal>.modal__body.modal
 
 /* —— TorrServer cinema player (Media Chrome) —— */
 .ts-player {
-  --media-primary-color: var(--accent, #22c55e);
+  --media-primary-color: var(--accent);
   --media-secondary-color: rgba(20, 24, 22, 0.92);
   --media-text-color: #fff;
   --media-icon-color: #fff;
@@ -817,7 +817,7 @@ html[data-dialogs-fullscreen] .modal__dialog.ts-details-modal>.modal__body.modal
   /* No gray “pill” on hover/focus — cinema bar should stay flat. */
   --media-control-hover-background: transparent;
   --media-focus-box-shadow: none;
-  --media-range-bar-color: var(--accent, #22c55e);
+  --media-range-bar-color: var(--accent);
   --media-range-track-color: rgba(255, 255, 255, 0.18);
   --media-range-thumb-background: #fff;
   --media-font-family: inherit;

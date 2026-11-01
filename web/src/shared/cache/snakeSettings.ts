@@ -1,3 +1,4 @@
+import palettes from 'shared/theme/palettes.json'
 import { alphaCss } from 'shared/theme/color'
 
 export type SnakeThemeMode = 'dark' | 'light'
@@ -37,21 +38,8 @@ const layoutDefaults: Record<
   },
 }
 
-/** Fallback when CSS vars are unavailable (SSR / tests). Matches forest palette. */
-const forestFallback = {
-  light: {
-    accent: '#00a572',
-    surface: '#ffffff',
-    surfaceSecondary: '#eef5f1',
-    border: '#dbe7e0',
-  },
-  dark: {
-    accent: '#2ecf9a',
-    surface: '#121a16',
-    surfaceSecondary: '#161f1b',
-    border: '#2a3b32',
-  },
-} as const
+/** Fallback when CSS vars are unavailable (SSR / tests): the default palette from palettes.json. */
+const defaultPalette = palettes.palettes.find(p => p.id === palettes.default) ?? palettes.palettes[0]
 
 function readCssVar(name: string, fallback: string): string {
   if (typeof window === 'undefined' || typeof getComputedStyle === 'undefined') return fallback
@@ -60,11 +48,14 @@ function readCssVar(name: string, fallback: string): string {
 }
 
 function readThemeSwatches(mode: SnakeThemeMode) {
-  const fb = forestFallback[mode]
+  const fb = defaultPalette[mode]
   return {
     accent: readCssVar('--accent', fb.accent),
+    accentSecondary: readCssVar('--accent-secondary', fb['accent-secondary']),
+    danger: readCssVar('--danger', fb.danger),
+    foreground: readCssVar('--foreground', fb.foreground),
     surface: readCssVar('--surface', fb.surface),
-    surfaceSecondary: readCssVar('--surface-secondary', fb.surfaceSecondary),
+    surfaceSecondary: readCssVar('--surface-secondary', fb['surface-secondary']),
     border: readCssVar('--border', fb.border),
   }
 }
@@ -72,22 +63,22 @@ function readThemeSwatches(mode: SnakeThemeMode) {
 /**
  * Visual hierarchy:
  * 1. reader (playhead) — black square outline
- * 2. range — warm amber window (not violet; stable across palettes)
+ * 2. range — `--accent-secondary` window (amber in the brand palettes)
  * 3. cached — current `--accent` from the active palette
  * 4. idle — quiet empty from surface/border tokens
  */
 export function resolveSnakeSettings(mode: SnakeThemeMode, variant: SnakeVariant): SnakePieceSettings {
   const layout = layoutDefaults[variant]
-  const { accent, surface, surfaceSecondary, border } = readThemeSwatches(mode)
+  const { accent, accentSecondary, danger, foreground, surface, surfaceSecondary, border } = readThemeSwatches(mode)
   const isDark = mode === 'dark'
-  const rangeColor = isDark ? '#c4a882' : '#6b8fd4'
+  const rangeColor = accentSecondary
 
   return {
     ...layout,
     borderColor: isDark ? alphaCss(accent, 0.3) : border,
     completeColor: accent,
     backgroundColor: isDark ? surfaceSecondary : variant === 'mini' ? surfaceSecondary : surface,
-    readerColor: isDark ? '#ff0000' : variant === 'mini' ? '#0a0a0a' : '#000',
+    readerColor: isDark ? danger : foreground,
     readerHaloColor: alphaCss('#fff', isDark ? 0.42 : 0.9),
     rangeColor,
     rangeEmptyColor: alphaCss(rangeColor, isDark ? 0.28 : 0.3),

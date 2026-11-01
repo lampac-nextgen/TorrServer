@@ -342,14 +342,14 @@ function TorrentCache({ cache, mode = 'detailed', isSnakeDebugMode, hash }: Torr
             </span>
             <span className='inline-flex items-center gap-1'>
               <span
-                className='size-2 rounded-[2px] border-1 border-foreground dark:border-[#ff0000] bg-transparent'
+                className='size-2 rounded-[2px] border-1 border-foreground dark:border-danger bg-transparent'
                 aria-hidden
               />
               {t('SnakeLegendHead')}
             </span>
             <span className='inline-flex items-center gap-1'>
               <span
-                className='size-2 rounded-[2px] border border-[#6b8fd4] dark:border-[#c4a882] bg-[#6b8fd4]/30 dark:bg-[#c4a882]/30'
+                className='size-2 rounded-[2px] border border-accent-secondary bg-accent-secondary/30'
                 aria-hidden
               />
               {t('SnakeLegendRange')}
