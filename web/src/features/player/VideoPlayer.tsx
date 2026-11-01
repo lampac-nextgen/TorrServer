@@ -405,7 +405,7 @@ export default function VideoPlayer({
               className={
                 isMobile
                   ? 'overflow-hidden rounded-none border-0 bg-black text-white shadow-none'
-                  : 'overflow-hidden border border-white/10 bg-[#0a0e0c] text-white shadow-2xl shadow-black/50'
+                  : 'overflow-hidden border border-white/10 bg-app-rail text-white shadow-2xl shadow-black/50'
               }
               style={dialogStyle}
             >

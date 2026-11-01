@@ -404,7 +404,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
         <Modal.CloseTrigger aria-label={t('Close')} />
       </Modal.Header>
       <Modal.Body className='flex min-h-0 flex-1 flex-col overflow-hidden'>
-        <div className='sticky top-0 z-10 shrink-0 -mx-1 border-b border-border/60 bg-surface px-1 pb-3 pt-1'>
+        <div className='sticky top-0 z-10 shrink-0 -mx-1 border-b border-border/60 bg-overlay px-1 pb-3 pt-1'>
           <div className='flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end'>
             <Select
               selectedKey={trackerKey}

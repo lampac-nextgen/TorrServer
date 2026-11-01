@@ -15,6 +15,7 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react'
+import { Header } from 'react-aria-components'
 import { useTranslation } from 'react-i18next'
 import { echoHost } from 'shared/api/hosts'
 import { SUPPORTED_LANGS } from 'shared/i18n'
@@ -31,7 +32,8 @@ import {
 import { OPEN_SETTINGS_EVENT, type SettingsDeepLinkTab } from 'shared/lib/settingsEvents'
 import { getStoredCredentials, logoutBasicAuth } from 'shared/api/authCredentials'
 import { MEDIA_SHORT_VIEWPORT, queryMax } from 'shared/theme/breakpoints'
-import { THEME_PALETTE_SWATCHES } from 'shared/theme/paletteSwatches'
+import { groupedPalettes } from 'shared/theme/paletteGroups'
+import { swatchBackground, THEME_PALETTE_SWATCHES } from 'shared/theme/paletteSwatches'
 import { THEME_MODES, THEME_PALETTE_IDS, useThemePreference, type ThemePalette } from 'shared/theme/useThemePreference'
 import { TORRENT_CATEGORIES } from 'shared/torrent/categories'
 import TorrentsPage from 'features/torrents/TorrentsPage'
@@ -241,7 +243,7 @@ export default function Shell() {
 
           {shortVersion && !isMobile ? (
             <span
-              className='max-w-[5.5rem] shrink-0 truncate text-[11px] font-medium tabular-nums text-app-header-foreground/80 sm:max-w-[8rem] sm:text-xs'
+              className='max-w-[5.5rem] shrink-0 truncate text-[11px] font-medium tabular-nums text-app-header-foreground/90 sm:max-w-[8rem] sm:text-xs'
               title={torrServerVersion}
             >
               {shortVersion}
@@ -420,6 +422,8 @@ export default function Shell() {
   )
 }
 
+const PALETTE_MENU_GROUPS = groupedPalettes()
+
 function PaletteMenu({
   current,
   label,
@@ -433,6 +437,7 @@ function PaletteMenu({
   labels: Record<ThemePalette, string>
   triggerClassName?: string
 }) {
+  const { t } = useTranslation()
   return (
     <Dropdown>
       <Button
@@ -447,27 +452,42 @@ function PaletteMenu({
       </Button>
       <Dropdown.Popover placement='bottom end' className='max-h-[min(70dvh,28rem)] min-w-[13rem] overflow-y-auto'>
         <Dropdown.Menu aria-label={label}>
-          {THEME_PALETTE_IDS.map(id => {
-            const selected = id === current
-            const swatch = THEME_PALETTE_SWATCHES[id]
-            return (
-              <Dropdown.Item key={id} textValue={labels[id]} onPress={() => onChange(id)} className='min-h-11 gap-2'>
-                <span
-                  className='size-4 shrink-0 rounded-sm border border-black/10'
-                  aria-hidden
-                  style={{
-                    background: `linear-gradient(135deg, ${swatch.header} 0 52%, ${swatch.accent} 52% 100%)`,
-                  }}
-                />
-                <span className='min-w-0 flex-1 truncate text-sm'>{labels[id]}</span>
-                {selected ? (
-                  <Check {...iconMenu} className='shrink-0 text-accent' aria-hidden />
-                ) : (
-                  <span className='size-4 shrink-0' aria-hidden />
-                )}
-              </Dropdown.Item>
-            )
-          })}
+          {PALETTE_MENU_GROUPS.map(g => (
+            <Dropdown.Section
+              key={g.group}
+              aria-label={t(`ThemePaletteGroup${g.group.charAt(0).toUpperCase()}${g.group.slice(1)}`)}
+            >
+              <Header className='px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-muted'>
+                {t(`ThemePaletteGroup${g.group.charAt(0).toUpperCase()}${g.group.slice(1)}`)}
+              </Header>
+              {g.ids.map(id => {
+                const selected = id === current
+                const swatch = THEME_PALETTE_SWATCHES[id]
+                return (
+                  <Dropdown.Item
+                    key={id}
+                    textValue={labels[id]}
+                    onPress={() => onChange(id)}
+                    className='min-h-11 gap-2'
+                  >
+                    <span
+                      className='size-4 shrink-0 rounded-sm border border-black/10'
+                      aria-hidden
+                      style={{
+                        background: swatchBackground(swatch),
+                      }}
+                    />
+                    <span className='min-w-0 flex-1 truncate text-sm'>{labels[id]}</span>
+                    {selected ? (
+                      <Check {...iconMenu} className='shrink-0 text-accent' aria-hidden />
+                    ) : (
+                      <span className='size-4 shrink-0' aria-hidden />
+                    )}
+                  </Dropdown.Item>
+                )
+              })}
+            </Dropdown.Section>
+          ))}
         </Dropdown.Menu>
       </Dropdown.Popover>
     </Dropdown>

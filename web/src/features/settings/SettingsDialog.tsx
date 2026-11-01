@@ -322,7 +322,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
     ? 'min-h-0 flex-1 overflow-y-auto pt-3'
     : 'ml-0 min-h-0 min-w-0 flex-1 overflow-y-auto'
   const tabsRootClassName = 'flex min-h-0 flex-1 gap-4 overflow-hidden'
-  const tabsListClassName = 'sticky top-0 z-10 w-52 shrink-0 self-start bg-surface'
+  const tabsListClassName = 'sticky top-0 z-10 w-52 shrink-0 self-start bg-overlay'
 
   /** Shared panel body for both the mobile Select path and desktop Tabs.Panel mounts. */
   const renderPanel = (id: SettingsTab) => {
@@ -431,7 +431,7 @@ export default function SettingsDialog({ open, onClose, initialTab }: SettingsDi
           </div>
         ) : isMobile ? (
           <div className='flex min-h-0 flex-1 flex-col overflow-hidden'>
-            <div className='sticky top-0 z-10 shrink-0 border-b border-border/60 bg-surface pb-3'>
+            <div className='sticky top-0 z-10 shrink-0 border-b border-border/60 bg-overlay pb-3'>
               <Label className='sr-only'>{t('SettingsDialog.SectionPicker')}</Label>
               <Select
                 selectedKey={tab}

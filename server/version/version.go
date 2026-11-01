@@ -6,7 +6,7 @@ import (
 )
 
 // Version is set at build time via -ldflags "-X server/version.Version=..." (GoReleaser {{.Version}})
-var Version = "MatriX.148"
+var Version = "NextGen.148"
 
 func GetTorrentVersion() string {
 	bi, ok := debug.ReadBuildInfo()

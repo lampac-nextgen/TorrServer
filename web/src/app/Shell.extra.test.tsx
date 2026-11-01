@@ -22,7 +22,7 @@ const MAGNET = 'magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567'
 
 const routes = () =>
   routeApi({
-    'GET /echo': 'MatriX.141',
+    'GET /echo': 'NextGen.148',
     'POST /torrents': [],
     'POST /settings': { CacheSize: 64 * 1024 * 1024 },
     'GET /settings': { CacheSize: 64 * 1024 * 1024 },

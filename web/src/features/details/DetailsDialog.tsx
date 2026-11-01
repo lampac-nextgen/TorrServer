@@ -561,7 +561,7 @@ export default function DetailsDialog({
                   />
                 )}
               </div>
-              <div className='shrink-0 border-t border-border bg-surface pt-1 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
+              <div className='shrink-0 border-t border-border bg-overlay pt-1 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
                 {torrentActions}
               </div>
             </Tabs.Panel>
@@ -639,9 +639,9 @@ export default function DetailsDialog({
                       <span className='truncate text-muted'>{bufferTitle}</span>
                       <span className='shrink-0 font-bold tabular-nums text-foreground'>{bufferLabel}</span>
                     </div>
-                    <div className='h-2 overflow-hidden rounded-full bg-surface'>
+                    <div className='ts-forced-track h-2 overflow-hidden rounded-full bg-surface'>
                       <div
-                        className='h-full rounded-full bg-accent transition-[width] duration-300'
+                        className='ts-forced-fill h-full rounded-full bg-accent-secondary transition-[width] duration-300'
                         style={{ width: `${bufferPct}%` }}
                       />
                     </div>
@@ -651,9 +651,9 @@ export default function DetailsDialog({
                       <span className='truncate text-muted'>{t('CacheOccupied')}</span>
                       <span className='shrink-0 font-bold tabular-nums text-foreground'>{cacheFilledValue}</span>
                     </div>
-                    <div className='h-2 overflow-hidden rounded-full bg-surface'>
+                    <div className='ts-forced-track h-2 overflow-hidden rounded-full bg-surface'>
                       <div
-                        className='h-full rounded-full bg-accent transition-[width] duration-300'
+                        className='ts-forced-fill h-full rounded-full bg-accent transition-[width] duration-300'
                         style={{ width: `${cacheOccupiedPct}%` }}
                       />
                     </div>

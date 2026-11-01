@@ -133,7 +133,7 @@ export default function Sidebar({
       {primaryItems.map(renderItem)}
       {/* <div className='my-1 h-px shrink-0 bg-white/12' /> */}
       {!collapsed ? (
-        <p className='px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-app-rail-foreground/50'>
+        <p className='px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-app-rail-foreground/70'>
           {t('LibraryTools')}
         </p>
       ) : null}

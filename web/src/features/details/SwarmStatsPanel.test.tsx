@@ -91,3 +91,17 @@ describe('SwarmStatsPanel', () => {
     expect((container.firstElementChild as HTMLElement).className).not.toContain('border')
   })
 })
+
+describe('TorrentProgressStrip tones', () => {
+  it('fills the Loaded bar to the loaded percentage and tones the buffer bar with accent-secondary', () => {
+    const { container } = renderWithProviders(
+      <TorrentProgressStrip torrent={torrent({ torrent_size: 1000, loaded_size: 500 })} cache={null} />,
+    )
+    const bars = [...container.querySelectorAll<HTMLElement>('div[style*="width"]')]
+    expect(bars).toHaveLength(2)
+    expect(bars[0].style.width).toBe('50%')
+    expect(bars[0].className).toContain('bg-accent')
+    expect(bars[0].className).not.toContain('bg-accent-secondary')
+    expect(bars[1].className).toContain('bg-accent-secondary')
+  })
+})

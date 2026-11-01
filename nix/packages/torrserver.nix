@@ -9,10 +9,10 @@
 }:
 pkgs.stdenv.mkDerivation rec {
   pname = "torrserver";
-  version = "MatriX.141";
+  version = "NextGen.148";
 
   src = pkgs.fetchgit {
-    url = "https://github.com/YouROK/TorrServer.git";
+    url = "https://github.com/lampac-nextgen/TorrServer.git";
     rev = "${version}";
     hash = "sha256-OeAAYyxfZxcx0ANeRAWJTrZMNWtdrM/pwXyO5QNTwYo=";
   };
@@ -96,7 +96,7 @@ pkgs.stdenv.mkDerivation rec {
 
   meta = with pkgs.lib; {
     description = "Simple and powerful tool for streaming torrents";
-    homepage = "https://github.com/YouROK/TorrServer";
+    homepage = "https://github.com/lampac-nextgen/TorrServer";
     license = licenses.gpl3Only;
     mainProgram = "torrserver";
     platforms = [

@@ -1,16 +1,23 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { Check, Maximize2, Moon, Palette, Search, Sun, SunMoon } from 'lucide-react'
 import { Input, Label, TextField, ToggleButton, ToggleButtonGroup } from '@heroui/react'
 import { useTranslation } from 'react-i18next'
 
 import { DIALOGS_FULLSCREEN_PREF } from 'shared/hooks/useDialogFullScreen'
 import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
-import { THEME_PALETTE_SWATCHES } from 'shared/theme/paletteSwatches'
+import { groupedPalettes } from 'shared/theme/paletteGroups'
+import { swatchBackground, THEME_PALETTE_SWATCHES } from 'shared/theme/paletteSwatches'
 import { THEME_MODES, THEME_PALETTE_IDS, useThemePreference, type ThemePalette } from 'shared/theme/useThemePreference'
 import { iconMenu } from 'shared/ui/iconProps'
 
 import { SettingSwitch } from './SettingSwitch'
 import SettingsSection from './SettingsSection'
+
+const ALL_GROUPS = groupedPalettes()
+
+function groupLabelKey(group: string): string {
+  return `ThemePaletteGroup${group.charAt(0).toUpperCase()}${group.slice(1)}`
+}
 
 function paletteLabelKey(id: ThemePalette): string {
   return `ThemePalette${id.charAt(0).toUpperCase()}${id.slice(1)}`
@@ -28,14 +35,41 @@ export default function AppearanceSettingsPanel() {
     [t],
   )
 
-  const filtered = useMemo(() => {
+  const all = ALL_GROUPS
+  const total = all.reduce((n, g) => n + g.ids.length, 0)
+  const groups = useMemo(() => {
     const q = query.trim().toLocaleLowerCase()
-    if (!q) return THEME_PALETTE_IDS
-    return THEME_PALETTE_IDS.filter(id => {
-      const name = labels[id].toLocaleLowerCase()
-      return name.includes(q) || id.includes(q)
-    })
-  }, [labels, query])
+    if (!q) return all
+    return all
+      .map(g => ({
+        ...g,
+        ids: g.ids.filter(id => labels[id].toLocaleLowerCase().includes(q) || id.includes(q)),
+      }))
+      .filter(g => g.ids.length > 0)
+  }, [all, labels, query])
+  const shown = groups.reduce((n, g) => n + g.ids.length, 0)
+  const visibleIds = groups.flatMap(g => g.ids)
+  // Roving tabindex: the selected option (or the first one when it is filtered out) is the single tab stop.
+  const tabStopId = visibleIds.includes(palette) ? palette : visibleIds[0]
+  const listRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    listRef.current?.querySelector('[aria-selected="true"]')?.scrollIntoView?.({ block: 'nearest' })
+  }, [])
+
+  const onListKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const options = [...(listRef.current?.querySelectorAll<HTMLButtonElement>('[role="option"]') ?? [])]
+    const at = options.indexOf(document.activeElement as HTMLButtonElement)
+    if (at < 0) return
+    const step: Record<string, number> = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }
+    let next = -1
+    if (event.key in step) next = Math.min(options.length - 1, Math.max(0, at + step[event.key]))
+    else if (event.key === 'Home') next = 0
+    else if (event.key === 'End') next = options.length - 1
+    if (next < 0) return
+    event.preventDefault()
+    options[next].focus()
+  }
 
   return (
     <div className='space-y-6'>
@@ -84,9 +118,7 @@ export default function AppearanceSettingsPanel() {
             <Label className='text-sm'>{t('ThemePalette')}</Label>
             <p className='text-xs text-muted'>
               {labels[palette]}
-              {filtered.length !== THEME_PALETTE_IDS.length
-                ? ` · ${filtered.length}/${THEME_PALETTE_IDS.length}`
-                : null}
+              {shown !== total ? ` · ${shown}/${total}` : null}
             </p>
           </div>
 
@@ -102,43 +134,61 @@ export default function AppearanceSettingsPanel() {
             </TextField>
           </div>
 
-          {filtered.length === 0 ? (
+          {shown === 0 ? (
             <p className='py-6 text-center text-sm text-muted'>{t('SettingsDialog.ThemePaletteEmpty')}</p>
           ) : (
-            <div className='grid grid-cols-2 gap-2 sm:grid-cols-3' role='listbox' aria-label={t('ThemePalette')}>
-              {filtered.map(id => {
-                const selected = id === palette
-                const swatch = THEME_PALETTE_SWATCHES[id]
-                return (
-                  <button
-                    key={id}
-                    type='button'
-                    role='option'
-                    aria-selected={selected}
-                    onClick={() => setPalette(id)}
-                    className={`flex min-h-11 items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left transition-colors ${
-                      selected
-                        ? 'border-accent bg-accent/10 ring-1 ring-accent/40'
-                        : 'border-border bg-surface hover-fine:border-accent/40 hover-fine:bg-surface-tertiary'
-                    }`}
-                  >
-                    <span
-                      className='relative size-8 shrink-0 overflow-hidden rounded-md border border-black/10 shadow-sm'
-                      aria-hidden
-                      style={{
-                        background: `linear-gradient(135deg, ${swatch.header} 0 52%, ${swatch.accent} 52% 100%)`,
-                      }}
-                    >
-                      {selected ? (
-                        <span className='absolute inset-0 grid place-items-center bg-black/25'>
-                          <Check size={14} strokeWidth={2.5} className='text-white' />
-                        </span>
-                      ) : null}
-                    </span>
-                    <span className='min-w-0 flex-1 truncate text-sm font-medium'>{labels[id]}</span>
-                  </button>
-                )
-              })}
+            <div
+              ref={listRef}
+              className='space-y-4'
+              role='listbox'
+              aria-label={t('ThemePalette')}
+              onKeyDown={onListKeyDown}
+            >
+              {groups.map(g => (
+                <div key={g.group} role='group' aria-label={t(groupLabelKey(g.group))}>
+                  <p className='mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted'>
+                    {t(groupLabelKey(g.group))}
+                  </p>
+                  <div className='grid grid-cols-2 gap-2 sm:grid-cols-3'>
+                    {g.ids.map(id => {
+                      const selected = id === palette
+                      const swatch = THEME_PALETTE_SWATCHES[id]
+                      return (
+                        <button
+                          key={id}
+                          type='button'
+                          role='option'
+                          aria-selected={selected}
+                          tabIndex={id === tabStopId ? 0 : -1}
+                          onClick={() => setPalette(id)}
+                          className={`flex min-h-11 items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left transition-colors ${
+                            selected
+                              ? 'border-accent bg-accent/10 ring-1 ring-accent/40'
+                              : 'border-border bg-surface hover-fine:border-accent/40 hover-fine:bg-surface-tertiary'
+                          }`}
+                        >
+                          <span
+                            className='relative size-8 shrink-0 overflow-hidden rounded-md border border-black/10 shadow-sm'
+                            aria-hidden
+                            style={{
+                              background: swatchBackground(swatch),
+                            }}
+                          >
+                            {selected ? (
+                              <span className='absolute inset-0 grid place-items-center bg-black/25'>
+                                <Check size={14} strokeWidth={2.5} className='text-white' />
+                              </span>
+                            ) : null}
+                          </span>
+                          <span className='min-w-0 flex-1 truncate text-sm font-medium text-foreground'>
+                            {labels[id]}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>

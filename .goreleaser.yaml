@@ -10,7 +10,7 @@ env:
   - Metadata_Description=Torrent stream server
   - Metadata_License=GPL-3.0
 
-# MatriX.* tags: sort versions correctly for changelog "previous tag".
+# NextGen.* tags: sort versions correctly for changelog "previous tag".
 git:
   tag_sort: -version:refname
 
@@ -194,7 +194,7 @@ dockers_v2:
       - binary
     dockerfile: Dockerfile
     images:
-      - '{{ envOrDefault "DOCKER_IMAGE_ID" (printf "ghcr.io/%s" (envOrDefault "REGISTRY_IMAGE" "yourok/torrserver")) }}'
+      - '{{ envOrDefault "DOCKER_IMAGE_ID" (printf "ghcr.io/%s" (envOrDefault "REGISTRY_IMAGE" "lampac-nextgen/torrserver")) }}'
     tags:
       - '{{ .Tag }}'
       - latest

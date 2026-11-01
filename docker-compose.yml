@@ -16,7 +16,7 @@ name: torrserver
 
 services:
   torrserver:
-    image: ${TORRSERVER_IMAGE:-ghcr.io/yourok/torrserver:latest}
+    image: ${TORRSERVER_IMAGE:-ghcr.io/lampac-nextgen/torrserver:latest}
     container_name: ${TORRSERVER_CONTAINER_NAME:-torrserver}
     restart: unless-stopped
 

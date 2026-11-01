@@ -94,7 +94,7 @@ function EpisodeRow({
       <div className='flex items-start gap-2 sm:items-center sm:gap-3'>
         <div className='flex min-w-0 flex-1 items-center gap-2 sm:gap-3'>
           {badge ? (
-            <span className='inline-flex h-8 min-w-9 shrink-0 items-center justify-center rounded-md bg-accent-soft px-1.5 text-xs font-bold tabular-nums text-accent sm:rounded-lg sm:px-2 sm:text-sm'>
+            <span className='inline-flex h-8 min-w-9 shrink-0 items-center justify-center rounded-md bg-accent-soft px-1.5 text-xs font-bold tabular-nums text-accent-soft-foreground sm:rounded-lg sm:px-2 sm:text-sm'>
               {badge}
             </span>
           ) : null}

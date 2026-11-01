@@ -12,7 +12,7 @@ func init() {
 	http.DefaultTransport = WithUserAgent(http.DefaultTransport)
 }
 
-// UserAgent is the canonical app-level User-Agent, e.g. "TorrServer/MatriX.144".
+// UserAgent is the canonical app-level User-Agent, e.g. "TorrServer/NextGen.148".
 // BitTorrent tracker/peer HTTP keeps qBittorrent in torr.BTServer — that is
 // separate from these application sub-requests (Torznab, .torrent fetch, TMDB, …).
 func UserAgent() string {

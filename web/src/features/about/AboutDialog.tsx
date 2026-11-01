@@ -9,6 +9,7 @@ import { echoHost } from 'shared/api/hosts'
 import { publicUrl } from 'shared/lib/publicUrl'
 import { useDialogFullScreen } from 'shared/hooks/useDialogFullScreen'
 import AppDialog from 'shared/ui/AppDialog'
+import BrandLogo from 'shared/ui/BrandLogo'
 import { DIALOG_SHEET_M } from 'shared/ui/dialogSizes'
 import { iconMenu } from 'shared/ui/iconProps'
 import { useOptionalAppToast } from 'shared/ui/Toast'
@@ -109,9 +110,9 @@ export default function AboutDialog({ open, onClose, onOpenServerStatus, onOpenD
       </Modal.Header>
       <Modal.Body className='min-h-0 flex-1 overflow-y-auto overscroll-contain'>
         <div className='flex flex-col items-center gap-3 pb-2 pt-1 text-center'>
-          <img src={publicUrl('icon.png')} alt='TorrServer' className='size-[72px] rounded-2xl shadow-lg' />
+          <BrandLogo alt='' className='h-14 w-auto' />
           <h2 className='text-lg font-semibold text-foreground'>
-            TorrServer{' '}
+            <span className='sr-only'>TorrServer </span>
             {version === null ? (
               <span className='inline-block h-4 w-12 animate-pulse rounded bg-surface-secondary align-middle' />
             ) : (
@@ -125,10 +126,10 @@ export default function AboutDialog({ open, onClose, onOpenServerStatus, onOpenD
           <p className='mb-1 px-1 text-xs font-semibold uppercase tracking-wide text-muted'>{t('Links')}</p>
           <ul className='flex flex-wrap gap-2'>
             <li>
-              <AboutLink name={t('ProjectSource')} href='https://github.com/YouROK/TorrServer' />
+              <AboutLink name={t('ProjectSource')} href='https://github.com/lampac-nextgen/TorrServer' />
             </li>
             <li>
-              <AboutLink name={t('Releases')} href='https://github.com/YouROK/TorrServer/releases' />
+              <AboutLink name={t('Releases')} href='https://github.com/lampac-nextgen/TorrServer/releases' />
             </li>
             <li>
               <AboutLink name={t('NasReleases')} href='https://github.com/vladlenas' />

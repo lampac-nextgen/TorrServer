@@ -78,84 +78,102 @@ define(['./workbox-7e5eb42b'], (function (workbox) { 'use strict';
    */
   workbox.precacheAndRoute([{
     "url": "mstile-150x150.png",
-    "revision": "5701d873784a3f27c3dffb8a15736079"
+    "revision": "8b1e380c324cbb396762a0d48a4c58f5"
   }, {
     "url": "logo.png",
-    "revision": "f5db7f222c6f454cdf40c0793ef529f3"
+    "revision": "309432780e6787fb85db09f65df99d3a"
   }, {
     "url": "index.html",
-    "revision": "bdbec0dc32e7844b7db6ed346d362c25"
+    "revision": "086765c86cbfb73e5936f8b280cc487a"
   }, {
     "url": "icon.png",
-    "revision": "4425f6f2b52d2deaf2374ff63c682bcc"
+    "revision": "4a7a2fa5a2a3c9bbfde8e92aaeab2cf4"
+  }, {
+    "url": "icon-maskable-512.png",
+    "revision": "fdd3a81491b22083234648e24ff574e9"
+  }, {
+    "url": "icon-maskable-192.png",
+    "revision": "02f6ab7b0f4ee2d1370768a21aef8e32"
+  }, {
+    "url": "icon-192.png",
+    "revision": "e6640dac24bf6a2f32fc08399b7e08be"
   }, {
     "url": "favicon.ico",
-    "revision": "80c0375465582708d791bcab9b4053af"
+    "revision": "55a7d8b2cf89818a9badaf8c2c9a1ce2"
   }, {
     "url": "favicon-32x32.png",
-    "revision": "d34d53cbac4d729b0f49677fecbb48ac"
+    "revision": "8a4fc6ed45884443cd47ab7f3b0b83e6"
   }, {
     "url": "favicon-16x16.png",
-    "revision": "1cabe79322b89571937189d95cbe968b"
+    "revision": "bf58b52542cfe6e641d684189918bc48"
   }, {
     "url": "dlnaicon-48.png",
-    "revision": "94fb147303f8625b3f0dd99a385d72d8"
+    "revision": "c9b5afe8c9408fa46deebec9ca6d2f81"
   }, {
     "url": "dlnaicon-120.png",
-    "revision": "a741da374199bad465c9e2576da666d0"
+    "revision": "75b551cbe2025437ddce98463bc9f293"
+  }, {
+    "url": "apple-touch-icon.png",
+    "revision": "ec59449613d2bce565a082c132a6cb03"
   }, {
     "url": "static/workbox-window.prod.es5-Bd17z0YL.js",
     "revision": null
   }, {
-    "url": "static/vendor-Bh6mcoZx.js",
+    "url": "static/vendor-4ArnH7q9.js",
     "revision": null
   }, {
-    "url": "static/useTranslation-CHO5yPzz.js",
+    "url": "static/useTranslation-CShu95xD.js",
     "revision": null
   }, {
-    "url": "static/useTorrentDetail-B4aX5pTC.js",
+    "url": "static/useTorrentDetail-lKCsOwEp.js",
     "revision": null
   }, {
-    "url": "static/useLocalPref-BdyVN_Jk.js",
+    "url": "static/useThemePreference-diiRz0PQ.js",
     "revision": null
   }, {
-    "url": "static/useDialogFullScreen-CK6Ze7fg.js",
+    "url": "static/useLocalPref-BojXZMId.js",
+    "revision": null
+  }, {
+    "url": "static/useDialogFullScreen-jkuvChU7.js",
     "revision": null
   }, {
     "url": "static/torrsLink-CrcAIGZk.js",
     "revision": null
   }, {
-    "url": "static/torrents-BhaJRK4z.js",
+    "url": "static/torrents-Ln4ythkW.js",
     "revision": null
   }, {
-    "url": "static/torrentHelpers-CFtM_hCb.js",
+    "url": "static/torrentHelpers-C51I0wjz.js",
     "revision": null
   }, {
     "url": "static/states-C1wEik_A.js",
     "revision": null
   }, {
-    "url": "static/settings-DrGI2L6K.js",
+    "url": "static/settings-BWanuRl9.js",
     "revision": null
   }, {
-    "url": "static/runtime-Cr253ZX3.js",
+    "url": "static/runtime-DqnoCLN_.js",
     "revision": null
   }, {
     "url": "static/rolldown-runtime-CNOWq4Kh.js",
     "revision": null
   }, {
+    "url": "static/publicUrl-C53js1nF.js",
+    "revision": null
+  }, {
     "url": "static/pollInterval-DDhtkZBE.js",
     "revision": null
   }, {
-    "url": "static/maximize-2-Dc_CUoCi.js",
+    "url": "static/maximize-2-YPU_RuBR.js",
     "revision": null
   }, {
     "url": "static/localPrefs-C6BvauQz.js",
     "revision": null
   }, {
-    "url": "static/index-fNNUTUTc.css",
+    "url": "static/index-ryaiSa2I.js",
     "revision": null
   }, {
-    "url": "static/index-CYqcpKu_.js",
+    "url": "static/index-DTa776_G.css",
     "revision": null
   }, {
     "url": "static/hosts-CEyv4OUe.js",
@@ -164,98 +182,104 @@ define(['./workbox-7e5eb42b'], (function (workbox) { 'use strict';
     "url": "static/hls-Bw3thQNh.js",
     "revision": null
   }, {
-    "url": "static/heroui-DxLYSTdm.js",
+    "url": "static/heroui-BITlZ991.js",
     "revision": null
   }, {
-    "url": "static/heart-Cl4DHqvQ.js",
+    "url": "static/heart-BSUCh8r5.js",
     "revision": null
   }, {
-    "url": "static/gauge-95V9F4s4.js",
+    "url": "static/gauge-BmZMYbdN.js",
     "revision": null
   }, {
-    "url": "static/film-DTHpebcc.js",
+    "url": "static/film-CvWwIImB.js",
     "revision": null
   }, {
-    "url": "static/createLucideIcon-DHLRA3xa.js",
+    "url": "static/createLucideIcon-DonZnthj.js",
     "revision": null
   }, {
-    "url": "static/clapperboard-esf6jLsY.js",
+    "url": "static/clapperboard-CfXlguvD.js",
     "revision": null
   }, {
-    "url": "static/circle-alert-D8SLpDY9.js",
+    "url": "static/circle-alert-5EbJ6_GW.js",
     "revision": null
   }, {
-    "url": "static/authCredentials-CGFatuGp.js",
+    "url": "static/authCredentials-ZOJA3Ej1.js",
     "revision": null
   }, {
-    "url": "static/VideoPlayer-B2_22pHN.js",
+    "url": "static/VideoPlayer-95R5u2wz.js",
     "revision": null
   }, {
-    "url": "static/UnsafeButton-C7Aat_xt.js",
+    "url": "static/UnsafeButton-Do9gVcR8.js",
     "revision": null
   }, {
-    "url": "static/SettingsDialog-DtsD1BVs.js",
+    "url": "static/SettingsDialog-V2qHUP_G.js",
     "revision": null
   }, {
-    "url": "static/ServerStatusDialog-CfZVBJHG.js",
+    "url": "static/ServerStatusDialog-DWIlWvtN.js",
     "revision": null
   }, {
-    "url": "static/SearchDialog-BdRolsyk.js",
+    "url": "static/SearchDialog-B_U7Y3ye.js",
     "revision": null
   }, {
-    "url": "static/RemoveAllDialog-xQo6QTyh.js",
+    "url": "static/RemoveAllDialog-B6pi5FMh.js",
     "revision": null
   }, {
-    "url": "static/PosterPicker--U76mekx.js",
+    "url": "static/PosterPicker-BKpTpxxO.js",
     "revision": null
   }, {
-    "url": "static/PWAInstallationGuide-DAiP7tDc.js",
+    "url": "static/PWAInstallationGuide-DzdNnp24.js",
     "revision": null
   }, {
-    "url": "static/MultiAddDialog-BGHFcuGh.js",
+    "url": "static/MultiAddDialog-DDLL1QNX.js",
     "revision": null
   }, {
-    "url": "static/ModalOpenContext-Px9vUVWH.js",
+    "url": "static/ModalOpenContext-2QHc1YSd.js",
     "revision": null
   }, {
-    "url": "static/ImportLibraryDialog-B5OfAXXT.js",
+    "url": "static/ImportLibraryDialog-7LxBoCo2.js",
     "revision": null
   }, {
-    "url": "static/ExportLibraryDialog-BSwQj-7e.js",
+    "url": "static/ExportLibraryDialog-Bo24BVCJ.js",
     "revision": null
   }, {
-    "url": "static/EditTorrentDialog-D7pxxPqz.js",
+    "url": "static/EditTorrentDialog-BpoLSXU5.js",
     "revision": null
   }, {
-    "url": "static/DonateSnackbar-DffsWj6K.js",
+    "url": "static/DonateSnackbar-CKrkemwO.js",
     "revision": null
   }, {
-    "url": "static/DonateDialog-BXThq6S3.js",
+    "url": "static/DonateDialog-BQVPdrBQ.js",
     "revision": null
   }, {
-    "url": "static/DetailsDialog-CfMNDhIy.js",
+    "url": "static/DetailsDialog-D-YHeRVv.js",
     "revision": null
   }, {
-    "url": "static/CommandPalette-C59o114S.js",
+    "url": "static/CommandPalette-CT_Rz5UX.js",
     "revision": null
   }, {
-    "url": "static/CloseServerDialog-Bt8VNL0M.js",
+    "url": "static/CloseServerDialog-CB7UbQSW.js",
     "revision": null
   }, {
-    "url": "static/CategoriesDrawer-BwwTmv6G.js",
+    "url": "static/CategoriesDrawer-DSrZmjNL.js",
     "revision": null
   }, {
-    "url": "static/AppDialog-DdrtxPCt.js",
+    "url": "static/AppDialog-Df4kzI5K.js",
     "revision": null
   }, {
-    "url": "static/AndroidInstallBanner-5iuq5Lar.js",
+    "url": "static/AndroidInstallBanner-DKzt2DXb.js",
     "revision": null
   }, {
-    "url": "static/AddDialog-BnSe8IBk.js",
+    "url": "static/AddDialog-DhBzfb9U.js",
     "revision": null
   }, {
-    "url": "static/AboutDialog-BQrZNyeU.js",
+    "url": "static/AboutDialog-Do20mag_.js",
     "revision": null
+  }, {
+    "url": "brand/logo-light.svg",
+    "revision": "3068c426fb75cf07431346ab4999e2bd"
+  }, {
+    "url": "brand/logo-dark.svg",
+    "revision": "3f8b951bf0848f5774989d6f686e02ce"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {

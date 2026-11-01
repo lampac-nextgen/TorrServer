@@ -1,5 +1,7 @@
 import { useCallback, useSyncExternalStore } from 'react'
 
+import palettes from './palettes.json'
+
 export const THEME_MODES = {
   LIGHT: 'light',
   DARK: 'dark',
@@ -10,6 +12,9 @@ export type ThemePreference = (typeof THEME_MODES)[keyof typeof THEME_MODES]
 
 /** Named accent/chrome palettes layered on top of light/dark. */
 export const THEME_PALETTES = {
+  NEXTGEN: 'nextgen',
+  NEON: 'neon',
+  AMBER: 'amber',
   FOREST: 'forest',
   OCEAN: 'ocean',
   SLATE: 'slate',
@@ -19,41 +24,34 @@ export const THEME_PALETTES = {
   MEADOW: 'meadow',
   FOG: 'fog',
   COPPER: 'copper',
-  CITRUS: 'citrus',
   MIDNIGHT: 'midnight',
-  SAGE: 'sage',
   CORAL: 'coral',
   HONEY: 'honey',
-  MOSS: 'moss',
-  SKY: 'sky',
   WINE: 'wine',
-  MINT: 'mint',
   CHARCOAL: 'charcoal',
   LAVA: 'lava',
-  ICE: 'ice',
   OLIVE: 'olive',
-  STEEL: 'steel',
   BLOSSOM: 'blossom',
-  SAND: 'sand',
   PINE: 'pine',
   AZURE: 'azure',
   GRAPHITE: 'graphite',
   NOIR: 'noir',
-  JADE: 'jade',
-  NAVY: 'navy',
   RUST: 'rust',
   ESPRESSO: 'espresso',
-  SEAFOAM: 'seafoam',
-  BRICK: 'brick',
-  STORM: 'storm',
   SAFFRON: 'saffron',
-  DENIM: 'denim',
-  CEDAR: 'cedar',
   VOLT: 'volt',
   PEARL: 'pearl',
   INK: 'ink',
-  FERN: 'fern',
-  BRONZE: 'bronze',
+  VIOLET: 'violet',
+  INDIGO: 'indigo',
+  ORCHID: 'orchid',
+  MONO: 'mono',
+  CONTRAST: 'contrast',
+  DUSK: 'dusk',
+  HERITAGE: 'heritage',
+  CIRCUIT: 'circuit',
+  FUCHSIA: 'fuchsia',
+  LAGOON: 'lagoon',
 } as const
 
 export type ThemePalette = (typeof THEME_PALETTES)[keyof typeof THEME_PALETTES]
@@ -77,10 +75,16 @@ function readStoredPalette(): ThemePalette {
   try {
     const stored = localStorage.getItem(STORAGE_KEY_PALETTE)
     if (stored && (THEME_PALETTE_IDS as string[]).includes(stored)) return stored as ThemePalette
+    // Retired palettes resolve to their nearest successor (and the choice is migrated).
+    const successor = stored ? (palettes.aliases as Record<string, string>)[stored] : undefined
+    if (successor && (THEME_PALETTE_IDS as string[]).includes(successor)) {
+      localStorage.setItem(STORAGE_KEY_PALETTE, successor)
+      return successor as ThemePalette
+    }
   } catch {
     /* ignore */
   }
-  return THEME_PALETTES.FOREST
+  return THEME_PALETTES.NEXTGEN
 }
 
 function resolveDark(preference: ThemePreference, systemDark: boolean): boolean {
@@ -100,6 +104,27 @@ function applyThemeToDocument(isDark: boolean, palette: ThemePalette) {
     root.style.backgroundColor = surface
     if (document.body) document.body.style.backgroundColor = surface
   }
+  syncThemeColorMeta(root)
+}
+
+/**
+ * Browser/PWA chrome color follows the active palette header. The static tags in index.html
+ * (media-scoped) are the pre-JS fallback; the first matching tag wins, so they are
+ * dropped once the store runs and a single unscoped tag takes over (user choice beats the OS scheme).
+ */
+function syncThemeColorMeta(root: HTMLElement) {
+  const header = getComputedStyle(root).getPropertyValue('--app-header').trim()
+  if (!header) return
+  const id = 'ts-theme-color'
+  document.querySelectorAll(`meta[name='theme-color']:not(#${id})`).forEach(el => el.remove())
+  let meta = document.getElementById(id) as HTMLMetaElement | null
+  if (!meta) {
+    meta = document.createElement('meta')
+    meta.id = id
+    meta.name = 'theme-color'
+    document.head.appendChild(meta)
+  }
+  meta.content = header
 }
 
 function readSystemDark(): boolean {
@@ -118,7 +143,7 @@ const listeners = new Set<() => void>()
 
 let snapshot: ThemeStoreSnapshot = (() => {
   const preference = typeof window === 'undefined' ? THEME_MODES.AUTO : readStoredPreference()
-  const palette = typeof window === 'undefined' ? THEME_PALETTES.FOREST : readStoredPalette()
+  const palette = typeof window === 'undefined' ? THEME_PALETTES.NEXTGEN : readStoredPalette()
   const systemDark = readSystemDark()
   return {
     preference,
@@ -182,7 +207,7 @@ function getSnapshot(): ThemeStoreSnapshot {
 function getServerSnapshot(): ThemeStoreSnapshot {
   return {
     preference: THEME_MODES.AUTO,
-    palette: THEME_PALETTES.FOREST,
+    palette: THEME_PALETTES.NEXTGEN,
     systemDark: false,
     isDark: false,
   }

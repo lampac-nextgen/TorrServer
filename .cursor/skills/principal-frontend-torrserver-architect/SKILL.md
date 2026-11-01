@@ -80,6 +80,10 @@ yarn test:e2e
 
 A new string goes in `web/src/locales/{en,ru,ua,bg,fr,ro,zh}/translation.json` under the same flattened key. `yarn i18n:check` fails if one locale is missing it.
 
+## Themes and palettes
+
+Palette tokens live in `web/src/shared/theme/palettes.json`; `yarn gen:palettes` writes `src/palettes.generated.css`. Use Tailwind color tokens (`bg-accent`, `bg-accent-secondary`, `bg-overlay`, `text-foreground`), never hex. `yarn palettes:new <id>` scaffolds one; `yarn test:e2e:palettes` checks every palette in light/dark. See `docs/themes.md`.
+
 ## Polling
 
 | Hook | Endpoint | Cadence |

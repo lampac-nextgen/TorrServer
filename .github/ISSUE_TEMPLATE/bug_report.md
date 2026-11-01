@@ -25,12 +25,12 @@ If applicable, add screenshots to help explain your problem.
 
 **Desktop (please complete the following information):**
  - OS: [e.g. Linux Ubuntu 22.04]
- - TorrServer Version [e.g. MatriX.129]
+ - TorrServer Version [e.g. NextGen.148]
 
 **Smartphone or tvbox on Android (please complete the following information):**
  - Device: [e.g. Ugoos am6]
  - OS: [e.g. Android 9]
- - TorrServer Version [e.g. MatriX.129]
+ - TorrServer Version [e.g. NextGen.148]
 
 **Additional context**
 Add any other context about the problem here.

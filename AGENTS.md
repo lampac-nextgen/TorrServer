@@ -34,6 +34,8 @@ The React UI is `web/` (Yarn, Vite). The binary serves a generated copy under `s
 
 A new or changed string belongs in `web/src/locales`. `yarn i18n:check` requires the same flattened keys in `en`, `ru`, `ua`, `bg`, `fr`, `ro`, and `zh`, as nested objects.
 
+Themes and palettes: `web/src/shared/theme/palettes.json` is the only source for palette colors. `yarn gen:palettes` renders it to `web/src/palettes.generated.css` (do not hand-edit; a test fails when it is stale). No hex literals elsewhere in `web/src` (`noHardcodedColors.test.ts`); dialogs and sticky bars use `bg-overlay`, not `bg-surface`. `yarn palettes:new <id>` scaffolds a palette; `yarn test:e2e:palettes` runs the palette x mode matrix against the embedded build (`make webgen` first; do not run it at the same time as `yarn test:e2e`, they share an output dir). Details: `docs/themes.md`.
+
 When `web/src` changes, CI runs three parallel jobs, `web-check` (`yarn typecheck`, `yarn lint`, `yarn i18n:check`), `web-unit` (`yarn test --coverage`, which enforces the floors in `web/vite.config.ts`) and `web-e2e` (`yarn test:e2e`, `yarn build`), plus the aggregate `web` job, which keeps the old name `Web (typecheck lint test build)`. Layers and commands: `docs/testing.md`. From `web/`: `yarn typecheck`, `yarn lint`, `yarn test`, `yarn i18n:check`. Embed with `make webgen` (`go run gen_web.go`) or `make webgen-clean` (deletes `web/build` first). Do not pass `VITE_SERVER_HOST` pointing at localhost into a production `yarn build` — `web/vite.config.ts` refuses it.
 
 Web client map (source of truth is `web/src`, not the embedded copy):

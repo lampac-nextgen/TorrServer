@@ -35,7 +35,7 @@ DATA_ABS := $(abspath $(DATA_DIR))
 
 # ── Docker / GHCR (auto from git origin; same rule as .github/workflows/release.yml) ──
 GIT_ORIGIN_SLUG := $(shell git remote get-url origin 2>/dev/null | tr '[:upper:]' '[:lower:]' | sed 's/.*github.com[:/]//; s/.git$$//')
-REGISTRY_IMAGE    ?= $(if $(GIT_ORIGIN_SLUG),$(GIT_ORIGIN_SLUG),yourok/torrserver)
+REGISTRY_IMAGE    ?= $(if $(GIT_ORIGIN_SLUG),$(GIT_ORIGIN_SLUG),lampac-nextgen/torrserver)
 DOCKER_IMAGE_ID   ?= ghcr.io/$(REGISTRY_IMAGE)
 IMAGE_BUILDER     := $(RUNTIME_NAME).builder
 DOCKER_TAG        ?= local

@@ -23,9 +23,9 @@ beforeEach(() => {
 
 describe('AboutDialog', () => {
   it('shows the server version from /echo and every contributor link', async () => {
-    routeApi({ 'GET /echo': 'MatriX.141' })
+    routeApi({ 'GET /echo': 'NextGen.148' })
     renderWithApp(<AboutDialog open onClose={vi.fn()} />)
-    expect(await screen.findByText(/MatriX\.141/)).toBeTruthy()
+    expect(await screen.findByText(/NextGen\.148/)).toBeTruthy()
     const hrefs = screen.getAllByRole('link').map(a => a.getAttribute('href'))
     for (const person of CONTRIBUTORS) expect(hrefs).toContain(person.url)
   })

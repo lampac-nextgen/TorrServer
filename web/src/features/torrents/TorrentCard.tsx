@@ -153,8 +153,8 @@ export default function TorrentCard({
             <span />
           )}
           {categoryLabel ? (
-            <Chip size='sm' variant='soft' className='max-w-[42%] shrink-0'>
-              <Chip.Label className='truncate'>{categoryLabel}</Chip.Label>
+            <Chip size='sm' variant='soft' className='max-w-[42%] shrink-0 bg-black/60 text-white backdrop-blur-sm'>
+              <Chip.Label className='truncate text-white'>{categoryLabel}</Chip.Label>
             </Chip>
           ) : null}
         </div>
