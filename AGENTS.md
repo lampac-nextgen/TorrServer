@@ -262,7 +262,7 @@ func TestStreamFromLoopback(t *testing.T) {
 
 ### Real-server e2e
 
-`web/e2e/*.real.test.mjs` run Playwright against the built binary (`tmp/e2e/torrserver`) and `server/torr/offlinetest/e2e-seed` (build tag `e2eseed`, excluded from `go list ./...`; it dials the server's `--torrentaddr` peer port because the fork has no `x.pe`). Helpers: `real-server.mjs`, `real-browser.mjs`; mocked suites use `mock-*.mjs`. Run `make e2e-real` (ffmpeg is needed for the video case). `server/torr/offlinetest.MemStore` is shared by the harness and the seeder. The CI job `e2e-real` runs only when the `e2e-changes` path filter matches and is advisory (`continue-on-error`); the mocked suites (`*.mock.test.mjs`) stay the required gate. `make web-check` / `make check-all` run the required gates locally; `yarn lint` also covers `web/e2e` and `web/scripts`.
+`web/e2e/real/*.spec.ts` (`@playwright/test`, project `real`) run against the built binary (`tmp/e2e/torrserver`) and `server/torr/offlinetest/e2e-seed` (build tag `e2eseed`, excluded from `go list ./...`; it dials the server's `--torrentaddr` peer port because the fork has no `x.pe`). Fixtures: `web/e2e/fixtures/server.ts` (harness), `fixtures/test.ts` (`useServer`, `tracker`); mocked suites live in `e2e/mock/` and use `fixtures/mocks.ts`. Run `make e2e-real` (ffmpeg is needed for the video case). `server/torr/offlinetest.MemStore` is shared by the harness and the seeder. The CI job `e2e-real` runs only when the `e2e-changes` path filter matches and is advisory (`continue-on-error`); the mocked suites (`e2e/mock/*.spec.ts`) stay the required gate. `make web-check` / `make check-all` run the required gates locally; `yarn lint` also covers `web/e2e` and `web/scripts`.
 
 ### ffprobe
 

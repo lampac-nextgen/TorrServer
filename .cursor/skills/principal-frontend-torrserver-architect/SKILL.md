@@ -130,5 +130,5 @@ Playlist `Content-Disposition` goes through `safeAttachmentName` in `server/web/
 
 Before completing any frontend task:
 
-1. **Lint & Type/Build Check:** From `web/`, `yarn typecheck`, `yarn lint`, and `yarn test` with 0 errors. `yarn i18n:check` when strings change. `yarn test:e2e` when the shell, settings, or auth gate changes.
+1. **Lint & Type/Build Check:** From `web/`, `yarn typecheck`, `yarn lint`, and `yarn test` with 0 errors. `yarn i18n:check` when strings change. `yarn test:e2e` (`@playwright/test`, project `mock`; specs in `web/e2e/{mock,real,live}`) when the shell, settings, or auth gate changes.
 2. **Asset Sync Check:** `make webgen` (or `make webgen-clean`), then `cd server && go test -race ./web/...`.

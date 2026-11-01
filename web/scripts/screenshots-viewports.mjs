@@ -14,10 +14,10 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { chromium } from 'playwright'
+import { chromium } from '@playwright/test'
 
-import { installMocks } from '../e2e/mock-fixtures.mjs'
-import { embedPagesRoot, serveEmbedDir } from '../e2e/mock-static-server.mjs'
+import { installMocks } from '../e2e/fixtures/mocks.ts'
+import { embedPagesRoot, serveEmbedDir } from '../e2e/fixtures/static-server.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const outDir = path.resolve(__dirname, '../tmp/viewports')

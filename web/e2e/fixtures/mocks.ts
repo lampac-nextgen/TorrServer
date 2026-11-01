@@ -1,4 +1,5 @@
-import { JAC_RED_HOST, JAC_RED_KEY, JAC_RED_NAME } from './mock-indexers.mjs'
+import type { Page } from '@playwright/test'
+import { JAC_RED_HOST, JAC_RED_KEY, JAC_RED_NAME } from './indexers.ts'
 
 export const HASH = '0123456789abcdef0123456789abcdef01234567'
 
@@ -73,15 +74,15 @@ export const fixtureRuntime = {
   fuse_path: '',
 }
 
-const json = body => ({
+const json = (body: unknown) => ({
   status: 200,
   contentType: 'application/json',
   body: JSON.stringify(body),
 })
 
 /** Intercept TorrServer APIs so the embedded SPA can run without a backend. */
-export async function installMocks(page, { requireAuth = false } = {}) {
-  const waf = { ...fixtureWaf }
+export async function installMocks(page: Page, { requireAuth = false }: { requireAuth?: boolean } = {}) {
+  const waf: Record<string, unknown> = { ...fixtureWaf }
 
   await page.route('**/echo', route => route.fulfill({ status: 200, contentType: 'text/plain', body: 'MatriX.144' }))
   await page.route('**/gst/echo', route => route.fulfill({ status: 404, body: '' }))
