@@ -245,10 +245,10 @@ Override explicitly: `make GO_BINARY=go binary` or `make GO_BINARY=go<GO_VERSION
 
 ## CI (`.github/workflows/ci.yml`)
 
-Runs on push/PR to `master`:
+Runs on push/PR to `master`. The test and lint jobs are described in [testing.md](testing.md#what-ci-runs).
 
 1. **GoReleaser check** — validates `.goreleaser.yaml` and `.goreleaser.local.yaml`
-2. **Snapshot build** — single `linux_amd64` target, verifies `dist/TorrServer-linux-amd64`
+2. **Snapshot build** — single `linux_amd64` target, verifies `dist/TorrServer-linux-amd64`; runs after lint, Go tests, GoReleaser check and the web jobs pass
 
 ## Release workflow (`.github/workflows/release.yml`)
 
