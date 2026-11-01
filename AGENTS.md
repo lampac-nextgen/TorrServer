@@ -260,6 +260,10 @@ func TestStreamFromLoopback(t *testing.T) {
 
 `Reader` tests that cannot construct `torrent.File` (unexported length) set `overrideLen` and leave `file` nil. `fileLen` / `fileOffset` already branch on that. Do not export anacrolix fields.
 
+### Real-server e2e
+
+`web/e2e/*.real.test.mjs` run Playwright against the built binary (`tmp/e2e/torrserver`) and `server/torr/offlinetest/e2e-seed` (build tag `e2eseed`, excluded from `go list ./...`; it dials the server's `--torrentaddr` peer port because the fork has no `x.pe`). Helpers: `real-server.mjs`, `real-browser.mjs`; mocked suites use `mock-*.mjs`. Run `make e2e-real` (ffmpeg is needed for the video case). `server/torr/offlinetest.MemStore` is shared by the harness and the seeder. The CI job `e2e-real` runs only when the `e2e-changes` path filter matches and is advisory (`continue-on-error`); the mocked suites (`*.mock.test.mjs`) stay the required gate. `make web-check` / `make check-all` run the required gates locally; `yarn lint` also covers `web/e2e` and `web/scripts`.
+
 ### ffprobe
 
 `server/ffprobe/exec_test.go` writes a shell script into `t.TempDir()`, then `goffprobe.SetFFProbeBinPath` and assigns `binFile`. Cleanup restores both. Windows skips. `probeTimeout` is a package var; tests shrink it. A missing binary is `Exists() == false`, not a failed test.

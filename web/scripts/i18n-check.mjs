@@ -2,6 +2,7 @@
 /**
  * Locale parity check: every language must contain the same flattened key set as en.
  * Also fails on flat dotted top-level keys like "Search.Tracker" (use nested objects).
+ * Fails when a non-Latin locale (ru, ua, bg, zh) keeps a multi-word English value from en (copy-paste, untranslated).
  * Scans web/src for static t('…') / i18n.t('…') keys and fails if any are missing from en.
  */
 import fs from 'node:fs'
@@ -14,12 +15,7 @@ const srcDir = path.join(root, 'src')
 const langs = ['en', 'ru', 'ua', 'bg', 'fr', 'ro', 'zh']
 
 /** Dynamic t(`prefix${…}`) / t('ThemePalette'+id) prefixes — not full keys. */
-const DYNAMIC_PREFIXES = [
-  'HTTPSSettings.Source.',
-  'ThemePalette',
-  'WAF.Lists.',
-  'WAF.WarningCodes.',
-]
+const DYNAMIC_PREFIXES = ['HTTPSSettings.Source.', 'ThemePalette', 'WAF.Lists.', 'WAF.WarningCodes.']
 
 function flatten(obj, prefix = '', out = {}) {
   for (const [k, v] of Object.entries(obj)) {
@@ -85,6 +81,27 @@ for (const lang of langs) {
     console.error(`[${lang}] missing ${missing.length}, extra ${extra.length}`)
     if (missing.length) console.error('  missing:', missing.slice(0, 20).join(', '))
     if (extra.length) console.error('  extra:', extra.slice(0, 20).join(', '))
+  }
+}
+
+// Latin-script locales legitimately share many words with en, so only non-Latin ones are checked.
+const NON_LATIN = ['ru', 'ua', 'bg', 'zh']
+/** Protocol / product names that are not translated. */
+const KEEP_ENGLISH = new Set(['SettingsDialog.Bonjour'])
+const looksUntranslated = (value, en) =>
+  typeof value === 'string' &&
+  typeof en === 'string' &&
+  value.toLowerCase() === en.toLowerCase() &&
+  /^[\x20-\x7e]+$/.test(value) &&
+  !/\{\{|\$t\(|https?:/.test(value) &&
+  value.split(/\s+/).filter(w => /[A-Za-z]{2,}/.test(w)).length >= 2
+for (const lang of NON_LATIN) {
+  const bad = Object.keys(locales[lang]).filter(
+    k => !KEEP_ENGLISH.has(k) && looksUntranslated(locales[lang][k], locales.en[k]),
+  )
+  if (bad.length) {
+    failed = true
+    console.error(`[${lang}] ${bad.length} value(s) are still the English text:`, bad.slice(0, 20).join(', '))
   }
 }
 

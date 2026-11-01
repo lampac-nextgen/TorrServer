@@ -66,7 +66,8 @@ export function resolveBufferTargetBytes(capacity?: number | null, preloadCacheP
 
 /**
  * Preload progress: live Filled toward the Preload target (not Cache Size capacity).
- * Label order is `Filled / preloadTarget`. Percent is capped at 100.
+ * Label order is `Filled / preloadTarget`. Percent is capped at 100; once filled passes the target
+ * the target is dropped (`123 MB · 100%`) so it does not read as an overflowing capacity.
  * Use only for idle/preload — while streaming prefer {@link formatBufferAheadLabel}.
  */
 export function formatBufferFilledLabel(
@@ -78,9 +79,11 @@ export function formatBufferFilledLabel(
   const rawPct = Math.round((filled / bufferTarget) * 100)
   const pct = Math.min(100, rawPct)
   const over = filled > bufferTarget
+  // Past the target a "filled / target" fraction reads as an overflow ("123 MB / 36 MB"); say what is cached.
+  if (over) return `${humanizeSize(filled)} · ${pct}%`
   const sizes = `${humanizeSize(filled)} / ${humanizeSize(bufferTarget)}`
   const mode = opts?.percent ?? 'whenOver'
-  if (mode === 'always' || over) return `${sizes} · ${pct}%`
+  if (mode === 'always') return `${sizes} · ${pct}%`
   return sizes
 }
 

@@ -411,3 +411,33 @@ func TestFileStatsFromData(t *testing.T) {
 		t.Fatalf("%+v", got)
 	}
 }
+
+func TestPeakDownloadSpeedKeepsTheHighestSample(t *testing.T) {
+	tor, _ := connectShow(t)
+	waitBytes(t, tor, 1024)
+	tor.muTorrent.Lock()
+	tor.lastTimeSpeed = time.Now().Add(-time.Second)
+	tor.BytesReadUsefulData = 0 // everything read so far counts as one second of traffic
+	tor.muTorrent.Unlock()
+	tor.progressEvent()
+
+	tor.muTorrent.Lock()
+	peak, cur := tor.PeakDownloadSpeed, tor.DownloadSpeed
+	tor.muTorrent.Unlock()
+	if peak <= 0 || peak != cur {
+		t.Fatalf("peak %v, current %v: first sample should set the peak", peak, cur)
+	}
+
+	// An idle second drops the current speed to 0; the peak must stay.
+	tor.muTorrent.Lock()
+	tor.lastTimeSpeed = time.Now().Add(-time.Second)
+	tor.muTorrent.Unlock()
+	tor.progressEvent()
+	st := tor.Status()
+	if st.DownloadSpeed >= peak {
+		t.Skipf("traffic continued (%v), cannot observe the drop", st.DownloadSpeed)
+	}
+	if st.PeakDownloadSpeed != peak {
+		t.Fatalf("peak lost: got %v want %v", st.PeakDownloadSpeed, peak)
+	}
+}

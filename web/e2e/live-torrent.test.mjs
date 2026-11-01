@@ -10,7 +10,7 @@ import { test } from 'node:test'
 
 import { chromium } from 'playwright'
 
-import { JAC_RED_HOST, JAC_RED_KEY, JAC_RED_NAME, SEARCH_QUERIES } from './indexers.mjs'
+import { JAC_RED_HOST, JAC_RED_KEY, JAC_RED_NAME, SEARCH_QUERIES } from './mock-indexers.mjs'
 
 const BASE = process.env.TORRSERVER_URL || ''
 const USER = process.env.TS_USER || 'ts'

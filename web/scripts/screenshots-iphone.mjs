@@ -26,8 +26,7 @@ const HASH = '0123456789abcdef0123456789abcdef01234567'
 
 const fixtureTorrent = {
   hash: HASH,
-  title:
-    '[LAMPA] Дом дракона (3 сезон: 1-4 серии из 8) / House of the Dragon / 2026 / 4 х ДБ, 3 х ПМ, WEB-DLRip 2160p',
+  title: '[LAMPA] Дом дракона (3 сезон: 1-4 серии из 8) / House of the Dragon / 2026 / 4 х ДБ, 3 х ПМ, WEB-DLRip 2160p',
   name: 'House.of.the.Dragon.S03E01-E04.2160p.WEB-DL.x265',
   category: 'tv',
   poster: '',
@@ -69,8 +68,7 @@ const fixtureCache = {
   Readers: [],
 }
 
-const iPhone =
-  devices['iPhone 16 Pro Max'] ??
+const iPhone = devices['iPhone 16 Pro Max'] ??
   devices['iPhone 15 Pro Max'] ?? {
     userAgent:
       'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
@@ -212,7 +210,10 @@ async function main() {
 
   await page.locator('.ts-details-tabs [role="tab"]').nth(1).click()
   await page.waitForTimeout(300)
-  await page.locator('.ts-details-modal').getByRole('button', { name: /^Actions$/i }).click()
+  await page
+    .locator('.ts-details-modal')
+    .getByRole('button', { name: /^Actions$/i })
+    .click()
   await page.waitForTimeout(500)
   await shot(page, 'details-stats-actions-sheet')
 

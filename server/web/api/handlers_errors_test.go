@@ -132,9 +132,9 @@ func TestHandlerErrorPaths(t *testing.T) {
 	})
 
 	t.Run("play", func(t *testing.T) {
-		want("unknown hash", do(http.MethodGet, "/play/"+unknown+"/1", "", false), http.StatusInternalServerError)
+		want("unknown hash", do(http.MethodGet, "/play/"+unknown+"/1", "", false), http.StatusNotFound)
 		want("unknown hash anonymous", do(http.MethodGet, "/play/"+unknown+"/1", "", true), http.StatusUnauthorized)
-		want("bad hash", do(http.MethodGet, "/play/zzz/1", "", false), http.StatusInternalServerError)
+		want("bad hash", do(http.MethodGet, "/play/zzz/1", "", false), http.StatusBadRequest)
 		want("bad index", do(http.MethodGet, "/play/"+hash+"/x", "", false), http.StatusBadRequest)
 	})
 

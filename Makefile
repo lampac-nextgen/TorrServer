@@ -390,6 +390,11 @@ lint:
 
 lint-all: fmt-check lint
 
+web-check: guard-yarn ## Web gates: typecheck, lint, vitest, i18n, mocked e2e
+	cd web && yarn typecheck && yarn lint && yarn test && yarn i18n:check && yarn test:e2e
+
+check-all: lint-all test web-check ## Every required gate (real-server e2e stays in e2e-real)
+
 # server/docs is generated swagger. ./torr reader bench blocks on GotInfo.
 TEST_PKGS = $(shell cd server && $(GO_BINARY) list ./... | grep -v '/docs$$')
 BENCH_PKGS := ./subs ./torr/storage/torrstor ./torrshash ./torrfs ./web/api
@@ -399,6 +404,16 @@ test: ## Race tests; coverage profile at server/coverage.out
 
 bench: ## In-process benches; results at server/bench.txt
 	cd server && $(GO_BINARY) test -run='^$$' -bench=. -benchmem -benchtime=200ms -count=1 $(BENCH_PKGS) | tee bench.txt
+
+E2E_DIR := $(CURDIR)/tmp/e2e
+
+e2e-real-build: webgen-clean ## Binaries for the real-server Playwright suite (tmp/e2e)
+	mkdir -p $(E2E_DIR)
+	cd server && CGO_ENABLED=0 $(GO_BINARY) build -tags nosqlite -trimpath -ldflags "-s -w -checklinkname=0" -o $(E2E_DIR)/torrserver ./cmd
+	cd server && CGO_ENABLED=0 $(GO_BINARY) build -tags "e2eseed nosqlite" -o $(E2E_DIR)/e2e-seed ./torr/offlinetest/e2e-seed
+
+e2e-real: e2e-real-build ## Playwright against the real binary and a loopback seeder
+	cd web && yarn test:e2e:real
 
 healthcheck:
 	goreleaser healthcheck $(GR_CONFIG)
@@ -592,5 +607,5 @@ help:
         guard-docker-amd64 guard-goreleaser guard-upx guard-ndk guard-yarn guard-swag \
         build-host build-gst-host build-no-hooks release-snapshot release-no-docker release-no-docker-full \
         data-sync build-sync web-deps web-build web-embed install-tools install-goreleaser install-swag install-golangci-lint \
-        fmt fmt-check lint lint-all test bench \
+        fmt fmt-check lint lint-all web-check check-all test bench e2e-real e2e-real-build \
         docker-image docker-image-amd64 docker-image-arm64 show-config show-config-release

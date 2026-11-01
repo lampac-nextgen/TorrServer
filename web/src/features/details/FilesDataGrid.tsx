@@ -1,5 +1,5 @@
 import { CheckCircle2 } from 'lucide-react'
-import { memo, useCallback, useMemo, useState, type ReactNode } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import ptt from 'parse-torrent-title'
 import { useMediaQuery } from '@heroui/react'
 import { useQueryClient } from '@tanstack/react-query'
@@ -30,6 +30,9 @@ import MediaInfoDialog from './MediaInfoDialog'
 ptt.addHandler('episode', /(\d{1,4})[- |. ]серия|серия[- |. ](\d{1,4})/i, { type: 'integer' })
 ptt.addHandler('season', /sezon[- |. ](\d{1,3})|(\d{1,3})[- |. ]sezon/i, { type: 'integer' })
 ptt.addHandler('season', /сезон[- |. ](\d{1,3})|(\d{1,3})[- |. ]сезон/i, { type: 'integer' })
+
+/** Rows mounted per step. A 600-file pack mounted at once blocked the main thread for 0.4-2s. */
+export const FILE_ROWS_PAGE = 60
 
 export interface FilesDataGridProps {
   playableFileList?: PlayableFile[]
@@ -199,7 +202,10 @@ const FilesDataGrid = memo(
 
     const preloadBuffer = (fileId: number) => void authFetch(streamPreloadUrl(hash, fileId))
 
-    const fileHasEpisodeText = !!playableFileList?.find(({ path }) => ptt.parse(path).episode)
+    const fileHasEpisodeText = useMemo(
+      () => !!playableFileList?.find(({ path }) => ptt.parse(path).episode),
+      [playableFileList],
+    )
     const shouldDisplayFullFileName = (playableFileList?.length ?? 0) > 1 && !fileHasEpisodeText
 
     const filteredFiles = useMemo(
@@ -221,7 +227,9 @@ const FilesDataGrid = memo(
               ? `E${parsed.episode}${parsed.title ? ` · ${parsed.title}` : ''}`
               : shouldDisplayFullFileName
                 ? file.path
-                : parsed.title || fileName
+                : (playableFileList?.length ?? 0) > 1
+                  ? fileName
+                  : parsed.title || fileName
           return {
             id: file.id,
             name: episodeLabel,
@@ -237,8 +245,30 @@ const FilesDataGrid = memo(
             playable: file,
           }
         }),
-      [filteredFiles, viewedFileList, shouldDisplayFullFileName, hash, gstRuntime, mediaBase],
+      [filteredFiles, playableFileList, viewedFileList, shouldDisplayFullFileName, hash, gstRuntime, mediaBase],
     )
+
+    // Mount rows in pages; a sentinel below the list asks for the next page when it nears the viewport.
+    const scope = `${hash}:${selectedSeason ?? ''}:${rows.length}`
+    const [grown, setGrown] = useState({ scope, count: FILE_ROWS_PAGE })
+    const canObserve = typeof IntersectionObserver !== 'undefined'
+    const visibleCount = canObserve ? (grown.scope === scope ? grown.count : FILE_ROWS_PAGE) : rows.length
+    const hasMore = visibleCount < rows.length
+    const sentinelRef = useRef<HTMLDivElement>(null)
+    useEffect(() => {
+      const el = sentinelRef.current
+      if (!hasMore || !el) return
+      const io = new IntersectionObserver(
+        entries => {
+          if (entries.some(e => e.isIntersecting)) {
+            setGrown(prev => ({ scope, count: (prev.scope === scope ? prev.count : FILE_ROWS_PAGE) + FILE_ROWS_PAGE }))
+          }
+        },
+        { rootMargin: '600px 0px' },
+      )
+      io.observe(el)
+      return () => io.disconnect()
+    }, [hasMore, visibleCount, scope, rows.length])
 
     if (!playableFileList?.length) {
       return <p className='py-6 text-center text-sm text-muted'>{t('NoPlayableFiles')}</p>
@@ -246,7 +276,7 @@ const FilesDataGrid = memo(
 
     return (
       <div className='space-y-1.5'>
-        {rows.map(row => {
+        {rows.slice(0, visibleCount).map(row => {
           const externalPlayers = buildExternalPlayers(row.fullLink)
           return (
             <EpisodeRow
@@ -286,6 +316,8 @@ const FilesDataGrid = memo(
             />
           )
         })}
+
+        {hasMore ? <div ref={sentinelRef} aria-hidden className='h-px' /> : null}
 
         {playerModals}
 

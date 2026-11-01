@@ -37,7 +37,7 @@ func play(c *gin.Context) {
 
 	spec, err := utils.ParseLink(hash)
 	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		_ = c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
@@ -49,7 +49,7 @@ func play(c *gin.Context) {
 	}
 
 	if tor == nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, errors.New("error get torrent"))
+		_ = c.AbortWithError(http.StatusNotFound, errors.New("torrent not found"))
 		return
 	}
 
@@ -63,7 +63,7 @@ func play(c *gin.Context) {
 	}
 
 	if !tor.GotInfo() {
-		_ = c.AbortWithError(http.StatusInternalServerError, errors.New("torrent connection timeout"))
+		abortTorrentUnavailable(c)
 		return
 	}
 

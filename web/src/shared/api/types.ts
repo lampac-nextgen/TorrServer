@@ -21,6 +21,8 @@ export interface TorrentStat {
   preloaded_bytes?: number
   preload_size?: number
   download_speed?: number
+  /** Highest one-second download speed since the torrent was added (server-side, not limited by poll cadence). */
+  peak_download_speed?: number
   upload_speed?: number
   active_peers?: number
   total_peers?: number

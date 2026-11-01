@@ -14,7 +14,6 @@ import (
 	"github.com/anacrolix/torrent"
 	"github.com/anacrolix/torrent/bencode"
 	"github.com/anacrolix/torrent/metainfo"
-	"github.com/anacrolix/torrent/storage"
 
 	"server/ffprobe"
 	"server/settings"
@@ -156,7 +155,7 @@ type Seeder struct {
 func Seed(t testing.TB, show *Show) *Seeder {
 	t.Helper()
 	cfg := torrent.NewDefaultClientConfig()
-	cfg.DefaultStorage = memStore{data: show.Data}
+	cfg.DefaultStorage = MemStore{Data: show.Data}
 	cfg.Seed = true
 	cfg.NoDHT = true
 	cfg.DisableTrackers = true
@@ -189,41 +188,6 @@ func Seed(t testing.TB, show *Show) *Seeder {
 		time.Sleep(20 * time.Millisecond)
 	}
 	return &Seeder{Client: cl, Torrent: tor}
-}
-
-// memStore reports every piece complete and serves the torrent bytes.
-// The fork dropped the file storage backend, so the seeder cannot use a directory.
-type memStore struct{ data []byte }
-
-func (m memStore) OpenTorrent(*metainfo.Info, metainfo.Hash) (storage.TorrentImpl, error) {
-	return m, nil
-}
-func (m memStore) Close() error { return nil }
-func (m memStore) Piece(p metainfo.Piece) storage.PieceImpl {
-	return memPiece{data: m.data, p: p}
-}
-
-type memPiece struct {
-	data []byte
-	p    metainfo.Piece
-}
-
-func (p memPiece) ReadAt(b []byte, off int64) (int, error) {
-	start := p.p.Offset() + off
-	if start >= int64(len(p.data)) {
-		return 0, io.EOF
-	}
-	n := copy(b, p.data[start:])
-	if n < len(b) {
-		return n, io.EOF
-	}
-	return n, nil
-}
-func (p memPiece) WriteAt(b []byte, _ int64) (int, error) { return len(b), nil }
-func (p memPiece) MarkComplete() error                    { return nil }
-func (p memPiece) MarkNotComplete() error                 { return nil }
-func (p memPiece) Completion() storage.Completion {
-	return storage.Completion{Complete: true, Ok: true}
 }
 
 // Peer is the seeder's TCP address for Torrent.AddPeers.

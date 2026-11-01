@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { screen, waitFor } from '@testing-library/react'
+import { act, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import type { PlayableFile } from 'shared/api/types'
@@ -8,7 +8,7 @@ import { ModalOpenProvider } from 'shared/ui/ModalOpenContext'
 import { mockNetwork, pathOf, type NetworkMock } from '@/test/network'
 import { renderWithProviders } from '@/test/renderWithProviders'
 
-import FilesDataGrid, { type FilesDataGridProps } from './FilesDataGrid'
+import FilesDataGrid, { FILE_ROWS_PAGE, type FilesDataGridProps } from './FilesDataGrid'
 
 const HASH = 'abcdef0123456789abcdef0123456789abcdef01'
 const copy = vi.hoisted(() => vi.fn())
@@ -137,5 +137,54 @@ describe('FilesDataGrid links', () => {
     mount()
     await userEvent.click(screen.getAllByRole('button', { name: 'Media info' })[2])
     await waitFor(() => expect(net!.requests.some(r => r.url.includes(`/ffp/${HASH}/3`))).toBe(true))
+  })
+})
+
+describe('FilesDataGrid paging', () => {
+  const pack: PlayableFile[] = Array.from({ length: FILE_ROWS_PAGE * 2 + 10 }, (_, i) => ({
+    id: i + 1,
+    path: `Disc/track${String(i + 1).padStart(3, '0')}.flac`,
+    length: 1000,
+  }))
+  const rowCount = () => document.querySelectorAll('div[class*="border-l"]').length
+
+  it('mounts one page of rows and the next page when the sentinel nears the viewport', () => {
+    const callbacks: IntersectionObserverCallback[] = []
+    class FakeObserver {
+      constructor(cb: IntersectionObserverCallback) {
+        callbacks.push(cb)
+      }
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+      takeRecords() {
+        return []
+      }
+    }
+    vi.stubGlobal('IntersectionObserver', FakeObserver)
+    try {
+      mount({ playableFileList: pack })
+      expect(rowCount()).toBe(FILE_ROWS_PAGE)
+      act(() => {
+        callbacks.at(-1)?.([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver)
+      })
+      expect(rowCount()).toBe(FILE_ROWS_PAGE * 2)
+      act(() => {
+        callbacks.at(-1)?.([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver)
+      })
+      expect(rowCount()).toBe(pack.length)
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+
+  it('renders everything when IntersectionObserver is unavailable', () => {
+    vi.stubGlobal('IntersectionObserver', undefined)
+    try {
+      mount({ playableFileList: pack })
+      expect(rowCount()).toBe(pack.length)
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 })

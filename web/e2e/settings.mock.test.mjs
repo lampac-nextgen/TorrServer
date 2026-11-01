@@ -3,15 +3,15 @@ import { after, before, test } from 'node:test'
 
 import { chromium } from 'playwright'
 
-import { HASH, fixtureSettings, installMocks } from './fixtures.mjs'
-import { embedPagesRoot, serveEmbedDir } from './static-server.mjs'
+import { HASH, fixtureSettings, installMocks } from './mock-fixtures.mjs'
+import { embedPagesRoot, serveEmbedDir } from './mock-static-server.mjs'
 
 let server
 let origin
 let browser
 
 before(async () => {
-  ; ({ server, origin } = await serveEmbedDir(embedPagesRoot()))
+  ;({ server, origin } = await serveEmbedDir(embedPagesRoot()))
   browser = await chromium.launch({ headless: true })
 })
 
@@ -198,7 +198,13 @@ test('phone chrome: bottom nav, header search, appearance overflow', { timeout: 
       await tab.waitFor()
       await assertBoxInViewport(page, tab, `nav ${name}`)
     }
-    assert.equal(await page.locator('header').getByLabel(/Theme:/).count(), 0)
+    assert.equal(
+      await page
+        .locator('header')
+        .getByLabel(/Theme:/)
+        .count(),
+      0,
+    )
 
     const vp = page.viewportSize()
     const cardBoxes = await page.locator('.torrent-card').evaluateAll(els =>
@@ -229,7 +235,8 @@ test('phone chrome: bottom nav, header search, appearance overflow', { timeout: 
   }
 })
 
-test('tablet chrome: sidebar, no bottom nav, settings centered', { timeout: 45_000 }, async () => {
+// Dialogs go fullscreen up to the 960px `dialog` breakpoint (useDialogFullScreen), so a 768px tablet gets a sheet.
+test('tablet chrome: sidebar, no bottom nav, settings is a fullscreen sheet', { timeout: 45_000 }, async () => {
   const { context, page } = await newPage({ viewport: { width: 768, height: 1024 } })
   try {
     await page.goto(origin + '/', { waitUntil: 'domcontentloaded' })
@@ -239,6 +246,13 @@ test('tablet chrome: sidebar, no bottom nav, settings centered', { timeout: 45_0
     await openSettings(page)
     const dialog = settingsDialog(page)
     await dialog.waitFor()
+    const box = await dialog.boundingBox()
+    const vp = page.viewportSize()
+    assert.ok(box && vp)
+    assert.ok(
+      box.width >= vp.width * 0.98 && box.height >= vp.height * 0.98,
+      `expected a fullscreen sheet, got ${box.width}x${box.height}`,
+    )
     await assertDialogCentered(page, dialog)
   } finally {
     await context.close()

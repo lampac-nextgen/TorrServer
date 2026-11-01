@@ -204,6 +204,7 @@ export default function DetailsDialog({
     name,
     stat,
     download_speed: downloadSpeed,
+    peak_download_speed: peakDownloadSpeed,
     upload_speed: uploadSpeed,
     torrent_size: torrentSize,
     file_stats: fileStats,
@@ -569,7 +570,12 @@ export default function DetailsDialog({
               {useCompactDetails ? (
                 <div className='min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
                   <TorrentProgressStrip torrent={torrent} cache={cache} preloadCachePercent={preloadCachePercent} />
-                  <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact />
+                  <SpeedCharts
+                    downloadSpeed={downloadSpeed}
+                    uploadSpeed={uploadSpeed}
+                    peakDownloadSpeed={peakDownloadSpeed}
+                    compact
+                  />
                   <SwarmStatsPanel
                     torrent={torrent}
                     columns={2}
@@ -581,7 +587,13 @@ export default function DetailsDialog({
                 <div className='flex min-h-0 flex-1 flex-col gap-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]'>
                   <TorrentProgressStrip torrent={torrent} cache={cache} preloadCachePercent={preloadCachePercent} />
                   <div className='grid min-h-0 flex-1 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-stretch gap-3'>
-                    <SpeedCharts downloadSpeed={downloadSpeed} uploadSpeed={uploadSpeed} compact fill />
+                    <SpeedCharts
+                      downloadSpeed={downloadSpeed}
+                      uploadSpeed={uploadSpeed}
+                      peakDownloadSpeed={peakDownloadSpeed}
+                      compact
+                      fill
+                    />
                     <SwarmStatsPanel
                       torrent={torrent}
                       className='h-full min-h-0'

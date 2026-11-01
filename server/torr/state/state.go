@@ -46,6 +46,7 @@ type TorrentStatus struct {
 	PreloadedBytes      int64       `json:"preloaded_bytes,omitempty"`
 	PreloadSize         int64       `json:"preload_size,omitempty"`
 	DownloadSpeed       float64     `json:"download_speed,omitempty"`
+	PeakDownloadSpeed   float64     `json:"peak_download_speed,omitempty"`
 	UploadSpeed         float64     `json:"upload_speed,omitempty"`
 	TotalPeers          int         `json:"total_peers,omitempty"`
 	PendingPeers        int         `json:"pending_peers,omitempty"`

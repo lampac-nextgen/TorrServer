@@ -43,6 +43,7 @@ type Torrent struct {
 
 	lastTimeSpeed       time.Time
 	DownloadSpeed       float64
+	PeakDownloadSpeed   float64 // highest one-second DownloadSpeed since the torrent was added
 	UploadSpeed         float64
 	BytesReadUsefulData int64
 	BytesWrittenData    int64
@@ -289,6 +290,9 @@ func (t *Torrent) progressEvent() {
 		deltaTime := time.Since(t.lastTimeSpeed).Seconds()
 
 		t.DownloadSpeed = float64(deltaDlBytes) / deltaTime
+		if t.DownloadSpeed > t.PeakDownloadSpeed {
+			t.PeakDownloadSpeed = t.DownloadSpeed
+		}
 		t.UploadSpeed = float64(deltaUpBytes) / deltaTime
 
 		t.BytesReadUsefulData = st.BytesRead.Int64()
@@ -492,6 +496,7 @@ func (t *Torrent) Status() *state.TorrentStatus {
 		st.PreloadedBytes = t.PreloadedBytes
 		st.PreloadSize = t.PreloadSize
 		st.DownloadSpeed = t.DownloadSpeed
+		st.PeakDownloadSpeed = t.PeakDownloadSpeed
 		st.UploadSpeed = t.UploadSpeed
 
 		tst := t.Stats()
