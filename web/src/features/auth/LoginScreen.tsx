@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 
 import { encodeBasicAuthorization, setCredentials } from 'shared/api/authCredentials'
 import { torrentsHost } from 'shared/api/hosts'
-import { publicUrl } from 'shared/lib/publicUrl'
+import BrandLogo from 'shared/ui/BrandLogo'
 import { iconMenu } from 'shared/ui/iconProps'
 
 export interface LoginScreenProps {
@@ -74,9 +74,9 @@ export default function LoginScreen({ onSuccess }: LoginScreenProps) {
         }}
       >
         <div className='mb-6 flex flex-col items-center gap-3 text-center'>
-          <img src={publicUrl('icon.png')} alt='' className='size-16 rounded-2xl shadow-lg' />
+          <BrandLogo alt='' className='h-14 w-auto' />
           <div>
-            <h1 className='text-xl font-semibold text-foreground'>TorrServer</h1>
+            <h1 className='sr-only'>TorrServer</h1>
             <p className='mt-1 text-sm text-muted'>{t('LoginSubtitle')}</p>
           </div>
         </div>
