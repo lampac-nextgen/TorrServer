@@ -94,6 +94,51 @@ export const fixtureDragonCache = {
   Readers: [],
 }
 
+/** Busy piece map: cached run, partial pieces, readahead priorities and an active reader. */
+export const fixtureDragonCacheRich = (() => {
+  const length = 8 * 1024 * 1024
+  const Pieces: Record<string, { Id: number; Size: number; Length: number; Completed: boolean; Priority: number }> = {}
+  const put = (id: number, fill: number, Priority = 0) => {
+    Pieces[String(id)] = { Id: id, Size: Math.round(length * fill), Length: length, Completed: fill >= 1, Priority }
+  }
+  for (let i = 100; i < 130; i++) put(i, 1)
+  for (let i = 130; i < 135; i++) put(i, (i - 129) / 6, i === 134 ? 5 : 0)
+  for (let i = 135; i < 150; i++) put(i, 0, i < 140 ? 4 : 3)
+  const Filled = Object.values(Pieces).reduce((n, p) => n + p.Size, 0)
+  return {
+    Hash: HASH,
+    Capacity: 256 * 1024 * 1024,
+    Filled,
+    PiecesLength: length,
+    PiecesCount: 4748,
+    Pieces,
+    Readers: [{ Reader: 134, Start: 120, End: 150, Active: true }],
+  }
+})()
+
+const posterSvg = (a: string, b: string) =>
+  `data:image/svg+xml;utf8,${encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="450"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="300" height="450" fill="url(#g)"/><rect x="30" y="300" width="240" height="14" fill="#ffffff" opacity=".85"/><rect x="30" y="330" width="170" height="14" fill="#000000" opacity=".7"/></svg>`,
+  )}`
+
+/** Twelve rows: posters (bright, dark, mid), categories, active/inactive. */
+export const fixtureRichLibrary = Array.from({ length: 12 }, (_, i) => ({
+  ...fixtureDragon,
+  hash: `${HASH.slice(0, 38)}${String(i + 10).padStart(2, '0')}`,
+  title:
+    i % 3 === 0
+      ? `[LAMPA] Очень длинное название фильма номер ${i + 1} / Long Movie Title ${i + 1} / 2026`
+      : `Movie ${i + 1}`,
+  category: ['movie', 'tv', 'music', 'other'][i % 4],
+  stat: i % 4 === 0 ? 5 : 3,
+  poster:
+    i % 2 === 0
+      ? [posterSvg('#f5e663', '#f08a24'), posterSvg('#0b1020', '#233a6b'), posterSvg('#7ab8d8', '#bcd9ea')][
+          ((i / 2) % 3) | 0
+        ]
+      : '',
+}))
+
 export const fixtureWaf = {
   whitelist: '',
   blacklist: '',

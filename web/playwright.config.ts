@@ -33,7 +33,7 @@ export default defineConfig({
     // Manual screenshot matrix (yarn test:e2e:shots); not a gate.
     { name: 'screenshots', testMatch: 'screenshots/**/*.spec.ts', timeout: 90_000 },
     // Palette × mode matrix with a contrast scan (yarn test:e2e:palettes); advisory, not a gate.
-    { name: 'palettes', testMatch: 'palettes/**/*.spec.ts', timeout: 120_000, expect: { timeout: 15_000 } },
+    { name: 'palettes', testMatch: 'palettes/**/*.spec.ts', fullyParallel: true, timeout: 180_000, expect: { timeout: 15_000 } },
     // Opt-in against a running server: LIVE=1 TORRSERVER_URL=...
     { name: 'live', testMatch: 'live/**/*.spec.ts', timeout: 180_000 },
   ],

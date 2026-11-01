@@ -25,7 +25,7 @@ for (const run of runs) {
     const e = byElement.get(key) ?? { count: 0, worst: 99, runs: [] }
     e.count++
     e.worst = Math.min(e.worst, f.ratio)
-    e.runs.push(`${run.id}/${run.mode}`)
+    e.runs.push(`${run.id}/${run.mode}/${run.viewport}`)
     byElement.set(key, e)
   }
 }
@@ -35,22 +35,26 @@ const rows = [...byElement.entries()].sort((a, b) => b[1].count - a[1].count)
 for (const [key, e] of rows.slice(0, 40)) {
   console.log(`${String(e.count).padStart(4)}×  worst ${e.worst.toFixed(2)}  ${key}`)
 }
-const perRun = runs.filter(r => r.findings.length).map(r => `${r.id}/${r.mode}:${r.findings.length}`)
+const perRun = runs.filter(r => r.findings.length).map(r => `${r.id}/${r.mode}/${r.viewport}:${r.findings.length}`)
 if (perRun.length) console.log(`\nruns with findings (${perRun.length}): ${perRun.join(' ')}`)
 
-const screens = ['library', 'details-files', 'details-stats', 'details-cache', 'settings']
-const cell = (id, mode, s) =>
-  `<td><img loading="lazy" width="240" src="${id}-${mode}-${s}.png" title="${id} ${mode} ${s}"></td>`
+const files = readdirSync(dir).filter(f => f.endsWith('.png'))
+const rows2 = (id, mode) =>
+  files
+    .filter(f => f.startsWith(`${id}-${mode}-`))
+    .sort()
+    .map(f => `<td><img loading="lazy" width="200" src="${f}" title="${f}"></td>`)
+    .join('')
 const html = `<!doctype html><meta charset="utf-8"><title>Palette matrix</title>
-<style>body{font:12px system-ui;margin:12px}td{padding:2px}h3{margin:14px 0 2px}</style>
+<style>body{font:12px system-ui;margin:12px}td{padding:2px}h3{margin:14px 0 2px}table{display:block;overflow-x:auto;white-space:nowrap}</style>
 ${[...new Set(runs.map(r => r.id))]
   .map(
     id =>
       `<h3>${id} ${runs
         .filter(r => r.id === id)
-        .map(r => `${r.mode}: ${r.findings.length}`)
+        .map(r => `${r.mode}/${r.viewport}: ${r.findings.length}`)
         .join(' · ')}</h3><table>` +
-      ['light', 'dark'].map(m => `<tr>${screens.map(s => cell(id, m, s)).join('')}</tr>`).join('') +
+      ['light', 'dark'].map(m => `<tr>${rows2(id, m)}</tr>`).join('') +
       '</table>',
   )
   .join('')}`
