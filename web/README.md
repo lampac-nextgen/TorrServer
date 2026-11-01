@@ -52,6 +52,7 @@ src/locales/    # i18n JSON (en, ru, ua, zh, bg, fr, ro)
 - A component or hook that needs the DOM opts in per file with `// @vitest-environment happy-dom` as the first line, in a `*.test.tsx` file.
 - Render with `renderWithProviders` from `src/test/renderWithProviders.tsx` (same providers as `src/index.tsx`, a `QueryClient` that never retries). `src/test/setup.ts` stubs `matchMedia`, the observers, `scrollTo` and media playback, and cleans up after each test.
 - Drive the UI with `@testing-library/user-event` and query by role or label; assert what the user sees or what request was sent, not the markup.
+- Markup warnings fail the test: `src/test/setup.ts` records React's `cannot be a descendant of` / `PressResponder` messages and throws in `afterEach`. In HeroUI v3 a menu, popover or tooltip trigger is the `Button` itself (`<Dropdown><Button/>…</Dropdown>`); do not wrap it in `Dropdown.Trigger`, `Popover.Trigger` or `Tooltip.Trigger`, which render their own button or `role="button"`.
 - Mock the network with `vi.stubGlobal('fetch', ...)` as in `src/shared/api/apiModules.test.ts`. No test may reach a real server.
 - CI (`web-unit` job) runs `yarn test --coverage`, which enforces the floors in `vite.config.ts` (`test.coverage.thresholds`: lines 91, statements 89, functions 85, branches 79) and prints the table in the job summary. Raise the floor when coverage grows; do not lower it to land a change. `src/index.tsx` and `src/shared/testing` are excluded from the metric.
 

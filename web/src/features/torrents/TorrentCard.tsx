@@ -115,20 +115,9 @@ export default function TorrentCard({
       data-hash={torrent.hash}
       onMouseLeave={hoverFine ? blurFocusedControl : undefined}
     >
-      <div
-        role='button'
-        tabIndex={0}
-        aria-label={title}
-        aria-pressed={selectionMode ? selected : undefined}
-        onClick={openDetails}
-        onKeyDown={event => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault()
-            openDetails()
-          }
-        }}
-        className='relative aspect-[2/3] w-full cursor-pointer overflow-hidden rounded-2xl bg-surface-secondary ring-1 ring-border transition-shadow duration-200 hover-fine:shadow-lg hover-fine:ring-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background'
-      >
+      {/* The poster is a plain container; opening details is its own full-bleed <button> below the overlays.
+          Nesting the Play / Actions / Continue buttons inside a role="button" element is invalid ARIA. */}
+      <div className='relative aspect-[2/3] w-full overflow-hidden rounded-2xl bg-surface-secondary ring-1 ring-border transition-shadow duration-200 hover-fine:shadow-lg hover-fine:ring-accent/50 has-[>button:focus-visible]:ring-2 has-[>button:focus-visible]:ring-accent has-[>button:focus-visible]:ring-offset-2 has-[>button:focus-visible]:ring-offset-background'>
         {torrent.poster && !posterBroken ? (
           <img
             src={torrent.poster}
@@ -142,6 +131,14 @@ export default function TorrentCard({
             <ImageOff size={30} strokeWidth={1.5} />
           </div>
         )}
+
+        <button
+          type='button'
+          aria-label={title}
+          aria-pressed={selectionMode ? selected : undefined}
+          onClick={openDetails}
+          className='absolute inset-0 z-10 cursor-pointer rounded-2xl focus-visible:outline-none'
+        />
 
         <div className='pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-1.5 bg-gradient-to-b from-black/60 to-transparent p-2'>
           {statusLabel ? (
@@ -182,15 +179,24 @@ export default function TorrentCard({
           <div
             className={
               hoverFine
-                ? 'pointer-events-none absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100 has-[:focus-visible]:pointer-events-auto has-[:focus-visible]:opacity-100'
-                : 'absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-gradient-to-t from-black/85 via-black/55 to-transparent px-2 pb-2 pt-10'
+                ? 'pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 transition-opacity duration-150 group-hover:opacity-100 has-[:focus-visible]:opacity-100'
+                : 'pointer-events-none absolute inset-x-0 bottom-0 z-20 flex items-center justify-center gap-2 bg-gradient-to-t from-black/85 via-black/55 to-transparent px-2 pb-2 pt-10'
             }
           >
-            <TorrentCardActions
-              torrent={torrent}
-              onDetails={() => onSelect(torrent)}
-              onEdit={onEdit ? () => onEdit(torrent) : undefined}
-            />
+            {/* The overlay lets clicks through to the details button; only the controls themselves catch them. */}
+            <div
+              className={
+                hoverFine
+                  ? 'pointer-events-none group-hover:pointer-events-auto has-[:focus-visible]:pointer-events-auto'
+                  : 'pointer-events-auto'
+              }
+            >
+              <TorrentCardActions
+                torrent={torrent}
+                onDetails={() => onSelect(torrent)}
+                onEdit={onEdit ? () => onEdit(torrent) : undefined}
+              />
+            </div>
           </div>
         ) : null}
       </div>

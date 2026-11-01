@@ -1,6 +1,7 @@
 import type { Locator, Page, Route } from '@playwright/test'
 import { test, expect } from '../fixtures/mock-test'
 import { HASH, fixtureSettings } from '../fixtures/mocks'
+import { expectNoNestedInteractive } from '../fixtures/helpers'
 
 const libraryCard = (page: Page) => page.locator(`.torrent-card[data-hash="${HASH}"]`)
 const settingsDialog = (page: Page) =>
@@ -47,6 +48,7 @@ test.beforeEach(async ({ page }) => {
 test.describe('library', () => {
   test('shows torrent card and no Quick-VLC', async ({ page }) => {
     await expect(libraryCard(page)).toBeVisible({ timeout: 20_000 })
+    await expectNoNestedInteractive(page)
     await expect(page.locator('body')).not.toContainText(/quick\s*vlc/i)
   })
 

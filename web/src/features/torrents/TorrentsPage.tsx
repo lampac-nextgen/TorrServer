@@ -328,29 +328,27 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
         </Button>
       )}
       <Dropdown>
-        <Dropdown.Trigger>
-          <Button
-            variant='ghost'
-            isIconOnly={isMobile}
-            aria-label={collectionLabel}
-            className={
-              isMobile
-                ? headerBtn
-                : 'min-h-11 max-w-[7.5rem] shrink-0 gap-1 px-2 text-xs font-medium text-app-header-foreground hover-fine:bg-white/10 sm:max-w-[11rem] sm:text-sm'
-            }
-          >
-            {isMobile ? (
-              <span className='inline-flex size-full items-center justify-center [&>svg]:m-0 [&>svg]:block'>
-                <LayoutGrid {...iconNav} aria-hidden />
-              </span>
-            ) : (
-              <>
-                <span className='truncate'>{collectionLabel}</span>
-                <ChevronDown size={14} strokeWidth={1.75} aria-hidden />
-              </>
-            )}
-          </Button>
-        </Dropdown.Trigger>
+        <Button
+          variant='ghost'
+          isIconOnly={isMobile}
+          aria-label={collectionLabel}
+          className={
+            isMobile
+              ? headerBtn
+              : 'min-h-11 max-w-[7.5rem] shrink-0 gap-1 px-2 text-xs font-medium text-app-header-foreground hover-fine:bg-white/10 sm:max-w-[11rem] sm:text-sm'
+          }
+        >
+          {isMobile ? (
+            <span className='inline-flex size-full items-center justify-center [&>svg]:m-0 [&>svg]:block'>
+              <LayoutGrid {...iconNav} aria-hidden />
+            </span>
+          ) : (
+            <>
+              <span className='truncate'>{collectionLabel}</span>
+              <ChevronDown size={14} strokeWidth={1.75} aria-hidden />
+            </>
+          )}
+        </Button>
         <Dropdown.Popover placement='bottom end' className='min-w-[12rem]'>
           <Dropdown.Menu aria-label={t('FilterLibrary')}>
             {collectionOptions.map(([id, label]) => (
@@ -373,16 +371,14 @@ export default function TorrentsPage({ sortABC, sortCategory, onAdd, onClearCate
       </Dropdown>
       {continueEntries.length > 0 && !selectionMode ? (
         <Dropdown>
-          <Dropdown.Trigger>
-            <Button variant='ghost' isIconOnly className={`${headerBtn} relative`} aria-label={t('ContinueWatching')}>
-              <span className='inline-flex size-full items-center justify-center [&>svg]:m-0 [&>svg]:block'>
-                <History {...iconNav} aria-hidden />
-              </span>
-              <span className='absolute top-0.5 right-0.5 grid min-w-4 place-items-center rounded-full bg-white/90 px-1 text-[10px] leading-4 font-semibold text-black'>
-                {continueEntries.length}
-              </span>
-            </Button>
-          </Dropdown.Trigger>
+          <Button variant='ghost' isIconOnly className={`${headerBtn} relative`} aria-label={t('ContinueWatching')}>
+            <span className='inline-flex size-full items-center justify-center [&>svg]:m-0 [&>svg]:block'>
+              <History {...iconNav} aria-hidden />
+            </span>
+            <span className='absolute top-0.5 right-0.5 grid min-w-4 place-items-center rounded-full bg-white/90 px-1 text-[10px] leading-4 font-semibold text-black'>
+              {continueEntries.length}
+            </span>
+          </Button>
           <Dropdown.Popover
             placement='bottom end'
             className='max-h-[min(70dvh,24rem)] min-w-[16rem] overflow-y-auto p-1'

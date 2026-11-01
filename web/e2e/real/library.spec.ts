@@ -1,7 +1,7 @@
 // Library and details: lifecycle, rendering, XSS, large packs, player, i18n.
 // Real TorrServer binary + loopback seeder, no mocks. Build first: make e2e-real-build.
 import { addSeeded, waitReady } from '../fixtures/server'
-import { card, detailsModal, openDetails } from '../fixtures/helpers'
+import { card, detailsModal, expectNoNestedInteractive, openDetails } from '../fixtures/helpers'
 import { expect, expectCleanLog, requireBinaries, test, useServer } from '../fixtures/test'
 
 requireBinaries()
@@ -116,6 +116,7 @@ test.describe('library UI', () => {
     await expect(page.locator('.torrent-card[data-hash]').first()).toBeVisible()
     await page.waitForLoadState('networkidle')
     expect(tracker.problems).toEqual([])
+    await expectNoNestedInteractive(page)
   })
 
   test('markup in torrent names renders as text and never executes', async ({ page }) => {

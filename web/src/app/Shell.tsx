@@ -435,18 +435,16 @@ function PaletteMenu({
 }) {
   return (
     <Dropdown>
-      <Dropdown.Trigger>
-        <Button
-          variant='ghost'
-          isIconOnly
-          className={triggerClassName ?? iconBtn}
-          aria-label={`${label}: ${labels[current]}`}
-        >
-          <span className='inline-flex size-full items-center justify-center [&>svg]:m-0 [&>svg]:block'>
-            <Palette {...iconNav} aria-hidden />
-          </span>
-        </Button>
-      </Dropdown.Trigger>
+      <Button
+        variant='ghost'
+        isIconOnly
+        className={triggerClassName ?? iconBtn}
+        aria-label={`${label}: ${labels[current]}`}
+      >
+        <span className='inline-flex size-full items-center justify-center [&>svg]:m-0 [&>svg]:block'>
+          <Palette {...iconNav} aria-hidden />
+        </span>
+      </Button>
       <Dropdown.Popover placement='bottom end' className='max-h-[min(70dvh,28rem)] min-w-[13rem] overflow-y-auto'>
         <Dropdown.Menu aria-label={label}>
           {THEME_PALETTE_IDS.map(id => {
@@ -491,15 +489,13 @@ function LanguageMenu({
 
   return (
     <Dropdown>
-      <Dropdown.Trigger>
-        <Button
-          variant='ghost'
-          className={triggerClassName ?? `${iconBtn} text-xs font-semibold tracking-wide`}
-          aria-label={label}
-        >
-          {current.code}
-        </Button>
-      </Dropdown.Trigger>
+      <Button
+        variant='ghost'
+        className={triggerClassName ?? `${iconBtn} text-xs font-semibold tracking-wide`}
+        aria-label={label}
+      >
+        {current.code}
+      </Button>
       <Dropdown.Popover placement='bottom end' className='min-w-[12rem]'>
         <Dropdown.Menu aria-label={label}>
           {LANG_OPTIONS.map(option => {
@@ -550,18 +546,16 @@ function AppearanceOverflowMenu({
 
   return (
     <Dropdown>
-      <Dropdown.Trigger>
-        <Button
-          variant='ghost'
-          isIconOnly
-          className={`${iconBtn} text-app-header-foreground hover-fine:bg-white/10`}
-          aria-label={t('nav.More')}
-        >
-          <span className='inline-flex size-full items-center justify-center [&>svg]:m-0 [&>svg]:block'>
-            <Ellipsis {...iconNav} aria-hidden />
-          </span>
-        </Button>
-      </Dropdown.Trigger>
+      <Button
+        variant='ghost'
+        isIconOnly
+        className={`${iconBtn} text-app-header-foreground hover-fine:bg-white/10`}
+        aria-label={t('nav.More')}
+      >
+        <span className='inline-flex size-full items-center justify-center [&>svg]:m-0 [&>svg]:block'>
+          <Ellipsis {...iconNav} aria-hidden />
+        </span>
+      </Button>
       <Dropdown.Popover placement='bottom end' className='min-w-[14rem] p-2'>
         <div className='flex flex-col gap-1'>
           <Button variant='ghost' className='min-h-11 justify-start gap-2' onPress={cycleTheme}>
@@ -585,19 +579,15 @@ function AppearanceOverflowMenu({
 function HeaderIconButton({ label, onPress, children }: { label: string; onPress: () => void; children: ReactNode }) {
   return (
     <Tooltip>
-      <Tooltip.Trigger>
-        <Button
-          variant='ghost'
-          isIconOnly
-          className={`${iconBtn} text-app-header-foreground hover-fine:bg-white/10`}
-          aria-label={label}
-          onPress={onPress}
-        >
-          <span className='inline-flex size-full items-center justify-center [&>svg]:m-0 [&>svg]:block'>
-            {children}
-          </span>
-        </Button>
-      </Tooltip.Trigger>
+      <Button
+        variant='ghost'
+        isIconOnly
+        className={`${iconBtn} text-app-header-foreground hover-fine:bg-white/10`}
+        aria-label={label}
+        onPress={onPress}
+      >
+        <span className='inline-flex size-full items-center justify-center [&>svg]:m-0 [&>svg]:block'>{children}</span>
+      </Button>
       <Tooltip.Content>{label}</Tooltip.Content>
     </Tooltip>
   )

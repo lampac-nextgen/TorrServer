@@ -297,13 +297,11 @@ function TorrentActions({
   const playlistButtons =
     compact && isSeries && hasPartialProgress ? (
       <Dropdown isOpen={playlistState.isOpen} onOpenChange={playlistState.setOpen}>
-        <Dropdown.Trigger className='min-w-0 flex-1'>
-          <Button variant='primary' className='min-h-9 w-full min-w-0' aria-label={playlistLabel}>
-            <ListMusic {...iconMenu} aria-hidden />
-            <span className='truncate'>{playlistLabel}</span>
-            <ChevronDown {...iconMenu} aria-hidden />
-          </Button>
-        </Dropdown.Trigger>
+        <Button variant='primary' className='min-h-9 min-w-0 flex-1' aria-label={playlistLabel}>
+          <ListMusic {...iconMenu} aria-hidden />
+          <span className='truncate'>{playlistLabel}</span>
+          <ChevronDown {...iconMenu} aria-hidden />
+        </Button>
         <Dropdown.Popover placement='top start'>
           <Dropdown.Menu aria-label={playlistLabel}>
             <Dropdown.Item
@@ -340,17 +338,15 @@ function TorrentActions({
     seriesPlayers.length > 0 ? (
       <div className={slot}>
         <Dropdown isOpen={playersState.isOpen} onOpenChange={playersState.setOpen}>
-          <Dropdown.Trigger className={compact ? undefined : 'w-full'}>
-            <Button
-              variant='secondary'
-              isIconOnly={compact}
-              className={compact ? iconState : 'min-h-9 w-full min-w-0'}
-              aria-label={t('OpenIn')}
-            >
-              <SquareArrowOutUpRight {...iconMenu} aria-hidden />
-              {compact ? null : <span className='truncate'>{t('OpenIn')}</span>}
-            </Button>
-          </Dropdown.Trigger>
+          <Button
+            variant='secondary'
+            isIconOnly={compact}
+            className={compact ? iconState : 'min-h-9 w-full min-w-0'}
+            aria-label={t('OpenIn')}
+          >
+            <SquareArrowOutUpRight {...iconMenu} aria-hidden />
+            {compact ? null : <span className='truncate'>{t('OpenIn')}</span>}
+          </Button>
           <Dropdown.Popover placement='top end'>
             <Dropdown.Menu aria-label={t('OpenIn')}>
               {seriesPlayers.map(player => (
@@ -372,17 +368,15 @@ function TorrentActions({
   const shareMenu = (
     <div className={slot}>
       <Dropdown isOpen={shareState.isOpen} onOpenChange={shareState.setOpen}>
-        <Dropdown.Trigger className={compact ? undefined : 'w-full'}>
-          <Button
-            variant='secondary'
-            isIconOnly={compact}
-            className={compact ? iconState : 'min-h-9 w-full min-w-0 gap-1.5'}
-            aria-label={t('Share')}
-          >
-            <Share2 {...iconMenu} aria-hidden />
-            {compact ? null : <span className='truncate'>{t('Share')}</span>}
-          </Button>
-        </Dropdown.Trigger>
+        <Button
+          variant='secondary'
+          isIconOnly={compact}
+          className={compact ? iconState : 'min-h-9 w-full min-w-0 gap-1.5'}
+          aria-label={t('Share')}
+        >
+          <Share2 {...iconMenu} aria-hidden />
+          {compact ? null : <span className='truncate'>{t('Share')}</span>}
+        </Button>
         <Dropdown.Popover placement='top end'>
           <Dropdown.Menu aria-label={t('Share')}>
             {singleFileStream ? (

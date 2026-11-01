@@ -37,6 +37,24 @@ if (typeof window !== 'undefined') {
   HTMLMediaElement.prototype.pause = () => {}
   HTMLMediaElement.prototype.load = () => {}
 
+  // Invalid markup or a broken react-aria trigger is a bug, not noise: fail the test that renders it.
+  // React swallows errors thrown from console.error during render, so record and fail in afterEach.
+  const markupBug =
+    /cannot be a descendant of|cannot contain a nested|PressResponder was rendered without a pressable child/
+  const originalError = console.error
+  const markupBugs: string[] = []
+  console.error = (...args: unknown[]) => {
+    const text = args.map(String).join(' ')
+    if (markupBug.test(text)) markupBugs.push(text.split('\n')[0])
+    originalError(...args)
+  }
+  afterEach(() => {
+    if (markupBugs.length === 0) return
+    const found = [...new Set(markupBugs)]
+    markupBugs.length = 0
+    throw new Error(`Invalid markup warning(s): ${found.join(' | ')}`)
+  })
+
   const { cleanup } = await import('@testing-library/react')
   afterEach(() => cleanup())
 }

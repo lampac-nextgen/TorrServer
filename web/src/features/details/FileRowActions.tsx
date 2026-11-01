@@ -111,18 +111,16 @@ export default function FileRowActions({
 
   const utilityButton = (opts: { label: string; onPress: () => void; children: ReactNode }) => (
     <Tooltip.Root>
-      <Tooltip.Trigger>
-        <Button
-          variant='ghost'
-          size='sm'
-          isIconOnly
-          className={utilitySegBtn}
-          aria-label={opts.label}
-          onPress={opts.onPress}
-        >
-          {opts.children}
-        </Button>
-      </Tooltip.Trigger>
+      <Button
+        variant='ghost'
+        size='sm'
+        isIconOnly
+        className={utilitySegBtn}
+        aria-label={opts.label}
+        onPress={opts.onPress}
+      >
+        {opts.children}
+      </Button>
       <Tooltip.Content>{opts.label}</Tooltip.Content>
     </Tooltip.Root>
   )
@@ -158,11 +156,9 @@ export default function FileRowActions({
 
   const secondaryMobile = (
     <Dropdown isOpen={moreMenu.isOpen} onOpenChange={moreMenu.setOpen}>
-      <Dropdown.Trigger>
-        <Button variant='ghost' size='sm' isIconOnly className={moreBtn} aria-label={t('Actions')}>
-          <MoreHorizontal {...actionIcon} />
-        </Button>
-      </Dropdown.Trigger>
+      <Button variant='ghost' size='sm' isIconOnly className={moreBtn} aria-label={t('Actions')}>
+        <MoreHorizontal {...actionIcon} />
+      </Button>
       <Dropdown.Popover
         placement='bottom end'
         shouldFlip
