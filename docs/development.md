@@ -22,6 +22,10 @@ cd web && yarn && yarn start
 cd web && yarn build && cd .. && make webgen-clean
 ```
 
+## Tests
+
+See **[testing.md](testing.md)**: `make test` for Go, `make web-check` for the web gates, `make e2e-real` for the real-server UI suite.
+
 ## Build
 
 Use the **Makefile** (wraps [GoReleaser](https://goreleaser.com/)):

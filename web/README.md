@@ -53,7 +53,7 @@ src/locales/    # i18n JSON (en, ru, ua, zh, bg, fr, ro)
 - Render with `renderWithProviders` from `src/test/renderWithProviders.tsx` (same providers as `src/index.tsx`, a `QueryClient` that never retries). `src/test/setup.ts` stubs `matchMedia`, the observers, `scrollTo` and media playback, and cleans up after each test.
 - Drive the UI with `@testing-library/user-event` and query by role or label; assert what the user sees or what request was sent, not the markup.
 - Mock the network with `vi.stubGlobal('fetch', ...)` as in `src/shared/api/apiModules.test.ts`. No test may reach a real server.
-- CI runs `yarn test --coverage`, which enforces the floors in `vite.config.ts` (`test.coverage.thresholds`: lines 91, statements 89, functions 85, branches 79) and prints the table in the job summary. Raise the floor when coverage grows; do not lower it to land a change. `src/index.tsx` and `src/shared/testing` are excluded from the metric.
+- CI (`web-unit` job) runs `yarn test --coverage`, which enforces the floors in `vite.config.ts` (`test.coverage.thresholds`: lines 91, statements 89, functions 85, branches 79) and prints the table in the job summary. Raise the floor when coverage grows; do not lower it to land a change. `src/index.tsx` and `src/shared/testing` are excluded from the metric.
 
 ### Playwright layout (`web/e2e/`)
 
@@ -77,3 +77,5 @@ How images were generated:
 ```sh
 npx pwa-asset-generator public/logo.png public -m public/site.webmanifest -p "calc(50vh - 25%) calc(50vw - 25%)" -b "linear-gradient(135deg, rgb(50,54,55), rgb(84,90,94))" -q 100 -i index.html -f
 ```
+
+The test layers and CI jobs are described in [docs/testing.md](../docs/testing.md).

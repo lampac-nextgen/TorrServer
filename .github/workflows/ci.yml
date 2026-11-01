@@ -203,8 +203,8 @@ jobs:
           version: "~> v2"
           args: check --config .goreleaser.local.yaml
 
-  web:
-    name: Web (typecheck lint test build)
+  web-check:
+    name: Web checks (typecheck lint i18n)
     runs-on: ubuntu-26.04
     defaults:
       run:
@@ -229,6 +229,30 @@ jobs:
       - name: Lint
         run: yarn lint
 
+      - name: i18n
+        run: yarn i18n:check
+
+  web-unit:
+    name: Web unit tests (vitest, coverage floor)
+    runs-on: ubuntu-26.04
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: yarn
+          cache-dependency-path: web/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      # Fails when coverage drops below test.coverage.thresholds in web/vite.config.ts.
       - name: Test
         run: yarn test --coverage
 
@@ -245,9 +269,34 @@ jobs:
             console.log('| ' + ['statements', 'branches', 'functions', 'lines'].map(p).join(' | ') + ' |');
           " >> "$GITHUB_STEP_SUMMARY"
 
-      - name: i18n
-        run: yarn i18n:check
+  web-e2e:
+    name: Web E2E (mocked) and build
+    runs-on: ubuntu-26.04
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: yarn
+          cache-dependency-path: web/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      # The browser download is keyed by the lockfile (it pins the Playwright version).
+      - name: Cache Playwright browsers
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('web/yarn.lock') }}
+
+      # Still installs the system libraries when the browser itself came from the cache.
       - name: Install Playwright Chromium
         run: yarn playwright install chromium --with-deps
 
@@ -259,6 +308,31 @@ jobs:
         env:
           # Ensure release-like embed build (no localhost API baked in)
           VITE_SERVER_HOST: ""
+
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: web-e2e-mock-artifacts
+          path: web/e2e/.artifacts
+          if-no-files-found: ignore
+
+  # Single required status for the web UI. Keeps the historical job name so branch protection
+  # keeps working while the work above runs in parallel.
+  web:
+    name: Web (typecheck lint test build)
+    runs-on: ubuntu-26.04
+    needs: [web-check, web-unit, web-e2e]
+    if: always()
+    steps:
+      - name: All web jobs passed
+        run: |
+          echo "web-check: ${{ needs.web-check.result }}"
+          echo "web-unit: ${{ needs.web-unit.result }}"
+          echo "web-e2e: ${{ needs.web-e2e.result }}"
+          test "${{ needs.web-check.result }}" = success
+          test "${{ needs.web-unit.result }}" = success
+          test "${{ needs.web-e2e.result }}" = success
 
   e2e-changes:
     name: E2E paths filter

@@ -32,6 +32,7 @@ Start with [Installation](installation.md) or [Docker](docker.md), then open <ht
 ## Develop it
 
 - [Development](development.md): running from source and the web UI ([web/README.md](../web/README.md)).
+- [Testing](testing.md): Go, vitest and Playwright layers, the coverage floor, and what each CI job runs.
 - [Building](BUILD.md): Makefile targets, GoReleaser, Docker builder, cross-compiling, CI and release.
 
 ## Credits

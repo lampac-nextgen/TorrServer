@@ -34,7 +34,7 @@ The React UI is `web/` (Yarn, Vite). The binary serves a generated copy under `s
 
 A new or changed string belongs in `web/src/locales`. `yarn i18n:check` requires the same flattened keys in `en`, `ru`, `ua`, `bg`, `fr`, `ro`, and `zh`, as nested objects.
 
-When `web/src` changes, CI runs `yarn typecheck`, `yarn lint`, `yarn test`, `yarn i18n:check`, `yarn test:e2e`, and `yarn build`. From `web/`: `yarn typecheck`, `yarn lint`, `yarn test`, `yarn i18n:check`. Embed with `make webgen` (`go run gen_web.go`) or `make webgen-clean` (deletes `web/build` first). Do not pass `VITE_SERVER_HOST` pointing at localhost into a production `yarn build` — `web/vite.config.ts` refuses it.
+When `web/src` changes, CI runs three parallel jobs, `web-check` (`yarn typecheck`, `yarn lint`, `yarn i18n:check`), `web-unit` (`yarn test --coverage`, which enforces the floors in `web/vite.config.ts`) and `web-e2e` (`yarn test:e2e`, `yarn build`), plus the aggregate `web` job, which keeps the old name `Web (typecheck lint test build)`. Layers and commands: `docs/testing.md`. From `web/`: `yarn typecheck`, `yarn lint`, `yarn test`, `yarn i18n:check`. Embed with `make webgen` (`go run gen_web.go`) or `make webgen-clean` (deletes `web/build` first). Do not pass `VITE_SERVER_HOST` pointing at localhost into a production `yarn build` — `web/vite.config.ts` refuses it.
 
 Web client map (source of truth is `web/src`, not the embedded copy):
 
@@ -234,7 +234,7 @@ Coverage (`/.testcoverage.yml`): total 70% on `server/coverage.out`. File and pa
 
 `make lint` is `golangci-lint run ./...` in `server/`. Config is v2, `default: standard`, `max-issues-per-linter: 0`, `max-same-issues: 0`. Format is `gofmt -s` and `goimports` (`make fmt`, `make fmt-check`). CI runs both format checks before the linter. `make lint-all` is the local equivalent.
 
-Web CI, when `web/src` changes: `yarn typecheck`, `yarn lint`, `yarn test`, `yarn i18n:check`, `yarn test:e2e`, `yarn build`.
+Web CI, when `web/src` changes: `yarn typecheck`, `yarn lint`, `yarn i18n:check`, `yarn test --coverage` (coverage floors, do not lower them), `yarn test:e2e`, `yarn build`. Keep the aggregate job named `Web (typecheck lint test build)`: a required-status rule on that name stops matching if it is renamed.
 
 Leak checks: `leakcheck.AssertNoGoroutineLeak(t, baseline)` polls for 1s. `leakcheck.Heap` does two GCs and `debug.FreeOSMemory` before `ReadMemStats`. Snapshot goroutines before the work, not after `Prepare`, if `Prepare` starts the tracker prefetch.
 
