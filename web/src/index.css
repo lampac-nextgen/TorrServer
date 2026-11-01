@@ -959,3 +959,30 @@ html[data-dialogs-fullscreen] .modal__dialog.ts-details-modal>.modal__body.modal
     margin: 0;
   }
 }
+
+/*
+ * Forced colors (Windows high contrast): the browser replaces every background with Canvas, so
+ * bar fills, legend swatches and dots would vanish. Paint them with system colors instead.
+ */
+@media (forced-colors: active) {
+  .ts-forced-track {
+    border: 1px solid CanvasText;
+  }
+
+  .ts-forced-fill {
+    forced-color-adjust: none;
+    background-color: Highlight;
+  }
+
+  /* Focus rings are box-shadows (dropped in forced colors) and filled buttons lose their shape. */
+  :is(button, a, input, textarea, select, summary, [role='tab'], [role='option'], [tabindex]):focus-visible {
+    outline: 2px solid Highlight !important;
+    outline-offset: 2px;
+  }
+
+  .button--primary,
+  .button--secondary,
+  .button--danger {
+    border: 1px solid ButtonText;
+  }
+}

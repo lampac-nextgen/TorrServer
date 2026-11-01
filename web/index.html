@@ -13,6 +13,23 @@
     <meta name="application-name" content="TorrServer">
     <meta name="color-scheme" content="light dark">
 
+    <!-- Apply the stored palette/brightness before first paint (mirrors shared/theme/useThemePreference.ts). -->
+    <script>
+      ;(function () {
+        try {
+          var scheme = localStorage.getItem('ts-color-scheme')
+          var palette = localStorage.getItem('ts-color-palette')
+          var root = document.documentElement
+          if (scheme === 'dark' || (scheme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            root.classList.add('dark')
+          }
+          if (palette && /^[a-z]+$/.test(palette)) root.dataset.palette = palette
+        } catch (e) {
+          /* storage unavailable: the app falls back to the default palette */
+        }
+      })()
+    </script>
+
     <!-- Theme color (fallback until the theme store runs; default palette: nextgen) -->
     <meta name="theme-color" content="#0b2540" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#0c1524" media="(prefers-color-scheme: dark)">

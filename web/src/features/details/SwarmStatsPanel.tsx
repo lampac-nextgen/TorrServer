@@ -61,9 +61,9 @@ function ProgressMeter({
         <span className='truncate text-muted'>{label}</span>
         <span className='shrink-0 font-bold tabular-nums text-foreground'>{valueLabel}</span>
       </div>
-      <div className={`overflow-hidden rounded-full bg-surface ${compact ? 'h-2' : 'h-2.5'}`}>
+      <div className={`ts-forced-track overflow-hidden rounded-full bg-surface ${compact ? 'h-2' : 'h-2.5'}`}>
         <div
-          className={`h-full rounded-full transition-[width] duration-300 ${tone === 'secondary' ? 'bg-accent-secondary' : 'bg-accent'}`}
+          className={`ts-forced-fill h-full rounded-full transition-[width] duration-300 ${tone === 'secondary' ? 'bg-accent-secondary' : 'bg-accent'}`}
           style={{ width: `${width}%` }}
         />
       </div>
@@ -174,19 +174,19 @@ function PeerPanel({
             className='flex min-w-0 items-center gap-1.5 rounded-lg bg-surface px-2 py-1.5'
             title={`${p.label}: ${p.n}`}
           >
-            <span className={`size-1.5 shrink-0 rounded-full ${p.className}`} aria-hidden />
+            <span className={`ts-forced-fill size-1.5 shrink-0 rounded-full ${p.className}`} aria-hidden />
             <span className='min-w-0 truncate text-[10px] text-muted'>{p.label}</span>
             <span className='ml-auto shrink-0 text-xs font-bold tabular-nums text-foreground'>{p.n}</span>
           </div>
         ))}
       </div>
-      <div className='flex h-2 overflow-hidden rounded-full bg-surface'>
+      <div className='ts-forced-track flex h-2 overflow-hidden rounded-full bg-surface'>
         {barTotal > 0
           ? barParts.map(p =>
               p.n > 0 ? (
                 <div
                   key={p.key}
-                  className={`h-full ${p.className}`}
+                  className={`ts-forced-fill h-full ${p.className}`}
                   style={{ width: `${(p.n / barTotal) * 100}%` }}
                   title={`${p.label}: ${p.n}`}
                 />

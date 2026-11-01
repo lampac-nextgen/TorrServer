@@ -13,6 +13,23 @@
     <meta name="application-name" content="TorrServer">
     <meta name="color-scheme" content="light dark">
 
+    <!-- Apply the stored palette/brightness before first paint (mirrors shared/theme/useThemePreference.ts). -->
+    <script>
+      ;(function () {
+        try {
+          var scheme = localStorage.getItem('ts-color-scheme')
+          var palette = localStorage.getItem('ts-color-palette')
+          var root = document.documentElement
+          if (scheme === 'dark' || (scheme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            root.classList.add('dark')
+          }
+          if (palette && /^[a-z]+$/.test(palette)) root.dataset.palette = palette
+        } catch (e) {
+          /* storage unavailable: the app falls back to the default palette */
+        }
+      })()
+    </script>
+
     <!-- Theme color (fallback until the theme store runs; default palette: nextgen) -->
     <meta name="theme-color" content="#0b2540" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#0c1524" media="(prefers-color-scheme: dark)">
@@ -82,7 +99,7 @@
     <link rel="apple-touch-startup-image" href="./apple-splash-1334-750.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
     <link rel="apple-touch-startup-image" href="./apple-splash-640-1136.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
     <link rel="apple-touch-startup-image" href="./apple-splash-1136-640.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
-    <script type="module" crossorigin src="./static/index-CW6uoxTY.js"></script>
+    <script type="module" crossorigin src="./static/index-B4nRmGtn.js"></script>
     <link rel="modulepreload" crossorigin href="./static/rolldown-runtime-CNOWq4Kh.js">
     <link rel="modulepreload" crossorigin href="./static/heroui-DxLYSTdm.js">
     <link rel="modulepreload" crossorigin href="./static/vendor-Bh6mcoZx.js">
@@ -101,7 +118,7 @@
     <link rel="modulepreload" crossorigin href="./static/torrents-BhaJRK4z.js">
     <link rel="modulepreload" crossorigin href="./static/pollInterval-DDhtkZBE.js">
     <link rel="modulepreload" crossorigin href="./static/useDialogFullScreen-CK6Ze7fg.js">
-    <link rel="stylesheet" crossorigin href="./static/index-C8phQ60A.css">
+    <link rel="stylesheet" crossorigin href="./static/index-BjBqVEvV.css">
   </head>
 
   <body>

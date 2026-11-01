@@ -37,8 +37,14 @@ const { defaultBrowserType: _browser, ...iPhone } = devices['iPhone 16 Pro Max']
 const library = [fixtureDragon, ...fixtureRichLibrary]
 
 /** Set palette + scheme before the app boots, and return a recorder bound to this run. */
-async function prepare(page: Page, id: string, mode: (typeof MODES)[number], viewport: string) {
-  await page.emulateMedia({ colorScheme: mode })
+async function prepare(
+  page: Page,
+  id: string,
+  mode: (typeof MODES)[number],
+  viewport: string,
+  media: { forcedColors?: 'active'; contrast?: 'more' } = {},
+) {
+  await page.emulateMedia({ colorScheme: mode, ...media })
   await page.addInitScript(
     ([palette, scheme]) => {
       localStorage.setItem('ts-color-palette', palette)
@@ -229,6 +235,78 @@ test.describe('login', () => {
         await expect(page.locator('input[name="username"]')).toBeVisible({ timeout: 20_000 })
         expect(await page.evaluate(() => document.documentElement.dataset.palette)).toBe(id)
         await snap('login')
+        finish()
+      })
+    }
+  }
+})
+
+// Accessibility media: forced colors (Windows high contrast) and prefers-contrast: more.
+const A11Y_PALETTES = ['nextgen', 'mono', 'contrast'].filter(id => ids.includes(id))
+
+test.describe('forced colors', () => {
+  test.use({ mockOptions: { library, torrent: fixtureDragon, cache: fixtureDragonCacheRich } })
+
+  for (const id of A11Y_PALETTES) {
+    for (const mode of MODES) {
+      test(`${id} · ${mode}`, async ({ page }, testInfo) => {
+        testInfo.setTimeout(120_000)
+        const { findings, snap, finish } = await prepare(page, id, mode, 'forced-colors', { forcedColors: 'active' })
+        await page.goto('/', { waitUntil: 'domcontentloaded' })
+        await expectPalette(page, id, mode)
+        await snap('library')
+        await openDetails(page, fixtureDragon.title)
+        await expect.poll(() => detailsModal(page).evaluate(el => getComputedStyle(el).transform)).toBe('none')
+        for (const [i, screen] of ['files', 'stats', 'cache'].entries()) {
+          await page.locator('.ts-details-tabs [role="tab"]').nth(i).click()
+          await snap(`details-${screen}`)
+          // Bar fills / swatches must stay visible: a real colour that differs from what is behind them.
+          const hidden = await page.evaluate(() =>
+            [...document.querySelectorAll<HTMLElement>('.ts-forced-fill')]
+              .filter(el => el.getBoundingClientRect().width > 1)
+              .filter(el => {
+                const own = getComputedStyle(el).backgroundColor
+                const behind = getComputedStyle(el.parentElement!).backgroundColor
+                return own === 'rgba(0, 0, 0, 0)' || own === behind
+              })
+              .map(el => el.className.slice(0, 60)),
+          )
+          expect.soft(hidden, `forced-colors: invisible fills on ${screen}`).toEqual([])
+        }
+        await page.locator('.ts-details-tabs [role="tab"]').first().click()
+        await detailsModal(page).locator('.button--primary').first().focus()
+        await page.keyboard.press('Tab')
+        await page.waitForTimeout(400)
+        const ring = await checkFocusRing(page, 'forced-colors:details-focus')
+        if (ring) findings.push(ring)
+        await snap('details-focus')
+        finish()
+      })
+    }
+  }
+})
+
+test.describe('prefers-contrast: more', () => {
+  test.use({ mockOptions: { library, torrent: fixtureDragon, cache: fixtureDragonCacheRich } })
+
+  for (const id of A11Y_PALETTES) {
+    for (const mode of MODES) {
+      test(`${id} · ${mode}`, async ({ page }, testInfo) => {
+        testInfo.setTimeout(120_000)
+        const { snap, finish } = await prepare(page, id, mode, 'contrast-more', { contrast: 'more' })
+        await page.goto('/', { waitUntil: 'domcontentloaded' })
+        await expectPalette(page, id, mode)
+        // The override block must be active: muted/border are derived from foreground, not the palette hex.
+        const vars = await page.evaluate(() => {
+          const cs = getComputedStyle(document.documentElement)
+          return { muted: cs.getPropertyValue('--muted'), border: cs.getPropertyValue('--border') }
+        })
+        expect.soft(vars.muted, '--muted overridden').toContain('color-mix')
+        expect.soft(vars.border, '--border overridden').toContain('color-mix')
+        await snap('library')
+        await openDetails(page, fixtureDragon.title)
+        await expect.poll(() => detailsModal(page).evaluate(el => getComputedStyle(el).transform)).toBe('none')
+        await snap('details-files')
         finish()
       })
     }
