@@ -168,7 +168,7 @@ export default defineConfig(({ mode }) => {
         ],
         // Only enforced with `--coverage`. A floor a couple of points below the measured value, so it catches a
         // regression without failing on noise.
-        thresholds: { lines: 90, statements: 88, functions: 84, branches: 76 },
+        thresholds: { lines: 91, statements: 89, functions: 85, branches: 79 },
       },
     },
   }
