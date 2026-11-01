@@ -1,7 +1,7 @@
 // Usage: node scripts/new-palette.mjs <id> [--from <palette>] [--group <group>]
 // Scaffolds a palette: copies the tokens of an existing one (default: the default palette) into
-// palettes.json, registers the id in THEME_PALETTES, adds the label to every locale (English text:
-// translate it) and regenerates the CSS. Then tune the colours and run `yarn test`.
+// palettes.json, registers the id in THEME_PALETTES, adds the label to every locale (`TODO: Name` in
+// all but en: `yarn i18n:check` fails until translated) and regenerates the CSS. Then tune the colours and run `yarn test`.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
@@ -54,7 +54,8 @@ for (const locale of LOCALES) {
   const text = readFileSync(file, 'utf8')
   const anchor = '  "ThemePaletteNextgen"'
   if (!text.includes(anchor)) fail(`locale ${locale}: anchor key not found`)
-  writeFileSync(file, text.replace(anchor, `  "ThemePalette${name}": "${name}",\n${anchor}`))
+  const value = locale === 'en' ? name : `TODO: ${name}`
+  writeFileSync(file, text.replace(anchor, `  "ThemePalette${name}": "${value}",\n${anchor}`))
 }
 
 const { spawnSync } = await import('node:child_process')
@@ -65,6 +66,6 @@ console.log(`
 Palette "${id}" scaffolded from "${from.id}" in group "${group}".
 Next:
   1. Edit its light/dark tokens in src/shared/theme/palettes.json and rewrite the "note", then yarn gen:palettes
-  2. Translate ThemePalette${name} in ru, ua, bg, fr, ro, zh (English placeholder for now)
+  2. Translate ThemePalette${name} in ru, ua, bg, fr, ro, zh (placeholders start with TODO; yarn i18n:check fails until done)
   3. yarn test            # contrast, sync and group rules
   4. yarn test:e2e:palettes   (or PALETTES=${id})`)

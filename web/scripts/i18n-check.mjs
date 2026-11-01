@@ -3,6 +3,7 @@
  * Locale parity check: every language must contain the same flattened key set as en.
  * Also fails on flat dotted top-level keys like "Search.Tracker" (use nested objects).
  * Fails when a non-Latin locale (ru, ua, bg, zh) keeps a multi-word English value from en (copy-paste, untranslated).
+ * Fails on values that still start with TODO (placeholders from `yarn palettes:new`).
  * Scans web/src for static t('…') / i18n.t('…') keys and fails if any are missing from en.
  */
 import fs from 'node:fs'
@@ -102,6 +103,17 @@ for (const lang of NON_LATIN) {
   if (bad.length) {
     failed = true
     console.error(`[${lang}] ${bad.length} value(s) are still the English text:`, bad.slice(0, 20).join(', '))
+  }
+}
+
+// Placeholders written by `yarn palettes:new` (and by hand) must be translated before they ship.
+for (const lang of langs) {
+  const todo = Object.keys(locales[lang]).filter(
+    k => typeof locales[lang][k] === 'string' && /^TODO\b/.test(locales[lang][k]),
+  )
+  if (todo.length) {
+    failed = true
+    console.error(`[${lang}] ${todo.length} value(s) still start with TODO:`, todo.slice(0, 20).join(', '))
   }
 }
 

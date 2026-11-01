@@ -34,7 +34,7 @@ HeroUI's own neutral tokens (`overlay`, `default`, `field-background`, `segment`
 - `accent` and `accent-secondary` differ by OKLab ΔE ≥ 0.1
 - no hex literals in `web/src` outside `palettes.json` (`noHardcodedColors.test.ts`)
 
-`@media (prefers-contrast: more)` darkens `muted`/`border`/`separator` for every palette (generated).
+`@media (prefers-contrast: more)` darkens `muted`/`border`/`separator` for every palette (generated). `@media (forced-colors: active)` (see `index.css`) paints bar fills with `Highlight`, borders filled buttons and restores focus outlines. Switching palette or brightness uses no CSS transitions, so `prefers-reduced-motion` needs no special case.
 
 ## Groups, retired palettes and the report
 
@@ -54,7 +54,7 @@ yarn palettes:new <id> --from heritage --group vivid   # scaffold: tokens, THEME
 Then:
 
 1. Tune the light/dark tokens of the new entry in `palettes.json`, rewrite its `note`, and `yarn gen:palettes`.
-2. Translate `ThemePalette<Id>` in `ru`, `ua`, `bg`, `fr`, `ro`, `zh` (the scaffold writes the English name everywhere).
+2. Translate `ThemePalette<Id>` in `ru`, `ua`, `bg`, `fr`, `ro`, `zh`. The scaffold writes `TODO: <Name>` there and `yarn i18n:check` fails until every placeholder is replaced.
 3. `yarn test` (token, group and sync rules), then `yarn test:e2e:palettes` (`PALETTES=<id>` for just this one).
 
 By hand instead: add the entry, add the id to `THEME_PALETTES` in `useThemePreference.ts`, add the label to all seven locales, `yarn gen:palettes`.
