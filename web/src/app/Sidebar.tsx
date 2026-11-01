@@ -122,7 +122,7 @@ export default function Sidebar({
 
     return (
       <Tooltip key={item.key}>
-        <Tooltip.Trigger>{button}</Tooltip.Trigger>
+        {button}
         <Tooltip.Content placement='right'>{item.label}</Tooltip.Content>
       </Tooltip>
     )

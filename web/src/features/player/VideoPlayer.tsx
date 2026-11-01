@@ -325,16 +325,14 @@ export default function VideoPlayer({
 
   const audioExtra = canSwitchAudio ? (
     <Popover isOpen={audioMenuOpen} onOpenChange={setAudioMenuOpen}>
-      <Popover.Trigger>
-        <Button
-          isIconOnly
-          variant='ghost'
-          className={`${iconBtn} text-white hover-fine:bg-white/15`}
-          aria-label={t('SelectAudioTrack')}
-        >
-          <Music2 {...chromeIcon} aria-hidden />
-        </Button>
-      </Popover.Trigger>
+      <Button
+        isIconOnly
+        variant='ghost'
+        className={`${iconBtn} text-white hover-fine:bg-white/15`}
+        aria-label={t('SelectAudioTrack')}
+      >
+        <Music2 {...chromeIcon} aria-hidden />
+      </Button>
       <Popover.Content
         placement='bottom end'
         className='max-h-72 w-72 overflow-y-auto border border-white/10 bg-neutral-950/95 p-1 backdrop-blur-xl'

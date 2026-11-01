@@ -160,35 +160,31 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
     <>
       <div className='flex items-center justify-center gap-3' onClick={event => event.stopPropagation()}>
         <Tooltip>
-          <Tooltip.Trigger>
-            <Button
-              variant='primary'
-              isIconOnly
-              className={overlayButtonClass}
-              aria-label={t('Play')}
-              isPending={isResolving}
-              onPress={handlePosterPlay}
-            >
-              {({ isPending }) =>
-                isPending ? (
-                  <Spinner size='sm' color='current' />
-                ) : (
-                  <Play {...iconAction} fill='currentColor' aria-hidden />
-                )
-              }
-            </Button>
-          </Tooltip.Trigger>
+          <Button
+            variant='primary'
+            isIconOnly
+            className={overlayButtonClass}
+            aria-label={t('Play')}
+            isPending={isResolving}
+            onPress={handlePosterPlay}
+          >
+            {({ isPending }) =>
+              isPending ? (
+                <Spinner size='sm' color='current' />
+              ) : (
+                <Play {...iconAction} fill='currentColor' aria-hidden />
+              )
+            }
+          </Button>
           <Tooltip.Content>{t('Play')}</Tooltip.Content>
         </Tooltip>
 
         {/* Details/Playlist live in the menu — the poster itself already opens details, and cramming 4 icon-only
          * buttons into a ~172px tile leaves no room to reach 40px touch targets. */}
         <Dropdown isOpen={dropdownState.isOpen} onOpenChange={dropdownState.setOpen}>
-          <Dropdown.Trigger>
-            <Button variant='primary' isIconOnly className={overlayButtonClass} aria-label={t('Actions')}>
-              <MoreVertical {...iconAction} aria-hidden />
-            </Button>
-          </Dropdown.Trigger>
+          <Button variant='primary' isIconOnly className={overlayButtonClass} aria-label={t('Actions')}>
+            <MoreVertical {...iconAction} aria-hidden />
+          </Button>
           <Dropdown.Popover placement='bottom end'>
             <Dropdown.Menu aria-label={t('Actions')}>
               <Dropdown.Item onPress={onDetails}>

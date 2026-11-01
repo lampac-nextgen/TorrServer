@@ -3,7 +3,7 @@ import { devices } from '@playwright/test'
 
 import { expect, test } from '../fixtures/mock-test'
 import { fixtureDragon, fixtureDragonCache } from '../fixtures/mocks'
-import { detailsModal } from '../fixtures/helpers'
+import { detailsModal, expectNoNestedInteractive } from '../fixtures/helpers'
 
 // Chromium emulation of the phone (the project only installs Chromium), so drop the WebKit default.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -20,9 +20,10 @@ test('details modal fits the viewport and the cache snake fills its panel', asyn
     testInfo.attach(name, { body: await page.screenshot(), contentType: 'image/png' })
 
   await page.goto('/', { waitUntil: 'domcontentloaded' })
-  await page.locator('.torrent-card [role="button"]').first().click()
+  await page.getByRole('button', { name: fixtureDragon.title, exact: true }).first().click()
   const details = detailsModal(page)
   await expect(details).toBeVisible()
+  await expectNoNestedInteractive(page)
 
   // Geometry is only stable once the HeroUI enter transform has settled.
   await expect
