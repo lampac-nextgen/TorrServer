@@ -96,7 +96,9 @@ const looksUntranslated = (value, en) =>
   !/\{\{|\$t\(|https?:/.test(value) &&
   value.split(/\s+/).filter(w => /[A-Za-z]{2,}/.test(w)).length >= 2
 for (const lang of NON_LATIN) {
-  const bad = Object.keys(locales[lang]).filter(k => !KEEP_ENGLISH.has(k) && looksUntranslated(locales[lang][k], locales.en[k]))
+  const bad = Object.keys(locales[lang]).filter(
+    k => !KEEP_ENGLISH.has(k) && looksUntranslated(locales[lang][k], locales.en[k]),
+  )
   if (bad.length) {
     failed = true
     console.error(`[${lang}] ${bad.length} value(s) are still the English text:`, bad.slice(0, 20).join(', '))
