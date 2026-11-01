@@ -601,6 +601,8 @@ definitions:
         type: integer
       name:
         type: string
+      peak_download_speed:
+        type: number
       pending_peers:
         type: integer
       pieces_dirtied_bad:

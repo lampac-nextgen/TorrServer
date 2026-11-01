@@ -2699,6 +2699,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "peak_download_speed": {
+                    "type": "number"
+                },
                 "pending_peers": {
                     "type": "integer"
                 },
