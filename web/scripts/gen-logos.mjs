@@ -1,7 +1,7 @@
 // Usage: node scripts/gen-logos.mjs
 // Builds public/brand/logo-{dark,light}.svg: the mark (downscaled PNG) plus the "TorrServer"
 // wordmark converted to outlines with Outfit, so the files render identically without the font
-// and stay small. `dark` is for dark backgrounds, `light` for light ones.
+// and stay small. `dark` is for dark backgrounds, `light` for light ones. Also refreshes docs/assets/logo-*.{svg,png}.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
@@ -66,6 +66,7 @@ const variants = {
 }
 
 mkdirSync(here('../public/brand'), { recursive: true })
+const docsAssets = name => here(`../../docs/assets/${name}`)
 for (const [name, v] of Object.entries(variants)) {
   const stops = list => list.map(([o, c]) => `<stop offset="${o}" stop-color="${c}"/>`).join('')
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="196" height="48" viewBox="0 0 196 48" role="img" aria-label="TorrServer"><defs><linearGradient id="t" x1="0%" y1="0%" x2="100%" y2="100%">${stops(
@@ -76,5 +77,11 @@ for (const [name, v] of Object.entries(variants)) {
     ],
   )}</linearGradient><linearGradient id="s" x1="0%" y1="0%" x2="100%" y2="100%">${stops(v.server)}</linearGradient></defs><image x="0" y="0" width="48" height="48" href="data:image/png;base64,${mark}"/><path fill="url(#t)" d="${torr.d}"/><path fill="url(#s)" d="${server.d}"/></svg>\n`
   writeFileSync(here(`../public/brand/logo-${name}.svg`), svg)
+  // README / docs copies: same outlined SVG plus a 4x transparent PNG (GitHub renders the <picture> sources).
+  writeFileSync(docsAssets(`logo-${name}.svg`), svg)
+  await sharp(Buffer.from(svg), { density: 288 })
+    .resize(784, 192)
+    .png({ compressionLevel: 9 })
+    .toFile(docsAssets(`logo-${name}.png`))
   console.log(`logo-${name}.svg`, svg.length, 'bytes')
 }
