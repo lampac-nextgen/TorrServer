@@ -24,8 +24,11 @@ type Cache struct {
 	storage *Storage
 
 	capacity int64
-	filled   atomic.Int64
-	hash     metainfo.Hash
+	// filled is the eviction input: memory the pieces occupy (allocated buffers in
+	// RAM mode), recomputed by getRemPieces. It is not the downloaded byte count
+	// (see GetState).
+	filled atomic.Int64
+	hash   metainfo.Hash
 
 	pieceLength int64
 	pieceCount  int
@@ -420,9 +423,8 @@ func (c *Cache) GetState() *state.CacheState {
 		}
 	}
 
-	if !c.isClosed.Load() {
-		c.filled.Store(fill)
-	}
+	// filled is not stored here: it is the eviction input (allocated memory),
+	// owned by getRemPieces. fill below is the downloaded byte count.
 	cState.Capacity = c.capacity
 	cState.PiecesLength = c.pieceLength
 	cState.PiecesCount = c.pieceCount
@@ -542,9 +544,9 @@ func (c *Cache) getRemPieces() []*Piece {
 		if !ok || p == nil {
 			continue
 		}
-		sz, _, _ := p.snapshotStats()
+		sz, cost := p.snapshotCost()
 		if sz > 0 {
-			fill += sz
+			fill += cost
 		}
 		if c.pieceEvictable(p, ranges) {
 			piecesRemove = append(piecesRemove, p)
