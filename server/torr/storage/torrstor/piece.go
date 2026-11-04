@@ -70,6 +70,26 @@ func (p *Piece) snapshotStats() (size int64, complete bool, accessed int64) {
 	return p.Size, p.Complete, p.Accessed
 }
 
+// snapshotCost returns Size and what the piece costs the cache budget, read
+// under one lock. In RAM mode the cost is the allocated buffer: the whole
+// piece is allocated on the first chunk, so it can be far above Size. Disk
+// pieces cost their Size. Size stays the logical downloaded count (progress).
+func (p *Piece) snapshotCost() (size, cost int64) {
+	if p == nil {
+		return 0, 0
+	}
+	switch {
+	case p.mPiece != nil:
+		p.mPiece.mu.RLock()
+		defer p.mPiece.mu.RUnlock()
+		return p.Size, int64(cap(p.mPiece.buffer))
+	case p.dPiece != nil:
+		p.dPiece.mu.RLock()
+		defer p.dPiece.mu.RUnlock()
+	}
+	return p.Size, p.Size
+}
+
 func (p *Piece) MarkComplete() error {
 	// Same mutex as snapshotStats/Release so GetState does not race Complete.
 	switch {
