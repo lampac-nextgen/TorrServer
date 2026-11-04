@@ -22,6 +22,19 @@ import (
 // the live buffers may pass the capacity by a bounded number of pieces. Before
 // partial pieces were charged at their allocated size they grew without bound.
 func TestBigPiecesTwoSeekingReadersStayBounded(t *testing.T) {
+	runBigPiecesSeekers(t, 2, 20*time.Millisecond, 4*time.Second)
+}
+
+// Four readers write first chunks of different pieces at the same time: a
+// buffer is allocated before the eviction pass that follows it, so the peak
+// is the figure that shows how far the cache runs ahead of its limit. Sampled
+// every 2ms. Bound: window rounding per reader plus one piece being allocated
+// per reader.
+func TestBigPiecesParallelReadersTransientPeak(t *testing.T) {
+	runBigPiecesSeekers(t, 4, 2*time.Millisecond, 5*time.Second)
+}
+
+func runBigPiecesSeekers(t *testing.T, readers int, sample, dur time.Duration) {
 	baseG := runtime.NumGoroutine()
 	offlinetest.Prepare(t)
 	// Stray cleanPieces and AdjustRA goroutines read settings.BTsets; let them
@@ -31,7 +44,6 @@ func TestBigPiecesTwoSeekingReadersStayBounded(t *testing.T) {
 	const (
 		pieceLen = 16 << 20
 		capacity = 64 << 20
-		readers  = 2
 	)
 	settings.BTsets.CacheSize = capacity
 	show := offlinetest.WriteSized(t, "big.mkv", 512<<20, pieceLen)
@@ -70,7 +82,7 @@ func TestBigPiecesTwoSeekingReadersStayBounded(t *testing.T) {
 	sampler.Add(1)
 	go func() {
 		defer sampler.Done()
-		tick := time.NewTicker(20 * time.Millisecond)
+		tick := time.NewTicker(sample)
 		defer tick.Stop()
 		for {
 			select {
@@ -86,7 +98,7 @@ func TestBigPiecesTwoSeekingReadersStayBounded(t *testing.T) {
 
 	var seeks atomic.Int64
 	var wg sync.WaitGroup
-	deadline := time.Now().Add(4 * time.Second)
+	deadline := time.Now().Add(dur)
 	for i := 0; i < readers; i++ {
 		wg.Add(1)
 		go func(seed int64) {
@@ -131,8 +143,11 @@ func TestBigPiecesTwoSeekingReadersStayBounded(t *testing.T) {
 	// Window rounding: a reader window cut on byte offsets touches two extra
 	// pieces. The file ends are kept inside the same slack.
 	limit := int64(capacity) + int64(2*readers)*pieceLen
-	t.Logf("seeks=%d capacity=%dMiB maxLive=%dMiB limit=%dMiB",
-		seeks.Load(), capacity>>20, maxLive.Load()>>20, limit>>20)
+	if readers > 2 {
+		limit += int64(readers) * pieceLen
+	}
+	t.Logf("readers=%d seeks=%d capacity=%dMiB maxLive=%dMiB limit=%dMiB",
+		readers, seeks.Load(), capacity>>20, maxLive.Load()>>20, limit>>20)
 	if maxLive.Load() > limit {
 		t.Fatalf("live buffers peaked at %d, limit %d", maxLive.Load(), limit)
 	}
