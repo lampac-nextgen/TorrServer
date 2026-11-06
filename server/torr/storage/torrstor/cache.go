@@ -708,10 +708,13 @@ func (c *Cache) CloseReader(r *Reader) {
 	if r == nil || r.cache == nil {
 		return
 	}
+	// Unregister under muReaders, close after unlock: Reader.Close takes the anacrolix
+	// client lock, and Cache.Close (called from Torrent.close with the client lock held)
+	// takes muReaders. Holding muReaders across Close is an AB-BA deadlock with drop.
 	r.cache.muReaders.Lock()
-	r.Close()
 	delete(r.cache.readers, r)
 	r.cache.muReaders.Unlock()
+	r.Close()
 	// Reader.Close already runs getRemPieces. Rebalance the readers that remain.
 	r.cache.AdjustRA(ReaderReadaheadBytes)
 }
