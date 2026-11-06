@@ -22,6 +22,8 @@ Merge with squash, always: `gh pr merge <n> --repo lampac-nextgen/TorrServer --s
 
 One exception: a PR that brings commits from the `YouROK/TorrServer` upstream is merged with `--merge`, so the upstream commits keep their identity. A user-requested exception only; ask if unsure.
 
+An upstream sync is one PR: cherry-pick the commits that apply, then `git merge -s ours upstream/master` in the same branch so upstream is an ancestor and GitHub shows 0 behind. Use `--merge`, never `--squash`. Procedure and skip list: `.claude/skills/sync-upstream/SKILL.md`.
+
 - Only merge when the user asks. Never merge on your own, and never enable auto-merge unless asked.
 - Put the PR title in conventional-commit form (`fix:`, `test:`, `docs:` ...), since it becomes the commit subject.
 - Several small commits on the branch (failing test first, then the fix) are fine: they are squashed away. Keep the explanation in the PR body.
