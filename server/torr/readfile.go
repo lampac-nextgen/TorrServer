@@ -52,7 +52,13 @@ func (t *Torrent) ReadFile(ctx context.Context, fileID int, maxSize int64) ([]by
 		return nil, errors.New("cannot create torrent reader")
 	}
 	defer t.CloseReader(reader)
-	reader.SetResponsive()
+
+	// Not SetResponsive() on purpose. A responsive reader returns chunks as soon as the client has
+	// received them, without waiting for the whole piece to be complete and verified. If the cache
+	// evicts an incomplete piece in the meantime (it does while a stream is playing and the cache
+	// is full), the received chunks are gone from memory but the client still counts them as
+	// received, so such a reader gets zeros. ReadFile needs the whole file to be valid, so it waits
+	// for verified pieces instead.
 
 	// Reader.Read waits on context.Background and Close does not wake it, so the
 	// goroutine below reads with readCtx and ends as soon as ReadFile returns, whether
