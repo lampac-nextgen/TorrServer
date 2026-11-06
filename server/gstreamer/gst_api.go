@@ -467,7 +467,7 @@ func (g *gstAPI) takeGError(errPtr uintptr) string {
 	if errPtr == 0 {
 		return ""
 	}
-	messagePtr := *(*uintptr)(unsafe.Pointer(errPtr + 8))
+	messagePtr := loadUintptr(errPtr + 8)
 	message := cString(messagePtr)
 	g.gErrorFree(errPtr)
 	return message
@@ -494,6 +494,21 @@ func alignTo(value uintptr, alignment uintptr) uintptr {
 	return value + alignment - remainder
 }
 
+// loadUintptr and loadByte read C-owned memory addressed by a bare uintptr
+// (GError fields, C strings). The address never comes from a Go pointer, so
+// -race's checkptr instrumentation would reject it whenever a test points it
+// at Go memory; the production addresses are outside the Go heap.
+//
+//go:nocheckptr
+func loadUintptr(addr uintptr) uintptr {
+	return *(*uintptr)(unsafe.Pointer(addr))
+}
+
+//go:nocheckptr
+func loadByte(addr uintptr) byte {
+	return *(*byte)(unsafe.Pointer(addr))
+}
+
 func cString(ptr uintptr) string {
 	if ptr == 0 {
 		return ""
@@ -501,7 +516,7 @@ func cString(ptr uintptr) string {
 
 	var out []byte
 	for offset := uintptr(0); ; offset++ {
-		b := *(*byte)(unsafe.Pointer(ptr + offset))
+		b := loadByte(ptr + offset)
 		if b == 0 {
 			break
 		}

@@ -389,6 +389,7 @@ func videoSegmentClipPadProbe(_ purego.CDecl, _ uintptr, info uintptr, userData 
 	return gstPadProbeOK
 }
 
+//go:nocheckptr
 func hevcHDRCapsPadProbe(_ purego.CDecl, _ uintptr, info uintptr, userData uintptr) (result uintptr) {
 	result = gstPadProbeOK
 	defer func() {
@@ -453,6 +454,7 @@ func hevcHDRCapsPadProbe(_ purego.CDecl, _ uintptr, info uintptr, userData uintp
 	return gstPadProbeOK
 }
 
+//go:nocheckptr
 func gstProbeInfoType(info uintptr) uint32 {
 	if info == 0 {
 		return 0
@@ -460,6 +462,7 @@ func gstProbeInfoType(info uintptr) uint32 {
 	return (*gstPadProbeInfoABI)(unsafe.Pointer(info)).probeType
 }
 
+//go:nocheckptr
 func gstProbeInfoData(info uintptr) uintptr {
 	if info == 0 {
 		return 0
@@ -470,6 +473,7 @@ func gstProbeInfoData(info uintptr) uintptr {
 	return (*gstPadProbeInfoUnixABI)(unsafe.Pointer(info)).data
 }
 
+//go:nocheckptr
 func gstEventType(event uintptr) uint32 {
 	if event == 0 {
 		return 0
@@ -477,6 +481,7 @@ func gstEventType(event uintptr) uint32 {
 	return (*gstEventABI)(unsafe.Pointer(event)).eventType
 }
 
+//go:nocheckptr
 func gstBufferPTS(buffer uintptr) (uint64, bool) {
 	if buffer == 0 {
 		return 0, false
@@ -485,6 +490,7 @@ func gstBufferPTS(buffer uintptr) (uint64, bool) {
 	return pts, pts != gstClockTimeNone
 }
 
+//go:nocheckptr
 func gstBufferClockTime(buffer uintptr) (uint64, bool) {
 	if buffer == 0 {
 		return 0, false
@@ -510,6 +516,7 @@ func gstSegmentClockTime(api *gstAPI, event uintptr) (uint64, bool) {
 	return start, start != gstClockTimeNone
 }
 
+//go:nocheckptr
 func gstTimeSegment(api *gstAPI, event uintptr) (start uint64, segmentTime uint64, ok bool) {
 	if api == nil || event == 0 || gstEventType(event) != gstEventSegment || api.gstEventParseSegment == nil {
 		return gstClockTimeNone, gstClockTimeNone, false
