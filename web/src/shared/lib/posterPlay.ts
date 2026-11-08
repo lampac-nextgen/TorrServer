@@ -10,8 +10,11 @@ export const PLAYLIST_BUTTON_ACTION_KEY = 'playlistButtonAction'
 
 export type PosterPlayAction = 'builtin' | 'copyLink' | 'vlc' | 'infuse' | 'senPlayer' | 'vidHub' | 'iina'
 
-/** `download` keeps the m3u link. A player opens that m3u in the app. */
-export type PlaylistButtonAction = 'download' | 'copyLink' | ExternalPosterPlayAction
+/**
+ * `download` keeps the m3u link. A player opens that m3u in the app.
+ * VidHub is excluded: its `/play` takes one video URL and fails ("Failed to load file") on an m3u.
+ */
+export type PlaylistButtonAction = 'download' | 'copyLink' | Exclude<ExternalPosterPlayAction, 'vidHub'>
 
 export type ExternalPosterPlayAction = Exclude<PosterPlayAction, 'builtin' | 'copyLink'>
 
@@ -77,7 +80,7 @@ export const coercePosterPlayAction = (
   return isExternalPosterPlayEnabled(stored, flags) ? stored : fallback
 }
 
-const PLAYLIST_ACTIONS = ['download', 'copyLink', 'vlc', 'infuse', 'senPlayer', 'vidHub', 'iina'] as const
+const PLAYLIST_ACTIONS = ['download', 'copyLink', 'vlc', 'infuse', 'senPlayer', 'iina'] as const
 
 export const isPlaylistButtonAction = (value: unknown): value is PlaylistButtonAction =>
   typeof value === 'string' && (PLAYLIST_ACTIONS as readonly string[]).includes(value)
@@ -95,8 +98,6 @@ export const playlistButtonLabelKey = (action: PlaylistButtonAction): string => 
       return 'Infuse'
     case 'senPlayer':
       return 'SenPlayer'
-    case 'vidHub':
-      return 'VidHub'
     case 'iina':
       return 'IINA'
     default:
@@ -123,7 +124,6 @@ export const availablePlaylistButtonActions = (flags: PosterPlayPlayerFlags): Pl
   if (flags.isVlcUsed) actions.push('vlc')
   if (flags.isApple && flags.isInfuseUsed) actions.push('infuse')
   if (flags.isApple && flags.isSenPlayerUsed) actions.push('senPlayer')
-  if (flags.isApple && flags.isVidHubUsed) actions.push('vidHub')
   if (flags.isMac && flags.isIinaUsed) actions.push('iina')
   return actions
 }

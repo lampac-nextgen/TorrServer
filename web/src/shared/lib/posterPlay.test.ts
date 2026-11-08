@@ -143,7 +143,12 @@ describe('posterPlay', () => {
   })
 
   it('lists only enabled platform-available externals in settings options', async () => {
-    const { availablePosterPlayActions, isExternalPosterPlayEnabled } = await import('./posterPlay')
+    const {
+      availablePlaylistButtonActions,
+      availablePosterPlayActions,
+      isExternalPosterPlayEnabled,
+      isPlaylistButtonAction,
+    } = await import('./posterPlay')
     const base = {
       isVlcUsed: false,
       isInfuseUsed: false,
@@ -169,6 +174,9 @@ describe('posterPlay', () => {
     expect(isExternalPosterPlayEnabled('vidHub', { ...base, isApple: true, isVidHubUsed: true })).toBe(true)
     expect(isExternalPosterPlayEnabled('vidHub', { ...base, isApple: false, isVidHubUsed: true })).toBe(false)
     expect(availablePosterPlayActions({ ...base, isApple: true, isVidHubUsed: true })).toContain('vidHub')
+    // VidHub /play takes one video url; an m3u fails, so the playlist button never offers it.
+    expect(availablePlaylistButtonActions({ ...base, isApple: true, isVidHubUsed: true })).not.toContain('vidHub')
+    expect(isPlaylistButtonAction('vidHub')).toBe(false)
   })
 
   it('builds magnet, stream, and playlist URLs', async () => {

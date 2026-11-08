@@ -64,7 +64,7 @@ export function useExternalPlayers() {
     return links
   }
 
-  /** Series footer: Infuse gets one url per episode; the others open the torrent m3u. */
+  /** Series footer: Infuse gets one url per episode; the others open the torrent m3u. VidHub takes a single video url only, so it is not offered. */
   const buildSeriesExternalPlayers = (
     playlistUrl: string,
     episodes: { url: string; filename: string }[],
@@ -74,8 +74,6 @@ export function useExternalPlayers() {
       links.push({ label: t('Infuse'), href: buildInfusePlaylistHref(episodes, playlistUrl) })
     if (isApple && isSenPlayerUsed)
       links.push({ label: t('SenPlayer'), href: buildExternalPlayerHref('senPlayer', playlistUrl) })
-    if (isApple && isVidHubUsed)
-      links.push({ label: t('VidHub'), href: buildExternalPlayerHref('vidHub', playlistUrl) })
     if (isVlcUsed) links.push({ label: t('VLC'), href: buildExternalPlayerHref('vlc', playlistUrl, playerPlatform) })
     if (isMac && isIinaUsed) links.push({ label: t('IINA'), href: buildExternalPlayerHref('iina', playlistUrl) })
     return links
