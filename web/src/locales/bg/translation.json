@@ -299,7 +299,7 @@
     "FirstStep": "Натисни",
     "Header": "Инсталирайте приложение",
     "Install": "Инсталирай",
-    "PlayerButtons": "Бутоните VLC, Infuse, SenPlayer, IINA ще бъдат добавени за незабавно пускане на видеото в тези плейъри. Можете също да използвате вградения плейър.",
+    "PlayerButtons": "Бутоните VLC, Infuse, SenPlayer, VidHub, IINA ще бъдат добавени за незабавно пускане на видеото в тези плейъри. Можете също да използвате вградения плейър.",
     "SecondStep": {
       "AddToHomeScreen": "Добави към началния екран",
       "Select": "Изберете"
@@ -334,6 +334,7 @@
   "Select": "Выбрать",
   "SelectAudioTrack": "Выбор аудиодорожки",
   "SenPlayer": "SenPlayer",
+  "VidHub": "VidHub",
   "Series": "Серия",
   "ServerStatus": "Състояние на сървъра",
   "ServerStatusBannedIPs": "Блокирани IP",
@@ -460,6 +461,8 @@
     "UseInfuseHint": "Добави бутон към Infuse плеъра за списъка с торенти",
     "UseSenPlayer": "Подкана за отваряне на видео в SenPlayer",
     "UseSenPlayerHint": "Добави бутон към SenPlayer за списъка с торенти",
+    "UseVidHub": "Предлагай отваряне на видео във VidHub",
+    "UseVidHubHint": "Добави бутон към VidHub за списъка с торенти",
     "UseVLC": "Подкана за отваряне на видео във VLC",
     "UseVLCDesktopHintPrefix": "На компютър е необходим",
     "UseVLCHint": "Добави бутон към VLC плеъра за списъка с торенти",

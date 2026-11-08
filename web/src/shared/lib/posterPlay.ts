@@ -8,7 +8,7 @@ export const POSTER_PLAY_ACTION_KEY = 'posterPlayAction'
 /** localStorage key for the Playlist button (Settings → Players). */
 export const PLAYLIST_BUTTON_ACTION_KEY = 'playlistButtonAction'
 
-export type PosterPlayAction = 'builtin' | 'copyLink' | 'vlc' | 'infuse' | 'senPlayer' | 'iina'
+export type PosterPlayAction = 'builtin' | 'copyLink' | 'vlc' | 'infuse' | 'senPlayer' | 'vidHub' | 'iina'
 
 /** `download` keeps the m3u link. A player opens that m3u in the app. */
 export type PlaylistButtonAction = 'download' | 'copyLink' | ExternalPosterPlayAction
@@ -19,12 +19,21 @@ export interface PosterPlayPlayerFlags {
   isVlcUsed: boolean
   isInfuseUsed: boolean
   isSenPlayerUsed: boolean
+  isVidHubUsed: boolean
   isIinaUsed: boolean
   isApple: boolean
   isMac: boolean
 }
 
-const ALL_ACTIONS: readonly PosterPlayAction[] = ['builtin', 'copyLink', 'vlc', 'infuse', 'senPlayer', 'iina'] as const
+const ALL_ACTIONS: readonly PosterPlayAction[] = [
+  'builtin',
+  'copyLink',
+  'vlc',
+  'infuse',
+  'senPlayer',
+  'vidHub',
+  'iina',
+] as const
 
 export const isPosterPlayAction = (value: unknown): value is PosterPlayAction =>
   typeof value === 'string' && (ALL_ACTIONS as readonly string[]).includes(value)
@@ -44,6 +53,8 @@ export const isExternalPosterPlayEnabled = (
       return flags.isApple && flags.isInfuseUsed
     case 'senPlayer':
       return flags.isApple && flags.isSenPlayerUsed
+    case 'vidHub':
+      return flags.isApple && flags.isVidHubUsed
     case 'iina':
       return flags.isMac && flags.isIinaUsed
     default:
@@ -66,7 +77,7 @@ export const coercePosterPlayAction = (
   return isExternalPosterPlayEnabled(stored, flags) ? stored : fallback
 }
 
-const PLAYLIST_ACTIONS = ['download', 'copyLink', 'vlc', 'infuse', 'senPlayer', 'iina'] as const
+const PLAYLIST_ACTIONS = ['download', 'copyLink', 'vlc', 'infuse', 'senPlayer', 'vidHub', 'iina'] as const
 
 export const isPlaylistButtonAction = (value: unknown): value is PlaylistButtonAction =>
   typeof value === 'string' && (PLAYLIST_ACTIONS as readonly string[]).includes(value)
@@ -84,6 +95,8 @@ export const playlistButtonLabelKey = (action: PlaylistButtonAction): string => 
       return 'Infuse'
     case 'senPlayer':
       return 'SenPlayer'
+    case 'vidHub':
+      return 'VidHub'
     case 'iina':
       return 'IINA'
     default:
@@ -110,6 +123,7 @@ export const availablePlaylistButtonActions = (flags: PosterPlayPlayerFlags): Pl
   if (flags.isVlcUsed) actions.push('vlc')
   if (flags.isApple && flags.isInfuseUsed) actions.push('infuse')
   if (flags.isApple && flags.isSenPlayerUsed) actions.push('senPlayer')
+  if (flags.isApple && flags.isVidHubUsed) actions.push('vidHub')
   if (flags.isMac && flags.isIinaUsed) actions.push('iina')
   return actions
 }
@@ -120,6 +134,7 @@ export const availablePosterPlayActions = (flags: PosterPlayPlayerFlags): Poster
   if (flags.isVlcUsed) actions.push('vlc')
   if (flags.isApple && flags.isInfuseUsed) actions.push('infuse')
   if (flags.isApple && flags.isSenPlayerUsed) actions.push('senPlayer')
+  if (flags.isApple && flags.isVidHubUsed) actions.push('vidHub')
   if (flags.isMac && flags.isIinaUsed) actions.push('iina')
   return actions
 }

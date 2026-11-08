@@ -25,6 +25,7 @@ const PLAYER_KEYS = {
   vlc: 'isVlcUsed',
   infuse: 'isInfuseUsed',
   senPlayer: 'isSenPlayerUsed',
+  vidHub: 'isVidHubUsed',
   iina: 'isIinaUsed',
 } as const
 
@@ -39,11 +40,12 @@ export default function MobilePlayersSection() {
   const [isVlcUsed, setIsVlcUsed] = useLocalBoolPref(PLAYER_KEYS.vlc)
   const [isInfuseUsed, setIsInfuseUsed] = useLocalBoolPref(PLAYER_KEYS.infuse)
   const [isSenPlayerUsed, setIsSenPlayerUsed] = useLocalBoolPref(PLAYER_KEYS.senPlayer)
+  const [isVidHubUsed, setIsVidHubUsed] = useLocalBoolPref(PLAYER_KEYS.vidHub)
   const [isIinaUsed, setIsIinaUsed] = useLocalBoolPref(PLAYER_KEYS.iina)
 
   const playerFlags = useMemo(
-    () => ({ isVlcUsed, isInfuseUsed, isSenPlayerUsed, isIinaUsed, isApple, isMac }),
-    [isVlcUsed, isInfuseUsed, isSenPlayerUsed, isIinaUsed, isApple, isMac],
+    () => ({ isVlcUsed, isInfuseUsed, isSenPlayerUsed, isVidHubUsed, isIinaUsed, isApple, isMac }),
+    [isVlcUsed, isInfuseUsed, isSenPlayerUsed, isVidHubUsed, isIinaUsed, isApple, isMac],
   )
 
   const [posterPlayStored, setPosterPlayStored] = useLocalJsonPref<PosterPlayAction>(
@@ -69,6 +71,8 @@ export default function MobilePlayersSection() {
         return t('Infuse')
       case 'senPlayer':
         return t('SenPlayer')
+      case 'vidHub':
+        return t('VidHub')
       case 'iina':
         return t('IINA')
       default:
@@ -115,6 +119,13 @@ export default function MobilePlayersSection() {
             helper={t('SettingsDialog.UseSenPlayerHint')}
             checked={isSenPlayerUsed}
             onChange={(_id, checked) => setIsSenPlayerUsed(checked)}
+          />
+          <SettingSwitch
+            id={PLAYER_KEYS.vidHub}
+            label={t('SettingsDialog.UseVidHub')}
+            helper={t('SettingsDialog.UseVidHubHint')}
+            checked={isVidHubUsed}
+            onChange={(_id, checked) => setIsVidHubUsed(checked)}
           />
         </>
       ) : null}

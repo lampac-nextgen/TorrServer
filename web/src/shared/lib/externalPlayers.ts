@@ -26,6 +26,7 @@ export function useExternalPlayers() {
   const [isVlcUsed] = useLocalBoolPref('isVlcUsed')
   const [isInfuseUsed] = useLocalBoolPref('isInfuseUsed')
   const [isSenPlayerUsed] = useLocalBoolPref('isSenPlayerUsed')
+  const [isVidHubUsed] = useLocalBoolPref('isVidHubUsed')
   const [isIinaUsed] = useLocalBoolPref('isIinaUsed')
   const isStandaloneApp = detectStandaloneApp()
   const isMac = isMacOS()
@@ -36,13 +37,18 @@ export function useExternalPlayers() {
     isVlcUsed,
     isInfuseUsed,
     isSenPlayerUsed,
+    isVidHubUsed,
     isIinaUsed,
     isApple,
     isMac,
   }
 
   const hasAnyExternalPlayer =
-    (isApple && isInfuseUsed) || (isApple && isSenPlayerUsed) || isVlcUsed || (isMac && isIinaUsed)
+    (isApple && isInfuseUsed) ||
+    (isApple && isSenPlayerUsed) ||
+    (isApple && isVidHubUsed) ||
+    isVlcUsed ||
+    (isMac && isIinaUsed)
 
   /** Whether the plain "open direct link" fallback should also be shown alongside app deep links. */
   const shouldShowOpenLink = !isStandaloneApp || !hasAnyExternalPlayer
@@ -52,6 +58,7 @@ export function useExternalPlayers() {
     if (isApple && isInfuseUsed) links.push({ label: t('Infuse'), href: buildExternalPlayerHref('infuse', fullLink) })
     if (isApple && isSenPlayerUsed)
       links.push({ label: t('SenPlayer'), href: buildExternalPlayerHref('senPlayer', fullLink) })
+    if (isApple && isVidHubUsed) links.push({ label: t('VidHub'), href: buildExternalPlayerHref('vidHub', fullLink) })
     if (isVlcUsed) links.push({ label: t('VLC'), href: buildExternalPlayerHref('vlc', fullLink, playerPlatform) })
     if (isMac && isIinaUsed) links.push({ label: t('IINA'), href: buildExternalPlayerHref('iina', fullLink) })
     return links
@@ -67,6 +74,8 @@ export function useExternalPlayers() {
       links.push({ label: t('Infuse'), href: buildInfusePlaylistHref(episodes, playlistUrl) })
     if (isApple && isSenPlayerUsed)
       links.push({ label: t('SenPlayer'), href: buildExternalPlayerHref('senPlayer', playlistUrl) })
+    if (isApple && isVidHubUsed)
+      links.push({ label: t('VidHub'), href: buildExternalPlayerHref('vidHub', playlistUrl) })
     if (isVlcUsed) links.push({ label: t('VLC'), href: buildExternalPlayerHref('vlc', playlistUrl, playerPlatform) })
     if (isMac && isIinaUsed) links.push({ label: t('IINA'), href: buildExternalPlayerHref('iina', playlistUrl) })
     return links
