@@ -71,6 +71,8 @@ export const buildExternalPlayerHref = (
       return `infuse://x-callback-url/play?url=${encoded}`
     case 'senPlayer':
       return `senplayer://x-callback-url/play?url=${encoded}`
+    case 'vidHub':
+      return `open-vidhub://x-callback-url/play?url=${encoded}`
     case 'vlc':
       if (platform.ios) return `vlc-x-callback://x-callback-url/stream?url=${encoded}`
       if (platform.android) return buildAndroidIntentHref(fullLink)

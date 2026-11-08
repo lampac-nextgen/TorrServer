@@ -67,6 +67,7 @@ describe('streamLinks', () => {
       'intent://user:p%40ss@192.168.1.5:8090/stream/a%27b.mkv?link=ab%26cd&index=1&play#Intent;scheme=http;type=video/*;end',
     )
     expect(buildExternalPlayerHref('senPlayer', stream)).toBe(`senplayer://x-callback-url/play?url=${encoded}`)
+    expect(buildExternalPlayerHref('vidHub', stream)).toBe(`open-vidhub://x-callback-url/play?url=${encoded}`)
     expect(buildAndroidIntentHref(stream.replace('http:', 'https:'))).toContain('#Intent;scheme=https;')
   })
 

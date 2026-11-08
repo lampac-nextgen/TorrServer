@@ -299,7 +299,7 @@
     "FirstStep": "Торкніться",
     "Header": "Встановити додаток",
     "Install": "Встановити",
-    "PlayerButtons": "Кнопки VLC, Infuse, SenPlayer, IINA буде додано для миттєвого відкриття відео в цих плеєрах. Ви також можете використовувати вбудований плеєр.",
+    "PlayerButtons": "Кнопки VLC, Infuse, SenPlayer, VidHub, IINA буде додано для миттєвого відкриття відео в цих плеєрах. Ви також можете використовувати вбудований плеєр.",
     "SecondStep": {
       "AddToHomeScreen": "Додати на головний екран",
       "Select": "Виберіть"
@@ -334,6 +334,7 @@
   "Select": "Выбрать",
   "SelectAudioTrack": "Выбор аудиодорожки",
   "SenPlayer": "SenPlayer",
+  "VidHub": "VidHub",
   "Series": "Серіали",
   "ServerStatus": "Стан сервера",
   "ServerStatusBannedIPs": "Заблоковані IP",
@@ -460,6 +461,8 @@
     "UseInfuseHint": "Додати кнопку програвача Infuse до списку торрент-контенту",
     "UseSenPlayer": "Пропонувати відкрити відео в SenPlayer",
     "UseSenPlayerHint": "Додати кнопку програвача SenPlayer до списку торрент-контенту",
+    "UseVidHub": "Пропонувати відкрити відео у VidHub",
+    "UseVidHubHint": "Додати кнопку програвача VidHub до списку торрент-контенту",
     "UseVLC": "Пропонувати відкрити відео у VLC",
     "UseVLCDesktopHintPrefix": "На ПК потрібен",
     "UseVLCHint": "Додати кнопку програвача VLC до списку торрент-контенту",

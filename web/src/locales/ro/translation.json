@@ -299,7 +299,7 @@
     "FirstStep": "Apăsați pe",
     "Header": "Instalați aplicația",
     "Install": "Instalează",
-    "PlayerButtons": "Butonele VLC, Infuse, SenPlayer, IINA vor fi adăugate pentru a deschide instantaneu videoclipurile în aceste playere. Puteți de asemenea să folosiți playerul încorporat.",
+    "PlayerButtons": "Butonele VLC, Infuse, SenPlayer, VidHub, IINA vor fi adăugate pentru a deschide instantaneu videoclipurile în aceste playere. Puteți de asemenea să folosiți playerul încorporat.",
     "SecondStep": {
       "AddToHomeScreen": "Adaugă la ecranul de pornire",
       "Select": "Selectați"
@@ -334,6 +334,7 @@
   "Select": "Selectează",
   "SelectAudioTrack": "Alege pista audio",
   "SenPlayer": "SenPlayer",
+  "VidHub": "VidHub",
   "Series": "Seriale",
   "ServerStatus": "Starea serverului",
   "ServerStatusBannedIPs": "IP-uri blocate",
@@ -460,6 +461,8 @@
     "UseInfuseHint": "Adăugați butonul Infuse player la lista de conținut torrent",
     "UseSenPlayer": "Solicitare pentru deschiderea videoclipului în SenPlayer",
     "UseSenPlayerHint": "Adăugați butonul SenPlayer la lista de conținut torrent",
+    "UseVidHub": "Propune deschiderea videoclipului în VidHub",
+    "UseVidHubHint": "Adăugați butonul VidHub la lista de conținut torrent",
     "UseVLC": "Solicitare pentru deschiderea videoclipului în VLC",
     "UseVLCDesktopHintPrefix": "Pe PC este necesar",
     "UseVLCHint": "Adăugați butonul VLC player la lista de conținut torrent",

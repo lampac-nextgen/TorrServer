@@ -299,7 +299,7 @@
     "FirstStep": "Appuyez sur",
     "Header": "Installer l'application",
     "Install": "Installer",
-    "PlayerButtons": "Les boutons VLC, Infuse, SenPlayer, IINA seront ajoutés pour ouvrir la vidéo instantanément dans ces lecteurs. Vous pouvez également utiliser le lecteur intégré.",
+    "PlayerButtons": "Les boutons VLC, Infuse, SenPlayer, VidHub, IINA seront ajoutés pour ouvrir la vidéo instantanément dans ces lecteurs. Vous pouvez également utiliser le lecteur intégré.",
     "SecondStep": {
       "AddToHomeScreen": "Ajouter à l'écran d'accueil",
       "Select": "Sélectionner"
@@ -334,6 +334,7 @@
   "Select": "Sélectionner",
   "SelectAudioTrack": "Choisir la piste audio",
   "SenPlayer": "SenPlayer",
+  "VidHub": "VidHub",
   "Series": "Séries",
   "ServerStatus": "État du serveur",
   "ServerStatusBannedIPs": "IP bannies",
@@ -460,6 +461,8 @@
     "UseInfuseHint": "Ajouter un bouton de lecteur Infuse à la liste de contenu du torrent",
     "UseSenPlayer": "Demander d'ouvrir la vidéo dans SenPlayer",
     "UseSenPlayerHint": "Ajouter un bouton SenPlayer à la liste de contenu du torrent",
+    "UseVidHub": "Proposer d'ouvrir la vidéo dans VidHub",
+    "UseVidHubHint": "Ajouter un bouton VidHub à la liste de contenu du torrent",
     "UseVLC": "Demander d'ouvrir la vidéo dans VLC",
     "UseVLCDesktopHintPrefix": "Sur PC nécessite",
     "UseVLCHint": "Ajouter un bouton de lecteur VLC à la liste de contenu du torrent",

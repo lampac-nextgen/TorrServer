@@ -20,6 +20,7 @@ describe('buildExternalPlayerHref', () => {
     const encoded = encodeURIComponent(stream)
     expect(buildExternalPlayerHref('infuse', stream)).toBe(`infuse://x-callback-url/play?url=${encoded}`)
     expect(buildExternalPlayerHref('senPlayer', stream)).toBe(`senplayer://x-callback-url/play?url=${encoded}`)
+    expect(buildExternalPlayerHref('vidHub', stream)).toBe(`open-vidhub://x-callback-url/play?url=${encoded}`)
     expect(buildExternalPlayerHref('vlc', stream)).toBe(`vlc://${stream}`)
     expect(playlistActionHref('download', stream)).toBeNull()
     expect(playlistActionHref('copyLink', stream)).toBeNull()
@@ -90,6 +91,7 @@ describe('posterPlay', () => {
       isVlcUsed: false,
       isInfuseUsed: false,
       isSenPlayerUsed: false,
+      isVidHubUsed: false,
       isIinaUsed: false,
       isApple: false,
       isMac: false,
@@ -108,6 +110,7 @@ describe('posterPlay', () => {
       isVlcUsed: false,
       isInfuseUsed: false,
       isSenPlayerUsed: false,
+      isVidHubUsed: false,
       isIinaUsed: false,
       isApple: false,
       isMac: false,
@@ -122,6 +125,7 @@ describe('posterPlay', () => {
       isVlcUsed: false,
       isInfuseUsed: false,
       isSenPlayerUsed: false,
+      isVidHubUsed: false,
       isIinaUsed: false,
       isApple: false,
       isMac: false,
@@ -139,11 +143,17 @@ describe('posterPlay', () => {
   })
 
   it('lists only enabled platform-available externals in settings options', async () => {
-    const { availablePosterPlayActions, isExternalPosterPlayEnabled } = await import('./posterPlay')
+    const {
+      availablePlaylistButtonActions,
+      availablePosterPlayActions,
+      isExternalPosterPlayEnabled,
+      isPlaylistButtonAction,
+    } = await import('./posterPlay')
     const base = {
       isVlcUsed: false,
       isInfuseUsed: false,
       isSenPlayerUsed: false,
+      isVidHubUsed: false,
       isIinaUsed: false,
       isApple: false,
       isMac: false,
@@ -161,6 +171,12 @@ describe('posterPlay', () => {
     ).toEqual(['builtin', 'copyLink', 'vlc', 'infuse', 'iina'])
     expect(isExternalPosterPlayEnabled('senPlayer', { ...base, isApple: true, isSenPlayerUsed: true })).toBe(true)
     expect(isExternalPosterPlayEnabled('senPlayer', { ...base, isApple: false, isSenPlayerUsed: true })).toBe(false)
+    expect(isExternalPosterPlayEnabled('vidHub', { ...base, isApple: true, isVidHubUsed: true })).toBe(true)
+    expect(isExternalPosterPlayEnabled('vidHub', { ...base, isApple: false, isVidHubUsed: true })).toBe(false)
+    expect(availablePosterPlayActions({ ...base, isApple: true, isVidHubUsed: true })).toContain('vidHub')
+    // VidHub /play takes one video url; an m3u fails, so the playlist button never offers it.
+    expect(availablePlaylistButtonActions({ ...base, isApple: true, isVidHubUsed: true })).not.toContain('vidHub')
+    expect(isPlaylistButtonAction('vidHub')).toBe(false)
   })
 
   it('builds magnet, stream, and playlist URLs', async () => {

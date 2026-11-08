@@ -8,10 +8,13 @@ export const POSTER_PLAY_ACTION_KEY = 'posterPlayAction'
 /** localStorage key for the Playlist button (Settings → Players). */
 export const PLAYLIST_BUTTON_ACTION_KEY = 'playlistButtonAction'
 
-export type PosterPlayAction = 'builtin' | 'copyLink' | 'vlc' | 'infuse' | 'senPlayer' | 'iina'
+export type PosterPlayAction = 'builtin' | 'copyLink' | 'vlc' | 'infuse' | 'senPlayer' | 'vidHub' | 'iina'
 
-/** `download` keeps the m3u link. A player opens that m3u in the app. */
-export type PlaylistButtonAction = 'download' | 'copyLink' | ExternalPosterPlayAction
+/**
+ * `download` keeps the m3u link. A player opens that m3u in the app.
+ * VidHub is excluded: its `/play` takes one video URL and fails ("Failed to load file") on an m3u.
+ */
+export type PlaylistButtonAction = 'download' | 'copyLink' | Exclude<ExternalPosterPlayAction, 'vidHub'>
 
 export type ExternalPosterPlayAction = Exclude<PosterPlayAction, 'builtin' | 'copyLink'>
 
@@ -19,12 +22,21 @@ export interface PosterPlayPlayerFlags {
   isVlcUsed: boolean
   isInfuseUsed: boolean
   isSenPlayerUsed: boolean
+  isVidHubUsed: boolean
   isIinaUsed: boolean
   isApple: boolean
   isMac: boolean
 }
 
-const ALL_ACTIONS: readonly PosterPlayAction[] = ['builtin', 'copyLink', 'vlc', 'infuse', 'senPlayer', 'iina'] as const
+const ALL_ACTIONS: readonly PosterPlayAction[] = [
+  'builtin',
+  'copyLink',
+  'vlc',
+  'infuse',
+  'senPlayer',
+  'vidHub',
+  'iina',
+] as const
 
 export const isPosterPlayAction = (value: unknown): value is PosterPlayAction =>
   typeof value === 'string' && (ALL_ACTIONS as readonly string[]).includes(value)
@@ -44,6 +56,8 @@ export const isExternalPosterPlayEnabled = (
       return flags.isApple && flags.isInfuseUsed
     case 'senPlayer':
       return flags.isApple && flags.isSenPlayerUsed
+    case 'vidHub':
+      return flags.isApple && flags.isVidHubUsed
     case 'iina':
       return flags.isMac && flags.isIinaUsed
     default:
@@ -120,6 +134,7 @@ export const availablePosterPlayActions = (flags: PosterPlayPlayerFlags): Poster
   if (flags.isVlcUsed) actions.push('vlc')
   if (flags.isApple && flags.isInfuseUsed) actions.push('infuse')
   if (flags.isApple && flags.isSenPlayerUsed) actions.push('senPlayer')
+  if (flags.isApple && flags.isVidHubUsed) actions.push('vidHub')
   if (flags.isMac && flags.isIinaUsed) actions.push('iina')
   return actions
 }
