@@ -11,10 +11,12 @@ export const PLAYLIST_BUTTON_ACTION_KEY = 'playlistButtonAction'
 export type PosterPlayAction = 'builtin' | 'copyLink' | 'vlc' | 'infuse' | 'senPlayer' | 'vidHub' | 'iina'
 
 /**
- * `download` keeps the m3u link. A player opens that m3u in the app.
- * VidHub is excluded: its `/play` takes one video URL and fails ("Failed to load file") on an m3u.
+ * `download` keeps the m3u link. VLC and IINA open that m3u in the app.
+ * Infuse gets a list of repeated `url` + `filename` pairs instead of an m3u.
+ * SenPlayer and VidHub are excluded: their URL schemes take a single video `url`.
  */
-export type PlaylistButtonAction = 'download' | 'copyLink' | Exclude<ExternalPosterPlayAction, 'vidHub'>
+export type PlaylistButtonAction =
+  'download' | 'copyLink' | Extract<ExternalPosterPlayAction, 'vlc' | 'infuse' | 'iina'>
 
 export type ExternalPosterPlayAction = Exclude<PosterPlayAction, 'builtin' | 'copyLink'>
 
@@ -80,7 +82,7 @@ export const coercePosterPlayAction = (
   return isExternalPosterPlayEnabled(stored, flags) ? stored : fallback
 }
 
-const PLAYLIST_ACTIONS = ['download', 'copyLink', 'vlc', 'infuse', 'senPlayer', 'iina'] as const
+const PLAYLIST_ACTIONS = ['download', 'copyLink', 'vlc', 'infuse', 'iina'] as const
 
 export const isPlaylistButtonAction = (value: unknown): value is PlaylistButtonAction =>
   typeof value === 'string' && (PLAYLIST_ACTIONS as readonly string[]).includes(value)
@@ -96,8 +98,6 @@ export const playlistButtonLabelKey = (action: PlaylistButtonAction): string => 
       return 'VLC'
     case 'infuse':
       return 'Infuse'
-    case 'senPlayer':
-      return 'SenPlayer'
     case 'iina':
       return 'IINA'
     default:
@@ -123,7 +123,6 @@ export const availablePlaylistButtonActions = (flags: PosterPlayPlayerFlags): Pl
   const actions: PlaylistButtonAction[] = ['download', 'copyLink']
   if (flags.isVlcUsed) actions.push('vlc')
   if (flags.isApple && flags.isInfuseUsed) actions.push('infuse')
-  if (flags.isApple && flags.isSenPlayerUsed) actions.push('senPlayer')
   if (flags.isMac && flags.isIinaUsed) actions.push('iina')
   return actions
 }

@@ -4,13 +4,13 @@ import ptt from 'parse-torrent-title'
 import { useMediaQuery } from '@heroui/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { streamPlayUrl, streamPreloadUrl } from 'shared/lib/posterPlay'
+import { streamPlayUrl, streamPreloadUrl, torrentPlaylistUrl } from 'shared/lib/posterPlay'
 import { authFetch } from 'shared/api/authCredentials'
 import type { PlayableFile, TorrentFileStat } from 'shared/api/types'
 import { remViewedFile, VIEWED_QUERY_KEY } from 'shared/api/viewed'
 import { shouldUseGStreamerPlayer, useGStreamerRuntime } from 'shared/lib/gstreamer'
 import { copyToClipboard } from 'shared/lib/clipboard'
-import { useExternalPlayers } from 'shared/lib/externalPlayers'
+import { buildEpisodeList, useExternalPlayers } from 'shared/lib/externalPlayers'
 import { externalLink, useExternalMediaBase } from 'shared/lib/mediaBase'
 import { humanizeSize } from 'shared/lib/format'
 import { queryMax } from 'shared/theme/breakpoints'
@@ -163,7 +163,7 @@ const FilesDataGrid = memo(
     const [mediaInfo, setMediaInfo] = useState<{ fileId: number; fileName: string } | null>(null)
     const gstRuntime = useGStreamerRuntime()
     const mediaBase = useExternalMediaBase()
-    const { buildExternalPlayers, shouldShowOpenLink } = useExternalPlayers()
+    const { buildExternalPlayers, buildFromFilePlayers, shouldShowOpenLink } = useExternalPlayers()
 
     const knownPlayableFiles = useMemo(() => playableFileList || [], [playableFileList])
     const onPlayerNotSupported = useCallback(
@@ -212,6 +212,16 @@ const FilesDataGrid = memo(
       () => filterFilesForSeason(playableFileList, selectedSeason, seasonAmount),
       [playableFileList, selectedSeason, seasonAmount],
     )
+
+    const episodes = useMemo(
+      () => buildEpisodeList(hash, playableFileList ?? [], url => externalLink(url, mediaBase).toString()),
+      [playableFileList, hash, mediaBase],
+    )
+    const playlistUrl = useMemo(
+      () => externalLink(torrentPlaylistUrl(hash, displayName || hash), mediaBase).toString(),
+      [hash, displayName, mediaBase],
+    )
+    const canPlayFromFile = (playableFileList?.length ?? 0) > 1
 
     const rows = useMemo<FileRow[]>(
       () =>
@@ -278,6 +288,7 @@ const FilesDataGrid = memo(
       <div className='space-y-1.5'>
         {rows.slice(0, visibleCount).map(row => {
           const externalPlayers = buildExternalPlayers(row.fullLink)
+          const fromFilePlayers = canPlayFromFile ? buildFromFilePlayers(row.id, episodes, playlistUrl) : []
           return (
             <EpisodeRow
               key={row.id}
@@ -310,6 +321,7 @@ const FilesDataGrid = memo(
                   showOpenLink={shouldShowOpenLink}
                   copyText={row.fullLink}
                   externalPlayers={externalPlayers}
+                  fromFilePlayers={fromFilePlayers}
                   onProbeMedia={() => setMediaInfo({ fileId: row.id, fileName: row.name })}
                 />
               }

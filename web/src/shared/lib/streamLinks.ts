@@ -1,3 +1,4 @@
+import ptt from 'parse-torrent-title'
 import { playlistTorrHost, streamHost } from 'shared/api/hosts'
 
 import type { ExternalPosterPlayAction, PlaylistButtonAction } from './posterPlay'
@@ -56,9 +57,6 @@ export const buildAndroidIntentHref = (absoluteUrl: string): string => {
   return `intent:${rest}#Intent;scheme=${scheme};type=video/*;end`
 }
 
-/** ponytail: Infuse scheme length cap. Longer season lists fall back to one m3u url. */
-export const INFUSE_PLAYLIST_HREF_LIMIT = 8000
-
 /** Deep-link scheme for a single enabled external player and an absolute stream URL. */
 export const buildExternalPlayerHref = (
   player: ExternalPosterPlayAction,
@@ -84,26 +82,78 @@ export const buildExternalPlayerHref = (
   }
 }
 
+/** Constrain Infuse playlist href size, never swapped for an m3u. */
+export const INFUSE_PLAYLIST_HREF_LIMIT = 65536
+
 /**
- * Infuse plays every `url` in order as a temporary playlist.
- * Over {@link INFUSE_PLAYLIST_HREF_LIMIT} characters, one m3u `url` instead.
+ * Infuse plays every repeated `url` in order as a temporary playlist; each `filename` follows its own `url`.
+ * Infuse documents no m3u input, so there is no single-playlist fallback. Episodes past
+ * {@link INFUSE_PLAYLIST_HREF_LIMIT} characters are dropped (the first always stays).
  */
-export const buildInfusePlaylistHref = (episodes: { url: string; filename: string }[], m3uFallback: string): string => {
-  const href =
-    'infuse://x-callback-url/play?' +
-    episodes
-      .map(episode => `url=${encodeURIComponent(episode.url)}&filename=${encodeURIComponent(episode.filename)}`)
-      .join('&')
-  if (href.length > INFUSE_PLAYLIST_HREF_LIMIT) return buildExternalPlayerHref('infuse', m3uFallback)
+export const buildInfusePlaylistHref = (episodes: { url: string; filename: string }[]): string => {
+  let href = 'infuse://x-callback-url/play?'
+  episodes.forEach((episode, index) => {
+    const part = `url=${encodeURIComponent(episode.url)}&filename=${encodeURIComponent(episode.filename)}`
+    const next = href + (index ? '&' : '') + part
+    if (index && next.length > INFUSE_PLAYLIST_HREF_LIMIT) return
+    href = next
+  })
   return href
 }
 
-/** Player deep link for the Playlist button. Download and copy stay on the page. */
+export interface PlaylistEpisode {
+  /** Torrent file id (`index` on the server). */
+  id: number
+  url: string
+  filename: string
+}
+
+/**
+ * Infuse reads metadata from the name only when it follows its styles (`Show S01E02.mkv`).
+ * Episodes get that form; anything without a title and season/episode keeps the torrent file name.
+ */
+export const infuseFilename = (path: string): string => {
+  const base = fileBaseName(path)
+  const { title, season, episode } = ptt.parse(base)
+  if (!title || season == null || episode == null) return base
+  const ext = /\.[A-Za-z0-9]{2,5}$/.exec(base)?.[0] ?? ''
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${title} S${pad(season)}E${pad(episode)}${ext}`
+}
+
+/** One entry per playable file, in list order. `absolutize` applies the external media base and auth. */
+export const buildEpisodeList = (
+  hash: string,
+  files: { id: number; path: string }[],
+  absolutize: (url: string) => string = url => url,
+): PlaylistEpisode[] =>
+  files.map(file => ({
+    id: file.id,
+    url: absolutize(streamPlayUrl(hash, file)),
+    filename: infuseFilename(file.path),
+  }))
+
+/**
+ * Episodes from `fileId` onward (inclusive). An unknown or missing id keeps the whole list,
+ * as the server does for an `index` it cannot find.
+ */
+export const episodesFrom = (episodes: PlaylistEpisode[], fileId: number | undefined): PlaylistEpisode[] => {
+  if (fileId == null) return episodes
+  const start = episodes.findIndex(episode => episode.id === fileId)
+  return start > 0 ? episodes.slice(start) : episodes
+}
+
+/**
+ * Player deep link for the Playlist button. Download and copy stay on the page.
+ * Infuse takes a url list (never an m3u); without `episodes` it returns null and the button downloads.
+ */
 export const playlistActionHref = (
   action: PlaylistButtonAction,
   absoluteUrl: string,
   platform: PlayerLinkPlatform = {},
+  episodes?: PlaylistEpisode[],
 ): string | null => {
   if (action === 'download' || action === 'copyLink') return null
+  if (action === 'infuse') return episodes?.length ? buildInfusePlaylistHref(episodes) : null
   return buildExternalPlayerHref(action, absoluteUrl, platform)
 }

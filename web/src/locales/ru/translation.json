@@ -126,6 +126,7 @@
   "FilterLibrary": "Фильтр библиотеки",
   "Folders": "Папки",
   "FromLatestFile": "С последнего файла",
+  "PlayFromThisFile": "С этого файла",
   "FuseStatus": "FUSE",
   "GB": "ГБ",
   "Gbps": "Гбит/c",

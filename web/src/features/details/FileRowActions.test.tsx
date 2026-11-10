@@ -157,3 +157,27 @@ describe('FileRowActions on a phone', () => {
     expect(props.onPlay).toHaveBeenCalledTimes(1)
   })
 })
+
+describe('FileRowActions from this file', () => {
+  it('has no from-file control without players', () => {
+    renderWithProviders(<FileRowActions {...base()} />)
+    expect(screen.queryByRole('button', { name: 'Play from this file' })).toBeNull()
+  })
+
+  it('desktop: a menu button lists the players and opens their deep link', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(
+      <FileRowActions {...base({ fromFilePlayers: [{ label: 'Infuse', href: 'about:blank#infuse' }] })} />,
+    )
+    await user.click(screen.getByRole('button', { name: 'Play from this file' }))
+    expect(await screen.findByText('Infuse · Play from this file')).toBeTruthy()
+  })
+
+  it('mobile: the More menu lists the players', async () => {
+    setMobile(true)
+    const user = userEvent.setup()
+    renderWithProviders(<FileRowActions {...base({ fromFilePlayers: [{ label: 'VLC', href: 'about:blank#vlc' }] })} />)
+    await user.click(screen.getByRole('button', { name: 'Actions' }))
+    expect(await screen.findByText('VLC · Play from this file')).toBeTruthy()
+  })
+})

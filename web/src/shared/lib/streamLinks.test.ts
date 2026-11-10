@@ -71,22 +71,56 @@ describe('streamLinks', () => {
     expect(buildAndroidIntentHref(stream.replace('http:', 'https:'))).toContain('#Intent;scheme=https;')
   })
 
-  it('falls back to one m3u url when an Infuse episode list exceeds the scheme limit', async () => {
-    const { INFUSE_PLAYLIST_HREF_LIMIT, buildExternalPlayerHref, buildInfusePlaylistHref } =
-      await import('./streamLinks')
-    const short = buildInfusePlaylistHref(
-      [{ url: 'http://ts/stream/a.mkv?play', filename: 'a.mkv' }],
-      'http://ts/show.m3u',
-    )
+  it('repeats url/filename pairs for an Infuse episode list with no m3u fallback', async () => {
+    const { buildInfusePlaylistHref } = await import('./streamLinks')
+    const short = buildInfusePlaylistHref([{ url: 'http://ts/stream/a.mkv?play', filename: 'a.mkv' }])
     expect(short.startsWith('infuse://x-callback-url/play?url=')).toBe(true)
     expect(short).toContain(encodeURIComponent('a.mkv'))
-    expect(short.length).toBeLessThanOrEqual(INFUSE_PLAYLIST_HREF_LIMIT)
 
     const episodes = Array.from({ length: 80 }, (_, i) => ({
       url: `http://192.168.1.50:8090/stream/${'episode'.repeat(8)}-${i}.mkv?link=ab&index=${i}&play`,
       filename: `episode-${i}.mkv`,
     }))
-    const m3u = 'http://192.168.1.50:8090/stream/Show.m3u?link=ab&m3u'
-    expect(buildInfusePlaylistHref(episodes, m3u)).toBe(buildExternalPlayerHref('infuse', m3u))
+    const href = buildInfusePlaylistHref(episodes)
+    expect(href.match(/url=/g)).toHaveLength(80)
+    expect(href).not.toContain('m3u')
+
+    const huge = Array.from({ length: 2000 }, (_, i) => ({
+      url: `http://192.168.1.50:8090/stream/${'episode'.repeat(8)}-${i}.mkv?link=ab&index=${i}&play`,
+      filename: `episode-${i}.mkv`,
+    }))
+    const capped = buildInfusePlaylistHref(huge)
+    expect(capped.length).toBeLessThanOrEqual(65536)
+    expect(capped.match(/url=/g)!.length).toBeGreaterThan(1)
+    expect(capped.match(/url=/g)!.length).toBeLessThan(2000)
+  })
+
+  it('builds an episode list and slices it from a file id', async () => {
+    const { buildEpisodeList, episodesFrom, playlistActionHref } = await import('./streamLinks')
+    const files = [
+      { id: 1, path: 'S1/a.mkv' },
+      { id: 2, path: 'S1/b.mkv' },
+      { id: 4, path: 'S1/c.mkv' },
+    ]
+    const list = buildEpisodeList('abc', files, url => `http://x${url}`)
+    expect(list.map(e => e.filename)).toEqual(['a.mkv', 'b.mkv', 'c.mkv'])
+    expect(list[0].url.startsWith('http://x')).toBe(true)
+    expect(episodesFrom(list, 2).map(e => e.id)).toEqual([2, 4])
+    expect(episodesFrom(list, 4).map(e => e.id)).toEqual([4])
+    expect(episodesFrom(list, 99)).toBe(list)
+    expect(episodesFrom(list, undefined)).toBe(list)
+
+    const href = playlistActionHref('infuse', 'http://ts/show.m3u', {}, list)
+    expect(href?.startsWith('infuse://x-callback-url/play?url=')).toBe(true)
+    expect(href).not.toContain('m3u')
+    expect(playlistActionHref('infuse', 'http://ts/show.m3u')).toBeNull()
+    expect(playlistActionHref('infuse', 'http://ts/show.m3u', {}, [])).toBeNull()
+  })
+
+  it('names episodes the way Infuse parses them and keeps other names', async () => {
+    const { infuseFilename } = await import('./streamLinks')
+    expect(infuseFilename('Season 1/Show.Name.S01E02.1080p.WEB-DL.mkv')).toBe('Show Name S01E02.mkv')
+    expect(infuseFilename('Movie.2020.1080p.mkv')).toBe('Movie.2020.1080p.mkv')
+    expect(infuseFilename('sample.mp4')).toBe('sample.mp4')
   })
 })

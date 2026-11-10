@@ -20,7 +20,7 @@ import type { TorrentStat } from 'shared/api/types'
 import { torrsShareUrl } from 'shared/api/extras'
 import { dropTorrent, markTorrentsDroppedInList, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { copyToClipboard } from 'shared/lib/clipboard'
-import { playlistActionHref, useExternalPlayers } from 'shared/lib/externalPlayers'
+import { buildEpisodeList, playlistActionHref, useExternalPlayers } from 'shared/lib/externalPlayers'
 import { bindPlaylistButton, browserLinkAttrs } from 'shared/lib/openBrowser'
 import { externalLink, useExternalMediaBase } from 'shared/lib/mediaBase'
 import {
@@ -87,6 +87,10 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
   const playlistButtonAction = usePlaylistButtonAction(playerFlags)
   const mediaBase = useExternalMediaBase()
   const playlistHref = externalLink(torrentPlaylistUrl(hash, displayName), mediaBase).toString()
+  const playlistEpisodes = useMemo(
+    () => buildEpisodeList(hash, knownPlayableFiles, url => externalLink(url, mediaBase).toString()),
+    [hash, knownPlayableFiles, mediaBase],
+  )
   const playlistItemLabel = t(playlistButtonLabelKey(playlistButtonAction))
 
   useSyncModalOpen(confirmState.isOpen)
@@ -197,7 +201,7 @@ export default function TorrentCardActions({ torrent, onDetails, onEdit }: Torre
                 onClick={bindPlaylistButton(
                   playlistButtonAction,
                   playlistHref,
-                  playlistActionHref(playlistButtonAction, playlistHref, playerPlatform),
+                  playlistActionHref(playlistButtonAction, playlistHref, playerPlatform, playlistEpisodes),
                   kind =>
                     toast?.showToast({
                       message: t(kind === 'copied' ? 'Copied' : 'Error'),

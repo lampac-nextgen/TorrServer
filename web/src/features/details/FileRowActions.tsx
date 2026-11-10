@@ -1,5 +1,5 @@
 import { Button, Dropdown, Spinner, Tooltip, useMediaQuery, useOverlayState } from '@heroui/react'
-import { ArrowDownToLine, FileVideo, Link2, MoreHorizontal, Play, SquareArrowOutUpRight } from 'lucide-react'
+import { ArrowDownToLine, FileVideo, Link2, ListMusic, MoreHorizontal, Play, SquareArrowOutUpRight } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ExternalPlayerLink } from 'shared/lib/externalPlayers'
@@ -25,6 +25,8 @@ export interface FileRowActionsProps {
   copyText: string
   /** Deep links for Infuse / VLC / etc. Desktop chips; mobile More menu. */
   externalPlayers: ExternalPlayerLink[]
+  /** Series only: player links that start the playlist at this file. */
+  fromFilePlayers?: ExternalPlayerLink[]
   onProbeMedia?: () => void
 }
 
@@ -55,6 +57,7 @@ export default function FileRowActions({
   showOpenLink,
   copyText,
   externalPlayers,
+  fromFilePlayers = [],
   onProbeMedia,
 }: FileRowActionsProps) {
   const { t } = useTranslation()
@@ -134,6 +137,27 @@ export default function FileRowActions({
             children: <SquareArrowOutUpRight {...actionIcon} />,
           })
         : null}
+      {fromFilePlayers.length > 0 ? (
+        <Dropdown>
+          <Button variant='ghost' size='sm' isIconOnly className={utilitySegBtn} aria-label={t('PlayFromThisFile')}>
+            <ListMusic {...actionIcon} />
+          </Button>
+          <Dropdown.Popover placement='bottom end'>
+            <Dropdown.Menu aria-label={t('PlayFromThisFile')}>
+              {fromFilePlayers.map(player => (
+                <Dropdown.Item
+                  key={player.label}
+                  onPress={() => {
+                    window.location.href = player.href
+                  }}
+                >
+                  {`${player.label} · ${t('PlayFromThisFile')}`}
+                </Dropdown.Item>
+              ))}
+            </Dropdown.Menu>
+          </Dropdown.Popover>
+        </Dropdown>
+      ) : null}
       {utilityButton({
         label: t('CopyLink'),
         onPress: () => void copyDirectLink(),
@@ -179,6 +203,19 @@ export default function FileRowActions({
             >
               <SquareArrowOutUpRight {...menuIcon} />
               {player.label}
+            </Dropdown.Item>
+          ))}
+          {fromFilePlayers.map(player => (
+            <Dropdown.Item
+              key={`from-${player.label}`}
+              className='min-h-11'
+              onPress={() => {
+                moreMenu.close()
+                window.location.href = player.href
+              }}
+            >
+              <ListMusic {...menuIcon} />
+              {`${player.label} · ${t('PlayFromThisFile')}`}
             </Dropdown.Item>
           ))}
           {showOpenIcon ? (
