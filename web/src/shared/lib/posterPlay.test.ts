@@ -28,14 +28,14 @@ describe('buildExternalPlayerHref', () => {
     expect(buildExternalPlayerHref('iina', stream)).toBe(`iina://weblink?url=${encoded}`)
   })
 
-  it('builds an Infuse episode list and sends other players the m3u', async () => {
+  it('builds an Infuse episode list; VLC and IINA take the m3u', async () => {
     const { buildExternalPlayerHref, buildInfusePlaylistHref } = await import('./externalPlayers')
     const m3u = 'https://ts.example/stream/Show.m3u?link=h&m3u'
     const episodes = [
       { url: 'https://ts.example/stream/a.mkv?link=h&index=1&play', filename: 'a.mkv' },
       { url: 'https://ts.example/stream/b.mkv?link=h&index=2&play', filename: 'b.mkv' },
     ]
-    const href = buildInfusePlaylistHref(episodes, m3u)
+    const href = buildInfusePlaylistHref(episodes)
     expect(href).toBe(
       'infuse://x-callback-url/play?' +
         episodes
@@ -43,16 +43,7 @@ describe('buildExternalPlayerHref', () => {
           .join('&'),
     )
     expect(buildExternalPlayerHref('iina', m3u)).toBe(`iina://weblink?url=${encodeURIComponent(m3u)}`)
-    expect(buildExternalPlayerHref('senPlayer', m3u)).toBe(
-      `senplayer://x-callback-url/play?url=${encodeURIComponent(m3u)}`,
-    )
     expect(buildExternalPlayerHref('vlc', m3u)).toBe(`vlc://${m3u}`)
-
-    const long = Array.from({ length: 80 }, (_, index) => ({
-      url: `https://ts.example/stream/${'episode'.repeat(8)}-${index}.mkv?link=h&index=${index}&play`,
-      filename: `${'episode'.repeat(8)}-${index}.mkv`,
-    }))
-    expect(buildInfusePlaylistHref(long, m3u)).toBe(buildExternalPlayerHref('infuse', m3u))
   })
 })
 
@@ -135,11 +126,12 @@ describe('posterPlay', () => {
     expect(coercePlaylistButtonAction('copyLink', base)).toBe('copyLink')
     expect(coercePlaylistButtonAction('vlc', { ...base, isVlcUsed: true })).toBe('vlc')
     expect(coercePlaylistButtonAction('infuse', { ...base, isApple: true, isInfuseUsed: false })).toBe('download')
-    expect(availablePlaylistButtonActions({ ...base, isApple: true, isInfuseUsed: true })).toEqual([
-      'download',
-      'copyLink',
-      'infuse',
-    ])
+    expect(coercePlaylistButtonAction('senPlayer', { ...base, isApple: true, isSenPlayerUsed: true })).toBe('download')
+    expect(coercePlaylistButtonAction('infuse', { ...base, isApple: true, isInfuseUsed: true })).toBe('infuse')
+    expect(coercePlaylistButtonAction('infuse', { ...base, isApple: true, isInfuseUsed: false })).toBe('download')
+    expect(
+      availablePlaylistButtonActions({ ...base, isApple: true, isInfuseUsed: true, isSenPlayerUsed: true }),
+    ).toEqual(['download', 'copyLink', 'infuse'])
   })
 
   it('lists only enabled platform-available externals in settings options', async () => {

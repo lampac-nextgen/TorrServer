@@ -21,7 +21,13 @@ import type { PlayableFile, TorrentStat } from 'shared/api/types'
 import { torrsShareUrl } from 'shared/api/extras'
 import { dropTorrent, markTorrentsDroppedInList, removeTorrent, TORRENTS_QUERY_KEY } from 'shared/api/torrents'
 import { clearViewedFiles } from 'shared/api/viewed'
-import { playlistActionHref, useExternalPlayers } from 'shared/lib/externalPlayers'
+import {
+  buildEpisodeList,
+  episodesFrom,
+  playlistActionHref,
+  useExternalPlayers,
+  type PlaylistEpisode,
+} from 'shared/lib/externalPlayers'
 import { externalLink, useExternalMediaBase } from 'shared/lib/mediaBase'
 import { copyToClipboard } from 'shared/lib/clipboard'
 import { bindPlaylistButton, browserLinkAttrs } from 'shared/lib/openBrowser'
@@ -124,15 +130,15 @@ function TorrentActions({
     if (playableFileList?.length !== 1) return null
     return { fullLink: externalLink(streamPlayUrl(hash, playableFileList[0]), mediaBase).toString() }
   }, [playableFileList, hash, mediaBase])
+  const episodes = useMemo(
+    () => buildEpisodeList(hash, playableFileList ?? [], url => externalLink(url, mediaBase).toString()),
+    [playableFileList, hash, mediaBase],
+  )
   const seriesPlayers = useMemo(() => {
     if (!playableFileList || playableFileList.length < 2) return []
     const playlist = externalLink(torrentPlaylistUrl(hash, displayName), mediaBase).toString()
-    const episodes = playableFileList.map(file => ({
-      url: externalLink(streamPlayUrl(hash, file), mediaBase).toString(),
-      filename: file.path.split('\\').pop()?.split('/').pop() || file.path,
-    }))
     return buildSeriesExternalPlayers(playlist, episodes)
-  }, [playableFileList, hash, displayName, mediaBase, buildSeriesExternalPlayers])
+  }, [playableFileList, hash, displayName, mediaBase, episodes, buildSeriesExternalPlayers])
   const showPlayerHint = (playableFileList?.length ?? 0) > 0 && !hasAnyExternalPlayer
 
   const runPendingConfirm = () => {
@@ -261,18 +267,20 @@ function TorrentActions({
   const slot = compact ? 'shrink-0' : 'flex min-w-0 flex-1 [&>*]:w-full [&>*]:min-w-0'
   const fillBtn = 'min-h-9 min-w-0 flex-1'
 
+  const fromLatestEpisodes = useMemo(() => episodesFrom(episodes, latestViewedFileId), [episodes, latestViewedFileId])
+
   const playlistLabel =
     playlistButtonAction === 'download'
       ? compact
         ? t('PlaylistShort')
         : t('DownloadPlaylist')
       : t(playlistButtonLabelKey(playlistButtonAction))
-  const playlistClick = (url: string) => {
+  const playlistClick = (url: string, playlistEpisodes?: PlaylistEpisode[]) => {
     const absolute = externalLink(url, mediaBase).toString()
     return bindPlaylistButton(
       playlistButtonAction,
       absolute,
-      playlistActionHref(playlistButtonAction, absolute, playerPlatform),
+      playlistActionHref(playlistButtonAction, absolute, playerPlatform, playlistEpisodes),
       kind =>
         toast?.showToast({
           message: t(kind === 'copied' ? 'Copied' : 'Error'),
@@ -280,11 +288,17 @@ function TorrentActions({
         }),
     )
   }
-  const playlistAnchor = (href: string, variant: 'primary' | 'outline', label: string, text: string) => (
+  const playlistAnchor = (
+    href: string,
+    variant: 'primary' | 'outline',
+    label: string,
+    text: string,
+    playlistEpisodes?: PlaylistEpisode[],
+  ) => (
     <a
       href={externalLink(href, mediaBase).toString()}
       {...browserLinkAttrs}
-      onClick={playlistClick(href)}
+      onClick={playlistClick(href, playlistEpisodes)}
       title={label}
       aria-label={label}
       className={`${buttonVariants({ variant })} ${fillBtn}`}
@@ -307,7 +321,7 @@ function TorrentActions({
             <Dropdown.Item
               href={externalLink(fromLatestPlaylistLink, mediaBase).toString()}
               {...browserLinkAttrs}
-              onClick={playlistClick(fromLatestPlaylistLink)}
+              onClick={playlistClick(fromLatestPlaylistLink, fromLatestEpisodes)}
               textValue={t('FromLatestFile')}
             >
               <ListMusic {...iconMenu} />
@@ -316,7 +330,7 @@ function TorrentActions({
             <Dropdown.Item
               href={externalLink(fullPlaylistLink, mediaBase).toString()}
               {...browserLinkAttrs}
-              onClick={playlistClick(fullPlaylistLink)}
+              onClick={playlistClick(fullPlaylistLink, episodes)}
               textValue={playlistLabel}
             >
               <ListMusic {...iconMenu} />
@@ -326,11 +340,17 @@ function TorrentActions({
         </Dropdown.Popover>
       </Dropdown>
     ) : !isSeries || !hasPartialProgress ? (
-      playlistAnchor(fullPlaylistLink, 'primary', playlistLabel, playlistLabel)
+      playlistAnchor(fullPlaylistLink, 'primary', playlistLabel, playlistLabel, episodes)
     ) : (
       <>
-        {playlistAnchor(fromLatestPlaylistLink, 'primary', t('FromLatestFile'), t('FromLatestFile'))}
-        {playlistAnchor(fullPlaylistLink, 'outline', playlistLabel, playlistLabel)}
+        {playlistAnchor(
+          fromLatestPlaylistLink,
+          'primary',
+          t('FromLatestFile'),
+          t('FromLatestFile'),
+          fromLatestEpisodes,
+        )}
+        {playlistAnchor(fullPlaylistLink, 'outline', playlistLabel, playlistLabel, episodes)}
       </>
     )
 

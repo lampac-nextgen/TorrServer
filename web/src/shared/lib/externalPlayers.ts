@@ -2,14 +2,21 @@ import { useTranslation } from 'react-i18next'
 import { useLocalBoolPref } from 'shared/hooks/useLocalPref'
 import { detectStandaloneApp, isAppleDevice, isMacOS, playerLinkPlatform } from 'shared/lib/platform'
 import type { PosterPlayPlayerFlags } from 'shared/lib/posterPlay'
-import { buildExternalPlayerHref, buildInfusePlaylistHref } from 'shared/lib/streamLinks'
-
-export {
+import {
   buildExternalPlayerHref,
   buildInfusePlaylistHref,
-  INFUSE_PLAYLIST_HREF_LIMIT,
+  episodesFrom,
+  type PlaylistEpisode,
+} from 'shared/lib/streamLinks'
+
+export {
+  buildEpisodeList,
+  buildExternalPlayerHref,
+  buildInfusePlaylistHref,
+  episodesFrom,
   playlistActionHref,
 } from 'shared/lib/streamLinks'
+export type { PlaylistEpisode } from 'shared/lib/streamLinks'
 
 export interface ExternalPlayerLink {
   label: string
@@ -64,24 +71,40 @@ export function useExternalPlayers() {
     return links
   }
 
-  /** Series footer: Infuse gets one url per episode; the others open the torrent m3u. VidHub takes a single video url only, so it is not offered. */
-  const buildSeriesExternalPlayers = (
-    playlistUrl: string,
-    episodes: { url: string; filename: string }[],
-  ): ExternalPlayerLink[] => {
+  /**
+   * Series footer: Infuse gets one url per episode; VLC and IINA open the torrent m3u.
+   * VidHub and SenPlayer document a single video `url` only (no playlist), so they are not offered.
+   */
+  const buildSeriesExternalPlayers = (playlistUrl: string, episodes: PlaylistEpisode[]): ExternalPlayerLink[] => {
     const links: ExternalPlayerLink[] = []
-    if (isApple && isInfuseUsed)
-      links.push({ label: t('Infuse'), href: buildInfusePlaylistHref(episodes, playlistUrl) })
-    if (isApple && isSenPlayerUsed)
-      links.push({ label: t('SenPlayer'), href: buildExternalPlayerHref('senPlayer', playlistUrl) })
+    if (isApple && isInfuseUsed) links.push({ label: t('Infuse'), href: buildInfusePlaylistHref(episodes) })
     if (isVlcUsed) links.push({ label: t('VLC'), href: buildExternalPlayerHref('vlc', playlistUrl, playerPlatform) })
     if (isMac && isIinaUsed) links.push({ label: t('IINA'), href: buildExternalPlayerHref('iina', playlistUrl) })
+    return links
+  }
+
+  /**
+   * "Play from this file": Infuse gets the url list sliced at the file; VLC and IINA open the torrent m3u
+   * with the server's `index` start. VidHub and SenPlayer take a single url, so they are not offered.
+   */
+  const buildFromFilePlayers = (
+    fileId: number,
+    episodes: PlaylistEpisode[],
+    playlistUrl: string,
+  ): ExternalPlayerLink[] => {
+    const links: ExternalPlayerLink[] = []
+    const m3u = `${playlistUrl}&index=${fileId}`
+    if (isApple && isInfuseUsed)
+      links.push({ label: t('Infuse'), href: buildInfusePlaylistHref(episodesFrom(episodes, fileId)) })
+    if (isVlcUsed) links.push({ label: t('VLC'), href: buildExternalPlayerHref('vlc', m3u, playerPlatform) })
+    if (isMac && isIinaUsed) links.push({ label: t('IINA'), href: buildExternalPlayerHref('iina', m3u) })
     return links
   }
 
   return {
     buildExternalPlayers,
     buildSeriesExternalPlayers,
+    buildFromFilePlayers,
     shouldShowOpenLink,
     hasAnyExternalPlayer,
     playerFlags,

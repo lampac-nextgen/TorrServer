@@ -126,6 +126,7 @@
   "FilterLibrary": "Filtrer la bibliothèque",
   "Folders": "Dossiers",
   "FromLatestFile": "Depuis le dernier fichier",
+  "PlayFromThisFile": "Lire à partir de ce fichier",
   "FuseStatus": "Montage FUSE",
   "GB": "Go",
   "Gbps": "Gbit/s",
