@@ -27,7 +27,7 @@
     "react-aria": "^3.53.1",
     "react-aria-components": "^1.22.1",
     "react-dom": "^19.3.1",
-    "react-dropzone": "^20.1.4",
+    "react-dropzone": "^20.2.0",
     "react-i18next": "^17.1.13",
     "sonner": "^2.0.8"
   },
