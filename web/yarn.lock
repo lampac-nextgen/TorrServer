@@ -799,7 +799,7 @@
     "@babel/types" "^7.4.4"
     esutils "^2.0.2"
 
-"@babel/runtime@^7.11.2", "@babel/runtime@^7.12.5", "@babel/runtime@^7.24.4", "@babel/runtime@^7.29.2", "@babel/runtime@^7.29.7", "@babel/runtime@^7.5.5", "@babel/runtime@^7.8.7":
+"@babel/runtime@^7.11.2", "@babel/runtime@^7.12.5", "@babel/runtime@^7.24.4", "@babel/runtime@^7.29.2", "@babel/runtime@^7.5.5", "@babel/runtime@^7.8.7":
   version "7.29.10"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.29.10.tgz#fe9920782f7ee34029165ac6f272984917a1641b"
   integrity sha512-NpugTzbKgGrNe45Ui32cN8vCFFMxVtP/9rtfwv0nP5FRDAjvYBxJcLVpYA9mr1jxP6cnIT7x9LUzuDTbWYYNRA==
@@ -4544,14 +4544,12 @@ react-dropzone@^20.2.0:
     attr-accept "^4.0.1"
     file-selector "^5.0.1"
 
-react-i18next@^17.1.13:
-  version "17.1.13"
-  resolved "https://registry.yarnpkg.com/react-i18next/-/react-i18next-17.1.13.tgz#00cb81fe874fd0b272c229c4c7ff93087fb705d6"
-  integrity sha512-ZxhOSlyKSKPtbUNPLwYMmE3w3bhoc0jaZJZ6bc7wGOT6cLbrbs//6m01HxCLtFdSjHvFpwFwoPhxxzIlHSs9cw==
+react-i18next@^18.0.0:
+  version "18.0.0"
+  resolved "https://registry.yarnpkg.com/react-i18next/-/react-i18next-18.0.0.tgz#b507497edbb7996849b337bb838569529bd40b7e"
+  integrity sha512-xXq/pcuMRwrW4iH0If/RjbPH3zuEqWVtaw4PjDsG54vx0FTook7aS3kop7DXy3g66wHkYUji8l7ZBrA8kfj67Q==
   dependencies:
-    "@babel/runtime" "^7.29.7"
     html-parse-stringify "^4.0.1"
-    use-sync-external-store "^1.6.0"
 
 react-is@^16.13.1:
   version "16.13.1"
