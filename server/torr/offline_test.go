@@ -322,6 +322,50 @@ func TestPreloadReadsTailPastBudget(t *testing.T) {
 	}
 }
 
+// preloaded_bytes used to be the fill of the whole cache, refreshed every second:
+// a warm cache showed more than preload_size before the preload read anything,
+// and it kept growing with playback after the preload ended.
+func TestPreloadedBytesReportsPreloadNotCacheFill(t *testing.T) {
+	const (
+		piece   int64 = 1 << 20
+		fileLen int64 = 48 << 20
+		budget  int64 = 32 << 20
+	)
+	show := offlinetest.WriteSized(t, "movie.mkv", fileLen, piece)
+	offlinetest.Prepare(t)
+	settings.BTsets.CacheSize = budget + 16<<20
+	tor, _ := connectPrepared(t, show)
+
+	// A leftover from an earlier session must not leak into this preload.
+	tor.muTorrent.Lock()
+	tor.PreloadedBytes = 10 * budget
+	tor.muTorrent.Unlock()
+
+	tor.Preload(1, budget)
+	tor.progressEvent()
+	st := tor.Status()
+	if st.PreloadSize != budget || st.PreloadedBytes != budget {
+		t.Fatalf("after preload: preloaded %d, size %d, want both %d", st.PreloadedBytes, st.PreloadSize, budget)
+	}
+
+	// Playback fills the cache past the preload; the counter must not follow.
+	r := tor.NewReader(tor.Files()[0])
+	if r == nil {
+		t.Fatal("reader")
+	}
+	defer tor.CloseReader(r)
+	if _, err := r.Seek(budget/2, io.SeekStart); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := io.CopyN(io.Discard, r, 4<<20); err != nil {
+		t.Fatal(err)
+	}
+	tor.progressEvent()
+	if got := tor.Status().PreloadedBytes; got != budget {
+		t.Fatalf("preloaded_bytes followed the cache fill: %d, want %d", got, budget)
+	}
+}
+
 func TestPreloadZeroAndClosed(t *testing.T) {
 	tor, _ := connectShow(t)
 	file := tor.Files()[0]
