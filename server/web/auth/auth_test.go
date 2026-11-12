@@ -5,10 +5,13 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
+	"server/leakcheck"
 	"server/settings"
 )
 
@@ -143,4 +146,109 @@ func TestCheckAuthAllowsAuthenticatedUser(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Fatalf("status %d, want 200", w.Code)
 	}
+}
+
+func TestAccountsReloadWhenAccsDBChanges(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	oldAuth, oldPath, oldPoll := settings.HttpAuth, settings.Path, accsPollInterval
+	settings.Path = t.TempDir()
+	settings.HttpAuth = true
+	accsPollInterval = 10 * time.Millisecond
+	baseline := runtime.NumGoroutine()
+	t.Cleanup(func() {
+		StopAccountsWatch()
+		accsPairs.Store(nil)
+		settings.HttpAuth, settings.Path, accsPollInterval = oldAuth, oldPath, oldPoll
+	})
+
+	accs := filepath.Join(settings.Path, "accs.db")
+	write := func(body string, mod time.Time) {
+		t.Helper()
+		if err := os.WriteFile(accs, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		// Same-size rewrites inside the filesystem's timestamp resolution.
+		if err := os.Chtimes(accs, mod, mod); err != nil {
+			t.Fatal(err)
+		}
+	}
+	base := time.Now().Add(-time.Hour)
+	write(`{"alice":"one"}`, base)
+
+	r := gin.New()
+	SetupAuth(r)
+	r.GET("/x", CheckAuth(), func(c *gin.Context) { c.Status(http.StatusOK) })
+	code := func(user, pass string) int {
+		req := httptest.NewRequest(http.MethodGet, "/x", nil)
+		if user != "" {
+			req.SetBasicAuth(user, pass)
+		}
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		return w.Code
+	}
+	waitCode := func(user, pass string, want int) {
+		t.Helper()
+		deadline := time.Now().Add(2 * time.Second)
+		for code(user, pass) != want {
+			if time.Now().After(deadline) {
+				t.Fatalf("%s:%s never answered %d", user, pass, want)
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
+	}
+
+	if code("alice", "one") != http.StatusOK || code("bob", "two") != http.StatusUnauthorized {
+		t.Fatal("initial accounts")
+	}
+
+	write(`{"bob":"two"}`, base.Add(time.Minute))
+	waitCode("bob", "two", http.StatusOK)
+	if code("alice", "one") != http.StatusUnauthorized {
+		t.Fatal("removed account still works")
+	}
+
+	// A half-written file keeps the accounts, and is not retried until it changes.
+	write(`{"bob":`, base.Add(2*time.Minute))
+	time.Sleep(100 * time.Millisecond)
+	if code("bob", "two") != http.StatusOK {
+		t.Fatal("unparsable accs.db dropped the accounts")
+	}
+
+	// Deleting it must not turn authentication off.
+	if err := os.Remove(accs); err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(100 * time.Millisecond)
+	if code("bob", "two") != http.StatusOK || code("", "") != http.StatusUnauthorized {
+		t.Fatal("deleted accs.db changed the accounts")
+	}
+
+	// A file that appears after the start is picked up.
+	write(`{"carol":"three"}`, base.Add(3*time.Minute))
+	waitCode("carol", "three", http.StatusOK)
+
+	StopAccountsWatch()
+	leakcheck.AssertNoGoroutineLeak(t, baseline)
+}
+
+func TestAccountsWatchRestartKeepsOneWatcher(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	oldAuth, oldPath := settings.HttpAuth, settings.Path
+	settings.Path = t.TempDir()
+	settings.HttpAuth = true
+	t.Cleanup(func() {
+		StopAccountsWatch()
+		accsPairs.Store(nil)
+		settings.HttpAuth, settings.Path = oldAuth, oldPath
+	})
+	if err := os.WriteFile(filepath.Join(settings.Path, "accs.db"), []byte(`{"a":"b"}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	baseline := runtime.NumGoroutine()
+	for range 3 {
+		SetupAuth(gin.New())
+	}
+	StopAccountsWatch()
+	leakcheck.AssertNoGoroutineLeak(t, baseline)
 }

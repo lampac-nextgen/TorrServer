@@ -28,6 +28,7 @@
 - `--webdav` - enable WebDAV
 - `--proxyurl PROXYURL` - set proxy URL for BitTorrent traffic (HTTP, SOCKS4, SOCKS5, SOCKS5H), example: socks5h://user:<password@example.com>:2080
 - `--proxymode PROXYMODE` - set proxy mode: "tracker" (only HTTP trackers, default), "peers" (only peer connections), or "full" (all traffic)
+- `--disable-shutdown` - don't serve `/shutdown`, so nobody can stop the server over HTTP. Useful when the server is shared.
 - `--pprof` - enable `/debug/pprof/` (heap, goroutine and CPU profiles). Use it with `--httpauth`: a heap profile exposes memory contents. Memory and goroutine counters are also at `/runtime/status`.
 - `--help`, `-h` - display this help and exit
 - `--version` - display version and exit

@@ -60,6 +60,7 @@ type args struct {
 	HTTPSOnly   bool     `arg:"--https-only" help:"with --ssl, don't open the plain HTTP port (--port): everything is served over HTTPS only. Players and TVs need a trusted certificate"`
 	HTTPMedia   bool     `arg:"--http-media" help:"with --force-https, keep serving media URLs (/stream, /play, playlists) over plain HTTP for players and TVs that can't use HTTPS. Stream URLs and Basic auth credentials then travel unencrypted: use on trusted networks only"`
 	Pprof       bool     `arg:"--pprof" help:"enable /debug/pprof (pair with -a; exposes heap)"`
+	NoShutdown  bool     `arg:"--disable-shutdown" help:"don't serve /shutdown: nobody can stop the server over HTTP"`
 }
 
 func (args) Version() string {

@@ -11,4 +11,6 @@ The users data file should be located near to the settings. Basic auth, read mor
 }
 ```
 
+`accs.db` is re-read about every 5 seconds when its modification time or size changes, so accounts can be added or removed without a restart. A file that is missing or does not parse keeps the accounts already loaded (deleting it does not turn authentication off; restart without `-a` for that).
+
 Note: You should enable authentication with -a (--httpauth) TorrServer startup option.
