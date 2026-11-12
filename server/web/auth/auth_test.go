@@ -5,11 +5,13 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
 	"github.com/gin-gonic/gin"
 
+	"server/leakcheck"
 	"server/settings"
 )
 
@@ -19,6 +21,8 @@ func TestSetupAuthMissingAndValidAccounts(t *testing.T) {
 	settings.Path = t.TempDir()
 	settings.HttpAuth = false
 	t.Cleanup(func() {
+		StopAccountsWatch()
+		accsPairs.Store(nil)
 		settings.HttpAuth = oldAuth
 		settings.Path = oldPath
 	})
@@ -148,13 +152,14 @@ func TestCheckAuthAllowsAuthenticatedUser(t *testing.T) {
 
 func TestAccountsReloadWhenAccsDBChanges(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	oldAuth, oldPath, oldPoll := settings.HttpAuth, settings.Path, accsCheckInterval
+	oldAuth, oldPath := settings.HttpAuth, settings.Path
 	settings.Path = t.TempDir()
 	settings.HttpAuth = true
-	accsCheckInterval = time.Millisecond
+	baseline := runtime.NumGoroutine()
 	t.Cleanup(func() {
+		StopAccountsWatch()
 		accsPairs.Store(nil)
-		settings.HttpAuth, settings.Path, accsCheckInterval = oldAuth, oldPath, oldPoll
+		settings.HttpAuth, settings.Path = oldAuth, oldPath
 	})
 
 	accs := filepath.Join(settings.Path, "accs.db")
@@ -224,4 +229,16 @@ func TestAccountsReloadWhenAccsDBChanges(t *testing.T) {
 	write(`{"carol":"three"}`, base.Add(3*time.Minute))
 	waitCode("carol", "three", http.StatusOK)
 
+	// Replacing the file by rename, as editors do, is followed too.
+	tmp := filepath.Join(settings.Path, "accs.db.tmp")
+	if err := os.WriteFile(tmp, []byte(`{"dave":"four"}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Rename(tmp, accs); err != nil {
+		t.Fatal(err)
+	}
+	waitCode("dave", "four", http.StatusOK)
+
+	StopAccountsWatch()
+	leakcheck.AssertNoGoroutineLeak(t, baseline)
 }
