@@ -5,13 +5,11 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
-	"runtime"
 	"testing"
 	"time"
 
 	"github.com/gin-gonic/gin"
 
-	"server/leakcheck"
 	"server/settings"
 )
 
@@ -150,15 +148,13 @@ func TestCheckAuthAllowsAuthenticatedUser(t *testing.T) {
 
 func TestAccountsReloadWhenAccsDBChanges(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	oldAuth, oldPath, oldPoll := settings.HttpAuth, settings.Path, accsPollInterval
+	oldAuth, oldPath, oldPoll := settings.HttpAuth, settings.Path, accsCheckInterval
 	settings.Path = t.TempDir()
 	settings.HttpAuth = true
-	accsPollInterval = 10 * time.Millisecond
-	baseline := runtime.NumGoroutine()
+	accsCheckInterval = time.Millisecond
 	t.Cleanup(func() {
-		StopAccountsWatch()
 		accsPairs.Store(nil)
-		settings.HttpAuth, settings.Path, accsPollInterval = oldAuth, oldPath, oldPoll
+		settings.HttpAuth, settings.Path, accsCheckInterval = oldAuth, oldPath, oldPoll
 	})
 
 	accs := filepath.Join(settings.Path, "accs.db")
@@ -228,27 +224,4 @@ func TestAccountsReloadWhenAccsDBChanges(t *testing.T) {
 	write(`{"carol":"three"}`, base.Add(3*time.Minute))
 	waitCode("carol", "three", http.StatusOK)
 
-	StopAccountsWatch()
-	leakcheck.AssertNoGoroutineLeak(t, baseline)
-}
-
-func TestAccountsWatchRestartKeepsOneWatcher(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	oldAuth, oldPath := settings.HttpAuth, settings.Path
-	settings.Path = t.TempDir()
-	settings.HttpAuth = true
-	t.Cleanup(func() {
-		StopAccountsWatch()
-		accsPairs.Store(nil)
-		settings.HttpAuth, settings.Path = oldAuth, oldPath
-	})
-	if err := os.WriteFile(filepath.Join(settings.Path, "accs.db"), []byte(`{"a":"b"}`), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	baseline := runtime.NumGoroutine()
-	for range 3 {
-		SetupAuth(gin.New())
-	}
-	StopAccountsWatch()
-	leakcheck.AssertNoGoroutineLeak(t, baseline)
 }
