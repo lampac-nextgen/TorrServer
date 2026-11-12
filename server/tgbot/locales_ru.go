@@ -178,6 +178,7 @@ var msgRU = map[string]string{
 	"settings_exported":            "✅ Настройки экспортированы",
 	"settings_saved":               "✅ Сохранено",
 	"settings_readonly":            "⚠️ Режим только чтение",
+	"settings_no_transport":        "⚠️ TCP и uTP нельзя отключить одновременно",
 	"settings_more":                "Ещё",
 	"settings_back":                "Назад",
 	"settings_back_more":           "К разделу Ещё",

@@ -261,6 +261,13 @@ func TestOfflineAPI(t *testing.T) {
 	if w := do(http.MethodPost, "/settings", `{"action":"set"}`, nil); w.Code != http.StatusBadRequest {
 		t.Fatalf("nil sets %d %s", w.Code, w.Body)
 	}
+	before := *set.BTsets
+	if w := do(http.MethodPost, "/settings", `{"action":"set","sets":{"DisableTCP":true,"DisableUTP":true}}`, nil); w.Code != http.StatusBadRequest {
+		t.Fatalf("both transports off %d %s", w.Code, w.Body)
+	}
+	if set.BTsets.DisableTCP != before.DisableTCP || set.BTsets.DisableUTP != before.DisableUTP {
+		t.Fatal("rejected settings were applied")
+	}
 	if w := do(http.MethodPost, "/settings", `{"action":""}`, nil); w.Code < 400 {
 		t.Fatal("empty settings")
 	}

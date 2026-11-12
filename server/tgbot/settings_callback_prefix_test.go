@@ -115,4 +115,14 @@ func TestSettingsCallbackResetAndStorageView(t *testing.T) {
 			t.Fatal("read-only storage_view changed the backend")
 		}
 	})
+
+	t.Run("tcp and utp cannot both be disabled", func(t *testing.T) {
+		settings.BTsets.DisableTCP = false
+		settings.BTsets.DisableUTP = true
+		_ = settingsCallback(cb("\ffset|tcp|1b"), "tcp|1b")
+		if settings.BTsets.DisableTCP || !settings.BTsets.DisableUTP {
+			t.Fatalf("both transports ended up off: tcp=%v utp=%v", settings.BTsets.DisableTCP, settings.BTsets.DisableUTP)
+		}
+		settings.BTsets.DisableUTP = false
+	})
 }
