@@ -150,6 +150,16 @@ wss://tracker.openwebtorrent.com`
 
 var BTsets *BTSets
 
+// keepOneTransport re-enables TCP when both TCP and uTP are disabled: no peer
+// connection is possible then, and every path that stores settings (API, bot,
+// presets, an old database) ends up here.
+func keepOneTransport(sets *BTSets) {
+	if sets.DisableTCP && sets.DisableUTP {
+		log.TLogln("TCP and uTP are both disabled: enabling TCP")
+		sets.DisableTCP = false
+	}
+}
+
 func SetBTSets(sets *BTSets) {
 	if ReadOnly || sets == nil {
 		return
@@ -171,6 +181,8 @@ func SetBTSets(sets *BTSets) {
 	if sets.ReaderReadAHead > 100 {
 		sets.ReaderReadAHead = 100
 	}
+
+	keepOneTransport(sets)
 
 	if sets.PreloadCache < 0 {
 		sets.PreloadCache = 0
@@ -254,6 +266,7 @@ func loadBTSets() {
 			if BTsets.ReaderReadAHead < 5 {
 				BTsets.ReaderReadAHead = 5
 			}
+			keepOneTransport(BTsets)
 			// Set default TMDB settings if missing (for existing configs)
 			if BTsets.TMDBSettings.APIURL == "" {
 				BTsets.TMDBSettings = TMDBConfig{
