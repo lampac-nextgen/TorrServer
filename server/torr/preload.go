@@ -281,6 +281,9 @@ func (t *Torrent) Preload(index int, size int64) {
 		}
 	}
 
+	// A head read that stopped early (error, EOF, cancel) is not a finished preload.
+	headDone := offset >= readerStartEnd
+
 	// Wait for end range preload to complete
 	wg.Wait()
 
@@ -293,7 +296,7 @@ func (t *Torrent) Preload(index int, size int64) {
 	publishProgress()
 	t.muTorrent.Lock()
 	finalStat := t.Stat
-	if finalStat == state.TorrentPreload && preloadErr == nil {
+	if finalStat == state.TorrentPreload && preloadErr == nil && headDone {
 		t.PreloadedBytes = t.PreloadSize
 	}
 	t.muTorrent.Unlock()
