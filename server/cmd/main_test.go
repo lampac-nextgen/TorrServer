@@ -270,3 +270,13 @@ func TestDNSCheckerFallback(t *testing.T) {
 	}
 	go watchDir(filepath.Join(t.TempDir(), "missing"), nil)
 }
+
+// --disable-shutdown has to reach settings.Args, where the router reads it.
+func TestExecArgsCarriesDisableShutdown(t *testing.T) {
+	if !execArgs(args{NoShutdown: true}).DisableShutdown {
+		t.Fatal("--disable-shutdown is parsed but dropped on the way to settings.Args")
+	}
+	if execArgs(args{}).DisableShutdown {
+		t.Fatal("/shutdown disabled without the flag")
+	}
+}

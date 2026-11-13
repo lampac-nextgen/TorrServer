@@ -185,36 +185,7 @@ func run(argv []string) int {
 		params.ProxyMode = "tracker"
 	}
 
-	settings.Args = &settings.ExecArgs{
-		Port:        params.Port,
-		IPs:         params.IPs,
-		Ssl:         params.Ssl,
-		SslPort:     params.SslPort,
-		SslCert:     params.SslCert,
-		SslKey:      params.SslKey,
-		Path:        params.Path,
-		LogPath:     params.LogPath,
-		WebLogPath:  params.WebLogPath,
-		RDB:         params.RDB,
-		HttpAuth:    params.HttpAuth,
-		DontKill:    params.DontKill,
-		UI:          params.UI,
-		TorrentsDir: params.TorrentsDir,
-		TorrentAddr: params.TorrentAddr,
-		PubIPv4:     params.PubIPv4,
-		PubIPv6:     params.PubIPv6,
-		SearchWA:    params.SearchWA,
-		MaxSize:     params.MaxSize,
-		TGToken:     params.TGToken,
-		FusePath:    params.FusePath,
-		WebDAV:      params.WebDAV,
-		ProxyURL:    params.ProxyURL,
-		ProxyMode:   params.ProxyMode,
-		ForceHTTPS:  params.ForceHTTPS,
-		HTTPMedia:   params.HTTPMedia,
-		HTTPSOnly:   params.HTTPSOnly,
-		Pprof:       params.Pprof,
-	}
+	settings.Args = execArgs(params)
 
 	if params.Pprof {
 		runtime.SetBlockProfileRate(1)
@@ -618,5 +589,40 @@ func (d *DNSChecker) pickServer() string {
 		return server
 	case <-ctx.Done():
 		return ""
+	}
+}
+
+// execArgs maps the parsed command line to the process-wide settings.
+func execArgs(params args) *settings.ExecArgs {
+	return &settings.ExecArgs{
+		Port:            params.Port,
+		IPs:             params.IPs,
+		Ssl:             params.Ssl,
+		SslPort:         params.SslPort,
+		SslCert:         params.SslCert,
+		SslKey:          params.SslKey,
+		Path:            params.Path,
+		LogPath:         params.LogPath,
+		WebLogPath:      params.WebLogPath,
+		RDB:             params.RDB,
+		HttpAuth:        params.HttpAuth,
+		DontKill:        params.DontKill,
+		UI:              params.UI,
+		TorrentsDir:     params.TorrentsDir,
+		TorrentAddr:     params.TorrentAddr,
+		PubIPv4:         params.PubIPv4,
+		PubIPv6:         params.PubIPv6,
+		SearchWA:        params.SearchWA,
+		MaxSize:         params.MaxSize,
+		TGToken:         params.TGToken,
+		FusePath:        params.FusePath,
+		WebDAV:          params.WebDAV,
+		ProxyURL:        params.ProxyURL,
+		ProxyMode:       params.ProxyMode,
+		ForceHTTPS:      params.ForceHTTPS,
+		HTTPMedia:       params.HTTPMedia,
+		HTTPSOnly:       params.HTTPSOnly,
+		Pprof:           params.Pprof,
+		DisableShutdown: params.NoShutdown,
 	}
 }
