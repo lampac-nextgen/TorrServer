@@ -59,6 +59,7 @@ func TestArgsVersionAndFlags(t *testing.T) {
 		"--http-media",
 		"-m", "10",
 		"--pprof",
+		"--disable-shutdown",
 		"--proxyurl", "socks5://127.0.0.1:1080",
 		"--proxymode", "peers",
 	})
@@ -68,7 +69,7 @@ func TestArgsVersionAndFlags(t *testing.T) {
 	if params.Port != "9000" || params.SslPort != "9443" || !params.Ssl || !params.HTTPSOnly || !params.ForceHTTPS || !params.HTTPMedia {
 		t.Fatalf("%+v", params)
 	}
-	if params.MaxSize != "10" || !params.Pprof || params.ProxyURL != "socks5://127.0.0.1:1080" || params.ProxyMode != "peers" {
+	if params.MaxSize != "10" || !params.Pprof || !params.NoShutdown || params.ProxyURL != "socks5://127.0.0.1:1080" || params.ProxyMode != "peers" {
 		t.Fatalf("%+v", params)
 	}
 }
@@ -268,4 +269,14 @@ func TestDNSCheckerFallback(t *testing.T) {
 		t.Fatal(err)
 	}
 	go watchDir(filepath.Join(t.TempDir(), "missing"), nil)
+}
+
+// --disable-shutdown has to reach settings.Args, where the router reads it.
+func TestExecArgsCarriesDisableShutdown(t *testing.T) {
+	if !execArgs(args{NoShutdown: true}).DisableShutdown {
+		t.Fatal("--disable-shutdown is parsed but dropped on the way to settings.Args")
+	}
+	if execArgs(args{}).DisableShutdown {
+		t.Fatal("/shutdown disabled without the flag")
+	}
 }

@@ -60,6 +60,7 @@ type args struct {
 	HTTPSOnly   bool     `arg:"--https-only" help:"with --ssl, don't open the plain HTTP port (--port): everything is served over HTTPS only. Players and TVs need a trusted certificate"`
 	HTTPMedia   bool     `arg:"--http-media" help:"with --force-https, keep serving media URLs (/stream, /play, playlists) over plain HTTP for players and TVs that can't use HTTPS. Stream URLs and Basic auth credentials then travel unencrypted: use on trusted networks only"`
 	Pprof       bool     `arg:"--pprof" help:"enable /debug/pprof (pair with -a; exposes heap)"`
+	NoShutdown  bool     `arg:"--disable-shutdown" help:"don't serve /shutdown: nobody can stop the server over HTTP"`
 }
 
 func (args) Version() string {
@@ -184,36 +185,7 @@ func run(argv []string) int {
 		params.ProxyMode = "tracker"
 	}
 
-	settings.Args = &settings.ExecArgs{
-		Port:        params.Port,
-		IPs:         params.IPs,
-		Ssl:         params.Ssl,
-		SslPort:     params.SslPort,
-		SslCert:     params.SslCert,
-		SslKey:      params.SslKey,
-		Path:        params.Path,
-		LogPath:     params.LogPath,
-		WebLogPath:  params.WebLogPath,
-		RDB:         params.RDB,
-		HttpAuth:    params.HttpAuth,
-		DontKill:    params.DontKill,
-		UI:          params.UI,
-		TorrentsDir: params.TorrentsDir,
-		TorrentAddr: params.TorrentAddr,
-		PubIPv4:     params.PubIPv4,
-		PubIPv6:     params.PubIPv6,
-		SearchWA:    params.SearchWA,
-		MaxSize:     params.MaxSize,
-		TGToken:     params.TGToken,
-		FusePath:    params.FusePath,
-		WebDAV:      params.WebDAV,
-		ProxyURL:    params.ProxyURL,
-		ProxyMode:   params.ProxyMode,
-		ForceHTTPS:  params.ForceHTTPS,
-		HTTPMedia:   params.HTTPMedia,
-		HTTPSOnly:   params.HTTPSOnly,
-		Pprof:       params.Pprof,
-	}
+	settings.Args = execArgs(params)
 
 	if params.Pprof {
 		runtime.SetBlockProfileRate(1)
@@ -617,5 +589,40 @@ func (d *DNSChecker) pickServer() string {
 		return server
 	case <-ctx.Done():
 		return ""
+	}
+}
+
+// execArgs maps the parsed command line to the process-wide settings.
+func execArgs(params args) *settings.ExecArgs {
+	return &settings.ExecArgs{
+		Port:            params.Port,
+		IPs:             params.IPs,
+		Ssl:             params.Ssl,
+		SslPort:         params.SslPort,
+		SslCert:         params.SslCert,
+		SslKey:          params.SslKey,
+		Path:            params.Path,
+		LogPath:         params.LogPath,
+		WebLogPath:      params.WebLogPath,
+		RDB:             params.RDB,
+		HttpAuth:        params.HttpAuth,
+		DontKill:        params.DontKill,
+		UI:              params.UI,
+		TorrentsDir:     params.TorrentsDir,
+		TorrentAddr:     params.TorrentAddr,
+		PubIPv4:         params.PubIPv4,
+		PubIPv6:         params.PubIPv6,
+		SearchWA:        params.SearchWA,
+		MaxSize:         params.MaxSize,
+		TGToken:         params.TGToken,
+		FusePath:        params.FusePath,
+		WebDAV:          params.WebDAV,
+		ProxyURL:        params.ProxyURL,
+		ProxyMode:       params.ProxyMode,
+		ForceHTTPS:      params.ForceHTTPS,
+		HTTPMedia:       params.HTTPMedia,
+		HTTPSOnly:       params.HTTPSOnly,
+		Pprof:           params.Pprof,
+		DisableShutdown: params.NoShutdown,
 	}
 }

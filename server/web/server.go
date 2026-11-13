@@ -273,6 +273,7 @@ func Stop() {
 		stopRenew = nil
 	}
 	shutdownServers()
+	auth.StopAccountsWatch()
 	settings.InternalPort = ""
 	gstreamer.Stop()
 	dlna.Stop()

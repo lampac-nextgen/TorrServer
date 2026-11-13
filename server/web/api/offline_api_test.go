@@ -399,3 +399,22 @@ func TestOfflineAPI(t *testing.T) {
 		}
 	}
 }
+
+func TestShutdownRouteDisabledByFlag(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	offlinetest.Prepare(t)
+	status := func() (int, int) {
+		r := gin.New()
+		SetupRoute(r)
+		get := func(path string) int {
+			w := httptest.NewRecorder()
+			r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, path, nil))
+			return w.Code
+		}
+		return get("/shutdown"), get("/shutdown/why")
+	}
+	set.Args.DisableShutdown = true
+	if a, b := status(); a != http.StatusNotFound || b != http.StatusNotFound {
+		t.Fatalf("--disable-shutdown still serves /shutdown: %d %d", a, b)
+	}
+}
