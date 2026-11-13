@@ -322,6 +322,93 @@ func TestPreloadReadsTailPastBudget(t *testing.T) {
 	}
 }
 
+// preloaded_bytes used to be the fill of the whole cache, refreshed every second:
+// a warm cache showed more than preload_size before the preload read anything,
+// and it kept growing with playback after the preload ended.
+func TestPreloadedBytesReportsPreloadNotCacheFill(t *testing.T) {
+	const (
+		piece   int64 = 1 << 20
+		fileLen int64 = 48 << 20
+		budget  int64 = 32 << 20
+	)
+	show := offlinetest.WriteSized(t, "movie.mkv", fileLen, piece)
+	offlinetest.Prepare(t)
+	settings.BTsets.CacheSize = budget + 16<<20
+	tor, _ := connectPrepared(t, show)
+
+	// A leftover from an earlier session must not leak into this preload.
+	tor.muTorrent.Lock()
+	tor.PreloadedBytes = 10 * budget
+	tor.muTorrent.Unlock()
+
+	tor.Preload(1, budget)
+	tor.progressEvent()
+	st := tor.Status()
+	if st.PreloadSize != budget || st.PreloadedBytes != budget {
+		t.Fatalf("after preload: preloaded %d, size %d, want both %d", st.PreloadedBytes, st.PreloadSize, budget)
+	}
+
+	// Playback fills the cache past the preload; the counter must not follow.
+	r := tor.NewReader(tor.Files()[0])
+	if r == nil {
+		t.Fatal("reader")
+	}
+	defer tor.CloseReader(r)
+	if _, err := r.Seek(budget/2, io.SeekStart); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := io.CopyN(io.Discard, r, 4<<20); err != nil {
+		t.Fatal(err)
+	}
+	tor.progressEvent()
+	if got := tor.Status().PreloadedBytes; got != budget {
+		t.Fatalf("preloaded_bytes followed the cache fill: %d, want %d", got, budget)
+	}
+}
+
+// A file smaller than the budget is read whole: the preload is complete, and the
+// progress reaches the target instead of stopping at the file length.
+func TestPreloadedBytesSmallFileReachesTarget(t *testing.T) {
+	const (
+		piece   int64 = 1 << 20
+		fileLen int64 = 4 << 20
+		budget  int64 = 32 << 20
+	)
+	show := offlinetest.WriteSized(t, "short.mkv", fileLen, piece)
+	offlinetest.Prepare(t)
+	tor, _ := connectPrepared(t, show)
+
+	tor.Preload(1, budget)
+	tor.progressEvent()
+	st := tor.Status()
+	if st.PreloadedBytes != st.PreloadSize || st.PreloadSize != budget {
+		t.Fatalf("preloaded %d of %d, want both %d", st.PreloadedBytes, st.PreloadSize, budget)
+	}
+	if st.Stat == state.TorrentPreload {
+		t.Fatal("preload still reported as running")
+	}
+}
+
+// A new preload starts from zero, not from what the previous one reported.
+func TestPreloadRestartsProgressFromZero(t *testing.T) {
+	const (
+		piece   int64 = 1 << 20
+		fileLen int64 = 16 << 20
+		budget  int64 = 8 << 20
+	)
+	show := offlinetest.WriteSized(t, "twice.mkv", fileLen, piece)
+	offlinetest.Prepare(t)
+	tor, _ := connectPrepared(t, show)
+
+	tor.Preload(1, budget)
+	tor.Preload(1, budget/2)
+	tor.progressEvent()
+	st := tor.Status()
+	if st.PreloadSize != budget/2 || st.PreloadedBytes != budget/2 {
+		t.Fatalf("second preload: %d of %d, want both %d", st.PreloadedBytes, st.PreloadSize, budget/2)
+	}
+}
+
 func TestPreloadZeroAndClosed(t *testing.T) {
 	tor, _ := connectShow(t)
 	file := tor.Files()[0]
