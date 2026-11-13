@@ -19,7 +19,9 @@ import (
 // by rename, which drops a watch on the file itself. Nothing runs between
 // events, so an idle server does no work.
 
-var accsPairs atomic.Pointer[authPairs]
+// accsAuth is the middleware for the accounts loaded now, built once per load
+// rather than once per request. Nil while there are no accounts.
+var accsAuth atomic.Pointer[gin.HandlerFunc]
 
 var (
 	accsWatchMu   sync.Mutex
@@ -35,11 +37,11 @@ func accountsPath() string { return filepath.Join(settings.Path, "accs.db") }
 func setupAccounts(engine *gin.Engine) {
 	path := accountsPath()
 	if !loadAccounts(path) {
-		accsPairs.Store(nil)
+		accsAuth.Store(nil)
 	}
 	engine.Use(func(c *gin.Context) {
-		if p := accsPairs.Load(); p != nil {
-			pairsAuth(*p)(c)
+		if h := accsAuth.Load(); h != nil {
+			(*h)(c)
 		}
 	})
 	startAccountsWatch(path)
@@ -54,8 +56,8 @@ func loadAccounts(path string) bool {
 	if accs == nil {
 		return false
 	}
-	pairs := processAccounts(accs)
-	accsPairs.Store(&pairs)
+	h := pairsAuth(processAccounts(accs))
+	accsAuth.Store(&h)
 	return true
 }
 

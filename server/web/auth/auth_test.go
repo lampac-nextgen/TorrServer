@@ -22,7 +22,7 @@ func TestSetupAuthMissingAndValidAccounts(t *testing.T) {
 	settings.HttpAuth = false
 	t.Cleanup(func() {
 		StopAccountsWatch()
-		accsPairs.Store(nil)
+		accsAuth.Store(nil)
 		settings.HttpAuth = oldAuth
 		settings.Path = oldPath
 	})
@@ -158,7 +158,7 @@ func TestAccountsReloadWhenAccsDBChanges(t *testing.T) {
 	baseline := runtime.NumGoroutine()
 	t.Cleanup(func() {
 		StopAccountsWatch()
-		accsPairs.Store(nil)
+		accsAuth.Store(nil)
 		settings.HttpAuth, settings.Path = oldAuth, oldPath
 	})
 
@@ -238,6 +238,63 @@ func TestAccountsReloadWhenAccsDBChanges(t *testing.T) {
 		t.Fatal(err)
 	}
 	waitCode("dave", "four", http.StatusOK)
+
+	StopAccountsWatch()
+	leakcheck.AssertNoGoroutineLeak(t, baseline)
+}
+
+// The server is stopped and started again (settings change, restart): the watcher
+// is replaced, the accounts of the previous run stay until the new load, and no
+// goroutine is left behind.
+func TestAccountsWatchSurvivesRestart(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	oldAuth, oldPath := settings.HttpAuth, settings.Path
+	settings.Path = t.TempDir()
+	settings.HttpAuth = true
+	baseline := runtime.NumGoroutine()
+	t.Cleanup(func() {
+		StopAccountsWatch()
+		accsAuth.Store(nil)
+		settings.HttpAuth, settings.Path = oldAuth, oldPath
+	})
+	accs := filepath.Join(settings.Path, "accs.db")
+	if err := os.WriteFile(accs, []byte(`{"alice":"one"}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	status := func(r *gin.Engine, user, pass string) int {
+		req := httptest.NewRequest(http.MethodGet, "/x", nil)
+		req.SetBasicAuth(user, pass)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		return w.Code
+	}
+	newEngine := func() *gin.Engine {
+		r := gin.New()
+		SetupAuth(r)
+		r.GET("/x", CheckAuth(), func(c *gin.Context) { c.Status(http.StatusOK) })
+		return r
+	}
+
+	first := newEngine()
+	if status(first, "alice", "one") != http.StatusOK {
+		t.Fatal("first run")
+	}
+	StopAccountsWatch()
+	StopAccountsWatch() // a second stop is a no-op
+
+	if err := os.WriteFile(accs, []byte(`{"bob":"two"}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	second := newEngine() // loads the new file and starts a fresh watcher
+	if status(second, "bob", "two") != http.StatusOK || status(second, "alice", "one") != http.StatusUnauthorized {
+		t.Fatal("restart did not load the current accs.db")
+	}
+	// Starting again without a Stop replaces the watcher instead of leaking one.
+	third := newEngine()
+	if status(third, "bob", "two") != http.StatusOK {
+		t.Fatal("second start")
+	}
 
 	StopAccountsWatch()
 	leakcheck.AssertNoGoroutineLeak(t, baseline)
