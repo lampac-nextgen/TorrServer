@@ -178,6 +178,7 @@ var msgEN = map[string]string{
 	"settings_exported":            "✅ Settings exported",
 	"settings_saved":               "✅ Saved",
 	"settings_readonly":            "⚠️ Read-only mode",
+	"settings_no_transport":        "⚠️ TCP and uTP cannot both be disabled",
 	"settings_more":                "More",
 	"settings_back":                "Back",
 	"settings_back_more":           "Back to More",

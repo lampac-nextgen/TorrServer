@@ -55,6 +55,10 @@ func settings(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "sets is empty"})
 			return
 		}
+		if req.Sets.DisableTCP && req.Sets.DisableUTP {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "TCP and uTP cannot both be disabled: no peer connections possible"})
+			return
+		}
 		torr.SetSettings(req.Sets)
 		restartServices()
 		c.Status(200)
