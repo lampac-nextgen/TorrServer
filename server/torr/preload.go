@@ -5,6 +5,7 @@ import (
 	"io"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"server/ffprobe"
@@ -40,7 +41,18 @@ func (t *Torrent) Preload(index int, size int64) {
 	// and "drop all torrents" leaves Stat as is. Use only this pointer below: it stays valid after Drop.
 	torrent := t.Torrent
 	t.Stat = state.TorrentPreload
+	t.PreloadedBytes = 0
 	t.muTorrent.Unlock()
+
+	// Bytes read by the head and tail preload readers: the progress reported as
+	// PreloadedBytes. The cache fill is not it: a warm cache starts above the
+	// target and playback keeps growing it.
+	var startRead, endRead atomic.Int64
+	publishProgress := func() {
+		t.muTorrent.Lock()
+		t.PreloadedBytes = startRead.Load() + endRead.Load()
+		t.muTorrent.Unlock()
+	}
 
 	defer func() {
 		t.muTorrent.Lock()
@@ -83,6 +95,7 @@ func (t *Torrent) Preload(index int, size int64) {
 		for {
 			select {
 			case <-ticker.C:
+				publishProgress()
 				t.muTorrent.Lock()
 				stat := t.Stat
 				preloaded, speed := t.PreloadedBytes, t.DownloadSpeed
@@ -198,6 +211,7 @@ func (t *Torrent) Preload(index int, size int64) {
 				}
 				n, err := readerEnd.Read(tmp)
 				offset += int64(n)
+				endRead.Store(offset - from)
 				if n == 0 || err != nil {
 					if err != nil && err != io.EOF {
 						log.TLogln("Err preload read:", err)
@@ -247,6 +261,7 @@ func (t *Torrent) Preload(index int, size int64) {
 		}
 		n, err := readerStart.Read(tmp)
 		offset += int64(n)
+		startRead.Store(offset)
 
 		if readahead > 0 && readerStartEnd-offset < readahead {
 			readahead = 0
@@ -266,6 +281,9 @@ func (t *Torrent) Preload(index int, size int64) {
 		}
 	}
 
+	// A head read that stopped early (error, EOF, cancel) is not a finished preload.
+	headDone := offset >= readerStartEnd
+
 	// Wait for end range preload to complete
 	wg.Wait()
 
@@ -275,8 +293,12 @@ func (t *Torrent) Preload(index int, size int64) {
 	}
 
 	// Final log
+	publishProgress()
 	t.muTorrent.Lock()
 	finalStat := t.Stat
+	if finalStat == state.TorrentPreload && preloadErr == nil && headDone {
+		t.PreloadedBytes = t.PreloadSize
+	}
 	t.muTorrent.Unlock()
 
 	if finalStat == state.TorrentPreload {

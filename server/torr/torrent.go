@@ -297,10 +297,6 @@ func (t *Torrent) progressEvent() {
 
 		t.BytesReadUsefulData = st.BytesRead.Int64()
 		t.BytesWrittenData = st.BytesWritten.Int64()
-
-		if t.cache != nil {
-			t.PreloadedBytes = t.cache.GetState().Filled
-		}
 	} else {
 		t.DownloadSpeed = 0
 		t.UploadSpeed = 0
