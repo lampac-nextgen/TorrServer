@@ -29,6 +29,8 @@ type ExecArgs struct {
 	HTTPMedia   bool
 	HTTPSOnly   bool
 	Pprof       bool
+	// DisableShutdown drops GET /shutdown (--disable-shutdown).
+	DisableShutdown bool
 }
 
 var Args *ExecArgs
