@@ -208,3 +208,27 @@ func TestInitSetsHonoursStorageEnvOnFreshDir(t *testing.T) {
 		t.Fatalf("prefs %v", p)
 	}
 }
+
+func TestSetBTSetsKeepsOneTransport(t *testing.T) {
+	initStorageTest(t)
+	in := &BTSets{DisableTCP: true, DisableUTP: true}
+	SetBTSets(in)
+	if in.DisableTCP || !in.DisableUTP {
+		t.Fatalf("both disabled must leave TCP on: tcp off=%v utp off=%v", in.DisableTCP, in.DisableUTP)
+	}
+	only := &BTSets{DisableUTP: true}
+	SetBTSets(only)
+	if only.DisableTCP || !only.DisableUTP {
+		t.Fatal("a single disabled transport must stay as set")
+	}
+}
+
+func TestLoadBTSetsKeepsOneTransport(t *testing.T) {
+	initStorageTest(t)
+	buf, _ := json.Marshal(&BTSets{DisableTCP: true, DisableUTP: true, ReaderReadAHead: 50})
+	tdb.Set("Settings", "BitTorr", buf)
+	loadBTSets()
+	if BTsets.DisableTCP && BTsets.DisableUTP {
+		t.Fatal("a stored config with both transports disabled must be repaired on load")
+	}
+}

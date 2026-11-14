@@ -477,6 +477,10 @@ func settingsCallback(c tele.Context, action string) error {
 		}
 	}
 
+	if sets.DisableTCP && sets.DisableUTP {
+		return c.Respond(&tele.CallbackResponse{Text: tr(uid, "settings_no_transport")})
+	}
+
 	torr.SetSettings(sets)
 	dlna.Stop()
 	if sets.EnableDLNA {
