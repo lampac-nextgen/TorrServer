@@ -22,9 +22,13 @@ func (t *Torrent) Preload(index int, size int64) {
 	if size <= 0 {
 		return
 	}
+	// Status reads PreloadSize under muTorrent; write it under the same lock.
+	t.muTorrent.Lock()
 	t.PreloadSize = size
+	gettingInfo := t.Stat == state.TorrentGettingInfo
+	t.muTorrent.Unlock()
 
-	if t.Stat == state.TorrentGettingInfo {
+	if gettingInfo {
 		if !t.WaitInfo() {
 			return
 		}
@@ -98,7 +102,7 @@ func (t *Torrent) Preload(index int, size int64) {
 				publishProgress()
 				t.muTorrent.Lock()
 				stat := t.Stat
-				preloaded, speed := t.PreloadedBytes, t.DownloadSpeed
+				preloaded, speed, target := t.PreloadedBytes, t.DownloadSpeed, t.PreloadSize
 				t.muTorrent.Unlock()
 
 				if stat != state.TorrentPreload {
@@ -107,7 +111,7 @@ func (t *Torrent) Preload(index int, size int64) {
 				st := torrent.Stats()
 				statStr := fmt.Sprint(file.Torrent().InfoHash().HexString(), " ",
 					utils2.Format(float64(preloaded)), " / ",
-					utils2.Format(float64(t.PreloadSize)), " Speed: ",
+					utils2.Format(float64(target)), " Speed: ",
 					utils2.Format(speed), " Peers: ",
 					st.ActivePeers, " / ",
 					st.TotalPeers, " [ Seeds: ",
