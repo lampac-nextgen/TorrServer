@@ -4060,10 +4060,10 @@ md5.js@^1.3.4:
     inherits "^2.0.1"
     safe-buffer "^5.1.2"
 
-media-chrome@^4.19.4:
-  version "4.19.4"
-  resolved "https://registry.yarnpkg.com/media-chrome/-/media-chrome-4.19.4.tgz#aec1a1b92d99da2c5c902f2a882b65ad439824c5"
-  integrity sha512-QAL48kT03+InLijPzXN1end9fcsl0/l53j1laCfbt/79vF2iZ45dovv4wQMw2q9zOLEiDwWsB718NJPhtZUBDg==
+media-chrome@^4.19.5:
+  version "4.19.5"
+  resolved "https://registry.yarnpkg.com/media-chrome/-/media-chrome-4.19.5.tgz#e2be646d316f6252871cad54e69b2a2c2c398ecc"
+  integrity sha512-iMn1PJsQrgkgBoKLkxVKiaO9c57y84rVqQzN84IXpPvVR9t62bgqVB1nKhuDND1Y1POKhSJLHXfH2+ESX0C1yg==
   dependencies:
     ce-la-react "^0.3.2"
 

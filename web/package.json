@@ -20,7 +20,7 @@
     "i18next": "^27.1.1",
     "i18next-browser-languagedetector": "^8.3.0",
     "lucide-react": "^1.72.0",
-    "media-chrome": "^4.19.4",
+    "media-chrome": "^4.19.5",
     "parse-torrent": "^11.0.24",
     "parse-torrent-title": "^3.0.1",
     "react": "^19.3.1",
