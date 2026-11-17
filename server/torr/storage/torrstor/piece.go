@@ -37,20 +37,22 @@ func NewPiece(id int, cache *Cache) *Piece {
 	return p
 }
 
+// WriteAt, ReadAt and Release go to the backend the piece was created with. Checking the
+// live UseDisk setting instead crashed the server when the setting was saved while a torrent
+// was active: SetSettings switches BTsets first and drops torrents after, and in between the
+// engine keeps writing and reading the old pieces, whose other backend is nil.
 func (p *Piece) WriteAt(b []byte, off int64) (n int, err error) {
-	if !settings.BTsets.UseDisk {
+	if p.mPiece != nil {
 		return p.mPiece.WriteAt(b, off)
-	} else {
-		return p.dPiece.WriteAt(b, off)
 	}
+	return p.dPiece.WriteAt(b, off)
 }
 
 func (p *Piece) ReadAt(b []byte, off int64) (n int, err error) {
-	if !settings.BTsets.UseDisk {
+	if p.mPiece != nil {
 		return p.mPiece.ReadAt(b, off)
-	} else {
-		return p.dPiece.ReadAt(b, off)
 	}
+	return p.dPiece.ReadAt(b, off)
 }
 
 // snapshotStats reads Size/Complete/Accessed under the piece I/O mutex so
@@ -143,10 +145,9 @@ func (p *Piece) releaseBuffers() (diskPath string) {
 	if p == nil {
 		return ""
 	}
-	if !settings.BTsets.UseDisk {
-		if p.mPiece != nil {
-			p.mPiece.Release()
-		}
+	// The backend the piece was created with, not the live UseDisk setting.
+	if p.mPiece != nil {
+		p.mPiece.Release()
 		return ""
 	}
 	if p.dPiece != nil {
