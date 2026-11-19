@@ -62,6 +62,11 @@ type Torrent struct {
 	closed <-chan struct{}
 
 	progressTicker *time.Ticker
+	// progressBusy and raBusy keep one progressEvent and one AdjustRA in flight per torrent.
+	// watch ticks every second; without them a wedged muTorrent or client lock piled up one
+	// goroutine per tick (17k on one torrent in the 2026-11-14 hang).
+	progressBusy atomic.Bool
+	raBusy       atomic.Bool
 }
 
 func NewTorrent(spec *torrent.TorrentSpec, bt *BTServer) (*Torrent, error) {
@@ -266,11 +271,23 @@ func (t *Torrent) watch() {
 	for {
 		select {
 		case <-t.progressTicker.C:
-			go t.progressEvent()
+			t.tickProgress()
 		case <-t.closed:
 			return
 		}
 	}
+}
+
+// tickProgress starts progressEvent unless the previous one is still running. A skipped tick
+// is not lost: speeds are deltas against lastTimeSpeed, so the next run covers the gap.
+func (t *Torrent) tickProgress() {
+	if !t.progressBusy.CompareAndSwap(false, true) {
+		return
+	}
+	go func() {
+		defer t.progressBusy.Store(false)
+		t.progressEvent()
+	}()
 }
 
 func (t *Torrent) progressEvent() {
@@ -301,9 +318,9 @@ func (t *Torrent) progressEvent() {
 		t.DownloadSpeed = 0
 		t.UploadSpeed = 0
 	}
+	t.lastTimeSpeed = time.Now()
 	t.muTorrent.Unlock()
 
-	t.lastTimeSpeed = time.Now()
 	t.updateRA()
 }
 
@@ -327,8 +344,15 @@ func (t *Torrent) updateRA() {
 	if cache == nil {
 		return
 	}
-	// 16MiB far window. AdjustRA splits it across readers and clamps it to the zone.
-	go cache.AdjustRA(torrstor.ReaderReadaheadBytes)
+	// 16MiB far window. AdjustRA splits it across readers and clamps it to the zone. It takes
+	// the client lock, so a stuck one must not collect a goroutine per tick.
+	if !t.raBusy.CompareAndSwap(false, true) {
+		return
+	}
+	go func() {
+		defer t.raBusy.Store(false)
+		cache.AdjustRA(torrstor.ReaderReadaheadBytes)
+	}()
 }
 
 func (t *Torrent) expired() bool {
