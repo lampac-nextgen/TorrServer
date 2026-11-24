@@ -1,5 +1,5 @@
-import { Button, Input, Label, ListBox, Select, TextField, ToggleButton, useMediaQuery } from '@heroui/react'
-import { Folder, FolderOpen, X } from 'lucide-react'
+import { Button, Input, Label, ListBox, Select, TextField, useMediaQuery } from '@heroui/react'
+import { EyeOff, Folder, FolderOpen, Search, X } from 'lucide-react'
 import { iconMenu } from 'shared/ui/iconProps'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -93,25 +93,42 @@ export default function FileBrowser({
   )
 
   const filters = showFilters ? (
-    <div className='mb-2 flex flex-wrap items-center gap-2 sm:mb-3'>
-      <TextField aria-label={t('FilterFiles')} value={nameQuery} onChange={setNameQuery} className='min-w-48 flex-1'>
+    <div className='mb-2 flex flex-wrap items-center gap-2 sm:mb-3 sm:flex-nowrap'>
+      <TextField
+        aria-label={t('FilterFiles')}
+        value={nameQuery}
+        onChange={setNameQuery}
+        className='relative min-w-0 basis-full sm:basis-0 sm:flex-1'
+      >
         <Label className='sr-only'>{t('FilterFiles')}</Label>
-        <Input placeholder={t('FilterFiles')} className='min-h-11 w-full text-sm' />
+        <Search
+          {...iconMenu}
+          className='pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted'
+          aria-hidden
+        />
+        <Input placeholder={t('FilterFiles')} className='min-h-11 w-full border-border bg-surface pr-11 pl-9 text-sm' />
+        {nameQuery ? (
+          <Button
+            isIconOnly
+            size='sm'
+            variant='ghost'
+            className='absolute top-1/2 right-1 size-9 min-h-0 min-w-0 -translate-y-1/2 text-muted'
+            aria-label={t('Clear')}
+            onPress={() => setNameQuery('')}
+          >
+            <X {...iconMenu} aria-hidden />
+          </Button>
+        ) : null}
       </TextField>
-      {nameQuery ? (
-        <Button
-          isIconOnly
-          variant='ghost'
-          className='min-h-11 min-w-11'
-          aria-label={t('Clear')}
-          onPress={() => setNameQuery('')}
-        >
-          <X {...iconMenu} aria-hidden />
-        </Button>
-      ) : null}
-      <ToggleButton isSelected={onlyUnviewed} onChange={setOnlyUnviewed} className='min-h-11'>
+      <Button
+        variant={onlyUnviewed ? 'primary' : 'secondary'}
+        className='min-h-11 shrink-0 gap-2 px-3'
+        aria-pressed={onlyUnviewed}
+        onPress={() => setOnlyUnviewed(v => !v)}
+      >
+        <EyeOff {...iconMenu} aria-hidden />
         {t('OnlyUnviewed')}
-      </ToggleButton>
+      </Button>
     </div>
   ) : null
 

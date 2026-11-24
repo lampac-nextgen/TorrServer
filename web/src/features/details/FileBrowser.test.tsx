@@ -32,6 +32,7 @@ describe('FileBrowser file filter', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Not viewed yet' }))
     expect(lastProps().onlyUnviewed).toBe(true)
+    expect(screen.getByRole('button', { name: 'Not viewed yet' }).getAttribute('aria-pressed')).toBe('true')
 
     await userEvent.click(screen.getByRole('button', { name: 'Clear' }))
     expect(lastProps().nameQuery).toBe('')
