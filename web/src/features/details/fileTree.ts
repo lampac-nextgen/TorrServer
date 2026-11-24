@@ -68,3 +68,102 @@ export function filesInSelectedFolder(files: PlayableFile[], tree: DirectoryNode
   const node = findNodeById(tree, folderId)
   return node ? collectFilesRecursively(node) : files
 }
+
+export interface DirectorySummary {
+  /** Total bytes of every file below the folder. */
+  size: number
+  /** Number of files below the folder, nested folders included. */
+  fileCount: number
+}
+
+/** One pass over the tree: size and file count for every folder id (root included). */
+export function summarizeTree(root: DirectoryNode): Map<string, DirectorySummary> {
+  const summaries = new Map<string, DirectorySummary>()
+  const visit = (node: DirectoryNode): DirectorySummary => {
+    const total: DirectorySummary = { size: 0, fileCount: node.files.length }
+    for (const file of node.files) total.size += file.length
+    for (const child of node.children.values()) {
+      const sub = visit(child)
+      total.size += sub.size
+      total.fileCount += sub.fileCount
+    }
+    summaries.set(node.id, total)
+    return total
+  }
+  visit(root)
+  return summaries
+}
+
+/** Every folder id below the root, for "Expand all". */
+export function collectFolderIds(root: DirectoryNode): string[] {
+  const ids: string[] = []
+  const visit = (node: DirectoryNode) => {
+    for (const child of node.children.values()) {
+      ids.push(child.id)
+      visit(child)
+    }
+  }
+  visit(root)
+  return ids
+}
+
+/** Path of a folder inside the torrent, from its tree id (`root/A/B` → `A/B`). */
+export function folderPath(id: string): string {
+  return id.replace(/^root\/?/, '')
+}
+
+export interface TreeRow {
+  key: string
+  kind: 'folder' | 'file'
+  depth: number
+  label: string
+  /** Full path inside the torrent. */
+  path: string
+  size: number
+  fileCount: number
+  expanded?: boolean
+}
+
+const byName = (a: string, b: string) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+
+/** Flat list of the rows that are visible for an expanded set. Collapsed children are not walked. */
+export function visibleTreeRows(
+  root: DirectoryNode,
+  expanded: ReadonlySet<string>,
+  summaries: ReadonlyMap<string, DirectorySummary>,
+): TreeRow[] {
+  const rows: TreeRow[] = []
+  const walk = (node: DirectoryNode, depth: number) => {
+    const folders = [...node.children.values()].sort((a, b) => byName(a.label, b.label))
+    for (const folder of folders) {
+      const isOpen = expanded.has(folder.id)
+      const summary = summaries.get(folder.id) ?? { size: 0, fileCount: 0 }
+      rows.push({
+        key: folder.id,
+        kind: 'folder',
+        depth,
+        label: folder.label,
+        path: folderPath(folder.id),
+        size: summary.size,
+        fileCount: summary.fileCount,
+        expanded: isOpen,
+      })
+      if (isOpen) walk(folder, depth + 1)
+    }
+    const files = [...node.files].sort((a, b) => byName(a.path, b.path))
+    for (const file of files) {
+      const normalized = file.path.replace(/\\/g, '/')
+      rows.push({
+        key: `file:${file.id}`,
+        kind: 'file',
+        depth,
+        label: normalized.split('/').pop() || normalized,
+        path: normalized,
+        size: file.length,
+        fileCount: 1,
+      })
+    }
+  }
+  walk(root, 0)
+  return rows
+}
