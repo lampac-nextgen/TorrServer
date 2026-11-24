@@ -114,6 +114,8 @@ export function folderPath(id: string): string {
 
 export interface TreeRow {
   key: string
+  /** Torrent file id, files only (matches the viewed list). */
+  fileId?: number
   kind: 'folder' | 'file'
   depth: number
   label: string
@@ -155,6 +157,7 @@ export function visibleTreeRows(
       const normalized = file.path.replace(/\\/g, '/')
       rows.push({
         key: `file:${file.id}`,
+        fileId: file.id,
         kind: 'file',
         depth,
         label: normalized.split('/').pop() || normalized,

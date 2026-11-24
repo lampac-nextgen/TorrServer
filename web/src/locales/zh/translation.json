@@ -69,6 +69,7 @@
   "ContinueWatching": "继续观看",
   "Copied": "已复制",
   "ExpandAll": "全部展开",
+  "FilesCount": "文件：{{count}}",
   "CollapseAll": "全部折叠",
   "CopyHash": "复制哈希",
   "CopyLink": "复制链接",

@@ -37,7 +37,7 @@ describe('AllFilesTree', () => {
   it('shows folder file count and expands or collapses on click', async () => {
     renderWithProviders(<AllFilesTree files={files} />)
     const show = screen.getByRole('treeitem', { name: /^Show/ })
-    expect(within(show).getByText(/3 files/)).toBeTruthy()
+    expect(within(show).getByText('Files: 3')).toBeTruthy()
     await userEvent.click(screen.getByText('S1'))
     expect(screen.getByText('a.mkv')).toBeTruthy()
     await userEvent.click(screen.getByText('S1'))
@@ -70,6 +70,21 @@ describe('AllFilesTree', () => {
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Copy path' }))
     await waitFor(() => expect(copy).toHaveBeenCalledWith('Show/info.nfo'))
     expect(showToast).toHaveBeenCalledWith({ message: 'Copied', severity: 'success' })
+  })
+
+  it('marks viewed files and shows sizes with one decimal', async () => {
+    renderWithProviders(
+      <AllFilesTree
+        files={[...files, { id: 5, path: 'Show/S1/c.mkv', length: 7.6 * 1024 ** 3 }]}
+        viewedFileList={[5]}
+      />,
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Expand all' }))
+    const row = screen.getByText('c.mkv').closest('[role=treeitem]') as HTMLElement
+    expect(within(row).getByRole('img', { name: 'Viewed' })).toBeTruthy()
+    expect(within(row).getByText('7.6 GB')).toBeTruthy()
+    const other = screen.getByText('a.mkv').closest('[role=treeitem]') as HTMLElement
+    expect(within(other).queryByRole('img', { name: 'Viewed' })).toBeNull()
   })
 
   it('renders a 1000-file pack without mounting files of closed folders', () => {

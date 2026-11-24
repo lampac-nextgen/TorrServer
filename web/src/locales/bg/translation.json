@@ -69,6 +69,7 @@
   "ContinueWatching": "Продолжить просмотр",
   "Copied": "Копирано",
   "ExpandAll": "Разгъни всичко",
+  "FilesCount": "Файлове: {{count}}",
   "CollapseAll": "Свий всичко",
   "CopyHash": "Копиране на InfoHash",
   "CopyLink": "Копиране линк",

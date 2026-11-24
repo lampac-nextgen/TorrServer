@@ -172,6 +172,26 @@ export const removeRedundantCharacters = (string: string): string => {
   return hasThreeDotsAtTheEnd ? `${trimmedString}..` : trimmedString
 }
 
+/**
+ * Like {@link humanizeSize} but keeps one decimal from MB up, so 7.6 GB and 8.0 GB differ.
+ * Used where many similar sizes sit side by side (file tree).
+ */
+export function humanizeSizePrecise(size?: number | null): string {
+  if (size == null || Number.isNaN(size) || size < 0) return '—'
+  if (size === 0) return `0 ${i18n.t('B')}`
+  const units = [i18n.t('B'), i18n.t('KB'), i18n.t('MB'), i18n.t('GB'), i18n.t('TB')]
+  const i = Math.min(Math.floor(Math.log(size) / Math.log(1024)), units.length - 1)
+  const value = size / Math.pow(1024, i)
+  const digits = i >= 2 ? 1 : 0
+  let text: string
+  try {
+    text = value.toLocaleString(i18n.language, { minimumFractionDigits: 0, maximumFractionDigits: digits })
+  } catch {
+    text = String(Number(value.toFixed(digits)))
+  }
+  return `${text} ${units[i]}`
+}
+
 /** Binary (1024) size with fixed English unit labels — prefer {@link humanizeSize} in UI. */
 export function formatSizeToClassicUnits(bytes?: number | null): string {
   if (!bytes || bytes === 0) return '0 B'
