@@ -18,6 +18,7 @@ import { useOptionalAppToast } from 'shared/ui/Toast'
 import { useConfiguredPlayAction } from 'features/player/useConfiguredPlayAction'
 import { usePlayLauncher } from 'features/player/usePlayLauncher'
 
+import { filterFilesByQuery, filterUnviewed } from './fileFilter'
 import FileRowActions from './FileRowActions'
 import { filterFilesForSeason } from './fileSeason'
 import MediaInfoDialog from './MediaInfoDialog'
@@ -44,6 +45,10 @@ export interface FilesDataGridProps {
   torrentData?: string
   allFileStats?: TorrentFileStat[]
   onViewedChange?: () => void
+  /** Name filter (see filterFilesByQuery). A non-empty query searches every season. */
+  nameQuery?: string
+  /** Hide files already watched. */
+  onlyUnviewed?: boolean
 }
 
 interface FileRow {
@@ -155,6 +160,8 @@ const FilesDataGrid = memo(
     torrentData,
     allFileStats = [],
     onViewedChange,
+    nameQuery = '',
+    onlyUnviewed = false,
   }: FilesDataGridProps) => {
     const { t } = useTranslation()
     const toast = useOptionalAppToast()
@@ -208,10 +215,15 @@ const FilesDataGrid = memo(
     )
     const shouldDisplayFullFileName = (playableFileList?.length ?? 0) > 1 && !fileHasEpisodeText
 
-    const filteredFiles = useMemo(
-      () => filterFilesForSeason(playableFileList, selectedSeason, seasonAmount),
-      [playableFileList, selectedSeason, seasonAmount],
-    )
+    // The playlist (episodes, "play from this file") keeps the full list; only the rows are filtered.
+    const filteredFiles = useMemo(() => {
+      const hasQuery = nameQuery.trim() !== ''
+      const scoped = hasQuery
+        ? (playableFileList ?? [])
+        : filterFilesForSeason(playableFileList, selectedSeason, seasonAmount)
+      const byName = filterFilesByQuery(scoped, nameQuery)
+      return onlyUnviewed ? filterUnviewed(byName, viewedFileList) : byName
+    }, [playableFileList, selectedSeason, seasonAmount, nameQuery, onlyUnviewed, viewedFileList])
 
     const episodes = useMemo(
       () => buildEpisodeList(hash, playableFileList ?? [], url => externalLink(url, mediaBase).toString()),
@@ -259,7 +271,7 @@ const FilesDataGrid = memo(
     )
 
     // Mount rows in pages; a sentinel below the list asks for the next page when it nears the viewport.
-    const scope = `${hash}:${selectedSeason ?? ''}:${rows.length}`
+    const scope = `${hash}:${selectedSeason ?? ''}:${nameQuery}:${onlyUnviewed}:${rows.length}`
     const [grown, setGrown] = useState({ scope, count: FILE_ROWS_PAGE })
     const canObserve = typeof IntersectionObserver !== 'undefined'
     const visibleCount = canObserve ? (grown.scope === scope ? grown.count : FILE_ROWS_PAGE) : rows.length
@@ -282,6 +294,10 @@ const FilesDataGrid = memo(
 
     if (!playableFileList?.length) {
       return <p className='py-6 text-center text-sm text-muted'>{t('NoPlayableFiles')}</p>
+    }
+
+    if (rows.length === 0 && (nameQuery.trim() !== '' || onlyUnviewed)) {
+      return <p className='py-6 text-center text-sm text-muted'>{t('NoFilesMatch')}</p>
     }
 
     return (
@@ -320,6 +336,8 @@ const FilesDataGrid = memo(
                   openLinkHref={row.link}
                   showOpenLink={shouldShowOpenLink}
                   copyText={row.fullLink}
+                  fileName={row.path.split('/').pop() || row.path}
+                  filePath={row.path}
                   externalPlayers={externalPlayers}
                   fromFilePlayers={fromFilePlayers}
                   onProbeMedia={() => setMediaInfo({ fileId: row.id, fileName: row.name })}
@@ -354,7 +372,9 @@ const FilesDataGrid = memo(
     prev.allFileStats === next.allFileStats &&
     prev.displayName === next.displayName &&
     prev.torrentData === next.torrentData &&
-    prev.onViewedChange === next.onViewedChange,
+    prev.onViewedChange === next.onViewedChange &&
+    prev.nameQuery === next.nameQuery &&
+    prev.onlyUnviewed === next.onlyUnviewed,
 )
 
 export default FilesDataGrid

@@ -79,6 +79,24 @@ describe('FilesDataGrid rows', () => {
     expect(screen.getByText(/720p/)).toBeTruthy()
   })
 
+  it('nameQuery searches every season and says so when nothing matches', () => {
+    const { rerender } = mount({ selectedSeason: 1, seasonAmount: [1, 2], nameQuery: '720p' })
+    expect(document.querySelectorAll('div[class*="border-l"]')).toHaveLength(1)
+    expect(screen.getByText(/720p/)).toBeTruthy()
+    rerender(
+      <ModalOpenProvider>
+        <FilesDataGrid hash={HASH} displayName='Show' playableFileList={files} nameQuery='nothing here' />
+      </ModalOpenProvider>,
+    )
+    expect(screen.getByText('No files match')).toBeTruthy()
+  })
+
+  it('onlyUnviewed hides watched files', () => {
+    mount({ onlyUnviewed: true, viewedFileList: [1, 2] })
+    expect(document.querySelectorAll('div[class*="border-l"]')).toHaveLength(1)
+    expect(screen.getByText(/720p/)).toBeTruthy()
+  })
+
   it('marks viewed rows and clears one mark through /viewed, then notifies the parent', async () => {
     const onViewedChange = vi.fn()
     mount({ viewedFileList: [2], onViewedChange })

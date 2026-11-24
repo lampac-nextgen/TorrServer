@@ -181,3 +181,27 @@ describe('FileRowActions from this file', () => {
     expect(await screen.findByText('VLC · Play from this file')).toBeTruthy()
   })
 })
+
+describe('FileRowActions copy name/path', () => {
+  const extra = { fileName: 'x.mp4', filePath: 'Season 1/x.mp4' }
+
+  it('desktop: the copy menu copies the name and the path', async () => {
+    renderWithProviders(<FileRowActions {...base(extra)} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Copy name' }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Copy path' }))
+    await waitFor(() => expect(copy).toHaveBeenCalledWith('Season 1/x.mp4'))
+  })
+
+  it('hides the copy menu when no names are given', () => {
+    renderWithProviders(<FileRowActions {...base()} />)
+    expect(screen.queryByRole('button', { name: 'Copy name' })).toBeNull()
+  })
+
+  it('mobile: More menu lists Copy name and Copy path', async () => {
+    setMobile(true)
+    renderWithProviders(<FileRowActions {...base(extra)} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Actions' }))
+    expect(await screen.findByRole('menuitem', { name: 'Copy name' })).toBeTruthy()
+    expect(screen.getByRole('menuitem', { name: 'Copy path' })).toBeTruthy()
+  })
+})
