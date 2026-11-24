@@ -2,7 +2,7 @@ import { Button, Dropdown, Spinner, Tooltip, useMediaQuery, useOverlayState } fr
 import {
   ArrowDownToLine,
   ClipboardCopy,
-  FileDown,
+  Download,
   FileVideo,
   Link2,
   ListMusic,
@@ -104,11 +104,6 @@ export default function FileRowActions({
   }
 
   const copyDirectLink = () => copyValue(copyText)
-  const startDownload = () => {
-    if (!downloadHref) return
-    saveFromHref(downloadHref, fileName)
-    toast?.showToast({ message: t('DownloadStarted'), severity: 'success' })
-  }
   const copyItems = [
     fileName ? { key: 'name', label: t('CopyName'), value: fileName } : null,
     filePath ? { key: 'path', label: t('CopyPath'), value: filePath } : null,
@@ -222,8 +217,8 @@ export default function FileRowActions({
       {downloadHref
         ? utilityButton({
             label: t('Download'),
-            onPress: startDownload,
-            children: <FileDown {...actionIcon} />,
+            onPress: () => saveFromHref(downloadHref, fileName),
+            children: <Download {...actionIcon} />,
           })
         : null}
       {utilityButton({
@@ -321,10 +316,10 @@ export default function FileRowActions({
               className='min-h-11'
               onPress={() => {
                 moreMenu.close()
-                startDownload()
+                saveFromHref(downloadHref, fileName)
               }}
             >
-              <FileDown {...menuIcon} />
+              <Download {...menuIcon} />
               {t('Download')}
             </Dropdown.Item>
           ) : null}
