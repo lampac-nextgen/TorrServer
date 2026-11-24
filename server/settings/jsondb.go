@@ -219,7 +219,7 @@ func (v *JsonDB) writeMapAsJsonFile(filename string, o map[string]interface{}) e
 		err = os.Rename(tmp, path)
 	}
 	if err != nil {
-		os.Remove(tmp)
+		_ = os.Remove(tmp)
 		v.log(fmt.Sprintf("writeMapAsJsonFile path: %s, fileMode: %s error", path, v.fileMode), err)
 	}
 	return err
