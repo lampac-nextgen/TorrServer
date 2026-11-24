@@ -9,6 +9,8 @@ import FileRowActions, { type FileRowActionsProps } from './FileRowActions'
 
 const copy = vi.hoisted(() => vi.fn())
 vi.mock('shared/lib/clipboard', () => ({ copyToClipboard: copy }))
+const showToast = vi.hoisted(() => vi.fn())
+vi.mock('shared/ui/Toast', () => ({ useOptionalAppToast: () => ({ showToast }) }))
 
 const base = (over: Partial<FileRowActionsProps> = {}): FileRowActionsProps => ({
   preloadLabel: 'Preload',
@@ -39,6 +41,7 @@ const original = window.matchMedia
 
 beforeEach(() => {
   copy.mockReset()
+  showToast.mockReset()
   copy.mockResolvedValue(undefined)
   setMobile(false)
 })
@@ -190,6 +193,7 @@ describe('FileRowActions download and copy name/path', () => {
     renderWithProviders(<FileRowActions {...base(extra)} />)
     await userEvent.click(screen.getByRole('button', { name: 'Download' }))
     expect(click).toHaveBeenCalledTimes(1)
+    expect(showToast).toHaveBeenCalledWith({ message: 'Download started', severity: 'success' })
     expect(document.querySelector('a[download]')).toBeNull()
   })
 

@@ -73,6 +73,7 @@
   "CopyName": "Скопировать имя",
   "CopyPath": "Скопировать путь",
   "Download": "Скачать",
+  "DownloadStarted": "Загрузка началась",
   "CopyMagnet": "Скопировать Magnet",
   "CopyMcpUrl": "Копировать URL MCP",
   "CopyTorrs": "Скопировать web+torrs://",

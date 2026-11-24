@@ -73,6 +73,7 @@
   "CopyName": "Скопіювати назву",
   "CopyPath": "Скопіювати шлях",
   "Download": "Завантажити",
+  "DownloadStarted": "Завантаження розпочато",
   "CopyMagnet": "Скопіювати Magnet",
   "CopyMcpUrl": "Скопіювати посилання MCP",
   "CopyTorrs": "Скопіювати посилання web+torrs://",

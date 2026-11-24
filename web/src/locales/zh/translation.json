@@ -73,6 +73,7 @@
   "CopyName": "复制名称",
   "CopyPath": "复制路径",
   "Download": "下载",
+  "DownloadStarted": "已开始下载",
   "CopyMagnet": "复制磁力链接",
   "CopyMcpUrl": "复制 MCP URL",
   "CopyTorrs": "复制 web+torrs://",
