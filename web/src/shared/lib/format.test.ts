@@ -8,7 +8,6 @@ import {
   formatBufferFilledLabel,
   formatCacheFilledLabel,
   formatSizeToClassicUnits,
-  humanizeSizePrecise,
   getPeerString,
   humanizeSize,
   parseSizeToBytes,
@@ -225,15 +224,5 @@ describe('parseSizeToBytes', () => {
     expect(parseSizeToBytes('')).toBe(0)
     expect(parseSizeToBytes(undefined)).toBe(0)
     expect(parseSizeToBytes('n/a')).toBe(0)
-  })
-})
-
-describe('humanizeSizePrecise', () => {
-  it('keeps one decimal from MB up and none below', () => {
-    expect(humanizeSizePrecise(7.6 * 1024 ** 3)).toBe('7.6 GB')
-    expect(humanizeSizePrecise(8 * 1024 ** 3)).toBe('8 GB')
-    expect(humanizeSizePrecise(1536)).toBe('2 KB')
-    expect(humanizeSizePrecise(0)).toBe('0 B')
-    expect(humanizeSizePrecise(null)).toBe('—')
   })
 })

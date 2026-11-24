@@ -115,7 +115,7 @@ export default function FileBrowser({
     return (
       <div className='w-full'>
         {viewToggle}
-        <AllFilesTree files={allFiles ?? []} viewedFileList={viewedFileList} />
+        <AllFilesTree files={allFiles ?? []} />
       </div>
     )
   }

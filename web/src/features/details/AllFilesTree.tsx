@@ -1,10 +1,10 @@
 import { Button, Dropdown } from '@heroui/react'
-import { ChevronDown, ChevronRight, Copy, Eye, File as FileIcon, Folder, FolderOpen } from 'lucide-react'
+import { ChevronDown, ChevronRight, ClipboardCopy, File as FileIcon, Folder, FolderOpen } from 'lucide-react'
 import { memo, useCallback, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PlayableFile } from 'shared/api/types'
 import { copyToClipboard } from 'shared/lib/clipboard'
-import { humanizeSizePrecise } from 'shared/lib/format'
+import { humanizeSize } from 'shared/lib/format'
 import { iconMenu } from 'shared/ui/iconProps'
 import { useOptionalAppToast } from 'shared/ui/Toast'
 
@@ -27,26 +27,22 @@ function initialExpanded(tree: DirectoryNode): Set<string> {
 interface TreeRowViewProps {
   row: TreeRow
   active: boolean
-  viewed: boolean
   onToggle: (key: string) => void
   onFocusRow: (key: string) => void
   onCopy: (value: string) => void
   copyNameLabel: string
   copyPathLabel: string
-  viewedLabel: string
   filesLabel: string
 }
 
 const TreeRowView = memo(function TreeRowView({
   row,
   active,
-  viewed,
   onToggle,
   onFocusRow,
   onCopy,
   copyNameLabel,
   copyPathLabel,
-  viewedLabel,
   filesLabel,
 }: TreeRowViewProps) {
   const isFolder = row.kind === 'folder'
@@ -70,15 +66,15 @@ const TreeRowView = memo(function TreeRowView({
         {isFolder ? row.expanded ? <ChevronDown {...iconMenu} /> : <ChevronRight {...iconMenu} /> : null}
       </span>
       <Icon {...iconMenu} className='shrink-0 text-muted' aria-hidden />
-      {/* Wrap instead of truncating: episode names share a long prefix and differ at the end. */}
-      <span className='line-clamp-2 min-w-0 flex-1 text-sm text-foreground [overflow-wrap:anywhere]' title={row.path}>
+      <span className='min-w-0 flex-1 truncate text-sm text-foreground' title={row.path}>
         {row.label}
       </span>
-      {viewed ? <Eye {...iconMenu} className='shrink-0 text-accent' aria-label={viewedLabel} role='img' /> : null}
-      <span className='flex shrink-0 flex-col items-end text-xs tabular-nums text-muted'>
-        <span>{humanizeSizePrecise(row.size)}</span>
-        {isFolder ? <span>{filesLabel}</span> : null}
-      </span>
+      {isFolder ? (
+        <span className='shrink-0 text-xs text-muted'>
+          {row.fileCount} {filesLabel}
+        </span>
+      ) : null}
+      <span className='w-20 shrink-0 text-right text-xs tabular-nums text-muted'>{humanizeSize(row.size)}</span>
       <Dropdown>
         <Button
           variant='ghost'
@@ -88,7 +84,7 @@ const TreeRowView = memo(function TreeRowView({
           aria-label={`${copyNameLabel}: ${row.label}`}
           onClick={e => e.stopPropagation()}
         >
-          <Copy {...iconMenu} aria-hidden />
+          <ClipboardCopy {...iconMenu} aria-hidden />
         </Button>
         <Dropdown.Popover placement='bottom end'>
           <Dropdown.Menu aria-label={copyNameLabel}>
@@ -103,12 +99,10 @@ const TreeRowView = memo(function TreeRowView({
 
 interface AllFilesTreeProps {
   files: PlayableFile[]
-  /** File ids already watched; they get a small eye mark. */
-  viewedFileList?: number[]
 }
 
 /** Every file of the torrent as a collapsible directory tree with folder sizes and file counts. */
-export default function AllFilesTree({ files, viewedFileList }: AllFilesTreeProps) {
+export default function AllFilesTree({ files }: AllFilesTreeProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
   const treeRef = useRef<HTMLDivElement | null>(null)
@@ -119,7 +113,6 @@ export default function AllFilesTree({ files, viewedFileList }: AllFilesTreeProp
 
   const rows = useMemo(() => visibleTreeRows(tree, expanded, summaries), [tree, expanded, summaries])
   const rootSummary = summaries.get('root')
-  const viewedIds = useMemo(() => new Set(viewedFileList ?? []), [viewedFileList])
   const hasFolders = tree.children.size > 0
   const currentKey = rows.some(r => r.key === activeKey) ? activeKey : (rows[0]?.key ?? null)
 
@@ -205,7 +198,7 @@ export default function AllFilesTree({ files, viewedFileList }: AllFilesTreeProp
     <div className='flex w-full flex-col gap-2'>
       <div className='flex flex-wrap items-center justify-between gap-2'>
         <p className='text-xs text-muted'>
-          {t('FilesCount', { count: rootSummary?.fileCount ?? 0 })} · {humanizeSizePrecise(rootSummary?.size ?? 0)}
+          {rootSummary?.fileCount ?? 0} {t('TorrentFiles')} · {humanizeSize(rootSummary?.size ?? 0)}
         </p>
         {hasFolders ? (
           <div className='flex gap-1.5'>
@@ -235,14 +228,12 @@ export default function AllFilesTree({ files, viewedFileList }: AllFilesTreeProp
             key={row.key}
             row={row}
             active={row.key === currentKey}
-            viewed={row.fileId != null && viewedIds.has(row.fileId)}
             onToggle={toggle}
             onFocusRow={setActiveKey}
             onCopy={value => void copy(value)}
             copyNameLabel={t('CopyName')}
             copyPathLabel={t('CopyPath')}
-            viewedLabel={t('Viewed')}
-            filesLabel={t('FilesCount', { count: row.fileCount })}
+            filesLabel={t('TorrentFiles').toLowerCase()}
           />
         ))}
       </div>
