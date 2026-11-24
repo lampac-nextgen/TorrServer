@@ -211,12 +211,10 @@ export default function DetailsDialog({
     data,
   } = torrent
 
-  // Every file, playable or not: the "All files" tree lists nfo, images and subtitles too.
-  const allFileList = useMemo(
-    () => (fileStats?.length ? fileStats.map(toPlayableFile) : filesFromMetadata(data)),
-    [fileStats, data],
-  )
-  const playableFileList = useMemo(() => allFileList.filter(({ path }) => isFilePlayable(path)), [allFileList])
+  const playableFileList = useMemo(() => {
+    const files = fileStats?.length ? fileStats.map(toPlayableFile) : filesFromMetadata(data)
+    return files.filter(({ path }) => isFilePlayable(path))
+  }, [fileStats, data])
 
   const resolvedTab = activeTab
 
@@ -555,7 +553,6 @@ export default function DetailsDialog({
                   <FileBrowser
                     hash={hash}
                     playableFileList={playableFileList || []}
-                    allFiles={allFileList}
                     viewedFileList={viewedFileList}
                     selectedSeason={selectedSeason}
                     seasonAmount={seasonList}

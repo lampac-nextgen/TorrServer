@@ -1,15 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  buildDirectoryTree,
-  collectFolderIds,
-  directoryTreeIsUseful,
-  filesInSelectedFolder,
-  flattenFolders,
-  folderPath,
-  summarizeTree,
-  visibleTreeRows,
-} from './fileTree'
+import { buildDirectoryTree, directoryTreeIsUseful, filesInSelectedFolder, flattenFolders } from './fileTree'
 
 describe('file tree', () => {
   it('filters a 1200-file pack by nested folder and keeps special names', () => {
@@ -43,43 +34,5 @@ describe('file tree', () => {
     const tree = buildDirectoryTree(files)
     expect(directoryTreeIsUseful(tree)).toBe(false)
     expect(filesInSelectedFolder(files, tree, 'root/Movie')).toBe(files)
-  })
-})
-
-describe('tree summaries and rows', () => {
-  const files = [
-    { id: 1, path: 'Show/S1/b.mkv', length: 100 },
-    { id: 2, path: 'Show/S1/a.mkv', length: 50 },
-    { id: 3, path: 'Show/readme.nfo', length: 5 },
-    { id: 4, path: 'loose.txt', length: 1 },
-  ]
-
-  it('sums size and file count per folder, nested included', () => {
-    const tree = buildDirectoryTree(files)
-    const sums = summarizeTree(tree)
-    expect(sums.get('root')).toEqual({ size: 156, fileCount: 4 })
-    expect(sums.get('root/Show')).toEqual({ size: 155, fileCount: 3 })
-    expect(sums.get('root/Show/S1')).toEqual({ size: 150, fileCount: 2 })
-    expect(collectFolderIds(tree)).toEqual(['root/Show', 'root/Show/S1'])
-    expect(folderPath('root/Show/S1')).toBe('Show/S1')
-  })
-
-  it('walks only expanded folders, folders before files, natural order', () => {
-    const tree = buildDirectoryTree(files)
-    const sums = summarizeTree(tree)
-    const collapsed = visibleTreeRows(tree, new Set(), sums)
-    expect(collapsed.map(r => r.label)).toEqual(['Show', 'loose.txt'])
-
-    const open = visibleTreeRows(tree, new Set(['root/Show', 'root/Show/S1']), sums)
-    expect(open.map(r => `${r.depth}:${r.label}`)).toEqual([
-      '0:Show',
-      '1:S1',
-      '2:a.mkv',
-      '2:b.mkv',
-      '1:readme.nfo',
-      '0:loose.txt',
-    ])
-    expect(open[0]).toMatchObject({ kind: 'folder', size: 155, fileCount: 3, expanded: true, path: 'Show' })
-    expect(open[2]).toMatchObject({ kind: 'file', path: 'Show/S1/a.mkv', size: 50 })
   })
 })
