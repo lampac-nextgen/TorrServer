@@ -320,9 +320,6 @@ const FilesDataGrid = memo(
                   openLinkHref={row.link}
                   showOpenLink={shouldShowOpenLink}
                   copyText={row.fullLink}
-                  downloadHref={row.link}
-                  fileName={row.path.split('/').pop() || row.path}
-                  filePath={row.path}
                   externalPlayers={externalPlayers}
                   fromFilePlayers={fromFilePlayers}
                   onProbeMedia={() => setMediaInfo({ fileId: row.id, fileName: row.name })}
