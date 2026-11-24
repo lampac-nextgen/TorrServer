@@ -181,3 +181,37 @@ describe('FileRowActions from this file', () => {
     expect(await screen.findByText('VLC · Play from this file')).toBeTruthy()
   })
 })
+
+describe('FileRowActions download and copy name/path', () => {
+  const extra = { downloadHref: '/stream/x.mp4?link=h&index=1&play', fileName: 'x.mp4', filePath: 'Season 1/x.mp4' }
+
+  it('desktop: Download saves the stream URL under the file name', async () => {
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+    renderWithProviders(<FileRowActions {...base(extra)} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Download' }))
+    expect(click).toHaveBeenCalledTimes(1)
+    expect(document.querySelector('a[download]')).toBeNull()
+  })
+
+  it('desktop: the copy menu copies the name and the path', async () => {
+    renderWithProviders(<FileRowActions {...base(extra)} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Copy name' }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Copy path' }))
+    await waitFor(() => expect(copy).toHaveBeenCalledWith('Season 1/x.mp4'))
+  })
+
+  it('hides both when no download href or names are given', () => {
+    renderWithProviders(<FileRowActions {...base()} />)
+    expect(screen.queryByRole('button', { name: 'Download' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Copy name' })).toBeNull()
+  })
+
+  it('mobile: More menu lists Copy name, Copy path and Download', async () => {
+    setMobile(true)
+    renderWithProviders(<FileRowActions {...base(extra)} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Actions' }))
+    expect(await screen.findByRole('menuitem', { name: 'Copy name' })).toBeTruthy()
+    expect(screen.getByRole('menuitem', { name: 'Copy path' })).toBeTruthy()
+    expect(screen.getByRole('menuitem', { name: 'Download' })).toBeTruthy()
+  })
+})

@@ -1,5 +1,15 @@
 import { Button, Dropdown, Spinner, Tooltip, useMediaQuery, useOverlayState } from '@heroui/react'
-import { ArrowDownToLine, FileVideo, Link2, ListMusic, MoreHorizontal, Play, SquareArrowOutUpRight } from 'lucide-react'
+import {
+  ArrowDownToLine,
+  ClipboardCopy,
+  Download,
+  FileVideo,
+  Link2,
+  ListMusic,
+  MoreHorizontal,
+  Play,
+  SquareArrowOutUpRight,
+} from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ExternalPlayerLink } from 'shared/lib/externalPlayers'
@@ -28,6 +38,22 @@ export interface FileRowActionsProps {
   /** Series only: player links that start the playlist at this file. */
   fromFilePlayers?: ExternalPlayerLink[]
   onProbeMedia?: () => void
+  /** Same-origin stream URL saved by the browser ("Download"). Hidden when absent. */
+  downloadHref?: string
+  /** File name and full path inside the torrent, for "Copy name" / "Copy path". */
+  fileName?: string
+  filePath?: string
+}
+
+/** Browser save of a stream URL: a transient anchor with the `download` attribute. */
+function saveFromHref(href: string, fileName?: string) {
+  const a = document.createElement('a')
+  a.href = href
+  a.download = fileName ?? ''
+  a.rel = 'noopener'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
 }
 
 /** Desktop / tablet external-player chip — mid weight between Play and utilities. */
@@ -59,20 +85,29 @@ export default function FileRowActions({
   externalPlayers,
   fromFilePlayers = [],
   onProbeMedia,
+  downloadHref,
+  fileName,
+  filePath,
 }: FileRowActionsProps) {
   const { t } = useTranslation()
   const toast = useOptionalAppToast()
   const isMobile = useMediaQuery(queryMax('mobile'))
   const moreMenu = useOverlayState()
 
-  const copyDirectLink = async () => {
+  const copyValue = async (value: string) => {
     try {
-      await copyToClipboard(copyText)
+      await copyToClipboard(value)
       toast?.showToast({ message: t('Copied'), severity: 'success' })
     } catch {
       toast?.showToast({ message: t('Error'), severity: 'error' })
     }
   }
+
+  const copyDirectLink = () => copyValue(copyText)
+  const copyItems = [
+    fileName ? { key: 'name', label: t('CopyName'), value: fileName } : null,
+    filePath ? { key: 'path', label: t('CopyPath'), value: filePath } : null,
+  ].filter((x): x is { key: string; label: string; value: string } => x !== null)
 
   const openExternal = () => {
     if (openLinkHref) window.open(openLinkHref, '_blank', 'noopener,noreferrer')
@@ -163,6 +198,29 @@ export default function FileRowActions({
         onPress: () => void copyDirectLink(),
         children: <Link2 {...actionIcon} />,
       })}
+      {copyItems.length > 0 ? (
+        <Dropdown>
+          <Button variant='ghost' size='sm' isIconOnly className={utilitySegBtn} aria-label={t('CopyName')}>
+            <ClipboardCopy {...actionIcon} />
+          </Button>
+          <Dropdown.Popover placement='bottom end'>
+            <Dropdown.Menu aria-label={t('CopyName')}>
+              {copyItems.map(item => (
+                <Dropdown.Item key={item.key} onPress={() => void copyValue(item.value)}>
+                  {item.label}
+                </Dropdown.Item>
+              ))}
+            </Dropdown.Menu>
+          </Dropdown.Popover>
+        </Dropdown>
+      ) : null}
+      {downloadHref
+        ? utilityButton({
+            label: t('Download'),
+            onPress: () => saveFromHref(downloadHref, fileName),
+            children: <Download {...actionIcon} />,
+          })
+        : null}
       {utilityButton({
         label: preloadLabel,
         onPress: onPreload,
@@ -240,6 +298,31 @@ export default function FileRowActions({
             <Link2 {...menuIcon} />
             {t('CopyLink')}
           </Dropdown.Item>
+          {copyItems.map(item => (
+            <Dropdown.Item
+              key={item.key}
+              className='min-h-11'
+              onPress={() => {
+                moreMenu.close()
+                void copyValue(item.value)
+              }}
+            >
+              <ClipboardCopy {...menuIcon} />
+              {item.label}
+            </Dropdown.Item>
+          ))}
+          {downloadHref ? (
+            <Dropdown.Item
+              className='min-h-11'
+              onPress={() => {
+                moreMenu.close()
+                saveFromHref(downloadHref, fileName)
+              }}
+            >
+              <Download {...menuIcon} />
+              {t('Download')}
+            </Dropdown.Item>
+          ) : null}
           <Dropdown.Item
             className='min-h-11'
             onPress={() => {
