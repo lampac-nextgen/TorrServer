@@ -517,7 +517,7 @@ export default function DetailsDialog({
             </Tabs.ListContainer>
 
             <Tabs.Panel id='files' className='flex min-h-0 flex-1 flex-col overflow-hidden pt-2 sm:pt-3'>
-              <div className='min-h-0 flex-1 overflow-y-auto overscroll-contain'>
+              <div className='min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 pt-1'>
                 {hasMultipleSeasons ? (
                   <div className='mb-2 min-h-11 sm:mb-3'>
                     <ToggleButtonGroup
