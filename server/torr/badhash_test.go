@@ -2,8 +2,8 @@ package torr
 
 import "testing"
 
-// A hash that is not 40 hex digits comes from a request as is: the base32 btih of a magnet link (32
-// characters), an md5, garbage. None of these functions may panic on it - it is an unknown torrent.
+// A hash that is neither 40 hex digits nor a 32-character base32 btih comes from a request as is: an
+// md5, garbage. None of these functions may panic on it - it is an unknown torrent.
 func TestBadHashNoPanic(t *testing.T) {
 	calls := map[string]func(string){
 		"GetTorrent": func(h string) {
@@ -20,7 +20,7 @@ func TestBadHashNoPanic(t *testing.T) {
 		"DropTorrent": func(h string) { DropTorrent(h) },
 	}
 	for _, h := range []string{
-		"MFRGGZDFMZTWQ2LKNNWG23TPOBYXE43U",          // base32 btih of a magnet link
+		"mfrggzdfmztwq2lknnwg23tpobyxe43u",          // 32 characters, lower-case base32 is not accepted
 		"d41d8cd98f00b204e9800998ecf8427e",          // 32 hex
 		"zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",  // 40 characters, not hex
 		"0123456789abcdef0123456789abcdef0123456",   // 39
