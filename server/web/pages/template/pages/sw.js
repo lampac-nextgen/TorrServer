@@ -84,7 +84,7 @@ define(['./workbox-7e5eb42b'], (function (workbox) { 'use strict';
     "revision": "309432780e6787fb85db09f65df99d3a"
   }, {
     "url": "index.html",
-    "revision": "b433729af08471303b53993956dbf344"
+    "revision": "e70d4914c82dfa1268a5449c3496c857"
   }, {
     "url": "icon.png",
     "revision": "4a7a2fa5a2a3c9bbfde8e92aaeab2cf4"
@@ -119,13 +119,13 @@ define(['./workbox-7e5eb42b'], (function (workbox) { 'use strict';
     "url": "static/workbox-window.prod.es5-Bd17z0YL.js",
     "revision": null
   }, {
-    "url": "static/vendor-BAaZezQN.js",
+    "url": "static/vendor-Dr5qjIYf.js",
     "revision": null
   }, {
-    "url": "static/useTranslation-BNPi98Lp.js",
+    "url": "static/useTranslation-Dr5TEQQl.js",
     "revision": null
   }, {
-    "url": "static/useTorrentDetail-ri2y8b2I.js",
+    "url": "static/useTorrentDetail-CD0cUyzJ.js",
     "revision": null
   }, {
     "url": "static/useThemePreference-tn3pNyGa.js",
@@ -140,19 +140,19 @@ define(['./workbox-7e5eb42b'], (function (workbox) { 'use strict';
     "url": "static/torrsLink-CrcAIGZk.js",
     "revision": null
   }, {
-    "url": "static/torrents-BMPYzdbP.js",
+    "url": "static/torrents-CQ2JN4r2.js",
     "revision": null
   }, {
-    "url": "static/torrentHelpers-BJh5W1w-.js",
+    "url": "static/torrentHelpers-Car3ke3B.js",
     "revision": null
   }, {
     "url": "static/states-C1wEik_A.js",
     "revision": null
   }, {
-    "url": "static/settings-VV0puxlD.js",
+    "url": "static/settings-CByM-wMf.js",
     "revision": null
   }, {
-    "url": "static/runtime-Bnrlj7mN.js",
+    "url": "static/runtime-ePyYQLfT.js",
     "revision": null
   }, {
     "url": "static/rolldown-runtime-CNOWq4Kh.js",
@@ -167,16 +167,16 @@ define(['./workbox-7e5eb42b'], (function (workbox) { 'use strict';
     "url": "static/parse-torrent-title-Dg2_fbqy.js",
     "revision": null
   }, {
-    "url": "static/maximize-2-34qE9zrb.js",
+    "url": "static/maximize-2-BtR9_LSJ.js",
     "revision": null
   }, {
     "url": "static/localPrefs-C6BvauQz.js",
     "revision": null
   }, {
-    "url": "static/index-DPn7tqwG.css",
+    "url": "static/index-q15gmADX.js",
     "revision": null
   }, {
-    "url": "static/index-DDwkQYKz.js",
+    "url": "static/index-FMTKMZGF.css",
     "revision": null
   }, {
     "url": "static/hosts-CEyv4OUe.js",
@@ -188,94 +188,94 @@ define(['./workbox-7e5eb42b'], (function (workbox) { 'use strict';
     "url": "static/heroui-CcMZDSdM.js",
     "revision": null
   }, {
-    "url": "static/heart-BVKBeV0b.js",
+    "url": "static/heart-wstld3zt.js",
     "revision": null
   }, {
-    "url": "static/gauge-CdSt6JmO.js",
+    "url": "static/gauge-BrPUDKl8.js",
     "revision": null
   }, {
-    "url": "static/film-5G9ignYL.js",
+    "url": "static/film-DYhp5iIX.js",
     "revision": null
   }, {
-    "url": "static/createLucideIcon-DkG6WpLt.js",
+    "url": "static/createLucideIcon-nX1vUKVM.js",
     "revision": null
   }, {
-    "url": "static/clapperboard-CbarCRvi.js",
+    "url": "static/clapperboard-BueXTHeM.js",
     "revision": null
   }, {
-    "url": "static/circle-exclamation-point-CUKXrynR.js",
+    "url": "static/circle-exclamation-point-DqcyTrSD.js",
     "revision": null
   }, {
-    "url": "static/authCredentials-DkTS2QYC.js",
+    "url": "static/authCredentials-3umL0gLp.js",
     "revision": null
   }, {
-    "url": "static/VideoPlayer-bs7WptiO.js",
+    "url": "static/VideoPlayer-DSc3IECp.js",
     "revision": null
   }, {
     "url": "static/UnsafeButton-DI4rg4cK.js",
     "revision": null
   }, {
-    "url": "static/SettingsDialog-CwpMPNND.js",
+    "url": "static/SettingsDialog-CXDeKdIt.js",
     "revision": null
   }, {
-    "url": "static/ServerStatusDialog-C-DgY2ot.js",
+    "url": "static/ServerStatusDialog-C1rvhbuY.js",
     "revision": null
   }, {
-    "url": "static/SearchDialog-CLlZWZS_.js",
+    "url": "static/SearchDialog-6Z0716_L.js",
     "revision": null
   }, {
-    "url": "static/RemoveAllDialog-GWfhumlV.js",
+    "url": "static/RemoveAllDialog-CtneiY1I.js",
     "revision": null
   }, {
-    "url": "static/PosterPicker-BaCYejaI.js",
+    "url": "static/PosterPicker-Cd_Sdy-J.js",
     "revision": null
   }, {
-    "url": "static/PWAInstallationGuide-BmlRneij.js",
+    "url": "static/PWAInstallationGuide--fhkmroz.js",
     "revision": null
   }, {
-    "url": "static/MultiAddDialog-DAHc1p-C.js",
+    "url": "static/MultiAddDialog-BQRCl3I4.js",
     "revision": null
   }, {
     "url": "static/ModalOpenContext-C_Zirt8k.js",
     "revision": null
   }, {
-    "url": "static/ImportLibraryDialog-CNMGve5j.js",
+    "url": "static/ImportLibraryDialog-B8kGQ4Jl.js",
     "revision": null
   }, {
-    "url": "static/ExportLibraryDialog-CRb5fWLE.js",
+    "url": "static/ExportLibraryDialog-yDixCdyR.js",
     "revision": null
   }, {
-    "url": "static/EditTorrentDialog-lyCThRCS.js",
+    "url": "static/EditTorrentDialog-_6XhR4KY.js",
     "revision": null
   }, {
-    "url": "static/DonateSnackbar-ZOKpXBoR.js",
+    "url": "static/DonateSnackbar-HDAsaU1c.js",
     "revision": null
   }, {
-    "url": "static/DonateDialog-DYkg-Umn.js",
+    "url": "static/DonateDialog-BIa95Afp.js",
     "revision": null
   }, {
-    "url": "static/DetailsDialog-Bm39UGLP.js",
+    "url": "static/DetailsDialog-BVtG8f0j.js",
     "revision": null
   }, {
-    "url": "static/CommandPalette-CyLZDy0H.js",
+    "url": "static/CommandPalette-ChtXqDfB.js",
     "revision": null
   }, {
-    "url": "static/CloseServerDialog-C7_HKXBk.js",
+    "url": "static/CloseServerDialog-Bf49Zpmj.js",
     "revision": null
   }, {
-    "url": "static/CategoriesDrawer-C5jFFxtQ.js",
+    "url": "static/CategoriesDrawer-DyjeYa4a.js",
     "revision": null
   }, {
     "url": "static/AppDialog-W-PVsYPR.js",
     "revision": null
   }, {
-    "url": "static/AndroidInstallBanner-W0QSPMQr.js",
+    "url": "static/AndroidInstallBanner-C6xXqr3Q.js",
     "revision": null
   }, {
-    "url": "static/AddDialog-7RxEKBDq.js",
+    "url": "static/AddDialog-DDCPmr2O.js",
     "revision": null
   }, {
-    "url": "static/AboutDialog-2NQy0jiQ.js",
+    "url": "static/AboutDialog-Do7PetMg.js",
     "revision": null
   }, {
     "url": "brand/logo-light.svg",
