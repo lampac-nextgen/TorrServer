@@ -1,6 +1,7 @@
 package torr
 
 import (
+	"encoding/base32"
 	"fmt"
 	"io"
 	"os"
@@ -104,14 +105,24 @@ func SaveTorrentToDB(torr *Torrent) {
 }
 
 // parseHash reads a hash that came with a request: /torrents, /cache, /playlist and /msx/trn pass it
-// on unchecked. Only 40 hex digits are a hash here, and metainfo.NewHashFromHex panics on anything
-// else - for example on the 32-character base32 btih of a magnet link, which ParseLink accepts.
-// A malformed hash is an unknown torrent.
+// on unchecked. A hash is 40 hex digits or the 32-character base32 btih of a magnet link, which
+// ParseLink accepts; both give the same metainfo.Hash. metainfo.NewHashFromHex panics on anything
+// else, so a malformed hash is an unknown torrent.
 func parseHash(hashHex string) (metainfo.Hash, bool) {
 	var hash metainfo.Hash
-	if err := hash.FromHexString(hashHex); err != nil {
+	var err error
+	if len(hashHex) == 32 {
+		var n int
+		n, err = base32.StdEncoding.Decode(hash[:], []byte(hashHex))
+		if err == nil && n != len(hash) {
+			err = fmt.Errorf("base32 hash is %d bytes, want %d", n, len(hash))
+		}
+	} else {
+		err = hash.FromHexString(hashHex)
+	}
+	if err != nil {
 		log.TLogln("bad torrent hash", fmt.Sprintf("%.64q:", hashHex), err)
-		return hash, false
+		return metainfo.Hash{}, false
 	}
 	return hash, true
 }
@@ -226,7 +237,7 @@ func RemTorrent(hashHex string) {
 		// If the torrent isn't in memory, just delete it from the database and the files
 		RemTorrentDB(hash)
 		if sets.BTsets.UseDisk && hashHex != "" && hashHex != "/" {
-			name := filepath.Join(sets.BTsets.TorrentsSavePath, hashHex)
+			name := filepath.Join(sets.BTsets.TorrentsSavePath, hash.HexString())
 			_ = os.RemoveAll(name)
 		}
 		return
@@ -247,7 +258,7 @@ func RemTorrent(hashHex string) {
 
 		// Now we can safely delete the files from the disk
 		if sets.BTsets.UseDisk && hashHex != "" && hashHex != "/" {
-			name := filepath.Join(sets.BTsets.TorrentsSavePath, hashHex)
+			name := filepath.Join(sets.BTsets.TorrentsSavePath, hash.HexString())
 			if _, err := os.Stat(name); err == nil {
 				log.TLogln("Removing cache files for:", hashHex)
 				_ = os.RemoveAll(name)
