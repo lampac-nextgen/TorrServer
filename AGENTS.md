@@ -2,7 +2,7 @@
 
 Module path is `server`. Go commands run from `server/`. This checkout has no `internal/` tree and no root `go.mod`. Do not invent a second engine.
 
-`server/go.mod` is `go 1.25.7`. CI installs `GO_VERSION` from `.github/versions.env` (currently 1.27.3) and keeps the module line aligned with `GO_ANDROID_VERSION`. `server/.golangci.yml` pins `run.go` to `1.25.7`; bump that line in the same change as the module.
+`server/go.mod` is `go 1.25.7`. CI installs `GO_VERSION` from `.github/versions.env` (currently 1.27.4) and keeps the module line aligned with `GO_ANDROID_VERSION`. `server/.golangci.yml` pins `run.go` to `1.25.7`; bump that line in the same change as the module.
 
 ## What this process is
 
@@ -198,7 +198,7 @@ Process env read by Go:
 - `SSL_CERT_FILE` / `SSL_CERT_DIR` on Linux. `configureCARoots` will not override a value the user already set.
 - `GODEBUG=madvdontneed=1` is the container default so dropped piece RAM returns to the OS.
 - `GOMEMLIMIT` is unset by default and passed through Compose. Playback with a 64MiB cache measured ~127MiB vs ~29MiB idle; the limit makes GC run sooner. It is documentation, not a code default: a limit below the live cache makes GC spin.
-- systemd/cgroup memory reads 2-3x the Go heap after a torrent closes when THP is `always`: Go's freed 2MiB pages stay charged to the cgroup until the kernel's deferred split. `anon` / `RssAnon` and `/runtime/status` are the real numbers (`docs/memory.md`). Measured: `GODEBUG=disablethp=1` did not change it on Go 1.27.3, and `//go:debug disablethp` is rejected by the compiler. Do not chase it in code without a `memory.max` case that shows an OOM.
+- systemd/cgroup memory reads 2-3x the Go heap after a torrent closes when THP is `always`: Go's freed 2MiB pages stay charged to the cgroup until the kernel's deferred split. `anon` / `RssAnon` and `/runtime/status` are the real numbers (`docs/memory.md`). Measured: `GODEBUG=disablethp=1` did not change it on Go 1.27.4, and `//go:debug disablethp` is rejected by the compiler. Do not chase it in code without a `memory.max` case that shows an OOM.
 
 `docker-entrypoint.sh` maps `TS_*` onto flags. It enables TLS from `TS_SSL_ENABLE=1`. `docker-compose.yml` and `.env.example` publish `TS_EN_SSL`. Those names are not the same variable. Wiring TLS through Compose requires the entrypoint to see `TS_SSL_ENABLE`, or the flag is never passed. `docs/docker.md` documents `TS_SSL_ENABLE`.
 
