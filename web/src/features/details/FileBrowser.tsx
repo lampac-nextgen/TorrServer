@@ -122,7 +122,7 @@ export default function FileBrowser({
       </TextField>
       <Button
         variant={onlyUnviewed ? 'primary' : 'secondary'}
-        className='min-h-11 shrink-0 gap-2 px-3'
+        className='min-h-11 shrink-0 gap-2 rounded-xl px-3'
         aria-pressed={onlyUnviewed}
         onPress={() => setOnlyUnviewed(v => !v)}
       >
