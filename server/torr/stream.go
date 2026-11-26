@@ -113,6 +113,8 @@ func (t *Torrent) Stream(fileID int, req *http.Request, resp http.ResponseWriter
 			log.Printf("[Stream:%d] Connect client %s:%s (Active streams: %d)",
 				streamID, host, port, atomic.LoadInt32(&activeStreams))
 		}
+		log.Printf("[Stream:%d] Request file=%d %q range=%q readers=%d",
+			streamID, fileID, file.Path(), req.Header.Get("Range"), t.cacheReaders())
 	}
 
 	// Mark as viewed. An existing entry is left alone: rewriting it with its own
@@ -181,9 +183,21 @@ func (t *Torrent) Stream(fileID int, req *http.Request, resp http.ResponseWriter
 	// blocked piece wait ends when the client (ffprobe included) hangs up,
 	// and the deferred CloseReader runs.
 	body := newBufferedStreamReader(bindStreamReadContext(req.Context(), reader), streamBufSize)
-	ServeStreamContent(resp, req, file.Path(), time.Unix(t.Timestamp, 0), body)
+	// The counting wrapper exists only with debug on: the normal path writes straight to resp.
+	var dbg *streamDebugWriter
+	out := resp
+	if sets.BTsets.EnableDebug {
+		dbg = &streamDebugWriter{ResponseWriter: resp, start: time.Now()}
+		out = dbg
+	}
+	ServeStreamContent(out, req, file.Path(), time.Unix(t.Timestamp, 0), body)
 	body.release()
 
+	if dbg != nil {
+		log.Printf("[Stream:%d] Done status=%d sent=%d first_byte=%s total=%s ctx_err=%v readers=%d",
+			streamID, dbg.status, dbg.sent, dbg.firstByte(), time.Since(dbg.start).Round(time.Millisecond),
+			req.Context().Err(), t.cacheReaders())
+	}
 	if sets.BTsets.EnableDebug {
 		if clerr != nil {
 			log.Printf("[Stream:%d] Disconnect client", streamID)
@@ -192,6 +206,49 @@ func (t *Torrent) Stream(fileID int, req *http.Request, resp http.ResponseWriter
 		}
 	}
 	return nil
+}
+
+// streamDebugWriter counts what one response sends. Used only when EnableDebug is set.
+type streamDebugWriter struct {
+	http.ResponseWriter
+	start  time.Time
+	first  time.Duration
+	status int
+	sent   int64
+}
+
+func (w *streamDebugWriter) WriteHeader(code int) {
+	if w.status == 0 {
+		w.status = code
+	}
+	w.ResponseWriter.WriteHeader(code)
+}
+
+func (w *streamDebugWriter) Write(b []byte) (int, error) {
+	if w.status == 0 {
+		w.status = http.StatusOK
+	}
+	n, err := w.ResponseWriter.Write(b)
+	if n > 0 {
+		if w.sent == 0 {
+			w.first = time.Since(w.start)
+		}
+		w.sent += int64(n)
+	}
+	return n, err
+}
+
+// firstByte is the wait before the first body byte, or "none" when nothing was sent.
+func (w *streamDebugWriter) firstByte() string {
+	if w.sent == 0 {
+		return "none"
+	}
+	return w.first.Round(time.Millisecond).String()
+}
+
+// cacheReaders is the number of readers on the torrent cache, 0 after a drop.
+func (t *Torrent) cacheReaders() int {
+	return t.GetCache().Readers()
 }
 
 // streamCopySize is the scratch buffer for one HTTP body copy. 64KiB keeps
